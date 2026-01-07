@@ -96,9 +96,25 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="camera.cpp" />
+    <ClCompile Include="helpers\bitmask_utils.cpp" />
+    <ClCompile Include="helpers\collision.cpp" />
+    <ClCompile Include="helpers\color_utils.cpp" />
+    <ClCompile Include="helpers\coord_utils.cpp" />
+    <ClCompile Include="helpers\matrix_utils.cpp" />
+    <ClCompile Include="helpers\render_utils.cpp" />
+    <ClCompile Include="helpers\vec2_utils.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="camera.h" />
+    <ClInclude Include="helpers\bitmask_utils.h" />
+    <ClInclude Include="helpers\collision.h" />
+    <ClInclude Include="helpers\color_utils.h" />
+    <ClInclude Include="helpers\coord_utils.h" />
+    <ClInclude Include="helpers\matrix_utils.h" />
+    <ClInclude Include="helpers\render_utils.h" />
+    <ClInclude Include="helpers\vec2_utils.h" />
     <ClInclude Include="main.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
