@@ -116,6 +116,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="helpers\render_utils.h" />
     <ClInclude Include="helpers\vec2_utils.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="singleton.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

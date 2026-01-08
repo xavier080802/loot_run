@@ -19,6 +19,12 @@
     <Filter Include="Source Files\helpers">
       <UniqueIdentifier>{4b43a601-e506-4b23-89d6-a4743a05cbfd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\design_patterns">
+      <UniqueIdentifier>{7b04eed9-ea72-4cf1-8c57-56b176f31030}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\design_patterns">
+      <UniqueIdentifier>{51959dce-df4e-4b1b-9028-7830c8c8bc4a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -76,6 +82,9 @@
     </ClInclude>
     <ClInclude Include="camera.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="singleton.h">
+      <Filter>Header Files\design_patterns</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

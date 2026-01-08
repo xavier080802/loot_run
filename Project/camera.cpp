@@ -1,7 +1,7 @@
 #include "camera.h"
-#include "helpers/vec2_utils.h"
-#include "helpers/matrix_utils.h"
-#include "helpers/render_utils.h"
+#include "Helpers/vec2_utils.h"
+#include "Helpers/matrix_utils.h"
+#include "Helpers/render_utils.h"
 
 static AEVec2 translation, scale;
 static float rotation;
