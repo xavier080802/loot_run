@@ -54,6 +54,9 @@
     <ClCompile Include="camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DesignPatterns\post_office.cpp">
+      <Filter>Source Files\design_patterns</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -83,7 +86,19 @@
     <ClInclude Include="camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="singleton.h">
+    <ClInclude Include="DesignPatterns\message.h">
+      <Filter>Header Files\design_patterns</Filter>
+    </ClInclude>
+    <ClInclude Include="DesignPatterns\concrete_messages.h">
+      <Filter>Header Files\design_patterns</Filter>
+    </ClInclude>
+    <ClInclude Include="DesignPatterns\post_box.h">
+      <Filter>Header Files\design_patterns</Filter>
+    </ClInclude>
+    <ClInclude Include="DesignPatterns\post_office.h">
+      <Filter>Header Files\design_patterns</Filter>
+    </ClInclude>
+    <ClInclude Include="DesignPatterns\singleton.h">
       <Filter>Header Files\design_patterns</Filter>
     </ClInclude>
   </ItemGroup>

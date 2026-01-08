@@ -1,25 +1,36 @@
 #ifndef _SINGLETON_H_
 #define _SINGLETON_H_
 
-//Usage: Inherit as Singleton<ClassName>
+/*
+Usage:
+//Ensure "public" is there so that GetInstance is public.
+class MyClass : public Singleton<MyClass> {
+	//stuff
+};
+
+//In other location
+MyClass* ref = MyClass:GetInstance();
+
+*/
+
 template <typename T>
 class Singleton
 {
 public:
 	//Get the singleton instance
 	static T* GetInstance() {
-		if (s_mInstance == nullptr)
-			s_mInstance = new T();
+		if (instance == nullptr)
+			instance = new T();
 
-		return s_mInstance;
+		return instance;
 	}
 
 	//Destroy the singleton instance
 	static void Destroy() {
-		if (s_mInstance)
+		if (instance)
 		{
-			delete s_mInstance;
-			s_mInstance = nullptr;
+			delete instance;
+			instance = nullptr;
 		}
 	}
 
@@ -28,10 +39,10 @@ protected:
 	virtual ~Singleton() {};
 
 private:
-	static T* s_mInstance;
+	static T* instance;
 };
 
 template <typename T>
-T* Singleton<T>::s_mInstance = nullptr;
+T* Singleton<T>::instance = nullptr;
 
 #endif // !_SINGLETON_H_

@@ -97,6 +97,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="camera.cpp" />
+    <ClCompile Include="DesignPatterns\post_office.cpp" />
     <ClCompile Include="helpers\bitmask_utils.cpp" />
     <ClCompile Include="helpers\collision.cpp" />
     <ClCompile Include="helpers\color_utils.cpp" />
@@ -108,6 +109,11 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="camera.h" />
+    <ClInclude Include="DesignPatterns\concrete_messages.h" />
+    <ClInclude Include="DesignPatterns\message.h" />
+    <ClInclude Include="DesignPatterns\post_box.h" />
+    <ClInclude Include="DesignPatterns\post_office.h" />
+    <ClInclude Include="DesignPatterns\singleton.h" />
     <ClInclude Include="helpers\bitmask_utils.h" />
     <ClInclude Include="helpers\collision.h" />
     <ClInclude Include="helpers\color_utils.h" />
@@ -116,7 +122,6 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="helpers\render_utils.h" />
     <ClInclude Include="helpers\vec2_utils.h" />
     <ClInclude Include="main.h" />
-    <ClInclude Include="singleton.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
