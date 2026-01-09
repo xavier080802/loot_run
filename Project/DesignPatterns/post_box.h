@@ -2,6 +2,7 @@
 #define _POST_BOX_H_
 #include "message.h"
 
+//To inherit as class.
 class PostBox {
 public:
 	virtual ~PostBox() {}

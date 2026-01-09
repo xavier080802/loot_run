@@ -25,6 +25,12 @@
     <Filter Include="Source Files\design_patterns">
       <UniqueIdentifier>{51959dce-df4e-4b1b-9028-7830c8c8bc4a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\game_states">
+      <UniqueIdentifier>{41a1307c-0b92-4633-bc12-b424dde1d1a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\game_states">
+      <UniqueIdentifier>{8151293b-3d88-44c3-a977-081dd684ad55}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -56,6 +62,15 @@
     </ClCompile>
     <ClCompile Include="DesignPatterns\post_office.cpp">
       <Filter>Source Files\design_patterns</Filter>
+    </ClCompile>
+    <ClCompile Include="game_state_manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStates\main_menu_state.cpp">
+      <Filter>Source Files\game_states</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStates\game_state.cpp">
+      <Filter>Source Files\game_states</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -100,6 +115,15 @@
     </ClInclude>
     <ClInclude Include="DesignPatterns\singleton.h">
       <Filter>Header Files\design_patterns</Filter>
+    </ClInclude>
+    <ClInclude Include="game_state_manager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStates\main_menu_state.h">
+      <Filter>Header Files\game_states</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStates\game_state.h">
+      <Filter>Header Files\game_states</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

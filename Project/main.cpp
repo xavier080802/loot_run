@@ -1,10 +1,11 @@
 //#include <crtdbg.h> // To check for memory leaks
 #include "AEEngine.h"
 #include "main.h"
+#include "game_state_manager.h"
+#include "./GameStates/main_menu_state.h"
+#include "./GameStates/game_state.h"
 
-static void (*stateInitFunc)(void);
-static void (*stateUpdateFunc)(void);
-static void (*stateExitFunc)(void);
+static GameStateManager* gsm;
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
@@ -30,10 +31,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	AESysReset();
 
 	//Pre-loop setup
-
+	gsm = GameStateManager::GetInstance();
+	gsm->AddGameState("MainMenuState", new MainMenuState);
+	gsm->AddGameState("GameState", new GameState);
 
 	//Enter first game state
-	//SetNextGameState(InitMainMenuState, UpdateMainMenuState, ExitMainMenuState);
+	gsm->SetNextGameState("MainMenuState");
 
 	// Game Loop
 	while (gGameRunning)
@@ -50,9 +53,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		//Clear bg
 		AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 		//Update state
-		if (stateUpdateFunc) {
-			stateUpdateFunc();
-		}
+		gsm->UpdateCurrState();
 
 		//------------- Informing the system about the loop's end -------------
 		AESysFrameEnd();
@@ -61,23 +62,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	Terminate();
 }
 
-void SetNextGameState(void(*init)(void), void(*update)(void), void(*exit)(void))
-{
-	//Exit previous state
-	if (stateExitFunc) stateExitFunc();
-	//Enter new state
-	stateInitFunc = init;
-	if (stateInitFunc) stateInitFunc();
-	//Assign functions
-	stateUpdateFunc = update;
-	stateExitFunc = exit;
-}
 
 void Terminate(void)
 {
-	if (stateExitFunc) {
-		stateExitFunc();
-	}
+	gsm->Destroy();
 	// free the system
 	AESysExit();
 }

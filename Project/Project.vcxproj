@@ -98,6 +98,9 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
   <ItemGroup>
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="DesignPatterns\post_office.cpp" />
+    <ClCompile Include="GameStates\game_state.cpp" />
+    <ClCompile Include="game_state_manager.cpp" />
+    <ClCompile Include="GameStates\main_menu_state.cpp" />
     <ClCompile Include="helpers\bitmask_utils.cpp" />
     <ClCompile Include="helpers\collision.cpp" />
     <ClCompile Include="helpers\color_utils.cpp" />
@@ -114,6 +117,9 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="DesignPatterns\post_box.h" />
     <ClInclude Include="DesignPatterns\post_office.h" />
     <ClInclude Include="DesignPatterns\singleton.h" />
+    <ClInclude Include="GameStates\game_state.h" />
+    <ClInclude Include="game_state_manager.h" />
+    <ClInclude Include="GameStates\main_menu_state.h" />
     <ClInclude Include="helpers\bitmask_utils.h" />
     <ClInclude Include="helpers\collision.h" />
     <ClInclude Include="helpers\color_utils.h" />

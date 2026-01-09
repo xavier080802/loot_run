@@ -5,7 +5,9 @@
 Usage:
 //Ensure "public" is there so that GetInstance is public.
 class MyClass : public Singleton<MyClass> {
-	//stuff
+	friend Singleton<MyClass>; //Allow Singleton access to private MyClass members
+	
+	//stuff...
 };
 
 //In other location
