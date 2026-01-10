@@ -31,6 +31,12 @@
     <Filter Include="Source Files\game_states">
       <UniqueIdentifier>{8151293b-3d88-44c3-a977-081dd684ad55}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\game_objects">
+      <UniqueIdentifier>{7e18bbe5-b277-4ea4-800f-ce6ff418f67a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\game_object">
+      <UniqueIdentifier>{f589bf8a-0063-4815-ab23-c5f592f73a80}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -71,6 +77,15 @@
     </ClCompile>
     <ClCompile Include="GameStates\game_state.cpp">
       <Filter>Source Files\game_states</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObjects\GameObject.cpp">
+      <Filter>Source Files\game_object</Filter>
+    </ClCompile>
+    <ClCompile Include="render_data.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rendering_manager.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -124,6 +139,15 @@
     </ClInclude>
     <ClInclude Include="GameStates\game_state.h">
       <Filter>Header Files\game_states</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjects\GameObject.h">
+      <Filter>Header Files\game_objects</Filter>
+    </ClInclude>
+    <ClInclude Include="render_data.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rendering_manager.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
