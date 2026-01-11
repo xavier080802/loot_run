@@ -18,12 +18,7 @@ void GameState::UnloadState()
 {
 }
 
-void GameState::Update(float dt)
+void GameState::Update(double dt)
 {
 	std::cout << "Game state update " << dt << '\n';
-}
-
-GameState::GameState()
-{
-	InitState();
 }

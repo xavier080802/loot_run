@@ -51,6 +51,7 @@ void AnimationData::Init(MESH_SHAPE shape)
 void AnimationData::Free()
 {
 	AEGfxMeshFree(mesh);
+	mesh = nullptr;
 	RenderData::Free();
 }
 

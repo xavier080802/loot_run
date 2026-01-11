@@ -26,10 +26,9 @@ bool GameStateManager::SetNextGameState(std::string nextName)
 	return true;
 }
 
-void GameStateManager::UpdateCurrState()
+void GameStateManager::UpdateCurrState(double dt)
 {
 	if (!currState.second) return;
-	float dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
 	currState.second->Update(dt);
 }
 

@@ -4,8 +4,11 @@
 #include "game_state_manager.h"
 #include "./GameStates/main_menu_state.h"
 #include "./GameStates/game_state.h"
+#include "./GameObjects/GameObjectManager.h"
+#include "rendering_manager.h"
 
-static GameStateManager* gsm;
+static GameStateManager* stateManager;
+static GameObjectManager* goManager;
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
@@ -31,12 +34,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	AESysReset();
 
 	//Pre-loop setup
-	gsm = GameStateManager::GetInstance();
-	gsm->AddGameState("MainMenuState", new MainMenuState);
-	gsm->AddGameState("GameState", new GameState);
+	goManager = GameObjectManager::GetInstance();
+
+	stateManager = GameStateManager::GetInstance();
+	stateManager->AddGameState("MainMenuState", new MainMenuState);
+	stateManager->AddGameState("GameState", new GameState);
 
 	//Enter first game state
-	gsm->SetNextGameState("MainMenuState");
+	stateManager->SetNextGameState("MainMenuState");
 
 	// Game Loop
 	while (gGameRunning)
@@ -49,11 +54,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		if (AEInputCheckTriggered(AEVK_ESCAPE) || 0 == AESysDoesWindowExist())
 			gGameRunning = 0;
 
-		//------------- Update logic -------------
+		//------------- Game loop logic -------------
 		//Clear bg
 		AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
+		
 		//Update state
-		gsm->UpdateCurrState();
+		f64 dt = AEFrameRateControllerGetFrameTime();
+		stateManager->UpdateCurrState(dt);
+		goManager->UpdateObjects(dt);
+
+		//Rendering
+		goManager->DrawObjects();
 
 		//------------- Informing the system about the loop's end -------------
 		AESysFrameEnd();
@@ -65,7 +76,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 void Terminate(void)
 {
-	gsm->Destroy();
+	stateManager->Destroy();
+	goManager->Destroy();
+	RenderingManager::Destroy();
 	// free the system
 	AESysExit();
 }

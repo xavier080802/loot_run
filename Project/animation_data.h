@@ -1,8 +1,10 @@
 #pragma once
 #include "render_data.h"
+#include "GameObjects/GameObjectManager.h"
 
 class AnimationData : public RenderData
 {
+	friend class GameObjectManager; //Allow manager access to private members.
 public:
 	//Creates the anim mesh
 	AnimationData* InitAnimation(unsigned rows, unsigned cols);

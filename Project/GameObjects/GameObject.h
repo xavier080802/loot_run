@@ -4,10 +4,13 @@
 #include "../Helpers/collision.h"
 #include "../Helpers/bitmask_utils.h"
 #include "../animation_data.h"
+#include "GameObjectManager.h"	
 
 class GameObject {
+	friend class GameObjectManager; //Allow manager access to private members.
 public:
-	virtual GameObject* Init(AEVec2 _pos, AEVec2 _scale, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _colLayers);
+	//Set values and register to the manager. Call only once per GO
+	virtual GameObject* Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _colLayers);
 	virtual void Update(double dt);
 	virtual void Draw();
 	virtual void Free();
@@ -23,9 +26,15 @@ public:
 	};
 
 protected:
+	/// For GameObject derivatives (derived from GameObject) to clone properly.
+	/// Any members that are pointers must be new'd for the clone.
+	/// Do not touch members that are in the GameObject class.
+	virtual void CompleteClone(GameObject*const clone);
+
 	AEVec2 pos{}, scale{ 1,1 };
+	int z{};
 	float rotationDeg{};
-	bool isActive{ false };
+	bool isEnabled{ false };
 	bool collisionEnabled{true};
 	COLLIDER_SHAPE colShape{ COLLIDER_SHAPE::COL_CIRCLE };
 	AEVec2 colSize{};

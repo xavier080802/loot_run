@@ -9,10 +9,8 @@ void RenderData::Init(MESH_SHAPE shape)
 
 void RenderData::Free()
 {
-	for (int i = 0; i < texCount; i++) {
-		if (!texList[i]) continue;
-		AEGfxTextureUnload(texList[i]);
-	}
+	delete texList;
+	texList = nullptr;
 }
 
 AEGfxTexture* RenderData::GetTexture() const
@@ -33,17 +31,12 @@ void RenderData::AddTexture(const char* texturePath)
 	AEGfxTexture** prev = texList;
 	texList = (AEGfxTexture**)realloc(texList, sizeof(AEGfxTexture*) * ++texCount);
 	if (!texList) {
-		printf("ERROR: Failed to realloc for render this texture in AddTexture. | %s\n", texturePath);
+		printf("ERROR: Failed to realloc for texture in AddTexture. | %s\n", texturePath);
 		//Free prev
-		for (int i = 0; i < texCount; i++) {
-			if (!prev[i]) continue;
-			AEGfxTextureUnload(prev[i]);
-			prev[i] = NULL;
-		}
 		free(prev);
 		return;
 	}
-	texList[texCount - 1] = AEGfxTextureLoad(texturePath);
+	texList[texCount - 1] = RenderingManager::GetInstance()->LoadTexture(texturePath);
 }
 
 AEVec2 RenderData::GetTexOffset()

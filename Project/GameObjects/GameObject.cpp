@@ -5,10 +5,11 @@
 #include "../rendering_manager.h"
 #include "../camera.h"
 
-GameObject* GameObject::Init(AEVec2 _pos, AEVec2 _scale, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _colLayers) {
-	isActive = true;
+GameObject* GameObject::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _colLayers) {
+	isEnabled = true;
 	pos = _pos;
 	scale = _scale;
+	z = _z;
 	//Collider
 	collisionEnabled = true;
 	colShape = _colShape;
@@ -18,6 +19,7 @@ GameObject* GameObject::Init(AEVec2 _pos, AEVec2 _scale, MESH_SHAPE _meshShape, 
 		renderingData = new AnimationData;
 	}
 	renderingData->Init(_meshShape);
+	GameObjectManager::GetInstance()->RegisterGO(this);
 	return this;
 }
 
@@ -51,6 +53,16 @@ void GameObject::SetCollision(bool enabled)
 }
 
 void GameObject::Free() {
-	renderingData->Free();
-	delete renderingData;
+	if (renderingData) {
+		renderingData->Free();
+		delete renderingData;
+		renderingData = nullptr;
+	}
+}
+
+void GameObject::CompleteClone(GameObject* const clone)
+{
+	//Silence "unused param" warning.
+	//Can't make this function abstract since GameObject class shouldn't be abstract.
+	(void)clone;
 }

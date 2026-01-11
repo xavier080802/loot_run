@@ -8,9 +8,8 @@ public:
 	void EnterState() override;
 	void ExitState() override;
 	void UnloadState() override;
-	void Update(float dt) override; 
+	void Update(double dt) override; 
 
-	MainMenuState();
 private:
 
 };

@@ -90,6 +90,9 @@
     <ClCompile Include="animation_data.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GameObjects\GameObjectManager.cpp">
+      <Filter>Source Files\game_object</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -154,6 +157,9 @@
     </ClInclude>
     <ClInclude Include="animation_data.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjects\GameObjectManager.h">
+      <Filter>Header Files\game_objects</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
