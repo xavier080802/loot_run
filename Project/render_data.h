@@ -16,7 +16,7 @@ public:
 	virtual AEGfxVertexList* GetMesh();
 	Color tint;
 	u8 alpha;
-	MESH_SHAPE meshShape{ MESH_SHAPE::SQUARE };
+	MESH_SHAPE meshShape{ MESH_SHAPE::MESH_SQUARE };
 
 	virtual void Init(MESH_SHAPE shape);
 	virtual void Free();

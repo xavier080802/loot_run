@@ -4,9 +4,9 @@
 #include "AEEngine.h"
 
 enum MESH_SHAPE {
-	SQUARE,
-	CIRCLE,
-	SQUARE_ANIM,
+	MESH_SQUARE,
+	MESH_CIRCLE,
+	MESH_SQUARE_ANIM,
 
 	SHAPE_NUM, // Last
 };
@@ -19,7 +19,7 @@ public:
 	AEGfxVertexList* GetMesh(MESH_SHAPE shape);
 
 private:
-	AEGfxVertexList* meshList[SHAPE_NUM];
+	AEGfxVertexList* meshList[SHAPE_NUM]{};
 };
 
 #endif // !_RENDERING_MANAGER_H_

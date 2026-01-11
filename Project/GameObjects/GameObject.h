@@ -25,7 +25,7 @@ protected:
 	float rotationDeg;
 	bool isActive;
 	bool collisionEnabled;
-	COLLIDER_SHAPE colShape = COLLIDER_SHAPE::CIRCLE;
+	COLLIDER_SHAPE colShape = COLLIDER_SHAPE::COL_CIRCLE;
 	AEVec2 colSize;
 	Bitmask collisionLayers;
 	RenderData* renderingData;

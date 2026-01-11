@@ -8,10 +8,10 @@ void RenderingManager::Init()
 	for (int i{}; i < MESH_SHAPE::SHAPE_NUM; i++) {
 		switch (i)
 		{
-		case MESH_SHAPE::SQUARE:
+		case MESH_SHAPE::MESH_SQUARE:
 			meshList[i] = CreateSquareMesh(1, 1, 0xFFFFFFFF);
 			break;
-		case MESH_SHAPE::CIRCLE:
+		case MESH_SHAPE::MESH_CIRCLE:
 			meshList[i] = CreateCircleMesh(0.5f, CreateColor(255, 255, 255, 255), 60);
 			break;
 		default:
