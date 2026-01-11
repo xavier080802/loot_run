@@ -1,4 +1,4 @@
-#include <crtdbg.h> // Optional: check for memory leaks
+#include <crtdbg.h>
 #include "AEEngine.h"
 #include "main.h"
 
@@ -27,6 +27,14 @@ static float mapWidth = 2000.0f;
 static float mapHeight = 2000.0f;
 static float halfMapWidth;
 static float halfMapHeight;
+static float camZoom = 0.5f;   // default zoom
+
+// --------------------
+// Minimap
+// --------------------
+static float minimapWidth = 200.0f;
+static float minimapHeight = 200.0f;
+static float minimapMargin = 20.0f;
 
 // --------------------
 // Function declarations
@@ -57,15 +65,8 @@ static AEGfxVertexList* CreateCircleMesh(int segments) {
     return AEGfxMeshEnd();
 }
 
-static void FreeMesh(AEGfxVertexList** mesh) {
-    if (*mesh) {
-        AEGfxMeshFree(*mesh);
-        *mesh = nullptr;
-    }
-}
-
 // --------------------
-// Entry Point (Windows subsystem)
+// Entry Point
 // --------------------
 int APIENTRY WinMain(
     HINSTANCE hInstance,
@@ -73,33 +74,24 @@ int APIENTRY WinMain(
     LPSTR     lpCmdLine,
     int       nCmdShow)
 {
-    //_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-    int gGameRunning = 1;
-
-    // Initialize AESys (window + engine)
     AESysInit(hInstance, nCmdShow, 1600, 900, 1, 60, false, NULL);
-    AESysSetWindowTitle("Camera Follow Test");
+    AESysSetWindowTitle("World Map Camera Test");
     AESysReset();
 
-    // Enter first game state
     GameState worldMapState = { InitWorldMap, UpdateWorldMap, RenderWorldMap, ExitWorldMap };
     SetNextGameState(worldMapState);
 
-    // --------------------
-    // Game loop
-    // --------------------
-    while (gGameRunning)
+    while (AESysDoesWindowExist())
     {
         AESysFrameStart();
 
-        if (AEInputCheckTriggered(AEVK_ESCAPE) || !AESysDoesWindowExist())
-            gGameRunning = 0;
+        if (AEInputCheckTriggered(AEVK_ESCAPE))
+            break;
 
-        AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
+        AEGfxSetBackgroundColor(0.1f, 0.1f, 0.1f);
 
         if (currentState.update) currentState.update();
         if (currentState.render) currentState.render();
@@ -139,6 +131,7 @@ static void InitWorldMap(void)
 
     circleMesh = CreateCircleMesh(36);
 
+    // Map border
     AEGfxMeshStart();
     AEGfxVertexAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 0);
     AEGfxVertexAdd(0.5f, -0.5f, 0xFFFFFFFF, 0, 0);
@@ -176,7 +169,18 @@ static void UpdateWorldMap(void)
     playerPos.x = AEClamp(playerPos.x, -halfMapWidth + playerRadius, halfMapWidth - playerRadius);
     playerPos.y = AEClamp(playerPos.y, -halfMapHeight + playerRadius, halfMapHeight - playerRadius);
 
-    AEVec2Lerp(&camPos, &camPos, &playerPos, 0.1f);
+    // Smooth camera follow
+    f32 camSpeed = 5.0f;
+    f32 factor = camSpeed * dt;
+    if (factor > 1.0f) factor = 1.0f;
+    AEVec2 temp;
+    AEVec2Lerp(&temp, &camPos, &playerPos, factor);
+    camPos = temp;
+
+    // Zoom controls
+    if (AEInputCheckCurr(AEVK_Q)) camZoom += 1.0f * dt; // zoom in
+    if (AEInputCheckCurr(AEVK_E)) camZoom -= 1.0f * dt; // zoom out
+    camZoom = AEClamp(camZoom, 0.2f, 2.0f);
 }
 
 // --------------------
@@ -186,37 +190,67 @@ static void RenderWorldMap(void)
 {
     AEGfxStart();
     AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-    AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 
     // Camera transform
     AEMtx33 camTrans, camScale, camFinal;
-    f32 camZoom = 0.5f;
     AEMtx33Scale(&camScale, camZoom, camZoom);
     AEMtx33Trans(&camTrans, -camPos.x, -camPos.y);
     AEMtx33Concat(&camFinal, &camTrans, &camScale);
 
-    // Border
+    // --- Map border ---
     AEMtx33 borderScale, borderTrans, borderFinal, borderWorld;
     AEMtx33Scale(&borderScale, mapWidth, mapHeight);
     AEMtx33Trans(&borderTrans, 0.0f, 0.0f);
     AEMtx33Concat(&borderFinal, &borderTrans, &borderScale);
     AEMtx33Concat(&borderWorld, &camFinal, &borderFinal);
-
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     AEGfxSetTransform(borderWorld.m);
     AEGfxMeshDraw(borderMesh, AE_GFX_MDM_LINES_STRIP);
 
-    // Player
+    // --- Player ---
     AEMtx33 playerScale, playerTrans, playerFinal, playerWorld;
     AEMtx33Scale(&playerScale, playerRadius, playerRadius);
     AEMtx33Trans(&playerTrans, playerPos.x, playerPos.y);
     AEMtx33Concat(&playerFinal, &playerTrans, &playerScale);
     AEMtx33Concat(&playerWorld, &camFinal, &playerFinal);
-
-    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     AEGfxSetTransform(playerWorld.m);
     AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
+    
+    // --- Minimap rendering --- 
+    float scaleX = minimapWidth / mapWidth;
+    float scaleY = minimapHeight / mapHeight;
+    float screenRight = 1600.0f - minimapWidth * 0.5f - minimapMargin;
+    float screenTop = 900.0f - minimapHeight * 0.5f - minimapMargin;
 
+    // --- Minimap Border ---
+    AEMtx33 mmBorderScale, mmBorderTrans, mmBorderFinal;
+    AEMtx33Scale(&mmBorderScale, mapWidth * scaleX, mapHeight * scaleY);
+    AEMtx33Trans(&mmBorderTrans, screenRight, screenTop);
+    AEMtx33Concat(&mmBorderFinal, &mmBorderTrans, &mmBorderScale);
+    AEGfxSetTransform(mmBorderFinal.m);
+    AEGfxMeshDraw(borderMesh, AE_GFX_MDM_LINES_STRIP);
+
+    // --- Player in Minimap ---
+    AEMtx33 mmPlayerScale, mmPlayerTrans, mmPlayerFinal;
+    AEMtx33Scale(&mmPlayerScale, playerRadius * scaleX, playerRadius * scaleY);
+    AEMtx33Trans(&mmPlayerTrans,
+        screenRight + playerPos.x * scaleX,
+        screenTop + playerPos.y * scaleY);
+    AEMtx33Concat(&mmPlayerFinal, &mmPlayerTrans, &mmPlayerScale);
+    AEGfxSetTransform(mmPlayerFinal.m);
+    AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
+
+    // --- Camera viewport ---
+    float viewW = 1600.0f / camZoom;
+    float viewH = 900.0f / camZoom;
+    AEMtx33 mmViewScale, mmViewTrans, mmViewFinal;
+    AEMtx33Scale(&mmViewScale, viewW * scaleX, viewH * scaleY);
+    AEMtx33Trans(&mmViewTrans,
+        screenRight + camPos.x * scaleX,
+        screenTop + camPos.y * scaleY);
+    AEMtx33Concat(&mmViewFinal, &mmViewTrans, &mmViewScale);
+    AEGfxSetTransform(mmViewFinal.m);
+    AEGfxMeshDraw(borderMesh, AE_GFX_MDM_LINES_STRIP);
     AEGfxEnd();
 }
 
@@ -225,6 +259,6 @@ static void RenderWorldMap(void)
 // --------------------
 static void ExitWorldMap(void)
 {
-    FreeMesh(&circleMesh);
-    FreeMesh(&borderMesh);
+    if (circleMesh) { AEGfxMeshFree(circleMesh); circleMesh = nullptr; }
+    if (borderMesh) { AEGfxMeshFree(borderMesh); borderMesh = nullptr; }
 }
