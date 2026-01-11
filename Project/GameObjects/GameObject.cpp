@@ -5,7 +5,7 @@
 #include "../rendering_manager.h"
 #include "../camera.h"
 
-GameObject* GameObject::Init(AEVec2 _pos, AEVec2 _scale, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _colLayers) {
+GameObject* GameObject::Init(AEVec2 _pos, AEVec2 _scale, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _colLayers) {
 	isActive = true;
 	pos = _pos;
 	scale = _scale;
@@ -14,11 +14,16 @@ GameObject* GameObject::Init(AEVec2 _pos, AEVec2 _scale, COLLIDER_SHAPE _colShap
 	colShape = _colShape;
 	colSize = _colSize;
 	collisionLayers = _colLayers;
+	if (!renderingData) {
+		renderingData = new AnimationData;
+	}
+	renderingData->Init(_meshShape);
 	return this;
 }
 
-void GameObject::Update()
+void GameObject::Update(double dt)
 {
+	renderingData->UpdateAnimation(dt);
 }
 
 void GameObject::Draw()
@@ -29,13 +34,23 @@ void GameObject::Draw()
 	GetObjViewFromCamera(&_pos, &_rot, &_scale);
 	//NOTE: Rotation renders ACW
 	DrawMeshWithTexOffset(GetTransformMtx(_pos, _rot, _scale),
-		RenderingManager::GetInstance()->GetMesh(renderingData->meshShape),
+		renderingData->GetMesh(),
 		renderingData->GetTexture(),
 		renderingData->tint, renderingData->alpha,
 		renderingData->GetTexOffset());
 }
 
+AnimationData& GameObject::GetRenderData()
+{
+	return *renderingData;
+}
+
 void GameObject::SetCollision(bool enabled)
 {
 	collisionEnabled = enabled;
+}
+
+void GameObject::Free() {
+	renderingData->Free();
+	delete renderingData;
 }

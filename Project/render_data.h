@@ -4,18 +4,17 @@
 #include "./Helpers/color_utils.h"
 #include "rendering_manager.h"
 
-//TODO: anim data. Override Init to create anim mesh. and override Free to release anim mesh
 class RenderData
 {
 public:
-	AEGfxTexture** texList;
+	AEGfxTexture** texList{};
 	virtual AEGfxTexture* GetTexture() const;
 	virtual AEGfxTexture* SetActiveTexture(int index);
 	void AddTexture(const char* texturePath);
 	virtual AEVec2 GetTexOffset();
 	virtual AEGfxVertexList* GetMesh();
-	Color tint;
-	u8 alpha;
+	Color tint{};
+	u8 alpha{ 255 };
 	MESH_SHAPE meshShape{ MESH_SHAPE::MESH_SQUARE };
 
 	virtual void Init(MESH_SHAPE shape);
@@ -24,7 +23,7 @@ public:
 protected:
 	int currTex{};
 	int texCount{};
-	AEGfxVertexList* mesh;
+	AEGfxVertexList* mesh{};
 };
 
 #endif // !_RENDER_DATA_H_

@@ -26,3 +26,8 @@ AEGfxVertexList* RenderingManager::GetMesh(MESH_SHAPE shape)
 {
 	return meshList[shape];
 }
+
+int RenderingManager::GetAnimFPS()
+{
+	return animationFPS;
+}

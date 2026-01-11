@@ -3,7 +3,7 @@
 #include "Helpers/matrix_utils.h"
 #include "Helpers/render_utils.h"
 
-static AEVec2 translation, scale;
+static AEVec2 translation, scale{ 1,1 };
 static float rotation;
 
 void ResetCamera(void)

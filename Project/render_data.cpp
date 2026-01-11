@@ -4,6 +4,7 @@ void RenderData::Init(MESH_SHAPE shape)
 {
 	RenderingManager* rm = RenderingManager::GetInstance();
 	mesh = rm->GetMesh(shape);
+	meshShape = shape;
 }
 
 void RenderData::Free()

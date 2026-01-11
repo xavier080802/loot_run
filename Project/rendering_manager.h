@@ -17,9 +17,11 @@ class RenderingManager : public Singleton<RenderingManager>
 public:
 	void Init();
 	AEGfxVertexList* GetMesh(MESH_SHAPE shape);
+	int GetAnimFPS();
 
 private:
 	AEGfxVertexList* meshList[SHAPE_NUM]{};
+	int animationFPS{ 5 };
 };
 
 #endif // !_RENDERING_MANAGER_H_
