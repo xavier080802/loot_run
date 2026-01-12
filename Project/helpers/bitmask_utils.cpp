@@ -32,7 +32,7 @@ Bitmask FlipBitAtPos(Bitmask* mask, int flag)
 	return *mask;
 }
 
-int BitmaskContainsFlag(Bitmask mask, int flag)
+bool BitmaskContainsFlag(Bitmask mask, int flag)
 {
 	//Returns the value of the bit as 2^pos. Pos 0 is 1
 	return mask & (1 << flag);

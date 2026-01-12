@@ -49,7 +49,7 @@ Bitmask FlipBitAtPos(Bitmask* mask, int flag);
 /// <param name="mask">Mask to check</param>
 /// <param name="flag">Flag to check for</param>
 /// <returns>0 if does not contain. Any +ve num if it does contain</returns>
-int BitmaskContainsFlag(Bitmask mask, int flag);
+bool BitmaskContainsFlag(Bitmask mask, int flag);
 
 /// <summary>
 /// Compares if 2 bitmasks are identical

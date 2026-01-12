@@ -9,30 +9,30 @@
 #include "../helpers/matrix_utils.h"
 #include <math.h>
 
-int IsPointOver(float posX, float posY, float width, float height, float pointX, float pointY)
+bool IsPointOver(float posX, float posY, float width, float height, float pointX, float pointY)
 {
 	return (pointX >= posX - width / 2 && pointX <= posX + width / 2 && pointY >= posY - height / 2 && pointY <= posY + height / 2) ? 1 : 0;
 }
 
-int IsCursorOver(AEVec2 pos, float width, float height)
+bool IsCursorOver(AEVec2 pos, float width, float height)
 {
 	AEVec2 mouse = GetMouseVec();
 	return IsPointOver(pos.x, pos.y, width, height, mouse.x, mouse.y);
 }
 
-int IsPointOverCircle(float posX, float posY, float diameter, float pointX, float pointY)
+bool IsPointOverCircle(float posX, float posY, float diameter, float pointX, float pointY)
 {
 	//return (fabs(pointX - posX) <= diameter/2.f && fabs(pointY - posY) <= diameter/2.f) ? 1 : 0;
 	return (pointX - posX) * (pointX - posX) + (pointY - posY) * (pointY - posY) <= (diameter / 2.f) * (diameter / 2.f);
 }
 
-int IsCursorOverCircle(AEVec2 pos, float diameter)
+bool IsCursorOverCircle(AEVec2 pos, float diameter)
 {
 	AEVec2 world = GetMouseVec();
 	return (fabs(world.x - pos.x) <= diameter / 2.f && fabs(world.y - pos.y) <= diameter / 2.f) ? 1 : 0;
 }
 
-int IsCursorOverOval(AEVec2 pos, AEVec2 size, f32 rotDeg) {
+bool IsCursorOverOval(AEVec2 pos, AEVec2 size, f32 rotDeg) {
 	AEVec2 world = GetMouseVec();
 
 	AEVec2 v = { 0,0 }, r = { 0,0 };
@@ -57,7 +57,7 @@ int IsCursorOverOval(AEVec2 pos, AEVec2 size, f32 rotDeg) {
 /// 3. Profit. (Check if the image of the point is within the rect. Since v is about (0, 0) due to step 1,
 /// Using vector_zero instead of shifting everything back).
 /// </summary>
-int IsPointOverRectRot(float posX, float posY, float width, float height, float degrees, float pointX, float pointY)
+bool IsPointOverRectRot(float posX, float posY, float width, float height, float degrees, float pointX, float pointY)
 {
 	AEVec2 v = { 0,0 }, r = { 0,0 };
 	AEMtx33 A = { 0 };
@@ -68,13 +68,13 @@ int IsPointOverRectRot(float posX, float posY, float width, float height, float 
 	return IsPointOver(zero.x, zero.y, width, height, r.x, r.y);
 }
 
-int IsCursorOverRectRot(AEVec2 pos, float width, float height, float degrees)
+bool IsCursorOverRectRot(AEVec2 pos, float width, float height, float degrees)
 {
 	AEVec2 world = GetMouseVec();
 	return IsPointOverRectRot(pos.x, pos.y, width, height, degrees, world.x, world.y);
 }
 
-int IsRectsOverlapping(
+bool IsRectsOverlapping(
 	AEVec2 rect1Pos, float rect1Width, float rect1Height,
 	AEVec2 rect2Pos, float rect2Width, float rect2Height) 
 {
@@ -86,7 +86,7 @@ int IsRectsOverlapping(
 	return !((l1.x > r2.x || l2.x > r1.x) || (r1.y < l2.y || r2.y < l1.y));
 }
 
-int CircleRectCollision(AEVec2 rectPos, AEVec2 rectSize, AEVec2 circlePos, float circRad)
+bool CircleRectCollision(AEVec2 rectPos, AEVec2 rectSize, AEVec2 circlePos, float circRad)
 {
 	//Vars for which rect edges to test
 	float testX = 0, testY = 0;
@@ -99,4 +99,9 @@ int CircleRectCollision(AEVec2 rectPos, AEVec2 rectSize, AEVec2 circlePos, float
 	float distY = circlePos.y - testY;
 	float distSqr = distX * distX + distY * distY;
 	return distSqr <= circRad * circRad;
+}
+
+bool CircleCollision(AEVec2 pos1, AEVec2 pos2, float radius1, float radius2)
+{
+	return AEVec2SquareDistance(&pos1, &pos2) <= (radius1+radius2)*(radius1*radius2);
 }
