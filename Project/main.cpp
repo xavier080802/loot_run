@@ -27,7 +27,7 @@ static float mapWidth = 2000.0f;
 static float mapHeight = 2000.0f;
 static float halfMapWidth;
 static float halfMapHeight;
-static float camZoom = 0.5f;   // default zoom
+static float camZoom = 1.0f;   // default zoom
 
 // --------------------
 // Minimap
@@ -78,7 +78,7 @@ int APIENTRY WinMain(
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     AESysInit(hInstance, nCmdShow, 1600, 900, 1, 60, false, NULL);
-    AESysSetWindowTitle("World Map Camera Test");
+    AESysSetWindowTitle("Loot Run");
     AESysReset();
 
     GameState worldMapState = { InitWorldMap, UpdateWorldMap, RenderWorldMap, ExitWorldMap };
@@ -155,10 +155,10 @@ static void UpdateWorldMap(void)
     AEVec2 movement;
     AEVec2Zero(&movement);
 
-    if (AEInputCheckCurr(AEVK_W)) movement.y += 1.0f;
-    if (AEInputCheckCurr(AEVK_S)) movement.y -= 1.0f;
-    if (AEInputCheckCurr(AEVK_A)) movement.x -= 1.0f;
-    if (AEInputCheckCurr(AEVK_D)) movement.x += 1.0f;
+    if (AEInputCheckCurr(AEVK_W)) movement.y += 5.0f;
+    if (AEInputCheckCurr(AEVK_S)) movement.y -= 5.0f;
+    if (AEInputCheckCurr(AEVK_A)) movement.x -= 5.0f;
+    if (AEInputCheckCurr(AEVK_D)) movement.x += 5.0f;
 
     f32 len = AEVec2Length(&movement);
     if (len > 0.0f) {
@@ -170,7 +170,7 @@ static void UpdateWorldMap(void)
     playerPos.y = AEClamp(playerPos.y, -halfMapHeight + playerRadius, halfMapHeight - playerRadius);
 
     // Smooth camera follow
-    f32 camSpeed = 5.0f;
+    f32 camSpeed = 5.5f;
     f32 factor = camSpeed * dt;
     if (factor > 1.0f) factor = 1.0f;
     AEVec2 temp;
@@ -178,10 +178,30 @@ static void UpdateWorldMap(void)
     camPos = temp;
 
     // Zoom controls
-    if (AEInputCheckCurr(AEVK_Q)) camZoom += 1.0f * dt; // zoom in
-    if (AEInputCheckCurr(AEVK_E)) camZoom -= 1.0f * dt; // zoom out
-    camZoom = AEClamp(camZoom, 0.2f, 2.0f);
+    //if (AEInputCheckCurr(AEVK_Q)) camZoom += 1.0f * dt; // zoom in
+    //if (AEInputCheckCurr(AEVK_E)) camZoom -= 1.0f * dt; // zoom out
+    camZoom = AEClamp(camZoom, 0.5f, 2.5f);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // --------------------
 // Game State: Render
