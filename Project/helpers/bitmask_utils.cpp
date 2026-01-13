@@ -38,7 +38,7 @@ bool BitmaskContainsFlag(Bitmask mask, int flag)
 	return mask & (1 << flag);
 }
 
-int CompareBitmasks(Bitmask a, Bitmask b)
+bool CompareBitmasks(Bitmask a, Bitmask b)
 {
 	return (a & b) == a;
 }

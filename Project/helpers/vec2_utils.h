@@ -14,6 +14,7 @@ AEVec2 VecOne(void);
 
 AEVec2 GetMouseVec(void);
 
+//Inverses the values of v
 AEVec2 NegVec2(AEVec2 v);
 
 /// <summary>

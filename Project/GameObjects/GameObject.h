@@ -21,6 +21,7 @@ public:
 	};
 	
 	//Set values and register to the manager. Call only once per GO
+	//Need to manually initialize 
 	virtual GameObject* Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, COLLISION_LAYER _isInLayers);
 	virtual void Update(double dt);
 	virtual void Draw();

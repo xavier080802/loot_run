@@ -2,6 +2,7 @@
 #define _GAME_STATE_H
 #include "../game_state_manager.h"
 
+//State for the game scene
 class GameState : public State {
 public:
 	void InitState() override;

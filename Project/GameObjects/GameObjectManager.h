@@ -32,7 +32,8 @@ namespace GOCollision {
 	};
 }
 
-
+//Singleton to manage game objects.
+//Manages Update, Drawing, and collision.
 class GameObjectManager : public Singleton<GameObjectManager>{
 	friend Singleton<GameObjectManager>;
 public:

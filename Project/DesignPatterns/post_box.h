@@ -3,6 +3,7 @@
 #include "message.h"
 
 //To inherit as class.
+//Override Handle
 class PostBox {
 public:
 	virtual ~PostBox() {}

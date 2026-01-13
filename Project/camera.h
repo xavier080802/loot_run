@@ -36,6 +36,7 @@ AEVec2 GetCameraTranslation(void);
 AEVec2 GetCameraZoom(void);
 float GetCameraRotation(void);
 
+//Modifies the arguments to transform the object based on camera's transform
 void GetObjViewFromCamera(AEVec2* pos, f32* rot, AEVec2* scale);
 #endif // !_CAMERA_H_
 

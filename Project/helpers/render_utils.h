@@ -25,11 +25,6 @@ enum TextOriginPos {
 	TEXT_UPPER_MIDDLE
 };
 
-typedef struct {
-	AEGfxVertexList* pMesh;
-	AEGfxTexture* pTex;
-} TexturedMesh;
-
 AEGfxVertexList* CreateSquareMesh(f32 width, f32 height, u32 color);
 
 /// <summary>
@@ -37,6 +32,7 @@ AEGfxVertexList* CreateSquareMesh(f32 width, f32 height, u32 color);
 /// </summary>
 AEGfxVertexList* CreateSquareAnimMesh(f32 width, f32 height, u32 color, int rows, int cols);
 
+//Note: radius should be 0.5f.
 AEGfxVertexList* CreateCircleMesh(f32 radius, Color col, unsigned int slices);
 
 /// <summary>
