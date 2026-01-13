@@ -237,10 +237,16 @@ static void RenderWorldMap(void)
     AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
     
     // --- Minimap rendering --- 
-    float scaleX = minimapWidth / mapWidth;
-    float scaleY = minimapHeight / mapHeight;
-    float screenRight = 1600.0f - minimapWidth * 0.5f - minimapMargin;
-    float screenTop = 900.0f - minimapHeight * 0.5f - minimapMargin;
+    float winW = (float)AEGfxGetWinMaxX();
+    float winH = (float)AEGfxGetWinMaxY();
+
+    // scale factors (ensure float division)
+    float scaleX = (float)minimapWidth / (float)mapWidth;
+    float scaleY = (float)minimapHeight / (float)mapHeight;
+
+    // anchor minimap to top-right corner
+    float screenRight = winW - minimapWidth * 0.5f - minimapMargin;
+    float screenTop = winH - minimapHeight * 0.5f - minimapMargin;
 
     // --- Minimap Border ---
     AEMtx33 mmBorderScale, mmBorderTrans, mmBorderFinal;
@@ -261,8 +267,8 @@ static void RenderWorldMap(void)
     AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
 
     // --- Camera viewport ---
-    float viewW = 1600.0f / camZoom;
-    float viewH = 900.0f / camZoom;
+    float viewW = winW / camZoom;
+    float viewH = winH / camZoom;
     AEMtx33 mmViewScale, mmViewTrans, mmViewFinal;
     AEMtx33Scale(&mmViewScale, viewW * scaleX, viewH * scaleY);
     AEMtx33Trans(&mmViewTrans,
@@ -271,7 +277,7 @@ static void RenderWorldMap(void)
     AEMtx33Concat(&mmViewFinal, &mmViewTrans, &mmViewScale);
     AEGfxSetTransform(mmViewFinal.m);
     AEGfxMeshDraw(borderMesh, AE_GFX_MDM_LINES_STRIP);
-    AEGfxEnd();
+
 }
 
 // --------------------
