@@ -10,20 +10,29 @@ void GameStateManager::AddGameState(std::string stateName, State* state)
 	state->LoadState();
 }
 
-bool GameStateManager::SetNextGameState(std::string nextName)
+bool GameStateManager::SetNextGameState(std::string nextName, bool initNext, bool exitCurr)
 {
 	if (currState.first == nextName || stateList.find(nextName) == stateList.end()) {
 		return false;
 	}
 	//Exit prev state
-	if (currState.second) {
+	if (currState.second && exitCurr) {
 		stateList.find(currState.first)->second->ExitState();
 	}
+	prevState = currState;
 	//Enter new state
 	currState.first = nextName;
 	currState.second = stateList.find(nextName)->second;
-	currState.second->InitState();
+	if (initNext) currState.second->InitState();
 	return true;
+}
+
+bool GameStateManager::ReturnToPrevState(bool reInitPrev, bool exitCurr)
+{
+	if (!prevState.second)
+		return false;
+
+	return SetNextGameState(prevState.first, reInitPrev, exitCurr);
 }
 
 void GameStateManager::UpdateCurrState(double dt)

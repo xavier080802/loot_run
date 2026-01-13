@@ -44,7 +44,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	stateManager->AddGameState("GameState", new GameState);
 
 	//Enter first game state
-	stateManager->SetNextGameState("MainMenuState");
+	stateManager->SetNextGameState("MainMenuState", true, true);
 
 	// Game Loop
 	while (gGameRunning)
