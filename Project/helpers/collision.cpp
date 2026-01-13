@@ -88,12 +88,14 @@ bool IsRectsOverlapping(
 
 bool CircleRectCollision(AEVec2 rectPos, AEVec2 rectSize, AEVec2 circlePos, float circRad)
 {
+	rectSize.x /= 2.f;
+	rectSize.y /= 2.f;
 	//Vars for which rect edges to test
 	float testX = 0, testY = 0;
 	if (circlePos.x < rectPos.x - rectSize.x) testX = rectPos.x - rectSize.x; //C on left edge
-	else if (circlePos.x < rectPos.x + rectSize.x) testX = rectPos.y + rectSize.x; //C on right edge
+	else if (circlePos.x > rectPos.x + rectSize.x) testX = rectPos.x + rectSize.x; //C on right edge
 	if (circlePos.y < rectPos.y - rectSize.y) testY = rectPos.y - rectSize.y; //C on bottom edge
-	else if (circlePos.y < rectPos.y + rectSize.y) testY = rectPos.y + rectSize.y; //C on top edge
+	else if (circlePos.y > rectPos.y + rectSize.y) testY = rectPos.y + rectSize.y; //C on top edge
 
 	float distX = circlePos.x - testX;
 	float distY = circlePos.y - testY;

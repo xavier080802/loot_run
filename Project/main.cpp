@@ -9,6 +9,7 @@
 
 static GameStateManager* stateManager;
 static GameObjectManager* goManager;
+static RenderingManager* renderManager;
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
@@ -35,6 +36,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	//Pre-loop setup
 	goManager = GameObjectManager::GetInstance();
+	renderManager = RenderingManager::GetInstance();
+	renderManager->Init();
 
 	stateManager = GameStateManager::GetInstance();
 	stateManager->AddGameState("MainMenuState", new MainMenuState);
@@ -78,7 +81,7 @@ void Terminate(void)
 {
 	stateManager->Destroy();
 	goManager->Destroy();
-	RenderingManager::Destroy();
+	renderManager->Destroy();
 	// free the system
 	AESysExit();
 }

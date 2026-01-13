@@ -50,8 +50,10 @@ void AnimationData::Init(MESH_SHAPE shape)
 
 void AnimationData::Free()
 {
-	AEGfxMeshFree(mesh);
-	mesh = nullptr;
+	if (mesh) {
+		AEGfxMeshFree(mesh);
+		mesh = nullptr;
+	}
 	RenderData::Free();
 }
 

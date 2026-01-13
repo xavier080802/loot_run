@@ -6,18 +6,49 @@
 
 class GameObject;
 
+namespace GOCollision {
+	//Representation of an object
+	struct Element {
+		unsigned index; //index of the GO in its list
+	};
+
+	//A grid cell. Contains objects (elements)
+	struct Cell {
+		std::vector<Element> elements;
+	};
+
+	//Place objects into grid cells based on their position.
+	//Check collision only between objects in the same cell
+	//Note: no idea what im doing, might be terribly optimized.
+	struct SpatialGrid {
+		//Init a grid of _numDimensions x _numDimensions to cover the world
+		void Init(unsigned _worldWidth, unsigned _worldHeight, unsigned _numDimensions);
+		void SortObjects(GameObject** gos, size_t count);
+		void InsertToCell(GameObject* go, unsigned ind, unsigned cellInd);
+
+		unsigned partitions=0;
+		unsigned cellWidth{}, cellHeight{}, worldHalfWidth{}, worldhalfHeight{};
+		std::vector<Cell> cells;
+	};
+}
+
+
 class GameObjectManager : public Singleton<GameObjectManager>{
 	friend Singleton<GameObjectManager>;
 public:
 	void RegisterGO(GameObject* go);
 	void UpdateObjects(double dt);
 	void DrawObjects();
+	//Ensure large enough to cover whole playing area, otherwise the object wont have collision
+	void InitCollisionGrid(unsigned width, unsigned height);
 
 	GameObject* Clone(GameObject* const original);
 
 private:
 	//z sorted in ascending order
 	std::vector<GameObject*> goList;
+
+	GOCollision::SpatialGrid grid;
 
 	~GameObjectManager();
 };

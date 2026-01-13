@@ -4,8 +4,9 @@
 #include "../Helpers/vec2_utils.h"
 #include "../rendering_manager.h"
 #include "../camera.h"
+#include <iostream>
 
-GameObject* GameObject::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _colLayers) {
+GameObject* GameObject::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, COLLISION_LAYER _isInLayers) {
 	isEnabled = true;
 	pos = _pos;
 	scale = _scale;
@@ -14,7 +15,8 @@ GameObject* GameObject::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _mes
 	collisionEnabled = true;
 	colShape = _colShape;
 	colSize = _colSize;
-	collisionLayers = _colLayers;
+	collisionLayers = _collideWithLayers;
+	colliderLayer = _isInLayers;
 	if (!renderingData) {
 		renderingData = new AnimationData;
 	}
@@ -26,6 +28,7 @@ GameObject* GameObject::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _mes
 void GameObject::Update(double dt)
 {
 	renderingData->UpdateAnimation(dt);
+	renderingData->tint = CreateColor(0, 0, 0, 0);
 }
 
 void GameObject::Draw()
@@ -47,6 +50,16 @@ AnimationData& GameObject::GetRenderData()
 	return *renderingData;
 }
 
+AEVec2& GameObject::GetPos()
+{
+	return pos;
+}
+
+AEVec2& GameObject::GetColSize()
+{
+	return colSize;
+}
+
 void GameObject::SetCollision(bool enabled)
 {
 	collisionEnabled = enabled;
@@ -58,6 +71,14 @@ void GameObject::Free() {
 		delete renderingData;
 		renderingData = nullptr;
 	}
+}
+
+void GameObject::OnCollide(CollisionData& other)
+{
+	//Silence "unused param" warning.
+	(void)other;
+
+	renderingData->tint = CreateColor(0, 255, 0, 255);
 }
 
 void GameObject::CompleteClone(GameObject* const clone)
