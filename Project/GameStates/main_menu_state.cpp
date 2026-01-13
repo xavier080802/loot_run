@@ -11,7 +11,7 @@ static void AnimEvent(unsigned frame, bool isDone) {
 	std::cout << "Frame event: " << frame << " is last?: " << std::boolalpha << isDone << '\n';
 }
 
-void MainMenuState::InitState()
+void MainMenuState::LoadState()
 {
 	//Testing
 	GameObjectManager::GetInstance()->InitCollisionGrid(1600, 800);
@@ -26,7 +26,7 @@ void MainMenuState::InitState()
 	enemy->Init({ 150,0 }, { 100,-100 }, 0, MESH_CIRCLE, COL_CIRCLE, { 100,100 }, CreateBitmask(1, GameObject::PLAYER), GameObject::ENEMIES);
 }
 
-void MainMenuState::EnterState()
+void MainMenuState::InitState()
 {
 	std::cout << "Main menu state enter\n";
 }
@@ -49,4 +49,11 @@ void MainMenuState::Update(double dt)
 		AEInputGetCursorPosition(&x, &y);
 		enemy->GetPos() = ScreenToWorld(ToVec2(x, y));
 	}
+
+	GameObjectManager::GetInstance()->UpdateObjects(dt);
+}
+
+void MainMenuState::Draw()
+{
+	GameObjectManager::GetInstance()->DrawObjects();
 }

@@ -61,13 +61,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		//Clear bg
 		AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 		
-		//Update state
+		//Update state logic
 		f64 dt = AEFrameRateControllerGetFrameTime();
 		stateManager->UpdateCurrState(dt);
-		goManager->UpdateObjects(dt);
 
 		//Rendering
-		goManager->DrawObjects();
+		stateManager->DrawCurrState();
 
 		//------------- Informing the system about the loop's end -------------
 		AESysFrameEnd();

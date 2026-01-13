@@ -7,7 +7,7 @@ void GameStateManager::AddGameState(std::string stateName, State* state)
 		return;
 
 	stateList.insert(std::pair<std::string, State*>(stateName, state));
-	state->InitState();
+	state->LoadState();
 }
 
 bool GameStateManager::SetNextGameState(std::string nextName)
@@ -22,7 +22,7 @@ bool GameStateManager::SetNextGameState(std::string nextName)
 	//Enter new state
 	currState.first = nextName;
 	currState.second = stateList.find(nextName)->second;
-	currState.second->EnterState();
+	currState.second->InitState();
 	return true;
 }
 
@@ -30,6 +30,12 @@ void GameStateManager::UpdateCurrState(double dt)
 {
 	if (!currState.second) return;
 	currState.second->Update(dt);
+}
+
+void GameStateManager::DrawCurrState()
+{
+	if (!currState.second) return;
+	currState.second->Draw();
 }
 
 GameStateManager::~GameStateManager()
