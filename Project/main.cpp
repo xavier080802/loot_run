@@ -2,6 +2,7 @@
 #include <math.h>             
 #include "AEEngine.h"
 #include "main.h"
+#include "Music.h"
 
 // --------------------
 // Game State structure
@@ -18,6 +19,9 @@ static GameState currentState = { nullptr, nullptr, nullptr, nullptr };
 // --------------------
 // Globals
 // --------------------
+
+// Music
+static BGMManager bgm;
 
 // Meshes for rendering
 static AEGfxVertexList* circleMesh = nullptr;
@@ -49,8 +53,8 @@ static float minimapMargin = 20.0f;
 static float minimapPlayerScaleFactor = 2.0f; // make player dot bigger
 
 // Minimap arrow settings
-static float minimapArrowLengthPx = 12.0f;
-static float minimapArrowThicknessPx = 10.0f;
+static float minimapArrowLengthPx = 10.0f;
+static float minimapArrowThicknessPx = 8.0f;
 static float minimapArrowExtraOffsetPx = 8.0f;
 static unsigned int minimapArrowColor = 0xFF00FFFF; // cyan
 
@@ -96,6 +100,9 @@ static AEGfxVertexList* CreateBorderRectMesh(void) {
 // --------------------
 static void InitWorldMap(void) {
     AEInputInit();
+
+    bgm.Init();
+    bgm.PlayNormal();
 
     halfMapWidth = mapWidth * 0.5f;
     halfMapHeight = mapHeight * 0.5f;
@@ -356,6 +363,7 @@ static void RenderWorldMap(void) {
 static void ExitWorldMap(void) {
     if (circleMesh) { AEGfxMeshFree(circleMesh); circleMesh = nullptr; }
     if (borderMesh) { AEGfxMeshFree(borderMesh); borderMesh = nullptr; }
+    bgm.Exit();
 }
 
 // --------------------
