@@ -5,7 +5,7 @@
 /// <summary>
 /// Resets camera to default transformation
 /// </summary>
-void ResetCamera(void);
+void ResetCamera();
 
 /// <summary>
 /// +ve: Camera moves up/right
@@ -32,9 +32,10 @@ void ZoomCamera(f32 deltaZoom);
 /// <param name="deltaRot"></param>
 void RotateCamera(f32 deltaRot);
 
-AEVec2 GetCameraTranslation(void);
-AEVec2 GetCameraZoom(void);
-float GetCameraRotation(void);
+AEVec2 GetCameraTranslation();
+AEVec2 GetCameraScale();
+float GetCameraZoom();
+float GetCameraRotation();
 
 //Modifies the arguments to transform the object based on camera's transform
 void GetObjViewFromCamera(AEVec2* pos, f32* rot, AEVec2* scale);

@@ -3,8 +3,8 @@
 #include "Helpers/matrix_utils.h"
 #include "Helpers/render_utils.h"
 
-static AEVec2 translation, scale{ 1,1 };
-static float rotation;
+static AEVec2 translation{}, scale{ 1,1 };
+static float rotation{}, zoom{ 1 };
 
 void ResetCamera(void)
 {
@@ -31,8 +31,10 @@ void ZoomCamera(f32 deltaZoom)
 	AEVec2 pre = scale;
 	scale.x += deltaZoom;
 	scale.y += deltaZoom;
+	zoom += deltaZoom;
 	scale.x = AEMax(0, scale.x);
 	scale.y = AEMax(0, scale.y);
+	zoom = AEMax(0, zoom);
 }
 
 void RotateCamera(f32 deltaRot)
@@ -45,9 +47,14 @@ AEVec2 GetCameraTranslation(void)
 	return translation;
 }
 
-AEVec2 GetCameraZoom(void)
+AEVec2 GetCameraScale(void)
 {
 	return scale;
+}
+
+float GetCameraZoom()
+{
+	return zoom;
 }
 
 float GetCameraRotation(void)
