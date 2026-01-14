@@ -352,7 +352,7 @@ static void RenderWorldMap(void) {
     AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
 
     // --------------------
-    // Minimap Arrow (sharper triangle)
+    // Minimap Arrow 
     // --------------------
     DrawMinimapArrow(mmX, mmY, scaleX, scaleY);
 }
