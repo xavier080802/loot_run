@@ -26,6 +26,8 @@ class RenderingManager : public Singleton<RenderingManager>
 	friend Singleton<RenderingManager>;
 public:
 	void Init();
+
+	//Do not Free/delete this mesh outside of RenderingManager script
 	AEGfxVertexList* GetMesh(MESH_SHAPE shape);
 	//Loads and caches a texture.
 	//Multiple objs using the same tex will not duplicate mem

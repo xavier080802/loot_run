@@ -3,6 +3,10 @@
 #include "../helpers/render_utils.h"
 #include "../helpers/matrix_utils.h"
 #include "../helpers/vec2_utils.h"
+#include "../helpers/coord_utils.h"
+#include "../camera.h"
+#include "../rendering_manager.h"
+#include "../GameObjects/GameObject.h"
 #include <iostream>
 
 namespace {
@@ -111,6 +115,10 @@ namespace {
 
         // Clamp zoom
         camZoom = AEClamp(camZoom, 0.5f, 2.5f);
+
+        //Gameobject rendering relies on camera.h values, so syncing here.
+        SetCameraPos(camPos); 
+        SetCamZoom(camZoom);
     }
 
     void DrawMinimapArrow(float mmX, float mmY, float scaleX, float scaleY)
@@ -266,6 +274,9 @@ namespace {
         // --------------------
         DrawMinimapArrow(mmX, mmY, scaleX, scaleY);
     }
+
+    //TESTING
+    GameObject* go, * enemy;
 }
 
 void GameState::LoadState()
@@ -276,7 +287,7 @@ void GameState::LoadState()
     halfMapWidth = mapWidth * 0.5f;
     halfMapHeight = mapHeight * 0.5f;
 
-    circleMesh = CreateCircleMesh(1, CreateColor(255, 255, 255, 255), 36);
+    circleMesh = RenderingManager::GetInstance()->GetMesh(MESH_CIRCLE);
     borderMesh = CreateBorderRectMesh(); 
 
     AEVec2Zero(&playerPos);
@@ -284,6 +295,17 @@ void GameState::LoadState()
 
     AEVec2Zero(&camPos);
     AEVec2Zero(&camVel);
+
+    //Testing
+    GameObjectManager::GetInstance()->InitCollisionGrid(mapWidth, mapHeight);
+    go = new GameObject;
+    go->Init({200,200}, { 100,100 }, 0, MESH_SQUARE_ANIM, COL_RECT, { 100,100 }, CreateBitmask(1, GameObject::ENEMIES), GameObject::COLLISION_LAYER::PLAYER);
+    go->GetRenderData().InitAnimation(6, 9)
+        ->LoopAnim()
+        ->AddTexture("Assets/sprite_test.png");
+
+    enemy = new GameObject;
+    enemy->Init({ 200,0 }, { 100,-100 }, 0, MESH_CIRCLE, COL_CIRCLE, { 100,100 }, CreateBitmask(1, GameObject::PLAYER), GameObject::ENEMIES);
 }
 
 void GameState::InitState()
@@ -297,7 +319,7 @@ void GameState::ExitState()
 
 void GameState::UnloadState()
 {
-    if (circleMesh) { AEGfxMeshFree(circleMesh); circleMesh = nullptr; }
+    if (circleMesh) { /*AEGfxMeshFree(circleMesh);*/ circleMesh = nullptr; }
     if (borderMesh) { AEGfxMeshFree(borderMesh); borderMesh = nullptr; }
     bgm.Exit();
 }
@@ -319,7 +341,7 @@ void GameState::Update(double dt)
         playerDir = dirN;
 
         // Scale by speed and delta time
-        AEVec2Scale(&movement, &movement, playerSpeed * dt / len);
+        AEVec2Scale(&movement, &movement, playerSpeed * static_cast<float>(dt) / len);
         AEVec2Add(&playerPos, &playerPos, &movement);
     }
 
@@ -328,9 +350,12 @@ void GameState::Update(double dt)
     playerPos.y = AEClamp(playerPos.y, -halfMapHeight + playerRadius, halfMapHeight - playerRadius);
 
     UpdateWorldMap(static_cast<float>(dt));
+
+    GameObjectManager::GetInstance()->UpdateObjects(dt);
 }
 
 void GameState::Draw()
 {
     RenderWorldMap();
+    GameObjectManager::GetInstance()->DrawObjects();
 }

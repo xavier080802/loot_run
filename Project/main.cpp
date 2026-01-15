@@ -1,4 +1,4 @@
-#include <crtdbg.h>
+//#include <crtdbg.h>
 #include <math.h>             
 #include "AEEngine.h"
 #include "main.h"
@@ -9,9 +9,11 @@
 #include "./helpers/render_utils.h"
 #include "rendering_manager.h"
 
-static GameStateManager* stateManager;
-static GameObjectManager* goManager;
-static RenderingManager* renderManager;
+namespace {
+	GameStateManager* stateManager;
+	GameObjectManager* goManager;
+	RenderingManager* renderManager;
+}
 
 //Entry point
 int APIENTRY WinMain(HINSTANCE hInstance,
@@ -31,7 +33,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	renderManager->Init();
 
 	stateManager = GameStateManager::GetInstance();
-	//stateManager->AddGameState("MainMenuState", new MainMenuState);
+	stateManager->AddGameState("MainMenuState", new MainMenuState);
 	stateManager->AddGameState("GameState", new GameState);
 
 	//Enter first game state

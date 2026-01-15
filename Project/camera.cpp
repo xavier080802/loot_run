@@ -3,14 +3,13 @@
 #include "Helpers/matrix_utils.h"
 #include "Helpers/render_utils.h"
 
-static AEVec2 translation{}, scale{ 1,1 };
+static AEVec2 translation{};
 static float rotation{}, zoom{ 1 };
 
 void ResetCamera(void)
 {
 	translation = VecZero();
-	scale = VecOne();
-	rotation = 0;
+	rotation = zoom = 0;
 }
 
 void MoveCamera(f32 deltaX, f32 deltaY)
@@ -28,13 +27,13 @@ void SetCameraPos(AEVec2 pos)
 
 void ZoomCamera(f32 deltaZoom)
 {
-	AEVec2 pre = scale;
-	scale.x += deltaZoom;
-	scale.y += deltaZoom;
 	zoom += deltaZoom;
-	scale.x = AEMax(0, scale.x);
-	scale.y = AEMax(0, scale.y);
 	zoom = AEMax(0, zoom);
+}
+
+void SetCamZoom(f32 _zoom)
+{
+	zoom = _zoom;
 }
 
 void RotateCamera(f32 deltaRot)
@@ -45,11 +44,6 @@ void RotateCamera(f32 deltaRot)
 AEVec2 GetCameraTranslation(void)
 {
 	return translation;
-}
-
-AEVec2 GetCameraScale(void)
-{
-	return scale;
 }
 
 float GetCameraZoom()
@@ -73,5 +67,5 @@ void GetObjViewFromCamera(AEVec2* pos, f32* rot, AEVec2* _scale)
 	//*pos = SubtractVec2(*pos, translation);
 	//*rot += rotation;
 
-	SetObjViewFromOrigin(pos, rot, _scale, translation, rotation, scale);
+	SetObjViewFromOrigin(pos, rot, _scale, translation, rotation, ToVec2(zoom, zoom));
 }

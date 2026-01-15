@@ -23,6 +23,8 @@ void SetCameraPos(AEVec2 pos);
 /// <param name="deltaZoom">Change in zoom</param>
 void ZoomCamera(f32 deltaZoom);
 
+void SetCamZoom(f32 zoom);
+
 /// <summary>
 /// +ve values rotate the camera clockwise,
 /// -ve values rotate anti-clockwise.
@@ -33,7 +35,6 @@ void ZoomCamera(f32 deltaZoom);
 void RotateCamera(f32 deltaRot);
 
 AEVec2 GetCameraTranslation();
-AEVec2 GetCameraScale();
 float GetCameraZoom();
 float GetCameraRotation();
 
