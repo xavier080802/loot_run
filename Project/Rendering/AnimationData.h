@@ -1,6 +1,6 @@
 #pragma once
 #include "RenderData.h"
-#include "GameObjects/GameObjectManager.h"
+#include "../GameObjects/GameObjectManager.h"
 
 class AnimationData : public RenderData
 {

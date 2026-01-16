@@ -96,7 +96,6 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AnimationData.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DesignPatterns\PostOffice.cpp" />
     <ClCompile Include="GameObjects\GameObject.cpp" />
@@ -113,11 +112,11 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="helpers\Vec2Utils.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RenderingManager.cpp" />
-    <ClCompile Include="RenderData.cpp" />
     <ClCompile Include="Music.cpp" />
+    <ClCompile Include="Rendering\AnimationData.cpp" />
+    <ClCompile Include="Rendering\RenderData.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AnimationData.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="DesignPatterns\ConcreteMessages.h" />
     <ClInclude Include="DesignPatterns\Message.h" />
@@ -138,8 +137,9 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="helpers\Vec2Utils.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="RenderingManager.h" />
-    <ClInclude Include="RenderData.h" />
     <ClInclude Include="Music.h" />
+    <ClInclude Include="Rendering\AnimationData.h" />
+    <ClInclude Include="Rendering\RenderData.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

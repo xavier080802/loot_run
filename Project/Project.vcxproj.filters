@@ -81,19 +81,19 @@
     <ClCompile Include="GameObjects\GameObject.cpp">
       <Filter>Source Files\game_object</Filter>
     </ClCompile>
-    <ClCompile Include="RenderData.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="RenderingManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AnimationData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GameObjects\GameObjectManager.cpp">
       <Filter>Source Files\game_object</Filter>
     </ClCompile>
     <ClCompile Include="Music.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\AnimationData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\RenderData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -152,19 +152,19 @@
     <ClInclude Include="GameObjects\GameObject.h">
       <Filter>Header Files\game_objects</Filter>
     </ClInclude>
-    <ClInclude Include="RenderData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RenderingManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AnimationData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GameObjects\GameObjectManager.h">
       <Filter>Header Files\game_objects</Filter>
     </ClInclude>
     <ClInclude Include="Music.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\AnimationData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\RenderData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

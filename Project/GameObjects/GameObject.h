@@ -3,7 +3,7 @@
 #include "AEEngine.h"
 #include "../Helpers/CollisionUtils.h"
 #include "../Helpers/BitmaskUtils.h"
-#include "../AnimationData.h"
+#include "../Rendering/AnimationData.h"
 #include "GameObjectManager.h"	
 
 class GameObject {
