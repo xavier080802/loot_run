@@ -1,5 +1,5 @@
-#include "rendering_manager.h"
-#include "./Helpers/render_utils.h"
+#include "RenderingManager.h"
+#include "./Helpers/RenderUtils.h"
 #include <iostream>
 
 void RenderingManager::Init()

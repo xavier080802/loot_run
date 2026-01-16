@@ -1,8 +1,8 @@
 #ifndef _RENDER_DATA_H_
 #define _RENDER_DATA_H_
 #include "AEEngine.h"
-#include "./Helpers/color_utils.h"
-#include "rendering_manager.h"
+#include "./Helpers/ColorUtils.h"
+#include "RenderingManager.h"
 
 class RenderData
 {

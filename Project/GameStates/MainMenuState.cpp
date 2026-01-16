@@ -1,6 +1,6 @@
-#include "main_menu_state.h"
-#include "../Helpers/vec2_utils.h"
-#include "../helpers/coord_utils.h"
+#include "MainMenuState.h"
+#include "../Helpers/Vec2Utils.h"
+#include "../helpers/CoordUtils.h"
 #include <iostream>
 
 void MainMenuState::LoadState()

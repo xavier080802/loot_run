@@ -1,6 +1,6 @@
 #ifndef _MAIN_MENU_STATE_H
 #define _MAIN_MENU_STATE_H
-#include "../game_state_manager.h"
+#include "../GameStateManager.h"
 
 //The main menu
 class MainMenuState : public State {

@@ -5,7 +5,7 @@
 
 #include <string>
 #include <map>
-#include "post_box.h"
+#include "PostBox.h"
 #include "Message.h"
 
 /// <summary>

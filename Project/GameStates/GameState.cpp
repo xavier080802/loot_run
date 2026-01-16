@@ -1,11 +1,11 @@
-#include "game_state.h"
+#include "GameState.h"
 #include "../Music.h"
-#include "../helpers/render_utils.h"
-#include "../helpers/matrix_utils.h"
-#include "../helpers/vec2_utils.h"
-#include "../helpers/coord_utils.h"
-#include "../camera.h"
-#include "../rendering_manager.h"
+#include "../helpers/RenderUtils.h"
+#include "../helpers/MatrixUtils.h"
+#include "../helpers/Vec2Utils.h"
+#include "../helpers/CoordUtils.h"
+#include "../Camera.h"
+#include "../RenderingManager.h"
 #include "../GameObjects/GameObject.h"
 #include <iostream>
 
@@ -116,7 +116,7 @@ namespace {
         // Clamp zoom
         camZoom = AEClamp(camZoom, 0.5f, 2.5f);
 
-        //Gameobject rendering relies on camera.h values, so syncing here.
+        //Gameobject rendering relies on Camera.h values, so syncing here.
         SetCameraPos(camPos); 
         SetCamZoom(camZoom);
     }

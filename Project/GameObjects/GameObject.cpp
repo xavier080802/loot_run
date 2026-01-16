@@ -1,9 +1,9 @@
 #include "GameObject.h"
-#include "../Helpers/matrix_utils.h"
-#include "../helpers/render_utils.h"
-#include "../Helpers/vec2_utils.h"
-#include "../rendering_manager.h"
-#include "../camera.h"
+#include "../Helpers/MatrixUtils.h"
+#include "../helpers/RenderUtils.h"
+#include "../Helpers/Vec2Utils.h"
+#include "../RenderingManager.h"
+#include "../Camera.h"
 #include <iostream>
 
 GameObject* GameObject::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, COLLISION_LAYER _isInLayers) {

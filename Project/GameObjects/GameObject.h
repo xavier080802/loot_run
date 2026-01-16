@@ -1,9 +1,9 @@
 #ifndef _GAME_OBJECT_H_
 #define _GAME_OBJECT_H_
 #include "AEEngine.h"
-#include "../Helpers/collision.h"
-#include "../Helpers/bitmask_utils.h"
-#include "../animation_data.h"
+#include "../Helpers/CollisionUtils.h"
+#include "../Helpers/BitmaskUtils.h"
+#include "../AnimationData.h"
 #include "GameObjectManager.h"	
 
 class GameObject {

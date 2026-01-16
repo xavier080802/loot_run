@@ -1,8 +1,8 @@
-#include "render_utils.h"
-#include "matrix_utils.h"
-#include "vec2_utils.h"
-#include "coord_utils.h"
-#include "../camera.h"
+#include "RenderUtils.h"
+#include "MatrixUtils.h"
+#include "Vec2Utils.h"
+#include "CoordUtils.h"
+#include "../Camera.h"
 
 // ------NOTE ABOUT ROTATION-------
 // Normally, CW is +ve. So in matrices and calculations, we use +ve for CW.

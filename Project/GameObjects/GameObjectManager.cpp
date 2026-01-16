@@ -1,6 +1,6 @@
 #include "GameObjectManager.h"
 #include "GameObject.h"
-#include "../helpers/collision.h"
+#include "../helpers/CollisionUtils.h"
 #include <iostream>
 
 //Assuming that GO->Init is called once in the GO's lifetime (so not checking for dupe)

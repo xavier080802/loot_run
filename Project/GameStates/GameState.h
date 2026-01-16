@@ -1,6 +1,6 @@
 #ifndef _GAME_STATE_H
 #define _GAME_STATE_H
-#include "../game_state_manager.h"
+#include "../GameStateManager.h"
 #include "AEEngine.h"
 
 //State for the game scene

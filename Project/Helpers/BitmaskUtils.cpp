@@ -1,4 +1,4 @@
-#include "bitmask_utils.h"
+#include "BitmaskUtils.h"
 #include <stdarg.h>
 
 Bitmask CreateBitmask(int numOfArgs, ...)

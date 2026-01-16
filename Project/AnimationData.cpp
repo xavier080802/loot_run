@@ -1,5 +1,5 @@
-#include "animation_data.h"
-#include "./Helpers/render_utils.h"
+#include "AnimationData.h"
+#include "./Helpers/RenderUtils.h"
 
 AnimationData* AnimationData::InitAnimation(unsigned rows, unsigned cols)
 {

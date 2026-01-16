@@ -1,4 +1,4 @@
-#include "game_state_manager.h"
+#include "GameStateManager.h"
 #include "AEEngine.h"
 
 void GameStateManager::AddGameState(std::string stateName, State* state)

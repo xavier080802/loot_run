@@ -2,12 +2,12 @@
 #include <math.h>             
 #include "AEEngine.h"
 #include "main.h"
-#include "game_state_manager.h"
-#include "./GameStates/main_menu_state.h"
-#include "./GameStates/game_state.h"
+#include "GameStateManager.h"
+#include "./GameStates/MainMenuState.h"
+#include "./GameStates/GameState.h"
 #include "./GameObjects/GameObjectManager.h"
-#include "./helpers/render_utils.h"
-#include "rendering_manager.h"
+#include "./Helpers/RenderUtils.h"
+#include "RenderingManager.h"
 
 namespace {
 	GameStateManager* stateManager;

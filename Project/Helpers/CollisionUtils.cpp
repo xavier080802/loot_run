@@ -3,10 +3,10 @@
 //
 // Copyright © 2025 DigiPen, All rights reserved.
 //---------------------------------------------------------
-#include "collision.h"
-#include "../helpers/coord_utils.h"
-#include "../helpers/vec2_utils.h"
-#include "../helpers/matrix_utils.h"
+#include "CollisionUtils.h"
+#include "../helpers/CoordUtils.h"
+#include "../helpers/Vec2Utils.h"
+#include "../helpers/MatrixUtils.h"
 #include <math.h>
 
 bool IsPointOver(float posX, float posY, float width, float height, float pointX, float pointY)

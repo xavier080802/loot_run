@@ -1,4 +1,4 @@
-#include "post_office.h"
+#include "PostOffice.h"
 
 void PostOffice::Register(const std::string & address, PostBox * object)
 {

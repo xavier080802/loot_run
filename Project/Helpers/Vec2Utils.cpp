@@ -1,5 +1,5 @@
-#include "vec2_utils.h"
-#include "coord_utils.h"
+#include "Vec2Utils.h"
+#include "CoordUtils.h"
 
 AEVec2 ToVec2(f32 x, f32 y)
 {

@@ -6,7 +6,7 @@
 #ifndef _RENDER_UTILS_H_
 #define _RENDER_UTILS_H_
 #include "AEEngine.h"
-#include "color_utils.h"
+#include "ColorUtils.h"
 
 /// <summary>
 /// Where the anchor of the text is, relative to the text.

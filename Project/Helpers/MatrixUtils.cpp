@@ -1,4 +1,4 @@
-#include "matrix_utils.h"
+#include "MatrixUtils.h"
 
 AEMtx33 GetTransformMtx(AEVec2 translation, f32 rotationDeg, AEVec2 scaling)
 {
