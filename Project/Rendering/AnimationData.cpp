@@ -50,7 +50,8 @@ void AnimationData::Init(MESH_SHAPE shape)
 
 void AnimationData::Free()
 {
-	if (mesh) {
+	//Free if mesh is anim mesh
+	if (mesh && meshShape == MESH_SQUARE_ANIM) {
 		AEGfxMeshFree(mesh);
 		mesh = nullptr;
 	}

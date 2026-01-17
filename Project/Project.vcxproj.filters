@@ -96,6 +96,9 @@
     <ClCompile Include="Rendering\RenderData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GameObjects\Projectile.cpp">
+      <Filter>Source Files\game_object</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -166,6 +169,12 @@
     </ClInclude>
     <ClInclude Include="Rendering\RenderData.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjects\Projectile.h">
+      <Filter>Header Files\game_objects</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjects\GOTypeList.h">
+      <Filter>Header Files\game_objects</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

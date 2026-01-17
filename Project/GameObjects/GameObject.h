@@ -21,7 +21,8 @@ public:
 	};
 	
 	//Set values and register to the manager. Call only once per GO
-	//Need to manually initialize 
+	//Need to manually call init.
+	//Ps. set goType for derived game objects
 	virtual GameObject* Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, COLLISION_LAYER _isInLayers);
 	virtual void Update(double dt);
 	virtual void Draw();
@@ -29,9 +30,16 @@ public:
 	virtual void OnCollide(CollisionData& other);
 
 	AnimationData& GetRenderData();
-	AEVec2& GetPos();
-	AEVec2& GetColSize();
+	const AEVec2& GetPos() const;
+	const AEVec2& GetScale() const;
+	const AEVec2& GetColSize() const;
+	int GetZ() const;
+	Bitmask GetCollisionLayers()const;
+	COLLISION_LAYER GetColliderLayer()const;
 	void SetCollision(bool enabled);
+	//Set what layers this GO can collide with.
+	void SetCollisionLayers(Bitmask layers);
+
 	std::vector<unsigned> cellIndexes{};
 
 protected:
@@ -41,7 +49,7 @@ protected:
 	virtual void CompleteClone(GameObject*const clone);
 
 	AEVec2 pos{}, scale{ 1,1 };
-	int z{};
+	int z{}; //Rendering order. Higher = rendered above an obj with lower z
 	float rotationDeg{};
 	bool isEnabled{ false };
 	bool collisionEnabled{true};
@@ -52,5 +60,7 @@ protected:
 	//Layer that this GO is in
 	COLLISION_LAYER colliderLayer{};
 	AnimationData* renderingData{};
+
+	GO_TYPE goType{};
 };
 #endif // !_GAME_OBJECT_H_

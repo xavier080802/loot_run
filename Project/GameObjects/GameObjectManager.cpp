@@ -1,14 +1,18 @@
 #include "GameObjectManager.h"
 #include "GameObject.h"
 #include "../helpers/CollisionUtils.h"
+#include "Projectile.h"
 #include <iostream>
 
-//Assuming that GO->Init is called once in the GO's lifetime (so not checking for dupe)
 void GameObjectManager::RegisterGO(GameObject* go)
 {
 	//Place go based on z. Ascending order.
 	for (std::vector<GameObject*>::iterator it = goList.begin(); it != goList.end(); it++) {
 		GameObject* curr = *it;
+		if (go == curr) {
+			//Dupe
+			return;
+		}
 		if (go->z < curr->z) {
 			goList.insert(it, go); //Inserts go before curr.
 			return;
@@ -60,6 +64,14 @@ void GameObjectManager::UpdateObjects(double dt)
 					go->OnCollide(data);
 					other->OnCollide(otherData);
 				}
+				//Check if this go has been disabled in current collision(if any)
+				if (!go->isEnabled) {
+					break;
+				}
+			}
+			//Check if this go has been disabled after checking this cell
+			if (!go->isEnabled) {
+				break;
 			}
 		}
 	}
@@ -91,6 +103,27 @@ GameObject* GameObjectManager::Clone(GameObject* const original)
 	original->CompleteClone(newGo);
 	RegisterGO(newGo);
 	return newGo;
+}
+
+GameObject* GameObjectManager::FetchGO(GO_TYPE type)
+{
+	//Find existing disabled
+	for (GameObject* go : goList) {
+		if (go->isEnabled || go->goType != type) continue;
+		go->isEnabled = true;
+		return go;
+	}
+
+	//Create new
+	switch (type)
+	{
+	case NONE:
+		return new GameObject{};
+	case PROJECTILE:
+		return new Projectile{};
+	default:
+		return nullptr;
+	}
 }
 
 GameObjectManager::~GameObjectManager()

@@ -7,6 +7,7 @@
 #include "../Camera.h"
 #include "../RenderingManager.h"
 #include "../GameObjects/GameObject.h"
+#include "../GameObjects/Projectile.h"
 #include <iostream>
 
 namespace {
@@ -332,6 +333,13 @@ void GameState::Update(double dt)
     if (AEInputCheckCurr(AEVK_S)) movement.y -= 5.0f;
     if (AEInputCheckCurr(AEVK_A)) movement.x -= 5.0f;
     if (AEInputCheckCurr(AEVK_D)) movement.x += 5.0f;
+
+    //Testing projectiles. not firing from actual player cuz its not a GO yet
+    if (AEInputCheckTriggered(AEVK_F)) {
+        Projectile* proj = dynamic_cast<Projectile*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PROJECTILE));
+        AEVec2 m = GetMouseVec();
+        proj->Fire(go, { m.x - go->GetPos().x, m.y - go->GetPos().y }, 10, 200, 3, nullptr);
+    }
 
     f32 len = AEVec2Length(&movement);
     if (len > 0.0f) {

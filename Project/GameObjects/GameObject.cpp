@@ -50,19 +50,44 @@ AnimationData& GameObject::GetRenderData()
 	return *renderingData;
 }
 
-AEVec2& GameObject::GetPos()
+const AEVec2& GameObject::GetPos() const
 {
 	return pos;
 }
 
-AEVec2& GameObject::GetColSize()
+const AEVec2& GameObject::GetScale() const
+{
+	return scale;
+}
+
+const AEVec2& GameObject::GetColSize() const
 {
 	return colSize;
+}
+
+int GameObject::GetZ() const
+{
+	return z;
+}
+
+Bitmask GameObject::GetCollisionLayers() const
+{
+	return collisionLayers;
+}
+
+GameObject::COLLISION_LAYER GameObject::GetColliderLayer() const
+{
+	return colliderLayer;
 }
 
 void GameObject::SetCollision(bool enabled)
 {
 	collisionEnabled = enabled;
+}
+
+void GameObject::SetCollisionLayers(Bitmask layers)
+{
+	collisionLayers = layers;
 }
 
 void GameObject::Free() {

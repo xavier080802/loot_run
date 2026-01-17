@@ -1,4 +1,5 @@
 #include "CoordUtils.h"
+#include "../Camera.h"
 
 AEVec2 ScreenToNorm(AEVec2 screenCoords)
 {
@@ -33,5 +34,14 @@ AEVec2 WorldToScreen(AEVec2 worldCoords)
         worldCoords.x + AEGfxGetWinMaxX()/2.f,
         worldCoords.y + AEGfxGetWinMaxY()/2.f
     };
+    return out;
+}
+
+AEVec2 ScreenToCameraWorld(AEVec2 screenCoords)
+{
+    AEVec2 out = ScreenToWorld(screenCoords);
+    AEVec2 cam = GetCameraTranslation();
+    out.x += cam.x;
+    out.y += cam.y;
     return out;
 }

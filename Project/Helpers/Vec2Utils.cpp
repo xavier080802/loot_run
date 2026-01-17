@@ -23,7 +23,7 @@ AEVec2 GetMouseVec(void)
 {
     s32 mouseX = 0, mouseY = 0;
     AEInputGetCursorPosition(&mouseX, &mouseY);
-    AEVec2 world = ScreenToWorld(ToVec2((float)mouseX, (float)mouseY));
+    AEVec2 world = ScreenToCameraWorld(ToVec2((float)mouseX, (float)mouseY));
     return world;
 }
 

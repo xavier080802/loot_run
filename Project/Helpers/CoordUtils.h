@@ -15,4 +15,6 @@ AEVec2 WorldToNorm(AEVec2 worldCoords);
 AEVec2 ScreenToWorld(AEVec2 screenCoords);
 //World to screen coords
 AEVec2 WorldToScreen(AEVec2 worldCoords);
+//Screen coords to World, but camera translation is accounted for.
+AEVec2 ScreenToCameraWorld(AEVec2 screenCoords);
 #endif // !_COORD_UTILS_H_

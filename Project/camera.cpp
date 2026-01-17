@@ -56,6 +56,7 @@ float GetCameraRotation(void)
 	return rotation;
 }
 
+//For rendering a mesh in the world
 void GetObjViewFromCamera(AEVec2* pos, f32* rot, AEVec2* _scale)
 {
 	//*_scale = MultVec2(*_scale, scale);

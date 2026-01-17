@@ -105,5 +105,5 @@ bool CircleRectCollision(AEVec2 rectPos, AEVec2 rectSize, AEVec2 circlePos, floa
 
 bool CircleCollision(AEVec2 pos1, AEVec2 pos2, float radius1, float radius2)
 {
-	return AEVec2SquareDistance(&pos1, &pos2) <= (radius1+radius2)*(radius1*radius2);
+	return AEVec2SquareDistance(&pos1, &pos2) <= (radius1+radius2)*(radius1+radius2);
 }
