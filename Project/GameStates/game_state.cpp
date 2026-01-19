@@ -47,7 +47,7 @@ namespace {
     float minimapWidth = 200.0f;
     float minimapHeight = 200.0f;
     float minimapMargin = 20.0f;
-    float minimapPlayerScaleFactor = 4.0f;
+    float minimapPlayerScaleFactor = 4.0f; // make player dot bigger
 
     // Minimap arrow settings
     float minimapArrowLengthPx = 10.0f;
