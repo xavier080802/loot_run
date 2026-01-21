@@ -8,74 +8,102 @@
 #include "../rendering_manager.h"
 #include "../GameObjects/GameObject.h"
 #include <iostream>
+#include <cmath>
 
 namespace {
-    // --- Audio ---
     BGMManager bgm;
-
-    // --- Rendering Assets ---
     AEGfxVertexList* circleMesh = nullptr;
     AEGfxVertexList* borderMesh = nullptr;
     AEGfxVertexList* fogTileMesh = nullptr;
 
-    // --- Player State ---
     AEVec2 playerPos;
     AEVec2 playerDir = { 1.0f, 0.0f };
     float playerRadius = 15.0f;
     float playerSpeed = 300.0f;
 
-    // --- Spawn Point Config ---
-    // {1.0, -1.0} = Bottom Right corner
-    AEVec2 spawnMultiplier = { 1.0f, -1.0f };
+    // Camera State
+    AEVec2 camPos, camVel;
+    float camZoom = 2.0f;
+    float camSmoothTime = 0.15f;
 
-    // --- Camera State ---
-    AEVec2 camPos;
-    AEVec2 camVel;
-    float camZoom = 1.0f;
-    float camSmoothTime = 0.25f;
-    float softMargin = 100.0f;
-
-    // --- Map Dimensions ---
+    // Map Dimensions
     float mapWidth = 2000.0f;
     float mapHeight = 2000.0f;
-    float halfMapWidth;
-    float halfMapHeight;
+    float halfMapWidth, halfMapHeight;
 
-    // --- Fog of War Settings ---
+    // --- Fog of War System ---
     const int FOG_GRID_SIZE = 40;
-    bool discoveryGrid[FOG_GRID_SIZE][FOG_GRID_SIZE];
-    float tileWorldSizeX;
-    float tileWorldSizeY;
+    float discoveryGrid[FOG_GRID_SIZE][FOG_GRID_SIZE];  // 1.0 = clear, 0.0 = hidden
+    float regenTimerGrid[FOG_GRID_SIZE][FOG_GRID_SIZE]; // Seconds remaining before regen
 
-    // --- Minimap Settings ---
+    const float REGEN_DELAY = 3.0f;    // 3 seconds stay clear
+    const float FOG_REGEN_RATE = 0.2f; // Fade out speed
+    float tileWorldSizeX, tileWorldSizeY;
+
+    // Minimap Settings
     float minimapWidth = 200.0f;
     float minimapHeight = 200.0f;
     float minimapMargin = 20.0f;
     float minimapPlayerScaleFactor = 4.0f;
-
-    // --- Minimap Arrow Settings ---
-    float minimapArrowLengthPx = 10.0f;
-    float minimapArrowThicknessPx = 8.0f;
-    float minimapArrowExtraOffsetPx = 8.0f;
     unsigned int minimapArrowColor = 0xFF00FFFF;
 
-    // --- Helper Math ---
-    inline float Saturate(float x) { return AEClamp(x, 0.0f, 1.0f); }
-    inline float Lerp(float a, float b, float t) { return a + (b - a) * t; }
-
-    // Reveal 7x7 area around player
-    void UpdateDiscovery() {
-        int gridX = (int)((playerPos.x + halfMapWidth) / tileWorldSizeX);
-        int gridY = (int)((playerPos.y + halfMapHeight) / tileWorldSizeY);
-
-        const int RADIUS = 3;
-        for (int x = gridX - RADIUS; x <= gridX + RADIUS; ++x) {
-            for (int y = gridY - RADIUS; y <= gridY + RADIUS; ++y) {
-                if (x >= 0 && x < FOG_GRID_SIZE && y >= 0 && y < FOG_GRID_SIZE) {
-                    discoveryGrid[x][y] = true;
+    // Helper for Fog Logic
+    void UpdateDiscovery(float dt) {
+        // 1. Handle Regeneration logic for all tiles
+        for (int x = 0; x < FOG_GRID_SIZE; ++x) {
+            for (int y = 0; y < FOG_GRID_SIZE; ++y) {
+                if (regenTimerGrid[x][y] > 0.0f) {
+                    regenTimerGrid[x][y] -= dt;
+                }
+                else {
+                    discoveryGrid[x][y] -= FOG_REGEN_RATE * dt;
+                    if (discoveryGrid[x][y] < 0.0f) discoveryGrid[x][y] = 0.0f;
                 }
             }
         }
+
+        // 2. Player clears fog in a radius
+        int gridX = (int)((playerPos.x + halfMapWidth) / tileWorldSizeX);
+        int gridY = (int)((playerPos.y + halfMapHeight) / tileWorldSizeY);
+        const int RADIUS = 3;
+
+        for (int x = gridX - RADIUS; x <= gridX + RADIUS; ++x) {
+            for (int y = gridY - RADIUS; y <= gridY + RADIUS; ++y) {
+                if (x >= 0 && x < FOG_GRID_SIZE && y >= 0 && y < FOG_GRID_SIZE) {
+                    discoveryGrid[x][y] = 1.0f;        // Reset visibility to max
+                    regenTimerGrid[x][y] = REGEN_DELAY; // Reset 3s timer
+                }
+            }
+        }
+    }
+
+    void DrawMinimapArrow(float mmX, float mmY, float scaleX, float scaleY) {
+        float cx = mmX + playerPos.x * scaleX;
+        float cy = mmY + playerPos.y * scaleY;
+
+        float dx = playerDir.x, dy = playerDir.y;
+        float mag = sqrtf(dx * dx + dy * dy);
+        if (mag < 1e-4f) { dx = 1.0f; dy = 0.0f; }
+        else { dx /= mag; dy /= mag; }
+
+        float px = -dy, py = dx;
+        float dotRadius = playerRadius * 0.5f * (scaleX + scaleY) * minimapPlayerScaleFactor;
+        float offset = dotRadius + 5.0f;
+        float ax = cx + dx * offset, ay = cy + dy * offset;
+
+        float tipX = ax + dx * 10.0f, tipY = ay + dy * 10.0f;
+        float bLX = ax - dx * 2.0f + px * 4.0f, bLY = ay - dy * 2.0f + py * 4.0f;
+        float bRX = ax - dx * 2.0f - px * 4.0f, bRY = ay - dy * 2.0f - py * 4.0f;
+
+        AEGfxMeshStart();
+        AEGfxTriAdd(tipX, tipY, minimapArrowColor, 0, 0, bLX, bLY, minimapArrowColor, 0, 0, bRX, bRY, minimapArrowColor, 0, 0);
+        AEGfxVertexList* arrowMesh = AEGfxMeshEnd();
+
+        AEMtx33 identity; AEMtx33Identity(&identity);
+        AEGfxSetTransform(identity.m);
+        AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
+        AEGfxMeshDraw(arrowMesh, AE_GFX_MDM_TRIANGLES);
+        AEGfxMeshFree(arrowMesh);
     }
 
     AEGfxVertexList* CreateBorderRectMesh(void) {
@@ -91,33 +119,24 @@ namespace {
     void UpdateWorldMap(float dt) {
         float winW = (float)AEGfxGetWinMaxX();
         float winH = (float)AEGfxGetWinMaxY();
-        float halfViewW = (winW * 0.5f) / camZoom;
-        float halfViewH = (winH * 0.5f) / camZoom;
-
-        float minX = -halfMapWidth + halfViewW;
-        float maxX = halfMapWidth - halfViewW;
-        float minY = -halfMapHeight + halfViewH;
-        float maxY = halfMapHeight - halfViewH;
-
-        if (minX > maxX) minX = maxX = 0.0f;
-        if (minY > maxY) minY = maxY = 0.0f;
+        float viewHalfW = (winW * 0.5f) / camZoom;
+        float viewHalfH = (winH * 0.5f) / camZoom;
 
         AEVec2 camTarget = playerPos;
-        float tLeft = 1.0f - Saturate((playerPos.x - (minX + softMargin)) / softMargin);
-        float tRight = 1.0f - Saturate(((maxX - softMargin) - playerPos.x) / softMargin);
-        float tBottom = 1.0f - Saturate((playerPos.y - (minY + softMargin)) / softMargin);
-        float tTop = 1.0f - Saturate(((maxY - softMargin) - playerPos.y) / softMargin);
+        float limitX = halfMapWidth - viewHalfW;
+        float limitY = halfMapHeight - viewHalfH;
 
-        camTarget.x = Lerp(playerPos.x, minX, tLeft);
-        camTarget.x = Lerp(camTarget.x, maxX, tRight);
-        camTarget.y = Lerp(playerPos.y, minY, tBottom);
-        camTarget.y = Lerp(camTarget.y, maxY, tTop);
+        if (limitX > 0) camTarget.x = AEClamp(camTarget.x, -limitX, limitX);
+        else camTarget.x = 0;
+        if (limitY > 0) camTarget.y = AEClamp(camTarget.y, -limitY, limitY);
+        else camTarget.y = 0;
 
         float omega = 2.0f / camSmoothTime;
         float xd = omega * dt;
         float expK = 1.0f / (1.0f + xd + 0.48f * xd * xd + 0.235f * xd * xd * xd);
         AEVec2 change = { camPos.x - camTarget.x, camPos.y - camTarget.y };
         AEVec2 temp = { (camVel.x + omega * change.x) * dt, (camVel.y + omega * change.y) * dt };
+
         camVel.x = (camVel.x - omega * temp.x) * expK;
         camVel.y = (camVel.y - omega * temp.y) * expK;
         camPos.x = camTarget.x + (change.x + temp.x) * expK;
@@ -127,84 +146,61 @@ namespace {
         SetCamZoom(camZoom);
     }
 
-    void DrawMinimapArrow(float mmX, float mmY, float scaleX, float scaleY) {
-        float cx = mmX + playerPos.x * scaleX;
-        float cy = mmY + playerPos.y * scaleY;
-        float dx = playerDir.x, dy = playerDir.y;
-        float mag = sqrtf(dx * dx + dy * dy);
-        if (mag < 1e-4f) { dx = 1.0f; dy = 0.0f; }
-        else { dx /= mag; dy /= mag; }
-
-        float px = -dy, py = dx;
-        float dotRadius = playerRadius * 0.5f * (scaleX + scaleY) * minimapPlayerScaleFactor;
-        float offset = dotRadius + minimapArrowExtraOffsetPx;
-        float ax = cx + dx * offset, ay = cy + dy * offset;
-
-        float tipX = ax + dx * minimapArrowLengthPx;
-        float tipY = ay + dy * minimapArrowLengthPx;
-        float bLX = ax - dx * 2.0f + px * (minimapArrowThicknessPx * 0.5f);
-        float bLY = ay - dy * 2.0f + py * (minimapArrowThicknessPx * 0.5f);
-        float bRX = ax - dx * 2.0f - px * (minimapArrowThicknessPx * 0.5f);
-        float bRY = ay - dy * 2.0f - py * (minimapArrowThicknessPx * 0.5f);
-
-        AEGfxMeshStart();
-        AEGfxTriAdd(tipX, tipY, minimapArrowColor, 0, 0, bLX, bLY, minimapArrowColor, 0, 0, bRX, bRY, minimapArrowColor, 0, 0);
-        AEGfxVertexList* arrowMesh = AEGfxMeshEnd();
-        AEMtx33 identity; AEMtx33Identity(&identity);
-        AEGfxSetTransform(identity.m);
-        AEGfxMeshDraw(arrowMesh, AE_GFX_MDM_TRIANGLES);
-        AEGfxMeshFree(arrowMesh);
-    }
-
     void RenderWorldMap(void) {
         AEGfxStart();
         AEGfxSetBlendMode(AE_GFX_BM_BLEND);
 
-        AEMtx33 camMatrix;
-        GetTransformMtx(camMatrix, NegVec2(camPos), 0, ToVec2(camZoom, camZoom));
+        AEMtx33 viewMtx, zoomMtx, camMatrix;
+        AEMtx33Trans(&viewMtx, -camPos.x, -camPos.y);
+        AEMtx33Scale(&zoomMtx, camZoom, camZoom);
+        AEMtx33Concat(&camMatrix, &zoomMtx, &viewMtx);
 
-        // World Border
+        // 1. World Border
         AEMtx33 borderScale, borderMatrix;
         AEMtx33Scale(&borderScale, mapWidth, mapHeight);
         AEMtx33Concat(&borderMatrix, &camMatrix, &borderScale);
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+        AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
         AEGfxSetTransform(borderMatrix.m);
         AEGfxMeshDraw(borderMesh, AE_GFX_MDM_LINES_STRIP);
 
-        // Main Game Player
-        AEMtx33 worldPScale, worldPTrans, worldPMatrix;
-        AEMtx33Scale(&worldPScale, playerRadius * 2.0f, playerRadius * 2.0f);
-        AEMtx33Trans(&worldPTrans, playerPos.x, playerPos.y);
-        AEMtx33Concat(&worldPMatrix, &camMatrix, &worldPTrans);
-        AEMtx33Concat(&worldPMatrix, &worldPMatrix, &worldPScale);
-        AEGfxSetTransform(worldPMatrix.m);
+        // 2. Player
+        AEMtx33 pScale, pTrans, pResult;
+        AEMtx33Scale(&pScale, playerRadius * 2.0f, playerRadius * 2.0f);
+        AEMtx33Trans(&pTrans, playerPos.x, playerPos.y);
+        AEMtx33Concat(&pResult, &camMatrix, &pTrans);
+        AEMtx33Concat(&pResult, &pResult, &pScale);
+        AEGfxSetTransform(pResult.m);
         AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
 
-        // --- Minimap UI ---
+        // --- UI SECTION (Minimap) ---
         float winW = (float)AEGfxGetWinMaxX(), winH = (float)AEGfxGetWinMaxY();
         float scaleX = minimapWidth / mapWidth, scaleY = minimapHeight / mapHeight;
         float mmX = winW - minimapWidth * 0.5f - minimapMargin;
         float mmY = winH - minimapHeight * 0.5f - minimapMargin;
 
-        // Fog on Minimap
-        float mmTileW = tileWorldSizeX * scaleX;
-        float mmTileH = tileWorldSizeY * scaleY;
         for (int x = 0; x < FOG_GRID_SIZE; ++x) {
             for (int y = 0; y < FOG_GRID_SIZE; ++y) {
-                if (!discoveryGrid[x][y]) {
+                if (discoveryGrid[x][y] < 1.0f) {
+                    float fogOpacity = 1.0f - discoveryGrid[x][y];
                     float oX = (x * tileWorldSizeX) - halfMapWidth + (tileWorldSizeX * 0.5f);
                     float oY = (y * tileWorldSizeY) - halfMapHeight + (tileWorldSizeY * 0.5f);
+
                     AEMtx33 s, t, final;
-                    AEMtx33Scale(&s, mmTileW, mmTileH);
+                    AEMtx33Scale(&s, tileWorldSizeX * scaleX, tileWorldSizeY * scaleY);
                     AEMtx33Trans(&t, mmX + oX * scaleX, mmY + oY * scaleY);
                     AEMtx33Concat(&final, &t, &s);
+
                     AEGfxSetTransform(final.m);
+                    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+                    // Tint white mesh by opacity using your required function
+                    AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, fogOpacity);
                     AEGfxMeshDraw(fogTileMesh, AE_GFX_MDM_TRIANGLES);
                 }
             }
         }
 
-        // Minimap Player
+        AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
         AEMtx33 mmPScale, mmPTrans, mmPMatrix;
         AEMtx33Scale(&mmPScale, (playerRadius * scaleX) * minimapPlayerScaleFactor, (playerRadius * scaleY) * minimapPlayerScaleFactor);
         AEMtx33Trans(&mmPTrans, mmX + playerPos.x * scaleX, mmY + playerPos.y * scaleY);
@@ -214,7 +210,6 @@ namespace {
 
         DrawMinimapArrow(mmX, mmY, scaleX, scaleY);
 
-        // Minimap Border
         AEMtx33 mmBScale, mmBTrans, mmBMatrix;
         AEMtx33Scale(&mmBScale, minimapWidth, minimapHeight);
         AEMtx33Trans(&mmBTrans, mmX, mmY);
@@ -224,73 +219,54 @@ namespace {
     }
 }
 
-// --- Implementation ---
-
 void GameState::LoadState() {
-    bgm.Init();
-    bgm.PlayNormal();
-    halfMapWidth = mapWidth * 0.5f;
-    halfMapHeight = mapHeight * 0.5f;
-
+    bgm.Init(); bgm.PlayNormal();
+    halfMapWidth = mapWidth * 0.5f; halfMapHeight = mapHeight * 0.5f;
     circleMesh = RenderingManager::GetInstance()->GetMesh(MESH_CIRCLE);
     borderMesh = CreateBorderRectMesh();
-
     tileWorldSizeX = mapWidth / (float)FOG_GRID_SIZE;
     tileWorldSizeY = mapHeight / (float)FOG_GRID_SIZE;
 
     AEGfxMeshStart();
+    // Vertex color at 0xFFFFFFFF allows SetColorToMultiply to work best
     AEGfxTriAdd(-0.5f, -0.5f, 0x88666666, 0, 0, 0.5f, -0.5f, 0x88666666, 0, 0, 0.5f, 0.5f, 0x88666666, 0, 0);
     AEGfxTriAdd(-0.5f, -0.5f, 0x88666666, 0, 0, 0.5f, 0.5f, 0x88666666, 0, 0, -0.5f, 0.5f, 0x88666666, 0, 0);
     fogTileMesh = AEGfxMeshEnd();
 }
 
 void GameState::InitState() {
-    // SPAWN BOTTOM RIGHT
-    playerPos.x = (halfMapWidth - playerRadius) * spawnMultiplier.x;
-    playerPos.y = (halfMapHeight - playerRadius) * spawnMultiplier.y;
-
-    camPos = playerPos;
-    camVel = { 0, 0 };
-
-    for (int i = 0; i < FOG_GRID_SIZE; ++i)
-        for (int j = 0; j < FOG_GRID_SIZE; ++j) discoveryGrid[i][j] = false;
-
-    UpdateDiscovery();
+    playerPos = { 0,0 };
+    camPos = playerPos; camVel = { 0,0 };
+    for (int i = 0; i < FOG_GRID_SIZE; ++i) {
+        for (int j = 0; j < FOG_GRID_SIZE; ++j) {
+            discoveryGrid[i][j] = 0.0f;
+            regenTimerGrid[i][j] = 0.0f;
+        }
+    }
+    UpdateDiscovery(0.016f);
 }
 
 void GameState::Update(double dt) {
-    AEVec2 movement = { 0.0f, 0.0f };
-    if (AEInputCheckCurr(AEVK_W)) movement.y += 1.0f;
-    if (AEInputCheckCurr(AEVK_S)) movement.y -= 1.0f;
-    if (AEInputCheckCurr(AEVK_A)) movement.x -= 1.0f;
-    if (AEInputCheckCurr(AEVK_D)) movement.x += 1.0f;
+    AEVec2 move = { 0,0 };
+    if (AEInputCheckCurr(AEVK_W)) move.y += 1;
+    if (AEInputCheckCurr(AEVK_S)) move.y -= 1;
+    if (AEInputCheckCurr(AEVK_A)) move.x -= 1;
+    if (AEInputCheckCurr(AEVK_D)) move.x += 1;
 
-    float len = AEVec2Length(&movement);
-    if (len > 0.0f) {
-        AEVec2Normalize(&playerDir, &movement);
-        AEVec2Scale(&movement, &playerDir, playerSpeed * (float)dt);
-        AEVec2Add(&playerPos, &playerPos, &movement);
+    if (AEVec2Length(&move) > 0) {
+        AEVec2Normalize(&playerDir, &move);
+        AEVec2Scale(&move, &playerDir, playerSpeed * (float)dt);
+        AEVec2Add(&playerPos, &playerPos, &move);
     }
 
     playerPos.x = AEClamp(playerPos.x, -halfMapWidth + playerRadius, halfMapWidth - playerRadius);
     playerPos.y = AEClamp(playerPos.y, -halfMapHeight + playerRadius, halfMapHeight - playerRadius);
 
-    // --- DEBUG KEYS ---
-    if (AEInputCheckTriggered(AEVK_F)) { // Clear Fog
-        for (int i = 0; i < FOG_GRID_SIZE; ++i)
-            for (int j = 0; j < FOG_GRID_SIZE; ++j) discoveryGrid[i][j] = true;
-    }
-    if (AEInputCheckTriggered(AEVK_R)) { // Respawn
-        InitState();
-    }
-
-    UpdateDiscovery();
+    UpdateDiscovery((float)dt);
     UpdateWorldMap((float)dt);
 }
 
-void GameState::Draw() {
-    RenderWorldMap();
-}
+void GameState::Draw() { RenderWorldMap(); }
 
 void GameState::ExitState() {}
 
