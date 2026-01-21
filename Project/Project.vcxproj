@@ -112,6 +112,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="helpers\render_utils.cpp" />
     <ClCompile Include="helpers\vec2_utils.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Map.cpp" />
     <ClCompile Include="rendering_manager.cpp" />
     <ClCompile Include="render_data.cpp" />
     <ClCompile Include="Music.cpp" />
@@ -137,6 +138,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="helpers\render_utils.h" />
     <ClInclude Include="helpers\vec2_utils.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="Map.h" />
     <ClInclude Include="rendering_manager.h" />
     <ClInclude Include="render_data.h" />
     <ClInclude Include="Music.h" />
