@@ -13,7 +13,8 @@ public:
 		NONE,
 		PLAYER,
 		ENEMIES,
-		OBSTACLE
+		OBSTACLE,
+		PET,
 	};
 	//Making this a struct so we can extend easier
 	struct CollisionData {
@@ -36,6 +37,8 @@ public:
 	int GetZ() const;
 	Bitmask GetCollisionLayers()const;
 	COLLISION_LAYER GetColliderLayer()const;
+
+	void SetPos(AEVec2 nextPos);
 	void SetCollision(bool enabled);
 	//Set what layers this GO can collide with.
 	void SetCollisionLayers(Bitmask layers);

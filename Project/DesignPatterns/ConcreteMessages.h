@@ -16,9 +16,20 @@ struct MyMessage : public Message{
 }
 
 //Send through post office:
-PostOffice::GetInstance().Send("targetAddress", new MyMessage("hi there", otherEnt));
+PostOffice::GetInstance().Send("TargetAddress", new MyMessage("hi there", otherEnt));
 
 */
 
+//Message about pet skill
+struct PetSkillMsg : public Message {
+	enum PetMessageType {
+		CAST_SKILL,
+		SKILL_READY,
+	};
+	PetSkillMsg(PetMessageType _type) : type(_type) {}
+	~PetSkillMsg() {};
+
+	PetMessageType type{};
+};
 
 #endif // !_CONCRETE_MSG_H_

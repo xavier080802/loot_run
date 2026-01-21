@@ -39,6 +39,11 @@ AEVec2 MultVec2(AEVec2 a, AEVec2 b)
     return vec;
 }
 
+bool CompareVec2(AEVec2 const& a, AEVec2 const& b)
+{
+    return a.x == b.x && a.y == b.y;
+}
+
 AEVec2 operator-(AEVec2 lhs, AEVec2 rhs)
 {
     AEVec2 out{ lhs.x - rhs.x, lhs.y - rhs.x };

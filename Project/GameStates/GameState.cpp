@@ -8,6 +8,8 @@
 #include "../RenderingManager.h"
 #include "../GameObjects/GameObject.h"
 #include "../GameObjects/Projectile.h"
+#include "../DesignPatterns/PostOffice.h"
+#include "../Pets/PetManager.h" //temp
 #include <iostream>
 
 namespace {
@@ -299,14 +301,17 @@ void GameState::LoadState()
 
     //Testing
     GameObjectManager::GetInstance()->InitCollisionGrid(mapWidth, mapHeight);
+    //Using this go as proxy for player
     go = new GameObject;
     go->Init({200,200}, { 100,100 }, 0, MESH_SQUARE_ANIM, COL_RECT, { 100,100 }, CreateBitmask(1, GameObject::ENEMIES), GameObject::COLLISION_LAYER::PLAYER);
-    go->GetRenderData().InitAnimation(6, 9)
+    /*go->GetRenderData().InitAnimation(6, 9)
         ->LoopAnim()
-        ->AddTexture("Assets/sprite_test.png");
+        ->AddTexture("Assets/sprite_test.png");*/
 
     enemy = new GameObject;
     enemy->Init({ 200,0 }, { 100,-100 }, 0, MESH_CIRCLE, COL_CIRCLE, { 100,100 }, CreateBitmask(1, GameObject::PLAYER), GameObject::ENEMIES);
+
+    PetManager::GetInstance()->player = go;
 }
 
 void GameState::InitState()
@@ -341,6 +346,11 @@ void GameState::Update(double dt)
         proj->Fire(go, { m.x - go->GetPos().x, m.y - go->GetPos().y }, 10, 200, 3, nullptr);
     }
 
+    //Pet skill test. check cout
+    if (AEInputCheckTriggered(AEVK_R)) {
+        PostOffice::GetInstance()->Send("PetManager", new PetSkillMsg(PetSkillMsg::CAST_SKILL));
+    }
+
     f32 len = AEVec2Length(&movement);
     if (len > 0.0f) {
         // Normalize movement to get direction
@@ -356,6 +366,7 @@ void GameState::Update(double dt)
     // Clamp player inside map bounds
     playerPos.x = AEClamp(playerPos.x, -halfMapWidth + playerRadius, halfMapWidth - playerRadius);
     playerPos.y = AEClamp(playerPos.y, -halfMapHeight + playerRadius, halfMapHeight - playerRadius);
+    go->SetPos(playerPos); //TEMP
 
     UpdateWorldMap(static_cast<float>(dt));
 

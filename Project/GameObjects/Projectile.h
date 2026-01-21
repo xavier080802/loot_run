@@ -19,7 +19,7 @@ protected:
 	float lifespan{}; //seconds
 
 	//Called when projectile hits an object that it can collide with.
-	void (*OnHit)(CollisionData& target);
+	void (*OnHit)(CollisionData& target) {};
 };
 #endif // !_PROJECTILE_H_
 

@@ -101,6 +101,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="GameObjects\GameObject.cpp" />
     <ClCompile Include="GameObjects\GameObjectManager.cpp" />
     <ClCompile Include="GameObjects\Projectile.cpp" />
+    <ClCompile Include="GameObjects\StatusEffect.cpp" />
     <ClCompile Include="GameStates\GameState.cpp" />
     <ClCompile Include="GameStateManager.cpp" />
     <ClCompile Include="GameStates\MainMenuState.cpp" />
@@ -112,6 +113,9 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="helpers\RenderUtils.cpp" />
     <ClCompile Include="helpers\Vec2Utils.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Pets\Pet.cpp" />
+    <ClCompile Include="Pets\PetManager.cpp" />
+    <ClCompile Include="Pets\PetSkills.cpp" />
     <ClCompile Include="RenderingManager.cpp" />
     <ClCompile Include="Music.cpp" />
     <ClCompile Include="Rendering\AnimationData.cpp" />
@@ -128,6 +132,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="GameObjects\GameObjectManager.h" />
     <ClInclude Include="GameObjects\GOTypeList.h" />
     <ClInclude Include="GameObjects\Projectile.h" />
+    <ClInclude Include="GameObjects\StatusEffect.h" />
     <ClInclude Include="GameStates\GameState.h" />
     <ClInclude Include="GameStateManager.h" />
     <ClInclude Include="GameStates\MainMenuState.h" />
@@ -139,6 +144,10 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="helpers\RenderUtils.h" />
     <ClInclude Include="helpers\Vec2Utils.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="Pets\Pet.h" />
+    <ClInclude Include="Pets\PetConsts.h" />
+    <ClInclude Include="Pets\PetManager.h" />
+    <ClInclude Include="Pets\PetSkills.h" />
     <ClInclude Include="RenderingManager.h" />
     <ClInclude Include="Music.h" />
     <ClInclude Include="Rendering\AnimationData.h" />

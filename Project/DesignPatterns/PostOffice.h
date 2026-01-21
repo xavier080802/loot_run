@@ -16,6 +16,7 @@
 /// </summary>
 class PostOffice : public Singleton<PostOffice>
 {
+	friend Singleton<PostOffice>;
 public:
 	//Registers a postbox with a unique address
 	void Register(const std::string &address, PostBox* object);
@@ -23,7 +24,7 @@ public:
 	bool Send(const std::string &address, Message *message);
 	//Send a message directly to the postbox
 	bool Send(PostBox* receiver, Message* message);
-
+	
 private:
 	PostOffice();
 	~PostOffice();

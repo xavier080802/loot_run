@@ -8,11 +8,13 @@
 #include "./GameObjects/GameObjectManager.h"
 #include "./Helpers/RenderUtils.h"
 #include "RenderingManager.h"
+#include "./Pets/PetManager.h"
 
 namespace {
 	GameStateManager* stateManager;
 	GameObjectManager* goManager;
 	RenderingManager* renderManager;
+	PetManager* petManager;
 }
 
 //Entry point
@@ -30,7 +32,9 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     //Pre-loop setup
 	goManager = GameObjectManager::GetInstance();
 	renderManager = RenderingManager::GetInstance();
+	petManager = PetManager::GetInstance();
 	renderManager->Init();
+	petManager->Init();
 
 	stateManager = GameStateManager::GetInstance();
 	stateManager->AddGameState("MainMenuState", new MainMenuState);
@@ -67,6 +71,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 void Terminate(void)
 {
 	stateManager->Destroy();
+	petManager->Destroy();
 	goManager->Destroy();
 	renderManager->Destroy();
 	// free the system

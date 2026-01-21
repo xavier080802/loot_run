@@ -37,6 +37,12 @@
     <Filter Include="Source Files\game_object">
       <UniqueIdentifier>{f589bf8a-0063-4815-ab23-c5f592f73a80}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Pets">
+      <UniqueIdentifier>{e79a2155-dd4d-42dd-a35f-c2faa3d26271}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Pets">
+      <UniqueIdentifier>{e97829b6-2e57-48fd-9249-608a2c4fc2c4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -98,6 +104,18 @@
     </ClCompile>
     <ClCompile Include="GameObjects\Projectile.cpp">
       <Filter>Source Files\game_object</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObjects\StatusEffect.cpp">
+      <Filter>Source Files\game_object</Filter>
+    </ClCompile>
+    <ClCompile Include="Pets\Pet.cpp">
+      <Filter>Source Files\Pets</Filter>
+    </ClCompile>
+    <ClCompile Include="Pets\PetManager.cpp">
+      <Filter>Source Files\Pets</Filter>
+    </ClCompile>
+    <ClCompile Include="Pets\PetSkills.cpp">
+      <Filter>Source Files\Pets</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -175,6 +193,21 @@
     </ClInclude>
     <ClInclude Include="GameObjects\GOTypeList.h">
       <Filter>Header Files\game_objects</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjects\StatusEffect.h">
+      <Filter>Header Files\game_objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Pets\Pet.h">
+      <Filter>Header Files\Pets</Filter>
+    </ClInclude>
+    <ClInclude Include="Pets\PetManager.h">
+      <Filter>Header Files\Pets</Filter>
+    </ClInclude>
+    <ClInclude Include="Pets\PetConsts.h">
+      <Filter>Header Files\Pets</Filter>
+    </ClInclude>
+    <ClInclude Include="Pets\PetSkills.h">
+      <Filter>Header Files\Pets</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

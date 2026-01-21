@@ -80,6 +80,11 @@ GameObject::COLLISION_LAYER GameObject::GetColliderLayer() const
 	return colliderLayer;
 }
 
+void GameObject::SetPos(AEVec2 nextPos)
+{
+	pos = nextPos;
+}
+
 void GameObject::SetCollision(bool enabled)
 {
 	collisionEnabled = enabled;

@@ -25,6 +25,9 @@ AEVec2 NegVec2(AEVec2 v);
 /// </summary>
 AEVec2 MultVec2(AEVec2 a, AEVec2 b);
 
+//Compares if 2 vecs are equal
+bool CompareVec2(AEVec2 const& a, AEVec2 const& b);
+
 AEVec2 operator-(AEVec2 lhs, AEVec2 rhs);
 AEVec2 operator-=(AEVec2& lhs, AEVec2 rhs);
 
