@@ -24,7 +24,7 @@ void Pet::CastSkill(const PetSkills::SkillCastData& skillData)
 void Pet::Update(double dt) {
 	GameObject::Update(dt);
 	if (cooldownTimer > 0) {
-		cooldownTimer -= dt;
+		cooldownTimer -= static_cast<float>(dt);
 	}
 
 	//Movement

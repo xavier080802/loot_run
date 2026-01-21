@@ -19,10 +19,10 @@ Projectile* Projectile::Fire(const GameObject* const caster, AEVec2 fireDir, flo
 void Projectile::Update(double dt)
 {
 	//Tick down lifespan
-	lifespan -= dt;
+	lifespan -= static_cast<float>(dt);
 	//Move in dir
-	pos.x += dir.x * speed * dt;
-	pos.y += dir.y * speed * dt;
+	pos.x += dir.x * speed * static_cast<float>(dt);
+	pos.y += dir.y * speed * static_cast<float>(dt);
 
 	//Check timeout
 	if (lifespan <= 0.f) {

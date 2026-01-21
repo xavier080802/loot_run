@@ -300,7 +300,7 @@ void GameState::LoadState()
     AEVec2Zero(&camVel);
 
     //Testing
-    GameObjectManager::GetInstance()->InitCollisionGrid(mapWidth, mapHeight);
+    GameObjectManager::GetInstance()->InitCollisionGrid(static_cast<unsigned>(mapWidth), static_cast<unsigned>(mapHeight));
     //Using this go as proxy for player
     go = new GameObject;
     go->Init({200,200}, { 100,100 }, 0, MESH_SQUARE_ANIM, COL_RECT, { 100,100 }, CreateBitmask(1, GameObject::ENEMIES), GameObject::COLLISION_LAYER::PLAYER);

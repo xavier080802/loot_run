@@ -15,7 +15,7 @@ void StatEffects::StatusEffect::OnApply(int tempPlsPutEntityClass_owner, int tem
 
 void StatEffects::StatusEffect::Tick(double dt)
 {
-	durationTimer += dt;
+	durationTimer += static_cast<float>(dt);
 
 	if (durationTimer >= duration) {
 		OnEnd();
