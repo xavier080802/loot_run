@@ -14,6 +14,7 @@ public:
 		PLAYER,
 		ENEMIES,
 		OBSTACLE,
+		INTERACTABLE,
 		PET,
 	};
 	//Making this a struct so we can extend easier
@@ -24,7 +25,7 @@ public:
 	//Set values and register to the manager. Call only once per GO
 	//Need to manually call init.
 	//Ps. set goType for derived game objects
-	virtual GameObject* Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, COLLISION_LAYER _isInLayers);
+	virtual GameObject* Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, COLLISION_LAYER _isInLayer);
 	virtual void Update(double dt);
 	virtual void Draw();
 	virtual void Free();

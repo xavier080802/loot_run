@@ -6,7 +6,7 @@
 #include "../Camera.h"
 #include <iostream>
 
-GameObject* GameObject::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, COLLISION_LAYER _isInLayers) {
+GameObject* GameObject::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, COLLISION_LAYER _isInLayer) {
 	isEnabled = true;
 	pos = _pos;
 	scale = _scale;
@@ -16,7 +16,7 @@ GameObject* GameObject::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _mes
 	colShape = _colShape;
 	colSize = _colSize;
 	collisionLayers = _collideWithLayers;
-	colliderLayer = _isInLayers;
+	colliderLayer = _isInLayer;
 	if (!renderingData) {
 		renderingData = new AnimationData;
 	}

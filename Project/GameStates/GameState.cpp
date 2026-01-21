@@ -8,6 +8,7 @@
 #include "../RenderingManager.h"
 #include "../GameObjects/GameObject.h"
 #include "../GameObjects/Projectile.h"
+#include "../GameObjects/LootChest.h"
 #include "../DesignPatterns/PostOffice.h"
 #include "../Pets/PetManager.h" //temp
 #include <iostream>
@@ -303,7 +304,7 @@ void GameState::LoadState()
     GameObjectManager::GetInstance()->InitCollisionGrid(static_cast<unsigned>(mapWidth), static_cast<unsigned>(mapHeight));
     //Using this go as proxy for player
     go = new GameObject;
-    go->Init({200,200}, { 100,100 }, 0, MESH_SQUARE_ANIM, COL_RECT, { 100,100 }, CreateBitmask(1, GameObject::ENEMIES), GameObject::COLLISION_LAYER::PLAYER);
+    go->Init({200,200}, { 100,100 }, 0, MESH_SQUARE_ANIM, COL_RECT, { 100,100 }, CreateBitmask(2, GameObject::ENEMIES, GameObject::INTERACTABLE), GameObject::COLLISION_LAYER::PLAYER);
     /*go->GetRenderData().InitAnimation(6, 9)
         ->LoopAnim()
         ->AddTexture("Assets/sprite_test.png");*/
@@ -343,7 +344,14 @@ void GameState::Update(double dt)
     if (AEInputCheckTriggered(AEVK_F)) {
         Projectile* proj = dynamic_cast<Projectile*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PROJECTILE));
         AEVec2 m = GetMouseVec();
+        //Fire at cursor
         proj->Fire(go, { m.x - go->GetPos().x, m.y - go->GetPos().y }, 10, 200, 3, nullptr);
+    }
+
+    if (AEInputCheckTriggered(AEVK_L)) {
+        LootChest* chest = dynamic_cast<LootChest*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
+        AEVec2 m = GetMouseVec();
+        chest->Init(m, { 75,75 }, 1, MESH_SQUARE, COL_RECT, { 75,75 }, CreateBitmask(1, GameObject::PLAYER), GameObject::INTERACTABLE);
     }
 
     //Pet skill test. check cout

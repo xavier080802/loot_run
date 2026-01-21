@@ -2,7 +2,10 @@
 #define _GO_LIST_H
 enum GO_TYPE {
 	NONE,
+	PLAYER,
 	PROJECTILE,
+	LOOT_CHEST,
+	ITEM, //Temp? for LootChest
 
 	NUM_GO_TYPES //Last
 };

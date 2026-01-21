@@ -100,6 +100,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="DesignPatterns\PostOffice.cpp" />
     <ClCompile Include="GameObjects\GameObject.cpp" />
     <ClCompile Include="GameObjects\GameObjectManager.cpp" />
+    <ClCompile Include="GameObjects\LootChest.cpp" />
     <ClCompile Include="GameObjects\Projectile.cpp" />
     <ClCompile Include="GameObjects\StatusEffect.cpp" />
     <ClCompile Include="GameStates\GameState.cpp" />
@@ -131,6 +132,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="GameObjects\GameObject.h" />
     <ClInclude Include="GameObjects\GameObjectManager.h" />
     <ClInclude Include="GameObjects\GOTypeList.h" />
+    <ClInclude Include="GameObjects\LootChest.h" />
     <ClInclude Include="GameObjects\Projectile.h" />
     <ClInclude Include="GameObjects\StatusEffect.h" />
     <ClInclude Include="GameStates\GameState.h" />

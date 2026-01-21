@@ -117,6 +117,9 @@
     <ClCompile Include="Pets\PetSkills.cpp">
       <Filter>Source Files\Pets</Filter>
     </ClCompile>
+    <ClCompile Include="GameObjects\LootChest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -208,6 +211,9 @@
     </ClInclude>
     <ClInclude Include="Pets\PetSkills.h">
       <Filter>Header Files\Pets</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjects\LootChest.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
