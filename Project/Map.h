@@ -16,6 +16,7 @@ struct MapData {
     AEVec2 enemy1Pos;
     AEVec2 enemy2Pos;
     AEVec2 startPos;
+    AEVec2 doorPos;
 };
 
 // Function to initialize the specific layout you provided
