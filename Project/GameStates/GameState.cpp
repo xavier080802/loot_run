@@ -22,7 +22,7 @@ namespace {
     AEGfxVertexList* borderMesh = nullptr;
 
     // Player state
-    AEVec2 playerPos;
+    //AEVec2 playerPos;
     AEVec2 playerDir = { 1.0f, 0.0f };   // last non-zero movement direction
     float playerRadius = 15.0f;
     float playerSpeed = 300.0f;
@@ -51,6 +51,9 @@ namespace {
     float minimapArrowThicknessPx = 8.0f;
     float minimapArrowExtraOffsetPx = 8.0f;
     unsigned int minimapArrowColor = 0xFF00FFFF; // cyan
+
+    //go is the player.
+    GameObject* go, * enemy;
 
     // --------------------
     // Small helpers
@@ -85,6 +88,7 @@ namespace {
         if (minX > maxX) minX = maxX = 0.0f;
         if (minY > maxY) minY = maxY = 0.0f;
 
+        const AEVec2& playerPos = go->GetPos();
         AEVec2 camTarget = playerPos;
 
         // Soft easing factors near edges
@@ -128,6 +132,7 @@ namespace {
     void DrawMinimapArrow(float mmX, float mmY, float scaleX, float scaleY)
     {
         // Player position in minimap space
+        const AEVec2 playerPos = go->GetPos();
         float cx = mmX + playerPos.x * scaleX;
         float cy = mmY + playerPos.y * scaleY;
 
@@ -180,6 +185,8 @@ namespace {
         AEGfxStart();
         AEGfxSetBlendMode(AE_GFX_BM_BLEND);
 
+        const AEVec2 playerPos = go->GetPos();
+
         // --------------------
         // Camera transform
         // --------------------
@@ -209,7 +216,7 @@ namespace {
         // --------------------
         // Player Circle (world)
         // --------------------
-        AEMtx33 playerScale, playerTrans, playerMatrix;
+        /*AEMtx33 playerScale, playerTrans, playerMatrix;
         AEMtx33Scale(&playerScale, playerRadius, playerRadius);
         AEMtx33Trans(&playerTrans, playerPos.x, playerPos.y);
         AEMtx33Concat(&playerMatrix, &camMatrix, &playerScale);
@@ -223,7 +230,7 @@ namespace {
         AEGfxSetTransparency(1.0f);
 
         AEGfxSetTransform(playerMatrix.m);
-        AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
+        AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);*/
 
         // --------------------
         // Minimap setup
@@ -278,9 +285,6 @@ namespace {
         // --------------------
         DrawMinimapArrow(mmX, mmY, scaleX, scaleY);
     }
-
-    //TESTING
-    GameObject* go, * enemy;
 }
 
 void GameState::LoadState()
@@ -294,9 +298,6 @@ void GameState::LoadState()
     circleMesh = RenderingManager::GetInstance()->GetMesh(MESH_CIRCLE);
     borderMesh = CreateBorderRectMesh(); 
 
-    AEVec2Zero(&playerPos);
-    playerDir = { 1.0f, 0.0f };
-
     AEVec2Zero(&camPos);
     AEVec2Zero(&camVel);
 
@@ -304,13 +305,16 @@ void GameState::LoadState()
     GameObjectManager::GetInstance()->InitCollisionGrid(static_cast<unsigned>(mapWidth), static_cast<unsigned>(mapHeight));
     //Using this go as proxy for player
     go = new GameObject;
-    go->Init({200,200}, { 100,100 }, 0, MESH_SQUARE_ANIM, COL_RECT, { 100,100 }, CreateBitmask(2, GameObject::ENEMIES, GameObject::INTERACTABLE), GameObject::COLLISION_LAYER::PLAYER);
+    go->Init({ 0, 0}, { playerRadius,playerRadius }, 0, MESH_CIRCLE, COL_CIRCLE, { playerRadius,playerRadius}, CreateBitmask(2, GameObject::ENEMIES, GameObject::INTERACTABLE), GameObject::COLLISION_LAYER::PLAYER);
     /*go->GetRenderData().InitAnimation(6, 9)
         ->LoopAnim()
         ->AddTexture("Assets/sprite_test.png");*/
 
     enemy = new GameObject;
     enemy->Init({ 200,0 }, { 100,-100 }, 0, MESH_CIRCLE, COL_CIRCLE, { 100,100 }, CreateBitmask(1, GameObject::PLAYER), GameObject::ENEMIES);
+
+    go->SetPos({ 0,0 });
+    playerDir = { 1.0f, 0.0f };
 
     PetManager::GetInstance()->player = go;
 }
@@ -348,6 +352,7 @@ void GameState::Update(double dt)
         proj->Fire(go, { m.x - go->GetPos().x, m.y - go->GetPos().y }, 10, 200, 3, nullptr);
     }
 
+    //Press L to spawn test chest at the mouse location
     if (AEInputCheckTriggered(AEVK_L)) {
         LootChest* chest = dynamic_cast<LootChest*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
         AEVec2 m = GetMouseVec();
@@ -359,22 +364,27 @@ void GameState::Update(double dt)
         PostOffice::GetInstance()->Send("PetManager", new PetSkillMsg(PetSkillMsg::CAST_SKILL));
     }
 
+    //Testing player dodge on enemy
+
     f32 len = AEVec2Length(&movement);
+    // Normalize movement to get direction
+    AEVec2 dirN = movement;
     if (len > 0.0f) {
-        // Normalize movement to get direction
-        AEVec2 dirN = movement;
         AEVec2Scale(&dirN, &dirN, 1.0f / len);
         playerDir = dirN;
 
         // Scale by speed and delta time
         AEVec2Scale(&movement, &movement, playerSpeed * static_cast<float>(dt) / len);
-        AEVec2Add(&playerPos, &playerPos, &movement);
+        go->SetPos(go->GetPos() + movement);
+    }
+
+    if (AEInputCheckTriggered(AEVK_SPACE)) {
+        go->ApplyForce(dirN * 500.f);
     }
 
     // Clamp player inside map bounds
-    playerPos.x = AEClamp(playerPos.x, -halfMapWidth + playerRadius, halfMapWidth - playerRadius);
-    playerPos.y = AEClamp(playerPos.y, -halfMapHeight + playerRadius, halfMapHeight - playerRadius);
-    go->SetPos(playerPos); //TEMP
+    go->SetPos({ AEClamp(go->GetPos().x, -halfMapWidth + playerRadius, halfMapWidth - playerRadius),
+        AEClamp(go->GetPos().y, -halfMapHeight + playerRadius, halfMapHeight - playerRadius) });
 
     UpdateWorldMap(static_cast<float>(dt));
 

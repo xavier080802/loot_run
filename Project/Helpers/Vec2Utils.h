@@ -33,4 +33,6 @@ AEVec2 operator-=(AEVec2& lhs, AEVec2 rhs);
 
 AEVec2 operator+(AEVec2 lhs, AEVec2 rhs);
 AEVec2 operator+=(AEVec2& lhs, AEVec2 rhs);
+
+AEVec2 operator*(AEVec2 lhs, float rhs);
 #endif // !_VEC2_UTILS_H_

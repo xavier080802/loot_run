@@ -40,9 +40,13 @@ public:
 	COLLISION_LAYER GetColliderLayer()const;
 
 	void SetPos(AEVec2 nextPos);
+	void Move(AEVec2 moveAmt);
 	void SetCollision(bool enabled);
 	//Set what layers this GO can collide with.
 	void SetCollisionLayers(Bitmask layers);
+
+	//Apply a force (directional) on this go.
+	void ApplyForce(AEVec2 force);
 
 	std::vector<unsigned> cellIndexes{};
 
@@ -64,6 +68,8 @@ protected:
 	//Layer that this GO is in
 	COLLISION_LAYER colliderLayer{};
 	AnimationData* renderingData{};
+
+	AEVec2 velocity{}, prevPos{}, initialVel{};
 
 	GO_TYPE goType{};
 };
