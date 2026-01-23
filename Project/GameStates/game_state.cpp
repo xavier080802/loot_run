@@ -43,10 +43,12 @@ namespace {
     const float FOG_REGEN_RATE = 0.3f;
     float tileWorldSizeX, tileWorldSizeY;
 
+    // --- MINIMAP SETTINGS ---
     float minimapWidth = 200.0f;
     float minimapHeight = 200.0f;
     float minimapMargin = 20.0f;
-    float minimapPlayerScaleFactor = 4.0f;
+    float minimapPlayerScaleFactor = 3.5f;
+    float minimapIconScale = 1.5f; // Adjusted for a cleaner, balanced look
 
     void UpdateDiscovery(float dt) {
         float revealRadiusWorld = 180.0f;
@@ -76,20 +78,15 @@ namespace {
         float mag = sqrtf(dx * dx + dy * dy);
         if (mag < 1e-4f) { dx = 1.0f; dy = 0.0f; }
         else { dx /= mag; dy /= mag; }
-
         float px = -dy, py = dx;
-        float dotRadius = playerRadius * 0.5f * (scaleX + scaleY) * minimapPlayerScaleFactor;
-        float offset = dotRadius + 5.0f;
-        float ax = cx + dx * offset, ay = cy + dy * offset;
-
-        float tipX = ax + dx * 10.0f, tipY = ay + dy * 10.0f;
-        float bLX = ax - dx * 2.0f + px * 4.0f, bLY = ay - dy * 2.0f + py * 4.0f;
-        float bRX = ax - dx * 2.0f - px * 4.0f, bRY = ay - dy * 2.0f - py * 4.0f;
-
+        float dotSize = playerRadius * scaleX * minimapPlayerScaleFactor;
+        float ax = cx + dx * (dotSize + 2.0f), ay = cy + dy * (dotSize + 2.0f);
+        float tipX = ax + dx * 8.0f, tipY = ay + dy * 8.0f;
+        float bLX = ax + px * 4.0f, bLY = ay + py * 4.0f;
+        float bRX = ax - px * 4.0f, bRY = ay - py * 4.0f;
         AEGfxMeshStart();
         AEGfxTriAdd(tipX, tipY, 0xFF00FFFF, 0, 0, bLX, bLY, 0xFF00FFFF, 0, 0, bRX, bRY, 0xFF00FFFF, 0, 0);
         AEGfxVertexList* arrowMesh = AEGfxMeshEnd();
-
         AEMtx33 identity; AEMtx33Identity(&identity);
         AEGfxSetTransform(identity.m);
         AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
@@ -104,7 +101,6 @@ namespace {
         float limitX = halfMapWidth - viewHalfW, limitY = halfMapHeight - viewHalfH;
         if (limitX > 0) camTarget.x = AEClamp(camTarget.x, -limitX, limitX); else camTarget.x = 0;
         if (limitY > 0) camTarget.y = AEClamp(camTarget.y, -limitY, limitY); else camTarget.y = 0;
-
         float omega = 2.0f / camSmoothTime, xd = omega * dt;
         float expK = 1.0f / (1.0f + xd + 0.48f * xd * xd + 0.235f * xd * xd * xd);
         AEVec2 change = { camPos.x - camTarget.x, camPos.y - camTarget.y };
@@ -118,18 +114,17 @@ namespace {
         AEGfxStart();
         AEGfxSetBlendMode(AE_GFX_BM_BLEND);
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-
         AEMtx33 viewMtx, zoomMtx, camMatrix;
         AEMtx33Trans(&viewMtx, -camPos.x, -camPos.y);
         AEMtx33Scale(&zoomMtx, camZoom, camZoom);
         AEMtx33Concat(&camMatrix, &zoomMtx, &viewMtx);
 
-        // --- WORLD ---
-        AEGfxSetColorToMultiply(0.4f, 0.4f, 0.4f, 1.0f);
+        // --- WORLD WALLS ---
+        AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
         for (const auto& wall : currentLevel.walls) {
             AEMtx33 s, t, final;
-            AEMtx33Scale(&s, wall.width, wall.height);
-            AEMtx33Trans(&t, wall.position.x, wall.position.y);
+            AEMtx33Scale(&s, wall.width + 1.5f, wall.height + 1.5f);
+            AEMtx33Trans(&t, std::round(wall.position.x), std::round(wall.position.y));
             AEMtx33Concat(&final, &camMatrix, &t);
             AEMtx33Concat(&final, &final, &s);
             AEGfxSetTransform(final.m);
@@ -141,7 +136,7 @@ namespace {
             AEMtx33Concat(&bF, &camMatrix, &bT); AEMtx33Concat(&bF, &bF, &bS); AEGfxSetTransform(bF.m);
             AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
 
-            AEMtx33 dS, dT, dF; AEMtx33Scale(&dS, 40.0f, 120.0f); AEMtx33Trans(&dT, currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y);
+            AEMtx33 dS, dT, dF; AEMtx33Scale(&dS, 42.0f, 122.0f); AEMtx33Trans(&dT, currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y);
             AEMtx33Concat(&dF, &camMatrix, &dT); AEMtx33Concat(&dF, &dF, &dS); AEGfxSetTransform(dF.m);
             AEGfxSetColorToMultiply(0.0f, 0.8f, 0.0f, 1.0f); AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
         }
@@ -166,47 +161,46 @@ namespace {
         float mmX = (float)AEGfxGetWinMaxX() - minimapWidth * 0.5f - minimapMargin;
         float mmY = (float)AEGfxGetWinMaxY() - minimapHeight * 0.5f - minimapMargin;
 
-        // 1. Walls on Minimap
-        AEGfxSetColorToMultiply(0.4f, 0.4f, 0.4f, 1.0f);
+        AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
         for (const auto& w : currentLevel.walls) {
-            AEMtx33 s, t, f; AEMtx33Scale(&s, w.width * scaleX, w.height * scaleY);
+            AEMtx33 s, t, f; AEMtx33Scale(&s, (w.width + 1.5f) * scaleX, (w.height + 1.5f) * scaleY);
             AEMtx33Trans(&t, mmX + w.position.x * scaleX, mmY + w.position.y * scaleY);
             AEMtx33Concat(&f, &t, &s); AEGfxSetTransform(f.m); AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
         }
 
-        // 2. Boss & Door on Minimap (FIXED)
         if (bossAlive) {
-            AEMtx33 bms, bmt, bmf;
-            AEMtx33Scale(&bms, (bossRadius * 2) * scaleX, (bossRadius * 2) * scaleY);
+            // Boss Icon
+            AEMtx33 bms, bmt, bmf; AEMtx33Scale(&bms, 40.0f * scaleX * minimapIconScale, 40.0f * scaleY * minimapIconScale);
             AEMtx33Trans(&bmt, mmX + currentLevel.doorPos.x * scaleX, mmY + currentLevel.doorPos.y * scaleY);
             AEMtx33Concat(&bmf, &bmt, &bms); AEGfxSetTransform(bmf.m);
             AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
 
-            AEMtx33 dms, dmt, dmf;
-            AEMtx33Scale(&dms, 40.0f * scaleX, 120.0f * scaleY);
+            // Boss Door
+            AEMtx33 dms, dmt, dmf; AEMtx33Scale(&dms, 42.0f * scaleX, 122.0f * scaleY);
             AEMtx33Trans(&dmt, mmX + (currentLevel.doorPos.x - 335.0f) * scaleX, mmY + currentLevel.doorPos.y * scaleY);
             AEMtx33Concat(&dmf, &dmt, &dms); AEGfxSetTransform(dmf.m);
             AEGfxSetColorToMultiply(0.0f, 0.8f, 0.0f, 1.0f); AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
         }
 
-        // 3. Chest & Enemies on Minimap
-        AEMtx33 cs, ct, cf; AEMtx33Scale(&cs, 35 * scaleX, 35 * scaleY);
+        // CHEST ICON
+        AEMtx33 cs, ct, cf; AEMtx33Scale(&cs, 45.0f * scaleX * minimapIconScale, 45.0f * scaleY * minimapIconScale);
         AEMtx33Trans(&ct, mmX + currentLevel.chestPos.x * scaleX, mmY + currentLevel.chestPos.y * scaleY);
         AEMtx33Concat(&cf, &ct, &cs); AEGfxSetTransform(cf.m);
         AEGfxSetColorToMultiply(1.0f, 0.84f, 0.0f, 1.0f); AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
 
+        // ENEMY ICONS
         for (auto& e : enemies) {
-            AEMtx33 es, et, ef; AEMtx33Scale(&es, 30 * scaleX, 30 * scaleY);
+            AEMtx33 es, et, ef; AEMtx33Scale(&es, 40.0f * scaleX * minimapIconScale, 40.0f * scaleY * minimapIconScale);
             AEMtx33Trans(&et, mmX + e.x * scaleX, mmY + e.y * scaleY);
             AEMtx33Concat(&ef, &et, &es); AEGfxSetTransform(ef.m);
             AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
         }
 
-        // 4. Fog
+        // FOG
         for (int x = 0; x < FOG_GRID_SIZE; x++) {
             for (int y = 0; y < FOG_GRID_SIZE; y++) {
                 if (discoveryGrid[x][y] < 1.0f) {
-                    AEMtx33 s, t, f; AEMtx33Scale(&s, tileWorldSizeX * scaleX, tileWorldSizeY * scaleY);
+                    AEMtx33 s, t, f; AEMtx33Scale(&s, (tileWorldSizeX + 1.5f) * scaleX, (tileWorldSizeY + 1.5f) * scaleY);
                     float oX = (x * tileWorldSizeX) - halfMapWidth + tileWorldSizeX * 0.5f;
                     float oY = (y * tileWorldSizeY) - halfMapHeight + tileWorldSizeY * 0.5f;
                     AEMtx33Trans(&t, mmX + oX * scaleX, mmY + oY * scaleY);
@@ -217,8 +211,8 @@ namespace {
             }
         }
 
-        // 5. Player Dot & Border
-        AEMtx33 ps, pt, pf; AEMtx33Scale(&ps, (playerRadius * scaleX) * minimapPlayerScaleFactor, (playerRadius * scaleY) * minimapPlayerScaleFactor);
+        // PLAYER
+        AEMtx33 ps, pt, pf; AEMtx33Scale(&ps, playerRadius * scaleX * minimapPlayerScaleFactor, playerRadius * scaleY * minimapPlayerScaleFactor);
         AEMtx33Trans(&pt, mmX + playerPos.x * scaleX, mmY + playerPos.y * scaleY);
         AEMtx33Concat(&pf, &pt, &ps); AEGfxSetTransform(pf.m);
         AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
@@ -234,15 +228,19 @@ void GameState::LoadState() {
     bgm.Init(); bgm.PlayNormal();
     halfMapWidth = mapWidth * 0.5f; halfMapHeight = mapHeight * 0.5f;
     circleMesh = RenderingManager::GetInstance()->GetMesh(MESH_CIRCLE);
+
     AEGfxMeshStart();
     AEGfxVertexAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 0); AEGfxVertexAdd(0.5f, -0.5f, 0xFFFFFFFF, 0, 0);
     AEGfxVertexAdd(0.5f, 0.5f, 0xFFFFFFFF, 0, 0); AEGfxVertexAdd(-0.5f, 0.5f, 0xFFFFFFFF, 0, 0);
     AEGfxVertexAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 0); borderMesh = AEGfxMeshEnd();
+
     tileWorldSizeX = mapWidth / (float)FOG_GRID_SIZE; tileWorldSizeY = mapHeight / (float)FOG_GRID_SIZE;
+
     AEGfxMeshStart();
-    AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 0, 0.5f, -0.5f, 0xFFFFFFFF, 0, 0, 0.5f, 0.5f, 0xFFFFFFFF, 0, 0);
-    AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 0, 0.5f, 0.5f, 0xFFFFFFFF, 0, 0, -0.5f, 0.5f, 0xFFFFFFFF, 0, 0);
-    wallMesh = AEGfxMeshEnd(); fogTileMesh = wallMesh;
+    AEGfxTriAdd(-0.51f, -0.51f, 0xFFFFFFFF, 0, 0, 0.51f, -0.51f, 0xFFFFFFFF, 0, 0, 0.51f, 0.51f, 0xFFFFFFFF, 0, 0);
+    AEGfxTriAdd(-0.51f, -0.51f, 0xFFFFFFFF, 0, 0, 0.51f, 0.51f, 0xFFFFFFFF, 0, 0, -0.51f, 0.51f, 0xFFFFFFFF, 0, 0);
+    wallMesh = AEGfxMeshEnd();
+    fogTileMesh = wallMesh;
 }
 
 void GameState::InitState() {
