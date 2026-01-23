@@ -1,68 +1,88 @@
 #include "Map.h"
 
-void InitTutorial(MapData& map) {
+void InitTutorial(MapData& map)
+{
     map.walls.clear();
 
-    const float ROOM_SIZE = 400.0f;
-    const float WALL_THICK = 20.0f;
-    const float CORRIDOR_WIDTH = 100.0f;
+    // --- The "Suited" Size for 2000x2000 ---
+    const float ROOM_SIZE = 700.0f;
+    const float WALL_THICK = 25.0f;
+    const float CORRIDOR_GAP = 160.0f;
+    const float HALF = ROOM_SIZE * 0.5f;
 
-    // --- Rooms (outer walls) ---
+    // Centers are placed to allow for the 700 size + tunnels
+    // X: -800, 0, 800 | Y: 600, -600
+    AEVec2 r1 = { -800,  600 }; // Start
+    AEVec2 r2 = { 0,  600 };
+    AEVec2 r3 = { 800,  600 }; // Enemy 1
+    AEVec2 r4 = { 800, -600 }; // Chest
+    AEVec2 r5 = { 0, -600 }; // Enemy 2
+    AEVec2 r6 = { -800, -600 }; // Boss Room / Exit
 
-    // Room 1 (Start)
-    map.walls.push_back({ {-600.0f, 600.0f + ROOM_SIZE / 2}, ROOM_SIZE, WALL_THICK }); // top
-    map.walls.push_back({ {-600.0f, 600.0f - ROOM_SIZE / 2}, ROOM_SIZE, WALL_THICK }); // bottom
-    map.walls.push_back({ {-600.0f - ROOM_SIZE / 2, 600.0f}, WALL_THICK, ROOM_SIZE }); // left
-    map.walls.push_back({ {-600.0f + ROOM_SIZE / 2, 600.0f}, WALL_THICK, ROOM_SIZE }); // right
+    auto AddRoom = [&](AEVec2 c, bool openTop, bool openBottom, bool openLeft, bool openRight)
+        {
+            float seg = (ROOM_SIZE - CORRIDOR_GAP) * 0.5f;
+            float offset = (ROOM_SIZE - seg) * 0.5f;
 
-    // Room 2
-    map.walls.push_back({ {0.0f, 600.0f + ROOM_SIZE / 2}, ROOM_SIZE, WALL_THICK }); // top
-    map.walls.push_back({ {0.0f, 600.0f - ROOM_SIZE / 2}, ROOM_SIZE, WALL_THICK }); // bottom
-    map.walls.push_back({ {-ROOM_SIZE / 2, 600.0f}, WALL_THICK, ROOM_SIZE }); // left
-    map.walls.push_back({ {ROOM_SIZE / 2, 600.0f}, WALL_THICK, ROOM_SIZE }); // right
+            // Top Wall
+            if (!openTop) map.walls.push_back({ { c.x, c.y + HALF }, ROOM_SIZE, WALL_THICK });
+            else {
+                map.walls.push_back({ { c.x - offset, c.y + HALF }, seg, WALL_THICK });
+                map.walls.push_back({ { c.x + offset, c.y + HALF }, seg, WALL_THICK });
+            }
+            // Bottom Wall
+            if (!openBottom) map.walls.push_back({ { c.x, c.y - HALF }, ROOM_SIZE, WALL_THICK });
+            else {
+                map.walls.push_back({ { c.x - offset, c.y - HALF }, seg, WALL_THICK });
+                map.walls.push_back({ { c.x + offset, c.y - HALF }, seg, WALL_THICK });
+            }
+            // Left Wall
+            if (!openLeft) map.walls.push_back({ { c.x - HALF, c.y }, WALL_THICK, ROOM_SIZE });
+            else {
+                map.walls.push_back({ { c.x - HALF, c.y - offset }, WALL_THICK, seg });
+                map.walls.push_back({ { c.x - HALF, c.y + offset }, WALL_THICK, seg });
+            }
+            // Right Wall
+            if (!openRight) map.walls.push_back({ { c.x + HALF, c.y }, WALL_THICK, ROOM_SIZE });
+            else {
+                map.walls.push_back({ { c.x + HALF, c.y - offset }, WALL_THICK, seg });
+                map.walls.push_back({ { c.x + HALF, c.y + offset }, WALL_THICK, seg });
+            }
+        };
 
-    // Room 3 (Enemy)
-    map.walls.push_back({ {600.0f, 600.0f + ROOM_SIZE / 2}, ROOM_SIZE, WALL_THICK }); // top
-    map.walls.push_back({ {600.0f, 600.0f - ROOM_SIZE / 2}, ROOM_SIZE, WALL_THICK }); // bottom
-    map.walls.push_back({ {600.0f - ROOM_SIZE / 2, 600.0f}, WALL_THICK, ROOM_SIZE }); // left
-    map.walls.push_back({ {600.0f + ROOM_SIZE / 2, 600.0f}, WALL_THICK, ROOM_SIZE }); // right
+    // --- Build Rooms (Snake Path 1->2->3->4->5->6) ---
+    AddRoom(r1, false, false, false, true);
+    AddRoom(r2, false, false, true, true);
+    AddRoom(r3, false, true, true, false);
+    AddRoom(r4, true, false, true, false); // Chest Room
+    AddRoom(r5, false, false, true, true);
+    AddRoom(r6, false, false, false, true);  // Boss Room Access from Room 5
 
-    // Room 4 (Chest)
-    map.walls.push_back({ {600.0f, 0.0f + ROOM_SIZE / 2}, ROOM_SIZE, WALL_THICK }); // top
-    map.walls.push_back({ {600.0f, 0.0f - ROOM_SIZE / 2}, ROOM_SIZE, WALL_THICK }); // bottom
-    map.walls.push_back({ {600.0f - ROOM_SIZE / 2, 0.0f}, WALL_THICK, ROOM_SIZE }); // left
-    map.walls.push_back({ {600.0f + ROOM_SIZE / 2, 0.0f}, WALL_THICK, ROOM_SIZE }); // right
+    // --- Corridor Tunnels (Closing the Gaps) ---
+    float tHalf = CORRIDOR_GAP * 0.5f;
+    float hDist = 800.0f - ROOM_SIZE; // Distance between horizontal centers (800-700 = 100)
+    float vDist = 1200.0f - ROOM_SIZE; // Distance between vertical centers (600 - -600 = 1200)
 
-    // Room 5 (Enemy)
-    map.walls.push_back({ {0.0f, 0.0f + ROOM_SIZE / 2}, ROOM_SIZE, WALL_THICK }); // top
-    map.walls.push_back({ {0.0f, 0.0f - ROOM_SIZE / 2}, ROOM_SIZE, WALL_THICK }); // bottom
-    map.walls.push_back({ {-ROOM_SIZE / 2, 0.0f}, WALL_THICK, ROOM_SIZE }); // left
-    map.walls.push_back({ {ROOM_SIZE / 2, 0.0f}, WALL_THICK, ROOM_SIZE }); // right
+    // Tunnels Row 1 (1->2, 2->3)
+    map.walls.push_back({ { -400, r1.y + tHalf }, hDist, WALL_THICK });
+    map.walls.push_back({ { -400, r1.y - tHalf }, hDist, WALL_THICK });
+    map.walls.push_back({ {  400, r2.y + tHalf }, hDist, WALL_THICK });
+    map.walls.push_back({ {  400, r2.y - tHalf }, hDist, WALL_THICK });
 
-    // Room 6 (Enemy + Door)
-    map.walls.push_back({ {-600.0f, 0.0f + ROOM_SIZE / 2}, ROOM_SIZE, WALL_THICK }); // top
-    map.walls.push_back({ {-600.0f, 0.0f - ROOM_SIZE / 2}, ROOM_SIZE, WALL_THICK }); // bottom
-    map.walls.push_back({ {-600.0f - ROOM_SIZE / 2, 0.0f}, WALL_THICK, ROOM_SIZE }); // left
-    map.walls.push_back({ {-600.0f + ROOM_SIZE / 2, 0.0f}, WALL_THICK, ROOM_SIZE }); // right
+    // Vertical Tunnel (3->4)
+    map.walls.push_back({ { r3.x + tHalf, 0 }, WALL_THICK, vDist });
+    map.walls.push_back({ { r3.x - tHalf, 0 }, WALL_THICK, vDist });
 
-    // --- Corridors ---
+    // Tunnels Row 2 (4->5, 5->6)
+    map.walls.push_back({ {  400, r4.y + tHalf }, hDist, WALL_THICK });
+    map.walls.push_back({ {  400, r4.y - tHalf }, hDist, WALL_THICK });
+    map.walls.push_back({ { -400, r5.y + tHalf }, hDist, WALL_THICK });
+    map.walls.push_back({ { -400, r5.y - tHalf }, hDist, WALL_THICK });
 
-    // 3 ? 4 vertical corridor
-    map.walls.push_back({ {600.0f + ROOM_SIZE / 2 + CORRIDOR_WIDTH / 2, 300.0f}, CORRIDOR_WIDTH, ROOM_SIZE }); // right wall
-    map.walls.push_back({ {600.0f + ROOM_SIZE / 2 - CORRIDOR_WIDTH / 2, 300.0f}, CORRIDOR_WIDTH, ROOM_SIZE }); // left wall
-
-    // 4 ? 5 horizontal corridor
-    map.walls.push_back({ {300.0f, -CORRIDOR_WIDTH / 2}, ROOM_SIZE, CORRIDOR_WIDTH }); // top wall
-    map.walls.push_back({ {300.0f, CORRIDOR_WIDTH / 2}, ROOM_SIZE, CORRIDOR_WIDTH }); // bottom wall
-
-    // 5 ? 6 horizontal corridor
-    map.walls.push_back({ {-300.0f, -CORRIDOR_WIDTH / 2}, ROOM_SIZE, CORRIDOR_WIDTH }); // top wall
-    map.walls.push_back({ {-300.0f, CORRIDOR_WIDTH / 2}, ROOM_SIZE, CORRIDOR_WIDTH }); // bottom wall
-
-    // --- Objects ---
-    map.startPos = { -600.0f, 600.0f };       // Player starts in Room 1
-    map.chestPos = { 600.0f, 0.0f };          // Chest in Room 4
-    map.enemy1Pos = { 600.0f, 600.0f };       // Enemy in Room 3
-    map.enemy2Pos = { 0.0f, 0.0f };           // Enemy in Room 5
-    map.doorPos = { -600.0f, 0.0f };          // Door in Room 6
+    // --- Entity Placement ---
+    map.startPos = r1;
+    map.enemy1Pos = r3;
+    map.chestPos = r4;
+    map.enemy2Pos = r5;
+    map.doorPos = r6;
 }

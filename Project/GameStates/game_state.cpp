@@ -26,13 +26,17 @@ namespace {
     float playerRadius = 15.0f;
     float playerSpeed = 300.0f;
 
+    // --- Boss Placeholder State ---
+    bool bossAlive = true;
+    float bossRadius = 60.0f;
+
     // --- Camera State ---
     AEVec2 camPos, camVel;
     float camZoom = 1.2f;
     float camSmoothTime = 0.15f;
 
     // --- Map Settings ---
-    float mapWidth = 2000.0f;
+    float mapWidth = 2400.0f;
     float mapHeight = 2000.0f;
     float halfMapWidth, halfMapHeight;
     MapData currentLevel;
@@ -166,7 +170,29 @@ namespace {
             AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
         }
 
-        // 3. Chest
+        // 3. Boss (Red Circle)
+        if (bossAlive) {
+            AEMtx33 bS, bT, bFinal;
+            AEMtx33Scale(&bS, bossRadius * 2, bossRadius * 2);
+            AEMtx33Trans(&bT, currentLevel.doorPos.x, currentLevel.doorPos.y);
+            AEMtx33Concat(&bFinal, &camMatrix, &bT);
+            AEMtx33Concat(&bFinal, &bFinal, &bS);
+            AEGfxSetTransform(bFinal.m);
+            AEGfxSetColorToMultiply(1, 0, 0, 1);
+            AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
+        }
+
+        // 4. Door (Green Box)
+        AEMtx33 dS, dT, dFinal;
+        AEMtx33Scale(&dS, 40.0f, 120.0f);
+        AEMtx33Trans(&dT, currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y);
+        AEMtx33Concat(&dFinal, &camMatrix, &dT);
+        AEMtx33Concat(&dFinal, &dFinal, &dS);
+        AEGfxSetTransform(dFinal.m);
+        AEGfxSetColorToMultiply(0, 0.8f, 0, 1);
+        AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
+
+        // 5. Chest
         AEMtx33 cS, cT, cFinal;
         AEMtx33Scale(&cS, 35, 35);
         AEMtx33Trans(&cT, currentLevel.chestPos.x, currentLevel.chestPos.y);
@@ -176,7 +202,7 @@ namespace {
         AEGfxSetColorToMultiply(1.0f, 0.84f, 0, 1.0f);
         AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
 
-        // 4. Enemies
+        // 6. Enemies
         AEVec2 enemies[] = { currentLevel.enemy1Pos, currentLevel.enemy2Pos };
         for (auto& e : enemies) {
             AEMtx33 eS, eT, eFinal;
@@ -189,7 +215,7 @@ namespace {
             AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
         }
 
-        // 5. Player
+        // 7. Player
         AEMtx33 pS, pT, pFinal;
         AEMtx33Scale(&pS, playerRadius * 2, playerRadius * 2);
         AEMtx33Trans(&pT, playerPos.x, playerPos.y);
@@ -199,7 +225,7 @@ namespace {
         AEGfxSetColorToMultiply(1, 1, 1, 1);
         AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
 
-        // --- Minimap render (walls, chest, enemies, fog, player, arrow)
+        // --- Minimap render ---
         float winW = (float)AEGfxGetWinMaxX(), winH = (float)AEGfxGetWinMaxY();
         float scaleX = minimapWidth / mapWidth;
         float scaleY = minimapHeight / mapHeight;
@@ -215,26 +241,6 @@ namespace {
             AEMtx33Concat(&f, &t, &s);
             AEGfxSetTransform(f.m);
             AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
-        }
-
-        // Chest
-        AEMtx33 cs, ct, cf;
-        AEMtx33Scale(&cs, 8, 8);
-        AEMtx33Trans(&ct, mmX + currentLevel.chestPos.x * scaleX, mmY + currentLevel.chestPos.y * scaleY);
-        AEMtx33Concat(&cf, &ct, &cs);
-        AEGfxSetTransform(cf.m);
-        AEGfxSetColorToMultiply(1, 0.84f, 0, 1);
-        AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
-
-        // Enemies
-        for (auto& e : enemies) {
-            AEMtx33 es, et, ef;
-            AEMtx33Scale(&es, 8, 8);
-            AEMtx33Trans(&et, mmX + e.x * scaleX, mmY + e.y * scaleY);
-            AEMtx33Concat(&ef, &et, &es);
-            AEGfxSetTransform(ef.m);
-            AEGfxSetColorToMultiply(1, 0, 0, 1);
-            AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
         }
 
         // Fog
@@ -283,7 +289,6 @@ void GameState::LoadState() {
     halfMapHeight = mapHeight * 0.5f;
     circleMesh = RenderingManager::GetInstance()->GetMesh(MESH_CIRCLE);
 
-    // Border
     AEGfxMeshStart();
     AEGfxVertexAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 0);
     AEGfxVertexAdd(0.5f, -0.5f, 0xFFFFFFFF, 0, 0);
@@ -295,13 +300,11 @@ void GameState::LoadState() {
     tileWorldSizeX = mapWidth / (float)FOG_GRID_SIZE;
     tileWorldSizeY = mapHeight / (float)FOG_GRID_SIZE;
 
-    // Wall mesh
     AEGfxMeshStart();
     AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 0, 0.5f, -0.5f, 0xFFFFFFFF, 0, 0, 0.5f, 0.5f, 0xFFFFFFFF, 0, 0);
     AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 0, 0.5f, 0.5f, 0xFFFFFFFF, 0, 0, -0.5f, 0.5f, 0xFFFFFFFF, 0, 0);
     wallMesh = AEGfxMeshEnd();
 
-    // Fog mesh
     AEGfxMeshStart();
     AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 0, 0.5f, -0.5f, 0xFFFFFFFF, 0, 0, 0.5f, 0.5f, 0xFFFFFFFF, 0, 0);
     AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 0, 0.5f, 0.5f, 0xFFFFFFFF, 0, 0, -0.5f, 0.5f, 0xFFFFFFFF, 0, 0);
@@ -309,7 +312,7 @@ void GameState::LoadState() {
 }
 
 void GameState::InitState() {
-    InitTutorial(currentLevel); 
+    InitTutorial(currentLevel);
     playerPos = currentLevel.startPos;
     camPos = playerPos; camVel = { 0,0 };
 
@@ -335,6 +338,7 @@ void GameState::Update(double dt) {
         float subStep = step / (float)subSteps;
 
         for (int i = 0; i < subSteps; i++) {
+            // --- X MOVEMENT ---
             AEVec2 nextPosX = { playerPos.x + move.x * subStep, playerPos.y };
             bool collisionX = false;
             for (const auto& w : currentLevel.walls) {
@@ -342,8 +346,14 @@ void GameState::Update(double dt) {
                 float safeH = (w.height < 40) ? 40 : w.height;
                 if (CircleRectCollision(w.position, { safeW,safeH }, nextPosX, playerRadius)) { collisionX = true; break; }
             }
+            // Boss Circle Collision X
+            if (bossAlive && AEVec2Distance(&nextPosX, &currentLevel.doorPos) < (playerRadius + bossRadius)) collisionX = true;
+            // Door Wall Collision X (Blocker)
+            if (bossAlive && CircleRectCollision({ currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y }, { 40, 120 }, nextPosX, playerRadius)) collisionX = true;
+
             if (!collisionX) playerPos.x = nextPosX.x;
 
+            // --- Y MOVEMENT ---
             AEVec2 nextPosY = { playerPos.x, playerPos.y + move.y * subStep };
             bool collisionY = false;
             for (const auto& w : currentLevel.walls) {
@@ -351,6 +361,11 @@ void GameState::Update(double dt) {
                 float safeH = (w.height < 40) ? 40 : w.height;
                 if (CircleRectCollision(w.position, { safeW,safeH }, nextPosY, playerRadius)) { collisionY = true; break; }
             }
+            // Boss Circle Collision Y
+            if (bossAlive && AEVec2Distance(&nextPosY, &currentLevel.doorPos) < (playerRadius + bossRadius)) collisionY = true;
+            // Door Wall Collision Y (Blocker)
+            if (bossAlive && CircleRectCollision({ currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y }, { 40, 120 }, nextPosY, playerRadius)) collisionY = true;
+
             if (!collisionY) playerPos.y = nextPosY.y;
         }
     }
