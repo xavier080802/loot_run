@@ -1,0 +1,36 @@
+#ifndef _PET_MANAGER_H_
+#define _PET_MANAGER_H_
+#include "../DesignPatterns/Singleton.h"
+#include "../DesignPatterns/PostOffice.h"
+#include "PetConsts.h"
+#include "Pet.h"
+
+class PetManager : public Singleton<PetManager>, public PostBox
+{
+	friend Singleton<PetManager>;
+public:
+	void Init();
+
+	//Sets the pet based on the type.
+	void SetPet(Pets::PET_TYPE pet, int dupes);
+
+	Pets::PET_RANK GetPetRank(Pets::PET_TYPE pet);
+
+	bool Handle(Message* message) override;
+
+	//TEMP? i wanna code pet movement lol
+	GameObject* player{};
+
+private:
+	PostOffice* po{};
+	//Constant data. info for each pet, not player-specific
+	std::map<Pets::PET_TYPE, Pet::PetData> petData{};
+	Pet* equippedPet{};
+
+	//TODO: pet inventory, with the dupe levels and stuff.
+
+	//TODO: databank, load from file or smthing. All the numerical values.
+};
+#endif // !_PET_MANAGER_H_
+
+

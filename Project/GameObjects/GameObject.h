@@ -1,0 +1,69 @@
+#ifndef _GAME_OBJECT_H_
+#define _GAME_OBJECT_H_
+#include "AEEngine.h"
+#include "../Helpers/CollisionUtils.h"
+#include "../Helpers/BitmaskUtils.h"
+#include "../Rendering/AnimationData.h"
+#include "GameObjectManager.h"	
+
+class GameObject {
+	friend class GameObjectManager; //Allow manager access to private members.
+public:
+	enum COLLISION_LAYER {
+		NONE,
+		PLAYER,
+		ENEMIES,
+		OBSTACLE,
+		PET,
+	};
+	//Making this a struct so we can extend easier
+	struct CollisionData {
+		GameObject& other;
+	};
+	
+	//Set values and register to the manager. Call only once per GO
+	//Need to manually call init.
+	//Ps. set goType for derived game objects
+	virtual GameObject* Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, COLLISION_LAYER _isInLayers);
+	virtual void Update(double dt);
+	virtual void Draw();
+	virtual void Free();
+	virtual void OnCollide(CollisionData& other);
+
+	AnimationData& GetRenderData();
+	const AEVec2& GetPos() const;
+	const AEVec2& GetScale() const;
+	const AEVec2& GetColSize() const;
+	int GetZ() const;
+	Bitmask GetCollisionLayers()const;
+	COLLISION_LAYER GetColliderLayer()const;
+
+	void SetPos(AEVec2 nextPos);
+	void SetCollision(bool enabled);
+	//Set what layers this GO can collide with.
+	void SetCollisionLayers(Bitmask layers);
+
+	std::vector<unsigned> cellIndexes{};
+
+protected:
+	/// For GameObject derivatives (derived from GameObject) to clone properly.
+	/// Any members that are pointers must be new'd for the clone.
+	/// Do not touch members that are in the GameObject class.
+	virtual void CompleteClone(GameObject*const clone);
+
+	AEVec2 pos{}, scale{ 1,1 };
+	int z{}; //Rendering order. Higher = rendered above an obj with lower z
+	float rotationDeg{};
+	bool isEnabled{ false };
+	bool collisionEnabled{true};
+	COLLIDER_SHAPE colShape{ COLLIDER_SHAPE::COL_CIRCLE };
+	AEVec2 colSize{};
+	//Layers to collide with
+	Bitmask collisionLayers{};
+	//Layer that this GO is in
+	COLLISION_LAYER colliderLayer{};
+	AnimationData* renderingData{};
+
+	GO_TYPE goType{};
+};
+#endif // !_GAME_OBJECT_H_

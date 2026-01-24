@@ -1,0 +1,213 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\helpers">
+      <UniqueIdentifier>{23ebf1a5-42b6-44f1-8594-17d9c9000bd9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\helpers">
+      <UniqueIdentifier>{4b43a601-e506-4b23-89d6-a4743a05cbfd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\design_patterns">
+      <UniqueIdentifier>{7b04eed9-ea72-4cf1-8c57-56b176f31030}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\design_patterns">
+      <UniqueIdentifier>{51959dce-df4e-4b1b-9028-7830c8c8bc4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\game_states">
+      <UniqueIdentifier>{41a1307c-0b92-4633-bc12-b424dde1d1a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\game_states">
+      <UniqueIdentifier>{8151293b-3d88-44c3-a977-081dd684ad55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\game_objects">
+      <UniqueIdentifier>{7e18bbe5-b277-4ea4-800f-ce6ff418f67a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\game_object">
+      <UniqueIdentifier>{f589bf8a-0063-4815-ab23-c5f592f73a80}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Pets">
+      <UniqueIdentifier>{e79a2155-dd4d-42dd-a35f-c2faa3d26271}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Pets">
+      <UniqueIdentifier>{e97829b6-2e57-48fd-9249-608a2c4fc2c4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="helpers\BitmaskUtils.cpp">
+      <Filter>Source Files\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="helpers\CollisionUtils.cpp">
+      <Filter>Source Files\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="helpers\CoordUtils.cpp">
+      <Filter>Source Files\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="helpers\MatrixUtils.cpp">
+      <Filter>Source Files\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="helpers\RenderUtils.cpp">
+      <Filter>Source Files\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="helpers\Vec2Utils.cpp">
+      <Filter>Source Files\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="helpers\ColorUtils.cpp">
+      <Filter>Source Files\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DesignPatterns\PostOffice.cpp">
+      <Filter>Source Files\design_patterns</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStateManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStates\MainMenuState.cpp">
+      <Filter>Source Files\game_states</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStates\GameState.cpp">
+      <Filter>Source Files\game_states</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObjects\GameObject.cpp">
+      <Filter>Source Files\game_object</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderingManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObjects\GameObjectManager.cpp">
+      <Filter>Source Files\game_object</Filter>
+    </ClCompile>
+    <ClCompile Include="Music.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\AnimationData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\RenderData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObjects\Projectile.cpp">
+      <Filter>Source Files\game_object</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObjects\StatusEffect.cpp">
+      <Filter>Source Files\game_object</Filter>
+    </ClCompile>
+    <ClCompile Include="Pets\Pet.cpp">
+      <Filter>Source Files\Pets</Filter>
+    </ClCompile>
+    <ClCompile Include="Pets\PetManager.cpp">
+      <Filter>Source Files\Pets</Filter>
+    </ClCompile>
+    <ClCompile Include="Pets\PetSkills.cpp">
+      <Filter>Source Files\Pets</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="main.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\BitmaskUtils.h">
+      <Filter>Header Files\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\CollisionUtils.h">
+      <Filter>Header Files\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\CoordUtils.h">
+      <Filter>Header Files\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\MatrixUtils.h">
+      <Filter>Header Files\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\RenderUtils.h">
+      <Filter>Header Files\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\Vec2Utils.h">
+      <Filter>Header Files\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\ColorUtils.h">
+      <Filter>Header Files\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DesignPatterns\Message.h">
+      <Filter>Header Files\design_patterns</Filter>
+    </ClInclude>
+    <ClInclude Include="DesignPatterns\ConcreteMessages.h">
+      <Filter>Header Files\design_patterns</Filter>
+    </ClInclude>
+    <ClInclude Include="DesignPatterns\PostBox.h">
+      <Filter>Header Files\design_patterns</Filter>
+    </ClInclude>
+    <ClInclude Include="DesignPatterns\PostOffice.h">
+      <Filter>Header Files\design_patterns</Filter>
+    </ClInclude>
+    <ClInclude Include="DesignPatterns\Singleton.h">
+      <Filter>Header Files\design_patterns</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStateManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStates\MainMenuState.h">
+      <Filter>Header Files\game_states</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStates\GameState.h">
+      <Filter>Header Files\game_states</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjects\GameObject.h">
+      <Filter>Header Files\game_objects</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjects\GameObjectManager.h">
+      <Filter>Header Files\game_objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Music.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\AnimationData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\RenderData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjects\Projectile.h">
+      <Filter>Header Files\game_objects</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjects\GOTypeList.h">
+      <Filter>Header Files\game_objects</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjects\StatusEffect.h">
+      <Filter>Header Files\game_objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Pets\Pet.h">
+      <Filter>Header Files\Pets</Filter>
+    </ClInclude>
+    <ClInclude Include="Pets\PetManager.h">
+      <Filter>Header Files\Pets</Filter>
+    </ClInclude>
+    <ClInclude Include="Pets\PetConsts.h">
+      <Filter>Header Files\Pets</Filter>
+    </ClInclude>
+    <ClInclude Include="Pets\PetSkills.h">
+      <Filter>Header Files\Pets</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
