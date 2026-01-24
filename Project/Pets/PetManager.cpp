@@ -1,5 +1,6 @@
 #include "PetManager.h"
 #include "PetSkills.h"
+#include "../RenderingManager.h"
 
 void PetManager::Init() {
 	po = PostOffice::GetInstance();
@@ -7,7 +8,7 @@ void PetManager::Init() {
 
 	//Load pet data
 	//In the future, the values should be from a file.
-	Pet::PetData data1{"Basic Pet", 2, PetSkills::Pet1Skills};
+	Pet::PetData data1{"Basic Pet", 2, PetSkills::Pet1Skills, "Assets/finn.png"};
 	petData.insert(std::pair<Pets::PET_TYPE, Pet::PetData>(Pets::PET_1, data1));
 
 	//Init pet GO
@@ -23,7 +24,9 @@ void PetManager::Init() {
 void PetManager::SetPet(Pets::PET_TYPE pet, int dupes)
 {
 	//Set skill ptr, other values
-	equippedPet->SetData(petData.find(pet)->second);
+	Pet::PetData const& data{ petData.find(pet)->second };
+	equippedPet->SetData(data);
+	equippedPet->GetRenderData().ReplaceTexture(data.texture.c_str(), 0);
 }
 
 Pets::PET_RANK PetManager::GetPetRank(Pets::PET_TYPE pet)

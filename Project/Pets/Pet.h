@@ -15,6 +15,7 @@ public:
 		std::string name;
 		float skillCooldown;
 		bool (*PetSkill)(const PetSkills::SkillCastData& data);
+		std::string texture;
 		//TODO: buff values/effect
 	};
 
