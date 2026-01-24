@@ -4,14 +4,11 @@ void InitTutorial(MapData& map)
 {
     map.walls.clear();
 
-    // --- The "Suited" Size for 2000x2000 ---
     const float ROOM_SIZE = 700.0f;
     const float WALL_THICK = 25.0f;
     const float CORRIDOR_GAP = 160.0f;
     const float HALF = ROOM_SIZE * 0.5f;
 
-    // Centers are placed to allow for the 700 size + tunnels
-    // X: -800, 0, 800 | Y: 600, -600
     AEVec2 r1 = { -800,  600 }; // Start
     AEVec2 r2 = { 0,  600 };
     AEVec2 r3 = { 800,  600 }; // Enemy 1
@@ -50,7 +47,7 @@ void InitTutorial(MapData& map)
             }
         };
 
-    // --- Build Rooms (Snake Path 1->2->3->4->5->6) ---
+    // Build Rooms
     AddRoom(r1, false, false, false, true);
     AddRoom(r2, false, false, true, true);
     AddRoom(r3, false, true, true, false);
@@ -58,10 +55,10 @@ void InitTutorial(MapData& map)
     AddRoom(r5, false, false, true, true);
     AddRoom(r6, false, false, false, true);  // Boss Room Access from Room 5
 
-    // --- Corridor Tunnels (Closing the Gaps) ---
+    // Corridor Tunnels 
     float tHalf = CORRIDOR_GAP * 0.5f;
-    float hDist = 800.0f - ROOM_SIZE; // Distance between horizontal centers (800-700 = 100)
-    float vDist = 1200.0f - ROOM_SIZE; // Distance between vertical centers (600 - -600 = 1200)
+    float hDist = 800.0f - ROOM_SIZE; 
+    float vDist = 1200.0f - ROOM_SIZE; 
 
     // Tunnels Row 1 (1->2, 2->3)
     map.walls.push_back({ { -400, r1.y + tHalf }, hDist, WALL_THICK });

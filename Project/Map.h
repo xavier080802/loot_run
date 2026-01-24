@@ -19,7 +19,6 @@ struct MapData {
     AEVec2 doorPos;
 };
 
-// Function to initialize the specific layout you provided
 void InitTutorial(MapData& map);
 
 #endif

@@ -27,7 +27,6 @@ namespace {
     float playerSpeed = 300.0f;
 
     // --- BOSS PLACEHOLDER ---
-    // [REPLACE] bossAlive with a check to your Boss class 'isDead' status later
     bool bossAlive = true;
     float bossRadius = 60.0f;
 
@@ -148,7 +147,7 @@ namespace {
         AEMtx33Scale(&zoomMtx, camZoom, camZoom);
         AEMtx33Concat(&camMatrix, &zoomMtx, &viewMtx);
 
-        // --- 1. WORLD OBJECTS RENDERING ---
+        // --- WORLD OBJECTS RENDERING ---
         AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
         for (const auto& wall : currentLevel.walls) {
             AEMtx33 s, t, final;
@@ -160,25 +159,25 @@ namespace {
             AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
         }
 
-        // [REPLACE] Replace this block with your Boss Class logic
+        // To be replace boss logic
         if (bossAlive) {
-            // World Boss Circle
+            //placeholder boss
             AEMtx33 bS, bT, bF; AEMtx33Scale(&bS, bossRadius * 2, bossRadius * 2); AEMtx33Trans(&bT, currentLevel.doorPos.x, currentLevel.doorPos.y);
             AEMtx33Concat(&bF, &camMatrix, &bT); AEMtx33Concat(&bF, &bF, &bS); AEGfxSetTransform(bF.m);
             AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
 
-            // World Door Rect
+            // World Door Rect 
             AEMtx33 dS, dT, dF; AEMtx33Scale(&dS, 45.0f, 125.0f); AEMtx33Trans(&dT, currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y);
             AEMtx33Concat(&dF, &camMatrix, &dT); AEMtx33Concat(&dF, &dF, &dS); AEGfxSetTransform(dF.m);
             AEGfxSetColorToMultiply(0.0f, 0.8f, 0.0f, 1.0f); AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
         }
 
-        // [REPLACE] World Chest
+        // Placeholder Chest
         AEMtx33 cS, cT, cF; AEMtx33Scale(&cS, 35, 35); AEMtx33Trans(&cT, currentLevel.chestPos.x, currentLevel.chestPos.y);
         AEMtx33Concat(&cF, &camMatrix, &cT); AEMtx33Concat(&cF, &cF, &cS); AEGfxSetTransform(cF.m);
         AEGfxSetColorToMultiply(1.0f, 0.84f, 0.0f, 1.0f); AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
 
-        // [REPLACE] World Enemies (Loop through your enemy vector here later)
+        // Placeholder enemies
         AEVec2 enemies[] = { currentLevel.enemy1Pos, currentLevel.enemy2Pos };
         for (auto& e : enemies) {
             AEMtx33 eS, eT, eF; AEMtx33Scale(&eS, 30, 30); AEMtx33Trans(&eT, e.x, e.y);
@@ -186,18 +185,18 @@ namespace {
             AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
         }
 
-        // World Player
+        // Player
         AEMtx33 pS, pT, pFinal; AEMtx33Scale(&pS, playerRadius * 2, playerRadius * 2); AEMtx33Trans(&pT, playerPos.x, playerPos.y);
         AEMtx33Concat(&pFinal, &camMatrix, &pT); AEMtx33Concat(&pFinal, &pFinal, &pS); AEGfxSetTransform(pFinal.m);
         AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
 
-        // --- 2. MINIMAP RENDERING LAYERS ---
+        // --- MINIMAP RENDERING LAYERS ---
         float scaleX = minimapWidth / mapWidth, scaleY = minimapHeight / mapHeight;
         float mmX = (float)AEGfxGetWinMaxX() - minimapWidth * 0.5f - minimapMargin;
         float mmY = (float)AEGfxGetWinMaxY() - minimapHeight * 0.5f - minimapMargin;
         float playerMinimapRadius = playerRadius * scaleX * minimapPlayerScaleFactor;
 
-        // LAYER A: Minimap Walls (Bottom layer)
+        // LAYER A: Minimap Walls 
         AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
         for (const auto& w : currentLevel.walls) {
             AEMtx33 s, t, f; AEMtx33Scale(&s, (w.width + 4.0f) * scaleX, (w.height + 4.0f) * scaleY);
@@ -205,8 +204,7 @@ namespace {
             AEMtx33Concat(&f, &t, &s); AEGfxSetTransform(f.m); AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
         }
 
-        // LAYER B: Minimap Quest Icons (Middle layer, will be covered by fog)
-        // [REPLACE] Minimap Boss
+        // LAYER B: Minimap Quest Icons & Minimap Boss
         if (bossAlive) {
             AEMtx33 bms, bmt, bmf; AEMtx33Scale(&bms, playerMinimapRadius * 2, playerMinimapRadius * 2);
             AEMtx33Trans(&bmt, mmX + currentLevel.doorPos.x * scaleX, mmY + currentLevel.doorPos.y * scaleY);
@@ -220,13 +218,13 @@ namespace {
             AEGfxSetColorToMultiply(0.0f, 1.0f, 0.0f, 1.0f); AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
         }
 
-        // [REPLACE] Minimap Chest
+        //  Minimap Chest
         AEMtx33 mcs, mct, mcf; AEMtx33Scale(&mcs, playerMinimapRadius * 2, playerMinimapRadius * 2);
         AEMtx33Trans(&mct, mmX + currentLevel.chestPos.x * scaleX, mmY + currentLevel.chestPos.y * scaleY);
         AEMtx33Concat(&mcf, &mct, &mcs); AEGfxSetTransform(mcf.m);
         AEGfxSetColorToMultiply(1.0f, 0.84f, 0.0f, 1.0f); AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
 
-        // [REPLACE] Minimap Enemies
+        // Minimap Enemies
         for (auto& e : enemies) {
             AEMtx33 es, et, ef; AEMtx33Scale(&es, playerMinimapRadius * 2, playerMinimapRadius * 2);
             AEMtx33Trans(&et, mmX + e.x * scaleX, mmY + e.y * scaleY);
@@ -234,7 +232,7 @@ namespace {
             AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
         }
 
-        // LAYER C: Fog Grid (Drawn ON TOP of icons to hide them in undiscovered areas)
+        // LAYER C: Fog Grid 
         for (int x = 0; x < FOG_GRID_SIZE; x++) {
             for (int y = 0; y < FOG_GRID_SIZE; y++) {
                 if (discoveryGrid[x][y] < 1.0f) {
@@ -250,7 +248,7 @@ namespace {
             }
         }
 
-        // LAYER D: Player & UI Border (Top layer - always visible)
+        // LAYER D: Player & UI Border 
         AEMtx33 ps, pt, pf; AEMtx33Scale(&ps, playerMinimapRadius * 2, playerMinimapRadius * 2);
         AEMtx33Trans(&pt, mmX + playerPos.x * scaleX, mmY + playerPos.y * scaleY);
         AEMtx33Concat(&pf, &pt, &ps); AEGfxSetTransform(pf.m);
