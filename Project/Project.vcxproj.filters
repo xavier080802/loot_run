@@ -119,6 +119,8 @@
     </ClCompile>
     <ClCompile Include="GameObjects\LootChest.cpp">
       <Filter>Source Files</Filter>
+    <ClCompile Include="Map.cpp">
+      <Filter>Source Files\game_object</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -214,6 +216,8 @@
     </ClInclude>
     <ClInclude Include="GameObjects\LootChest.h">
       <Filter>Header Files</Filter>
+    <ClInclude Include="Map.h">
+      <Filter>Header Files\game_objects</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

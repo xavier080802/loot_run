@@ -86,21 +86,18 @@ bool IsRectsOverlapping(
 	return !((l1.x > r2.x || l2.x > r1.x) || (r1.y < l2.y || r2.y < l1.y));
 }
 
-bool CircleRectCollision(AEVec2 rectPos, AEVec2 rectSize, AEVec2 circlePos, float circRad)
-{
-	rectSize.x /= 2.f;
-	rectSize.y /= 2.f;
-	//Vars for which rect edges to test
-	float testX = 0, testY = 0;
-	if (circlePos.x < rectPos.x - rectSize.x) testX = rectPos.x - rectSize.x; //C on left edge
-	else if (circlePos.x > rectPos.x + rectSize.x) testX = rectPos.x + rectSize.x; //C on right edge
-	if (circlePos.y < rectPos.y - rectSize.y) testY = rectPos.y - rectSize.y; //C on bottom edge
-	else if (circlePos.y > rectPos.y + rectSize.y) testY = rectPos.y + rectSize.y; //C on top edge
+bool CircleRectCollision(AEVec2 rectCenter, AEVec2 rectSize, AEVec2 circleCenter, float radius) {
+	// 1. Find the closest point on the rectangle to the circle center
+	float closestX = AEClamp(circleCenter.x, rectCenter.x - rectSize.x / 2.0f, rectCenter.x + rectSize.x / 2.0f);
+	float closestY = AEClamp(circleCenter.y, rectCenter.y - rectSize.y / 2.0f, rectCenter.y + rectSize.y / 2.0f);
 
-	float distX = circlePos.x - testX;
-	float distY = circlePos.y - testY;
-	float distSqr = distX * distX + distY * distY;
-	return distSqr <= circRad * circRad;
+	// 2. Calculate distance between circle center and this closest point
+	float distanceX = circleCenter.x - closestX;
+	float distanceY = circleCenter.y - closestY;
+
+	// 3. If distance is less than radius, they collide
+	float distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+	return distanceSquared < (radius * radius);
 }
 
 bool CircleCollision(AEVec2 pos1, AEVec2 pos2, float radius1, float radius2)
