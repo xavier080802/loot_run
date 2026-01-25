@@ -159,6 +159,9 @@
     <ClCompile Include="Drops\PickupGO.cpp">
       <Filter>Source Files\DropPick</Filter>
     </ClCompile>
+    <ClCompile Include="GameDB.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">

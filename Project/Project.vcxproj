@@ -104,6 +104,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="DesignPatterns\PostOffice.cpp" />
     <ClCompile Include="Drops\DropSystem.cpp" />
     <ClCompile Include="Drops\PickupGO.cpp" />
+    <ClCompile Include="GameDB.cpp" />
     <ClCompile Include="GameObjects\GameObject.cpp" />
     <ClCompile Include="GameObjects\GameObjectManager.cpp" />
     <ClCompile Include="GameObjects\Projectile.cpp" />
