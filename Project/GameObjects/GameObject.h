@@ -5,6 +5,7 @@
 #include "../Helpers/BitmaskUtils.h"
 #include "../Rendering/AnimationData.h"
 #include "GameObjectManager.h"	
+#include "../Map.h"
 
 class GameObject {
 	friend class GameObjectManager; //Allow manager access to private members.
@@ -47,6 +48,11 @@ public:
 
 	//Apply a force (directional) on this go.
 	void ApplyForce(AEVec2 force);
+	bool HasForceApplied() const;
+	AEVec2 const& GetVelocity() const;
+
+	//TEMP
+	void Temp_DoVelocityMovement(double dt);
 
 	std::vector<unsigned> cellIndexes{};
 

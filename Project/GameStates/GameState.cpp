@@ -288,7 +288,7 @@ void GameState::LoadState() {
     GameObjectManager::GetInstance()->InitCollisionGrid(static_cast<unsigned>(mapWidth), static_cast<unsigned>(mapHeight));
     //Using this go as proxy for player
     go = new GameObject;
-    go->Init({ 0, 0}, { playerRadius *2,playerRadius *2}, 0, MESH_CIRCLE, COL_CIRCLE, { playerRadius,playerRadius}, CreateBitmask(2, GameObject::ENEMIES, GameObject::INTERACTABLE), GameObject::COLLISION_LAYER::PLAYER);
+    go->Init({ 0, 0}, { playerRadius *2,playerRadius *2}, 0, MESH_CIRCLE, COL_CIRCLE, { playerRadius*2,playerRadius*2}, CreateBitmask(2, GameObject::ENEMIES, GameObject::INTERACTABLE), GameObject::COLLISION_LAYER::PLAYER);
     /*go->GetRenderData().InitAnimation(6, 9)
         ->LoopAnim()
         ->AddTexture("Assets/sprite_test.png");*/
@@ -298,7 +298,7 @@ void GameState::LoadState() {
 
     playerDir = { 1.0f, 0.0f };
 
-    PetManager::GetInstance()->player = go;
+    PetManager::GetInstance()->LinkPlayer(go);
     
     // Initialise the 4-point border mesh for the UI
     AEGfxMeshStart();
@@ -319,6 +319,7 @@ void GameState::LoadState() {
 void GameState::InitState() {
     InitTutorial(currentLevel);
     go->SetPos(currentLevel.startPos);
+    PetManager::GetInstance()->PlacePet(go->GetPos());
     camPos = go->GetPos(); 
     camVel = { 0,0 };
     // Start with a fully hidden map
@@ -337,24 +338,13 @@ void GameState::Update(double dt) {
     if (AEInputCheckCurr(AEVK_S)) move.y -= 1;
     if (AEInputCheckCurr(AEVK_A)) move.x -= 1;
     if (AEInputCheckCurr(AEVK_D)) move.x += 1;
-
-    if (AEVec2Length(&move) > 0) {
+    
+    f32 len = AEVec2Length(&move);
+    if (len > 0) {
         AEVec2Normalize(&move, &move);
-        playerDir = move;
-        float subStep = (playerSpeed * (float)dt) / 10.0f;
+    }
 
-        // Collision detection lambda
-        auto IsClear = [&](AEVec2 p) {
-            for (const auto& w : currentLevel.walls)
-                if (CircleRectCollision(w.position, { w.width, w.height }, p, playerRadius)) return false;
-            if (bossAlive) {
-                if (AEVec2Distance(&p, &currentLevel.doorPos) < (playerRadius + bossRadius)) return false;
-                if (CircleRectCollision({ currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y }, { 40, 120 }, p, playerRadius)) return false;
-            }
-            return true;
-            };
-
-#pragma region testing
+    #pragma region inputs_for_testing
         //Testing projectiles. not firing from actual player cuz its not a GO yet
         if (AEInputCheckTriggered(AEVK_F)) {
             Projectile* proj = dynamic_cast<Projectile*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PROJECTILE));
@@ -375,29 +365,53 @@ void GameState::Update(double dt) {
             PostOffice::GetInstance()->Send("PetManager", new PetSkillMsg(PetSkillMsg::CAST_SKILL));
         }
 
-        //Testing player dodge on enemy
+        //Dodge. TODO: Map collision in GO
         if (AEInputCheckTriggered(AEVK_SPACE)) {
             go->ApplyForce(move * 500.f);
         }
+    #pragma endregion
 
-#pragma endregion
+    AEVec2 playerPos = go->GetPos();
+    //Normally inside GO.Update, but then theres no collision with the map.
+    go->Temp_DoVelocityMovement(dt);
 
-        AEVec2 playerPos = go->GetPos();
+    if (len > 0 || go->HasForceApplied()) {
+        playerDir = move;
+        float subStep = (playerSpeed * (float)dt) / 10.0f;
 
+        // Collision detection lambda
+        auto IsClear = [&](AEVec2 p) {
+            for (const auto& w : currentLevel.walls) {
+                if (CircleRectCollision(w.position, { w.width, w.height }, p, playerRadius)) return false;
+            }
+            if (bossAlive) {
+                if (AEVec2Distance(&p, &currentLevel.doorPos) < (playerRadius + bossRadius)) return false;
+                if (CircleRectCollision({ currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y }, { 40, 120 }, p, playerRadius)) return false;
+            }
+            return true;
+        };
+
+        //TEMP: this vel thing is temporary, until map collision can be integrated with GO
+        AEVec2 vel = go->GetVelocity() * static_cast<float>(dt);
+        float velSubStep = AEVec2Length(&vel) / 10.f;
+        if (go->HasForceApplied()) {
+            AEVec2Normalize(&vel, &vel);
+        }
         // Move in small increments to prevent tunneling through walls
         for (int i = 0; i < 10; i++) {
-            AEVec2 nextX = { playerPos.x + move.x * subStep, playerPos.y };
-            if (IsClear(nextX)) playerPos.x = nextX.x;
-            AEVec2 nextY = { playerPos.x, playerPos.y + move.y * subStep };
+            //Checking X and Y separately for smoother diagonal movement along walls.
+            AEVec2 nextX = { playerPos.x + move.x * subStep + vel.x* velSubStep, playerPos.y };
+            if (IsClear(nextX)) playerPos = nextX;
+            AEVec2 nextY = { playerPos.x, playerPos.y + move.y * subStep + vel.y* velSubStep };
             if (IsClear(nextY)) playerPos.y = nextY.y;
         }
-
-        // Clamp player inside map bounds
-        playerPos.x = AEClamp(playerPos.x, -halfMapWidth + playerRadius, halfMapWidth - playerRadius);
-        playerPos.y = AEClamp(playerPos.y, -halfMapHeight + playerRadius, halfMapHeight - playerRadius);
-
-        go->SetPos(playerPos);
     }
+
+    // Clamp player inside map bounds
+    playerPos.x = AEClamp(playerPos.x, -halfMapWidth + playerRadius, halfMapWidth - playerRadius);
+    playerPos.y = AEClamp(playerPos.y, -halfMapHeight + playerRadius, halfMapHeight - playerRadius);
+
+    go->SetPos(playerPos);
 
     // Refresh systems
     UpdateDiscovery((float)dt);

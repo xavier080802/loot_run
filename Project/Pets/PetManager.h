@@ -10,6 +10,11 @@ class PetManager : public Singleton<PetManager>, public PostBox
 	friend Singleton<PetManager>;
 public:
 	void Init();
+	//Place pet somewhere in world
+	void PlacePet(AEVec2 const& pos);
+	//Pass in player GO so pet can follow, and other stuff
+	void LinkPlayer(GameObject* playerGO);
+	GameObject const& GetPlayer() { return *player; }
 
 	//Sets the pet based on the type.
 	void SetPet(Pets::PET_TYPE pet, int dupes);
@@ -18,14 +23,12 @@ public:
 
 	bool Handle(Message* message) override;
 
-	//TEMP? i wanna code pet movement lol
-	GameObject* player{};
-
 private:
 	PostOffice* po{};
 	//Constant data. info for each pet, not player-specific
 	std::map<Pets::PET_TYPE, Pet::PetData> petData{};
 	Pet* equippedPet{};
+	GameObject* player{};
 
 	//TODO: pet inventory, with the dupe levels and stuff.
 

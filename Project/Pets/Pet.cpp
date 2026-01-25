@@ -7,7 +7,7 @@ namespace {
 	//Distance from player to stop moving at.
 	const float playerStopDist{50.f};
 	//Speed of pet when moving
-	const float petMoveSpeed{ 200.f };
+	const float petMoveSpeed{ 300.f };
 	//Distance from a point to consider it as "at" that point
 	const float pointTolerance{ 5 };
 }
@@ -29,9 +29,9 @@ void Pet::Update(double dt) {
 
 	//Movement
 
-	GameObject* player = PetManager::GetInstance()->player; //TEMP. i need player pos, obv
+	GameObject const& player = PetManager::GetInstance()->GetPlayer();
 
-	AEVec2 playerPos = player->GetPos();
+	AEVec2 playerPos = player.GetPos();
 	bool isNearPlayer = AEVec2SquareDistance(&pos, &playerPos) <= playerStopDist * playerStopDist;
 	//Not near player and last path point is sufficiently far
 	if (!isNearPlayer && AEVec2SquareDistance(&playerPos, path.empty() ? &pos : &path.back()) >= pointTolerance * pointTolerance) {

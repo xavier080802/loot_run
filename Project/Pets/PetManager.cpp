@@ -20,6 +20,17 @@ void PetManager::Init() {
 	SetPet(Pets::PET_1, 0);
 }
 
+void PetManager::LinkPlayer(GameObject* playerGO)
+{
+	player = playerGO;
+}
+
+void PetManager::PlacePet(AEVec2 const& pos)
+{
+	if (!equippedPet) return;
+	equippedPet->SetPos(pos);
+}
+
 //Call when selecting pet in main menu
 void PetManager::SetPet(Pets::PET_TYPE pet, int dupes)
 {
