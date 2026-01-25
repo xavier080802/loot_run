@@ -17,32 +17,32 @@ static int RandRangeInt(int lo, int hi)
 
 void DropSystem::SpawnDrops(int dropTableId, const AEVec2& worldPos)
 {
-    const DropTable* table = GameDB::GetDropTable(dropTableId);
-    if (!table) return;
+    //const DropTable* table = GameDB::GetDropTable(dropTableId);
+    //if (!table) return;
 
-    for (int i = 0; i < table->entryCount; ++i)
-    {
-        const DropEntry& e = table->entries[i];
-        if (e.chance <= 0.0f) continue;
-        if (Rand01() > e.chance) continue;
+    //for (int i = 0; i < table->entryCount; ++i)
+    //{
+    //    const DropEntry& e = table->entries[i];
+    //    if (e.chance <= 0.0f) continue;
+    //    if (Rand01() > e.chance) continue;
 
-        PickupPayload payload;
-        payload.type = e.type;
+    //    PickupPayload payload;
+    //    payload.type = e.type;
 
-        if (e.type == DropType::Equipment)
-        {
-            payload.amount = 1;
-            payload.equipment = GameDB::GetEquipmentData(e.itemId);
-            if (!payload.equipment) continue;
-        }
-        else
-        {
-            payload.amount = RandRangeInt(e.minAmount, e.maxAmount);
-            payload.equipment = 0;
-            if (payload.amount <= 0) continue;
-        }
+    //    if (e.type == DropType::Equipment)
+    //    {
+    //        payload.amount = 1;
+    //        payload.equipment = GameDB::GetEquipmentData(e.itemId);
+    //        if (!payload.equipment) continue;
+    //    }
+    //    else
+    //    {
+    //        payload.amount = RandRangeInt(e.minAmount, e.maxAmount);
+    //        payload.equipment = 0;
+    //        if (payload.amount <= 0) continue;
+    //    }
 
-        // Spawn pickup GO (uses manager registration via GameObject::Init)
-        PickupGO::Spawn(worldPos, payload);
-    }
+    //    // Spawn pickup GO (uses manager registration via GameObject::Init)
+    //    PickupGO::Spawn(worldPos, payload);
+    //}
 }

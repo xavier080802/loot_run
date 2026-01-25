@@ -1,15 +1,14 @@
-#include "GameState.h"
+#include "../GameStates/GameState.h"
 #include "../Music.h"
-#include "../helpers/RenderUtils.h"
-#include "../helpers/MatrixUtils.h"
-#include "../helpers/Vec2Utils.h"
-#include "../helpers/CoordUtils.h"
-#include "../Camera.h"
+#include "../Helpers/RenderUtils.h"
+#include "../Helpers/MatrixUtils.h"
+#include "../Helpers/Vec2Utils.h"
+#include "../Helpers/CoordUtils.h"
+#include "../camera.h"
 #include "../RenderingManager.h"
 #include "../GameObjects/GameObject.h"
-#include "../GameObjects/Projectile.h"
-#include "../DesignPatterns/PostOffice.h"
-#include "../Pets/PetManager.h" //temp
+#include "../Helpers/CollisionUtils.h"
+#include "../Map.h"
 #include <iostream>
 #include <cmath>
 
@@ -84,65 +83,8 @@ namespace {
         }
     }
 
-    void UpdateWorldMap(float dt) {
-        // --- Camera follow with soft easing near edges ---
-        float winW = (float)AEGfxGetWinMaxX();
-        float winH = (float)AEGfxGetWinMaxY();
-        float halfViewW = (winW * 0.5f) / camZoom;
-        float halfViewH = (winH * 0.5f) / camZoom;
-
-        float minX = -halfMapWidth + halfViewW;
-        float maxX = halfMapWidth - halfViewW;
-        float minY = -halfMapHeight + halfViewH;
-        float maxY = halfMapHeight - halfViewH;
-
-        // If viewport is larger than map, lock camera to center
-        if (minX > maxX) minX = maxX = 0.0f;
-        if (minY > maxY) minY = maxY = 0.0f;
-
-        AEVec2 camTarget = playerPos;
-
-        // Soft easing factors near edges
-        float tLeft = 1.0f - Saturate((playerPos.x - (minX + softMargin)) / softMargin);
-        float tRight = 1.0f - Saturate(((maxX - softMargin) - playerPos.x) / softMargin);
-        float tBottom = 1.0f - Saturate((playerPos.y - (minY + softMargin)) / softMargin);
-        float tTop = 1.0f - Saturate(((maxY - softMargin) - playerPos.y) / softMargin);
-
-        camTarget.x = Lerp(playerPos.x, minX, tLeft);
-        camTarget.x = Lerp(camTarget.x, maxX, tRight);
-        camTarget.y = Lerp(playerPos.y, minY, tBottom);
-        camTarget.y = Lerp(camTarget.y, maxY, tTop);
-
-        // SmoothDamp camera movement
-        float omega = 2.0f / camSmoothTime;
-        float xd = omega * dt;
-        float expK = 1.0f / (1.0f + xd + 0.48f * xd * xd + 0.235f * xd * xd * xd);
-
-        AEVec2 change = { camPos.x - camTarget.x, camPos.y - camTarget.y };
-        AEVec2 temp = { (camVel.x + omega * change.x) * dt,
-                          (camVel.y + omega * change.y) * dt };
-
-        camVel.x = (camVel.x - omega * temp.x) * expK;
-        camVel.y = (camVel.y - omega * temp.y) * expK;
-
-        camPos.x = camTarget.x + (change.x + temp.x) * expK;
-        camPos.y = camTarget.y + (change.y + temp.y) * expK;
-
-        // Clamp camera inside map bounds
-        camPos.x = AEClamp(camPos.x, minX, maxX);
-        camPos.y = AEClamp(camPos.y, minY, maxY);
-
-        // Clamp zoom
-        camZoom = AEClamp(camZoom, 0.5f, 2.5f);
-
-        //Gameobject rendering relies on Camera.h values, so syncing here.
-        SetCameraPos(camPos); 
-        SetCamZoom(camZoom);
-    }
-
-    void DrawMinimapArrow(float mmX, float mmY, float scaleX, float scaleY)
-    {
-        // Player position in minimap space
+    // Draws the small orientation arrow on the minimap
+    void DrawMinimapArrow(float mmX, float mmY, float scaleX, float scaleY) {
         float cx = mmX + playerPos.x * scaleX;
         float cy = mmY + playerPos.y * scaleY;
 
@@ -333,19 +275,12 @@ void GameState::LoadState() {
 
     tileWorldSizeX = mapWidth / (float)FOG_GRID_SIZE; tileWorldSizeY = mapHeight / (float)FOG_GRID_SIZE;
 
-    //Testing
-    GameObjectManager::GetInstance()->InitCollisionGrid(static_cast<unsigned>(mapWidth), static_cast<unsigned>(mapHeight));
-    //Using this go as proxy for player
-    go = new GameObject;
-    go->Init({200,200}, { 100,100 }, 0, MESH_SQUARE_ANIM, COL_RECT, { 100,100 }, CreateBitmask(1, GameObject::ENEMIES), GameObject::COLLISION_LAYER::PLAYER);
-    /*go->GetRenderData().InitAnimation(6, 9)
-        ->LoopAnim()
-        ->AddTexture("Assets/sprite_test.png");*/
-
-    enemy = new GameObject;
-    enemy->Init({ 200,0 }, { 100,-100 }, 0, MESH_CIRCLE, COL_CIRCLE, { 100,100 }, CreateBitmask(1, GameObject::PLAYER), GameObject::ENEMIES);
-
-    PetManager::GetInstance()->player = go;
+    // Initialise the square mesh used for walls and fog tiles
+    AEGfxMeshStart();
+    AEGfxTriAdd(-0.52f, -0.52f, 0xFFFFFFFF, 0, 0, 0.52f, -0.52f, 0xFFFFFFFF, 0, 0, 0.52f, 0.52f, 0xFFFFFFFF, 0, 0);
+    AEGfxTriAdd(-0.52f, -0.52f, 0xFFFFFFFF, 0, 0, 0.52f, 0.52f, 0xFFFFFFFF, 0, 0, -0.52f, 0.52f, 0xFFFFFFFF, 0, 0);
+    wallMesh = AEGfxMeshEnd();
+    fogTileMesh = wallMesh;
 }
 
 void GameState::InitState() {
@@ -383,34 +318,18 @@ void GameState::Update(double dt) {
             return true;
             };
 
-    //Testing projectiles. not firing from actual player cuz its not a GO yet
-    if (AEInputCheckTriggered(AEVK_F)) {
-        Projectile* proj = dynamic_cast<Projectile*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PROJECTILE));
-        AEVec2 m = GetMouseVec();
-        proj->Fire(go, { m.x - go->GetPos().x, m.y - go->GetPos().y }, 10, 200, 3, nullptr);
-    }
-
-    //Pet skill test. check cout
-    if (AEInputCheckTriggered(AEVK_R)) {
-        PostOffice::GetInstance()->Send("PetManager", new PetSkillMsg(PetSkillMsg::CAST_SKILL));
-    }
-
-    f32 len = AEVec2Length(&movement);
-    if (len > 0.0f) {
-        // Normalize movement to get direction
-        AEVec2 dirN = movement;
-        AEVec2Scale(&dirN, &dirN, 1.0f / len);
-        playerDir = dirN;
-
-        // Scale by speed and delta time
-        AEVec2Scale(&movement, &movement, playerSpeed * static_cast<float>(dt) / len);
-        AEVec2Add(&playerPos, &playerPos, &movement);
+        // Move in small increments to prevent tunneling through walls
+        for (int i = 0; i < 10; i++) {
+            AEVec2 nextX = { playerPos.x + move.x * subStep, playerPos.y };
+            if (IsClear(nextX)) playerPos.x = nextX.x;
+            AEVec2 nextY = { playerPos.x, playerPos.y + move.y * subStep };
+            if (IsClear(nextY)) playerPos.y = nextY.y;
+        }
     }
 
     // Clamp player to world bounds
     playerPos.x = AEClamp(playerPos.x, -halfMapWidth + playerRadius, halfMapWidth - playerRadius);
     playerPos.y = AEClamp(playerPos.y, -halfMapHeight + playerRadius, halfMapHeight - playerRadius);
-    go->SetPos(playerPos); //TEMP
 
     // Refresh systems
     UpdateDiscovery((float)dt);
