@@ -288,7 +288,7 @@ void GameState::LoadState() {
     GameObjectManager::GetInstance()->InitCollisionGrid(static_cast<unsigned>(mapWidth), static_cast<unsigned>(mapHeight));
     //Using this go as proxy for player
     go = new GameObject;
-    go->Init({ 0, 0}, { playerRadius,playerRadius }, 0, MESH_CIRCLE, COL_CIRCLE, { playerRadius,playerRadius}, CreateBitmask(2, GameObject::ENEMIES, GameObject::INTERACTABLE), GameObject::COLLISION_LAYER::PLAYER);
+    go->Init({ 0, 0}, { playerRadius *2,playerRadius *2}, 0, MESH_CIRCLE, COL_CIRCLE, { playerRadius,playerRadius}, CreateBitmask(2, GameObject::ENEMIES, GameObject::INTERACTABLE), GameObject::COLLISION_LAYER::PLAYER);
     /*go->GetRenderData().InitAnimation(6, 9)
         ->LoopAnim()
         ->AddTexture("Assets/sprite_test.png");*/
@@ -317,9 +317,10 @@ void GameState::LoadState() {
 }
 
 void GameState::InitState() {
-    AEVec2 playerPos = go->GetPos();
-    InitTutorial(currentLevel); playerPos = currentLevel.startPos;
-    camPos = playerPos; camVel = { 0,0 };
+    InitTutorial(currentLevel);
+    go->SetPos(currentLevel.startPos);
+    camPos = go->GetPos(); 
+    camVel = { 0,0 };
     // Start with a fully hidden map
     for (int i = 0; i < FOG_GRID_SIZE; i++) {
         for (int j = 0; j < FOG_GRID_SIZE; j++) {
@@ -353,6 +354,7 @@ void GameState::Update(double dt) {
             return true;
             };
 
+#pragma region testing
         //Testing projectiles. not firing from actual player cuz its not a GO yet
         if (AEInputCheckTriggered(AEVK_F)) {
             Projectile* proj = dynamic_cast<Projectile*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PROJECTILE));
@@ -378,13 +380,9 @@ void GameState::Update(double dt) {
             go->ApplyForce(move * 500.f);
         }
 
-        // Movement: Scale by speed and delta time
-        AEVec2Scale(&move, &move, playerSpeed * static_cast<float>(dt));
+#pragma endregion
 
-        // Clamp player inside map bounds
         AEVec2 playerPos = go->GetPos();
-        playerPos = { AEClamp(playerPos.x, -halfMapWidth + playerRadius, halfMapWidth - playerRadius),
-            AEClamp(playerPos.y, -halfMapHeight + playerRadius, halfMapHeight - playerRadius) };
 
         // Move in small increments to prevent tunneling through walls
         for (int i = 0; i < 10; i++) {
@@ -393,6 +391,11 @@ void GameState::Update(double dt) {
             AEVec2 nextY = { playerPos.x, playerPos.y + move.y * subStep };
             if (IsClear(nextY)) playerPos.y = nextY.y;
         }
+
+        // Clamp player inside map bounds
+        playerPos.x = AEClamp(playerPos.x, -halfMapWidth + playerRadius, halfMapWidth - playerRadius);
+        playerPos.y = AEClamp(playerPos.y, -halfMapHeight + playerRadius, halfMapHeight - playerRadius);
+
         go->SetPos(playerPos);
     }
 
