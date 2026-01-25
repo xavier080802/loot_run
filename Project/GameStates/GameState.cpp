@@ -24,10 +24,6 @@ namespace {
     AEGfxVertexList* fogTileMesh = nullptr; // Used for Fog grid squares
     AEGfxVertexList* wallMesh = nullptr;    // Used for Walls, Doors, Chests
 
-    // Meshes for rendering
-    AEGfxVertexList* circleMesh = nullptr;
-    AEGfxVertexList* borderMesh = nullptr;
-
     // Player state
     //AEVec2 playerPos;
     AEVec2 playerDir = { 1.0f, 0.0f };   // last non-zero movement direction
@@ -66,14 +62,9 @@ namespace {
     //go is the player.
     GameObject* go, * enemy;
 
-    // --------------------
-    // Small helpers
-    // --------------------
-    inline float Saturate(float x) { return AEClamp(x, 0.0f, 1.0f); }
-    inline float Lerp(float a, float b, float t) { return a + (b - a) * t; }
-
     // Logic to calculate which fog tiles are near the player and reveal them
     void UpdateDiscovery(float dt) {
+        AEVec2 playerPos = go->GetPos();
         float revealRadiusWorld = 180.0f;
         for (int x = 0; x < FOG_GRID_SIZE; ++x) {
             for (int y = 0; y < FOG_GRID_SIZE; ++y) {
@@ -102,6 +93,7 @@ namespace {
 
     // Draws the small orientation arrow on the minimap
     void DrawMinimapArrow(float mmX, float mmY, float scaleX, float scaleY) {
+        AEVec2 playerPos = go->GetPos();
         float cx = mmX + playerPos.x * scaleX;
         float cy = mmY + playerPos.y * scaleY;
 
@@ -207,7 +199,9 @@ namespace {
         // AEMtx33 pS, pT, pFinal; AEMtx33Scale(&pS, playerRadius * 2, playerRadius * 2); AEMtx33Trans(&pT, playerPos.x, playerPos.y);
         // AEMtx33Concat(&pFinal, &camMatrix, &pT); AEMtx33Concat(&pFinal, &pFinal, &pS); AEGfxSetTransform(pFinal.m);
         // AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
+    }
 
+    void RenderMinimap() {
         // --- MINIMAP RENDERING LAYERS ---
         float scaleX = minimapWidth / mapWidth, scaleY = minimapHeight / mapHeight;
         float mmX = (float)AEGfxGetWinMaxX() - minimapWidth * 0.5f - minimapMargin;
@@ -243,6 +237,7 @@ namespace {
         AEGfxSetColorToMultiply(1.0f, 0.84f, 0.0f, 1.0f); AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
 
         // Minimap Enemies
+        AEVec2 enemies[] = { currentLevel.enemy1Pos, currentLevel.enemy2Pos }; //Placeholder enemies
         for (auto& e : enemies) {
             AEMtx33 es, et, ef; AEMtx33Scale(&es, playerMinimapRadius * 2, playerMinimapRadius * 2);
             AEMtx33Trans(&et, mmX + e.x * scaleX, mmY + e.y * scaleY);
@@ -267,6 +262,7 @@ namespace {
         }
 
         // LAYER D: Player & UI Border 
+        AEVec2 playerPos = go->GetPos();
         AEMtx33 ps, pt, pf; AEMtx33Scale(&ps, playerMinimapRadius * 2, playerMinimapRadius * 2);
         AEMtx33Trans(&pt, mmX + playerPos.x * scaleX, mmY + playerPos.y * scaleY);
         AEMtx33Concat(&pf, &pt, &ps); AEGfxSetTransform(pf.m);
@@ -297,10 +293,9 @@ void GameState::LoadState() {
         ->LoopAnim()
         ->AddTexture("Assets/sprite_test.png");*/
 
-    enemy = new GameObject;
-    enemy->Init({ 200,0 }, { 100,-100 }, 0, MESH_CIRCLE, COL_CIRCLE, { 100,100 }, CreateBitmask(1, GameObject::PLAYER), GameObject::ENEMIES);
+    //enemy = new GameObject;
+    //enemy->Init({ 200,0 }, { 100,-100 }, 0, MESH_CIRCLE, COL_CIRCLE, { 100,100 }, CreateBitmask(1, GameObject::PLAYER), GameObject::ENEMIES);
 
-    go->SetPos({ 0,0 });
     playerDir = { 1.0f, 0.0f };
 
     PetManager::GetInstance()->player = go;
@@ -322,14 +317,16 @@ void GameState::LoadState() {
 }
 
 void GameState::InitState() {
+    AEVec2 playerPos = go->GetPos();
     InitTutorial(currentLevel); playerPos = currentLevel.startPos;
     camPos = playerPos; camVel = { 0,0 };
     // Start with a fully hidden map
-    for (int i = 0; i < FOG_GRID_SIZE; i++)
+    for (int i = 0; i < FOG_GRID_SIZE; i++) {
         for (int j = 0; j < FOG_GRID_SIZE; j++) {
             discoveryGrid[i][j] = 0;
             regenTimerGrid[i][j] = 0;
         }
+    }
 }
 
 void GameState::Update(double dt) {
@@ -354,49 +351,41 @@ void GameState::Update(double dt) {
                 if (CircleRectCollision({ currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y }, { 40, 120 }, p, playerRadius)) return false;
             }
             return true;
-        };
+            };
 
-    //Testing projectiles. not firing from actual player cuz its not a GO yet
-    if (AEInputCheckTriggered(AEVK_F)) {
-        Projectile* proj = dynamic_cast<Projectile*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PROJECTILE));
-        AEVec2 m = GetMouseVec();
-        //Fire at cursor
-        proj->Fire(go, { m.x - go->GetPos().x, m.y - go->GetPos().y }, 10, 200, 3, nullptr);
-    }
+        //Testing projectiles. not firing from actual player cuz its not a GO yet
+        if (AEInputCheckTriggered(AEVK_F)) {
+            Projectile* proj = dynamic_cast<Projectile*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PROJECTILE));
+            AEVec2 m = GetMouseVec();
+            //Fire at cursor
+            proj->Fire(go, { m.x - go->GetPos().x, m.y - go->GetPos().y }, 10, 200, 3, nullptr);
+        }
 
-    //Press L to spawn test chest at the mouse location
-    if (AEInputCheckTriggered(AEVK_L)) {
-        LootChest* chest = dynamic_cast<LootChest*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
-        AEVec2 m = GetMouseVec();
-        chest->Init(m, { 75,75 }, 1, MESH_SQUARE, COL_RECT, { 75,75 }, CreateBitmask(1, GameObject::PLAYER), GameObject::INTERACTABLE);
-    }
+        //Press L to spawn test chest at the mouse location
+        if (AEInputCheckTriggered(AEVK_L)) {
+            LootChest* chest = dynamic_cast<LootChest*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
+            AEVec2 m = GetMouseVec();
+            chest->Init(m, { 75,75 }, 1, MESH_SQUARE, COL_RECT, { 75,75 }, CreateBitmask(1, GameObject::PLAYER), GameObject::INTERACTABLE);
+        }
 
-    //Pet skill test. check cout
-    if (AEInputCheckTriggered(AEVK_R)) {
-        PostOffice::GetInstance()->Send("PetManager", new PetSkillMsg(PetSkillMsg::CAST_SKILL));
-    }
+        //Pet skill test. check cout
+        if (AEInputCheckTriggered(AEVK_R)) {
+            PostOffice::GetInstance()->Send("PetManager", new PetSkillMsg(PetSkillMsg::CAST_SKILL));
+        }
 
-    //Testing player dodge on enemy
+        //Testing player dodge on enemy
+        if (AEInputCheckTriggered(AEVK_SPACE)) {
+            go->ApplyForce(move * 500.f);
+        }
 
-    f32 len = AEVec2Length(&movement);
-    // Normalize movement to get direction
-    AEVec2 dirN = movement;
-    if (len > 0.0f) {
-        AEVec2Scale(&dirN, &dirN, 1.0f / len);
-        playerDir = dirN;
+        // Movement: Scale by speed and delta time
+        AEVec2Scale(&move, &move, playerSpeed * static_cast<float>(dt));
 
-        // Scale by speed and delta time
-        AEVec2Scale(&movement, &movement, playerSpeed * static_cast<float>(dt) / len);
-        go->SetPos(go->GetPos() + movement);
-    }
+        // Clamp player inside map bounds
+        AEVec2 playerPos = go->GetPos();
+        playerPos = { AEClamp(playerPos.x, -halfMapWidth + playerRadius, halfMapWidth - playerRadius),
+            AEClamp(playerPos.y, -halfMapHeight + playerRadius, halfMapHeight - playerRadius) };
 
-    if (AEInputCheckTriggered(AEVK_SPACE)) {
-        go->ApplyForce(dirN * 500.f);
-    }
-
-    // Clamp player inside map bounds
-    go->SetPos({ AEClamp(go->GetPos().x, -halfMapWidth + playerRadius, halfMapWidth - playerRadius),
-        AEClamp(go->GetPos().y, -halfMapHeight + playerRadius, halfMapHeight - playerRadius) });
         // Move in small increments to prevent tunneling through walls
         for (int i = 0; i < 10; i++) {
             AEVec2 nextX = { playerPos.x + move.x * subStep, playerPos.y };
@@ -404,18 +393,21 @@ void GameState::Update(double dt) {
             AEVec2 nextY = { playerPos.x, playerPos.y + move.y * subStep };
             if (IsClear(nextY)) playerPos.y = nextY.y;
         }
+        go->SetPos(playerPos);
     }
-
-    // Clamp player to world bounds
-    playerPos.x = AEClamp(playerPos.x, -halfMapWidth + playerRadius, halfMapWidth - playerRadius);
-    playerPos.y = AEClamp(playerPos.y, -halfMapHeight + playerRadius, halfMapHeight - playerRadius);
 
     // Refresh systems
     UpdateDiscovery((float)dt);
     UpdateWorldMap((float)dt);
+
+    GameObjectManager::GetInstance()->UpdateObjects(dt);
 }
 
-void GameState::Draw() { RenderWorldMap(); }
+void GameState::Draw() { 
+    RenderWorldMap(); 
+    GameObjectManager::GetInstance()->DrawObjects();
+    RenderMinimap();
+}
 void GameState::ExitState() {}
 
 void GameState::UnloadState() {
