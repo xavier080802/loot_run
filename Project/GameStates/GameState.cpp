@@ -1,10 +1,10 @@
-#include "GameState.h"
+#include "../GameStates/GameState.h"
 #include "../Music.h"
-#include "../helpers/RenderUtils.h"
-#include "../helpers/MatrixUtils.h"
-#include "../helpers/Vec2Utils.h"
-#include "../helpers/CoordUtils.h"
-#include "../Camera.h"
+#include "../Helpers/RenderUtils.h"
+#include "../Helpers/MatrixUtils.h"
+#include "../Helpers/Vec2Utils.h"
+#include "../Helpers/CoordUtils.h"
+#include "../camera.h"
 #include "../RenderingManager.h"
 #include "../GameObjects/GameObject.h"
 #include "../GameObjects/Projectile.h"
@@ -15,6 +15,9 @@
 #include "../Map.h"
 #include <iostream>
 #include <cmath>
+#include "../Actor/Player.h"
+#include "../GameObjects/GameObjectManager.h"
+#include "../Helpers/BitmaskUtils.h"
 
 namespace {
     // --- GLOBAL SYSTEMS ---
@@ -24,11 +27,16 @@ namespace {
     AEGfxVertexList* fogTileMesh = nullptr; // Used for Fog grid squares
     AEGfxVertexList* wallMesh = nullptr;    // Used for Walls, Doors, Chests
 
-    // Player state
-    //AEVec2 playerPos;
-    AEVec2 playerDir = { 1.0f, 0.0f };   // last non-zero movement direction
+    // --- PLAYER DATA ---
+    Player* gPlayer = nullptr;
+    AEVec2 playerDir = { 1.0f, 0.0f };
     float playerRadius = 15.0f;
     float playerSpeed = 300.0f;
+
+    static AEVec2 GetPlayerPos()
+    {
+        return gPlayer ? gPlayer->GetPos() : AEVec2{ 0.0f, 0.0f };
+    }
 
     // --- BOSS PLACEHOLDER ---
     bool bossAlive = true;
@@ -64,25 +72,21 @@ namespace {
 
     // Logic to calculate which fog tiles are near the player and reveal them
     void UpdateDiscovery(float dt) {
-        AEVec2 playerPos = go->GetPos();
+        AEVec2 p = GetPlayerPos();
         float revealRadiusWorld = 180.0f;
         for (int x = 0; x < FOG_GRID_SIZE; ++x) {
             for (int y = 0; y < FOG_GRID_SIZE; ++y) {
-                // Decay discovery over time
                 if (regenTimerGrid[x][y] > 0.0f) regenTimerGrid[x][y] -= dt;
                 else {
                     discoveryGrid[x][y] -= FOG_REGEN_RATE * dt;
                     if (discoveryGrid[x][y] < 0.0f) discoveryGrid[x][y] = 0.0f;
                 }
-
-                // Calculate tile center position in world space
                 float tileWorldX = (x * tileWorldSizeX) - halfMapWidth + (tileWorldSizeX * 0.5f);
                 float tileWorldY = (y * tileWorldSizeY) - halfMapHeight + (tileWorldSizeY * 0.5f);
 
-                float dx = playerPos.x - tileWorldX;
-                float dy = playerPos.y - tileWorldY;
+                float dx = p.x - tileWorldX;
+                float dy = p.y - tileWorldY;
 
-                // If tile is within reveal range, set discovery to max
                 if ((dx * dx + dy * dy) < (revealRadiusWorld * revealRadiusWorld)) {
                     discoveryGrid[x][y] = 1.0f;
                     regenTimerGrid[x][y] = REGEN_DELAY;
@@ -93,9 +97,9 @@ namespace {
 
     // Draws the small orientation arrow on the minimap
     void DrawMinimapArrow(float mmX, float mmY, float scaleX, float scaleY) {
-        AEVec2 playerPos = go->GetPos();
-        float cx = mmX + playerPos.x * scaleX;
-        float cy = mmY + playerPos.y * scaleY;
+        AEVec2 p = GetPlayerPos();
+        float cx = mmX + p.x * scaleX;
+        float cy = mmY + p.y * scaleY;
 
         float dx = playerDir.x, dy = playerDir.y;
         float mag = sqrtf(dx * dx + dy * dy);
@@ -127,8 +131,7 @@ namespace {
         float winW = (float)AEGfxGetWinMaxX(), winH = (float)AEGfxGetWinMaxY();
         float viewHalfW = (winW * 0.5f) / camZoom, viewHalfH = (winH * 0.5f) / camZoom;
 
-        const AEVec2& playerPos = go->GetPos();
-        AEVec2 camTarget = playerPos;
+        AEVec2 camTarget = GetPlayerPos();
         float limitX = halfMapWidth - viewHalfW, limitY = halfMapHeight - viewHalfH;
 
         // Keep camera within map bounds
@@ -264,7 +267,7 @@ namespace {
         // LAYER D: Player & UI Border 
         AEVec2 playerPos = go->GetPos();
         AEMtx33 ps, pt, pf; AEMtx33Scale(&ps, playerMinimapRadius * 2, playerMinimapRadius * 2);
-        AEMtx33Trans(&pt, mmX + playerPos.x * scaleX, mmY + playerPos.y * scaleY);
+        AEMtx33Trans(&pt, mmX + p.x * scaleX, mmY + p.y * scaleY);
         AEMtx33Concat(&pf, &pt, &ps); AEGfxSetTransform(pf.m);
         AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
         DrawMinimapArrow(mmX, mmY, scaleX, scaleY);
@@ -316,12 +319,40 @@ void GameState::LoadState() {
     fogTileMesh = wallMesh;
 }
 
-void GameState::InitState() {
+void GameState::InitState()
+{
     InitTutorial(currentLevel);
-    go->SetPos(currentLevel.startPos);
-    PetManager::GetInstance()->PlacePet(go->GetPos());
-    camPos = go->GetPos(); 
+
+    // --- Spawn player GO once ---
+    if (!gPlayer) gPlayer = new Player();
+
+    // Player collides with pickups (PET) + enemies
+    Bitmask collideMask = CreateBitmask(2,
+        (int)GameObject::COLLISION_LAYER::PET,
+        (int)GameObject::COLLISION_LAYER::ENEMIES
+    );
+
+    gPlayer->Init(
+        currentLevel.startPos,
+        AEVec2{ 1.0f, 1.0f },
+        0,
+        MESH_CIRCLE,
+        COLLIDER_SHAPE::COL_CIRCLE,
+        AEVec2{ playerRadius * 2.0f, playerRadius * 2.0f },
+        collideMask,
+        GameObject::COLLISION_LAYER::PLAYER
+    );
+    PetManager::GetInstance()->PlacePet(GetPlayerPos());
+
+    ActorStats base{};
+    base.maxHP = 100.0f;
+    base.moveSpeed = playerSpeed;
+    gPlayer->InitPlayerRuntime(base);
+
+    // Camera starts on player
+    camPos = currentLevel.startPos;
     camVel = { 0,0 };
+
     // Start with a fully hidden map
     for (int i = 0; i < FOG_GRID_SIZE; i++) {
         for (int j = 0; j < FOG_GRID_SIZE; j++) {
@@ -331,8 +362,9 @@ void GameState::InitState() {
     }
 }
 
-void GameState::Update(double dt) {
-    // Basic movement input
+void GameState::Update(double dt)
+{
+    // Track input direction for minimap arrow (Player does the actual movement)
     AEVec2 move = { 0,0 };
     if (AEInputCheckCurr(AEVK_W)) move.y += 1;
     if (AEInputCheckCurr(AEVK_S)) move.y -= 1;
@@ -370,6 +402,8 @@ void GameState::Update(double dt) {
             go->ApplyForce(move * 500.f);
         }
     #pragma endregion
+
+    if (!gPlayer) return;
 
     AEVec2 playerPos = go->GetPos();
     //Normally inside GO.Update, but then theres no collision with the map.
@@ -413,7 +447,8 @@ void GameState::Update(double dt) {
 
     go->SetPos(playerPos);
 
-    // Refresh systems
+
+    // Systems now read from gPlayer via GetPlayerPos()
     UpdateDiscovery((float)dt);
     UpdateWorldMap((float)dt);
 

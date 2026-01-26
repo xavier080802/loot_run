@@ -96,8 +96,15 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Actor\Actor.cpp" />
+    <ClCompile Include="Actor\Enemy.cpp" />
+    <ClCompile Include="Actor\Player.cpp" />
+    <ClCompile Include="Actor\StatsCalc.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DesignPatterns\PostOffice.cpp" />
+    <ClCompile Include="Drops\DropSystem.cpp" />
+    <ClCompile Include="Drops\PickupGO.cpp" />
+    <ClCompile Include="GameDB.cpp" />
     <ClCompile Include="GameObjects\GameObject.cpp" />
     <ClCompile Include="GameObjects\GameObjectManager.cpp" />
     <ClCompile Include="GameObjects\LootChest.cpp" />
@@ -113,6 +120,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="helpers\MatrixUtils.cpp" />
     <ClCompile Include="helpers\RenderUtils.cpp" />
     <ClCompile Include="helpers\Vec2Utils.cpp" />
+    <ClCompile Include="Inventory\Inventory.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Pets\Pet.cpp" />
     <ClCompile Include="Pets\PetManager.cpp" />
@@ -124,12 +132,23 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="Rendering\RenderData.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Actor\Actor.h" />
+    <ClInclude Include="Actor\Enemy.h" />
+    <ClInclude Include="Actor\EnemyDef.h" />
+    <ClInclude Include="Actor\Player.h" />
+    <ClInclude Include="Actor\StatsCalc.h" />
+    <ClInclude Include="Actor\StatsTypes.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="DesignPatterns\ConcreteMessages.h" />
     <ClInclude Include="DesignPatterns\Message.h" />
     <ClInclude Include="DesignPatterns\PostBox.h" />
     <ClInclude Include="DesignPatterns\PostOffice.h" />
     <ClInclude Include="DesignPatterns\Singleton.h" />
+    <ClInclude Include="Drops\DropSystem.h" />
+    <ClInclude Include="Drops\DropTypes.h" />
+    <ClInclude Include="Drops\PickupGO.h" />
+    <ClInclude Include="Drops\PickupPayload.h" />
+    <ClInclude Include="GameDB.h" />
     <ClInclude Include="GameObjects\GameObject.h" />
     <ClInclude Include="GameObjects\GameObjectManager.h" />
     <ClInclude Include="GameObjects\GOTypeList.h" />
@@ -146,6 +165,8 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="helpers\MatrixUtils.h" />
     <ClInclude Include="helpers\RenderUtils.h" />
     <ClInclude Include="helpers\Vec2Utils.h" />
+    <ClInclude Include="Inventory\EquipmentTypes.h" />
+    <ClInclude Include="Inventory\Inventory.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="Pets\Pet.h" />
     <ClInclude Include="Pets\PetConsts.h" />

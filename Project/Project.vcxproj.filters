@@ -42,6 +42,23 @@
     </Filter>
     <Filter Include="Source Files\Helpers">
       <UniqueIdentifier>{4b43a601-e506-4b23-89d6-a4743a05cbfd}</UniqueIdentifier>
+    <Filter Include="Header Files\Actors">
+      <UniqueIdentifier>{389eb84e-d061-4b5d-a960-aea5b0f30bba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Inventory">
+      <UniqueIdentifier>{c23a4e0c-b396-4664-86e9-58b1f9c02dc6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\DropPick">
+      <UniqueIdentifier>{c12fedf2-46e8-4dfe-b1b1-98d99c146489}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Actors">
+      <UniqueIdentifier>{b90b0c1e-adb1-4526-aeca-47e7d0647084}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Inventory">
+      <UniqueIdentifier>{f2ef29ba-e9ae-4ff9-afd4-cb0149ade4d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\DropPick">
+      <UniqueIdentifier>{48d6ac06-1d91-4da1-8bbb-3c665aa641e6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -122,6 +139,31 @@
     </ClCompile>
     <ClCompile Include="GameObjects\LootChest.cpp">
       <Filter>Source Files\GameObjects</Filter>
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Actor\Actor.cpp">
+      <Filter>Source Files\Actors</Filter>
+    </ClCompile>
+    <ClCompile Include="Actor\Enemy.cpp">
+      <Filter>Source Files\Actors</Filter>
+    </ClCompile>
+    <ClCompile Include="Actor\Player.cpp">
+      <Filter>Source Files\Actors</Filter>
+    </ClCompile>
+    <ClCompile Include="Actor\StatsCalc.cpp">
+      <Filter>Source Files\Actors</Filter>
+    </ClCompile>
+    <ClCompile Include="Inventory\Inventory.cpp">
+      <Filter>Source Files\Inventory</Filter>
+    </ClCompile>
+    <ClCompile Include="Drops\DropSystem.cpp">
+      <Filter>Source Files\DropPick</Filter>
+    </ClCompile>
+    <ClCompile Include="Drops\PickupGO.cpp">
+      <Filter>Source Files\DropPick</Filter>
+    </ClCompile>
+    <ClCompile Include="GameDB.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -220,6 +262,47 @@
     </ClInclude>
     <ClInclude Include="GameObjects\LootChest.h">
       <Filter>Header Files\GameObjects</Filter>
+    <ClInclude Include="GameDB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Map.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor\Actor.h">
+      <Filter>Header Files\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor\Enemy.h">
+      <Filter>Header Files\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor\EnemyDef.h">
+      <Filter>Header Files\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor\StatsCalc.h">
+      <Filter>Header Files\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor\StatsTypes.h">
+      <Filter>Header Files\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor\Player.h">
+      <Filter>Header Files\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="Inventory\EquipmentTypes.h">
+      <Filter>Header Files\Inventory</Filter>
+    </ClInclude>
+    <ClInclude Include="Inventory\Inventory.h">
+      <Filter>Header Files\Inventory</Filter>
+    </ClInclude>
+    <ClInclude Include="Drops\DropSystem.h">
+      <Filter>Header Files\DropPick</Filter>
+    </ClInclude>
+    <ClInclude Include="Drops\DropTypes.h">
+      <Filter>Header Files\DropPick</Filter>
+    </ClInclude>
+    <ClInclude Include="Drops\PickupGO.h">
+      <Filter>Header Files\DropPick</Filter>
+    </ClInclude>
+    <ClInclude Include="Drops\PickupPayload.h">
+      <Filter>Header Files\DropPick</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

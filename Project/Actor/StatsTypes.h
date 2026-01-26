@@ -1,0 +1,22 @@
+#pragma once
+
+struct ActorStats
+{
+	float maxHP = 0.0f;
+	float attack = 0.0f;
+	float defense = 0.0f;
+	float moveSpeed = 0.0f; // pixels/sec (world coords)
+	float attackSpeed = 0.0f; // attacks/sec
+};
+
+struct EquipmentModifiers
+{
+	ActorStats additive; // additive-only equipment stats
+};
+
+struct UpgradeMultipliers
+{
+	float hpMult = 1.0f;
+	float attackMult = 1.0f;
+	float defenseMult = 1.0f;
+};
