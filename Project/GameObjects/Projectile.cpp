@@ -32,8 +32,8 @@ void Projectile::Update(double dt)
 
 void Projectile::OnCollide(CollisionData& other)
 {
-	//Disable self
-	isEnabled = false;
 	//Send callback
 	if (OnHit) OnHit(other);
+	//Disable self
+	isEnabled = false;
 }

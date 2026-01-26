@@ -82,7 +82,7 @@ void Player::HandleAttackInput(double dt)
     //The collide reaction should be controlled by the weapon through OnHitCallback
     if (AEInputCheckTriggered(AEVK_F)) {
         Projectile* proj = dynamic_cast<Projectile*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PROJECTILE));
-        AEVec2 m = GetMouseVec();
+        AEVec2 m = GetMouseWorldVec();
         //Fire at cursor
         proj->Fire(this, { m.x - pos.x, m.y - pos.y }, 10, 200, 3, Test_ProjHitCallback);
     }

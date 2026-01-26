@@ -19,12 +19,19 @@ AEVec2 VecOne(void)
     return vec;
 }
 
-AEVec2 GetMouseVec(void)
+AEVec2 GetMouseWorldVec(void)
 {
     s32 mouseX = 0, mouseY = 0;
     AEInputGetCursorPosition(&mouseX, &mouseY);
     AEVec2 world = ScreenToCameraWorld(ToVec2((float)mouseX, (float)mouseY));
     return world;
+}
+
+AEVec2 GetMouseScreenVec()
+{
+    s32 mouseX = 0, mouseY = 0;
+    AEInputGetCursorPosition(&mouseX, &mouseY);
+    return { (float)mouseX, (float)mouseY };
 }
 
 AEVec2 NegVec2(AEVec2 v)

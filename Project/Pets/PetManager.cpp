@@ -8,19 +8,19 @@ void PetManager::Init() {
 
 	//Load pet data
 	//In the future, the values should be from a file.
-	Pet::PetData data1{"Basic Pet", 2, PetSkills::Pet1Skills, "Assets/finn.png"};
+	Pet::PetData data1{"Basic Pet", 2, PetSkills::Pet1Skill, "Assets/finn.png"};
 	petData.insert(std::pair<Pets::PET_TYPE, Pet::PetData>(Pets::PET_1, data1));
 
 	//Init pet GO
 	equippedPet = new Pet{};
 	//Values are TEMP
-	equippedPet->Init({}, { 25,25 }, 0, MESH_SQUARE, COL_CIRCLE, { 25,25 }, 0, GameObject::COLLISION_LAYER::PET);
+	equippedPet->Init({}, { 25,25 }, 0, MESH_SQUARE, COL_CIRCLE, { 25,25 }, CreateBitmask(1, GameObject::COLLISION_LAYER::ENEMIES), GameObject::COLLISION_LAYER::PET);
 
 	//TEMP
 	SetPet(Pets::PET_1, 0);
 }
 
-void PetManager::LinkPlayer(GameObject* playerGO)
+void PetManager::LinkPlayer(Player* playerGO)
 {
 	player = playerGO;
 }
@@ -62,7 +62,7 @@ bool PetManager::Handle(Message* message)
 	switch (msg->type)
 	{
 	case PetSkillMsg::CAST_SKILL:
-		equippedPet->CastSkill({});
+		equippedPet->CastSkill({player, equippedPet});
 		break;
 	case PetSkillMsg::SKILL_READY:
 		break;

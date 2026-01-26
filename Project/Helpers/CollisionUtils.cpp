@@ -16,7 +16,7 @@ bool IsPointOver(float posX, float posY, float width, float height, float pointX
 
 bool IsCursorOver(AEVec2 pos, float width, float height)
 {
-	AEVec2 mouse = GetMouseVec();
+	AEVec2 mouse = GetMouseWorldVec();
 	return IsPointOver(pos.x, pos.y, width, height, mouse.x, mouse.y);
 }
 
@@ -28,12 +28,12 @@ bool IsPointOverCircle(float posX, float posY, float diameter, float pointX, flo
 
 bool IsCursorOverCircle(AEVec2 pos, float diameter)
 {
-	AEVec2 world = GetMouseVec();
+	AEVec2 world = GetMouseWorldVec();
 	return (fabs(world.x - pos.x) <= diameter / 2.f && fabs(world.y - pos.y) <= diameter / 2.f) ? 1 : 0;
 }
 
 bool IsCursorOverOval(AEVec2 pos, AEVec2 size, f32 rotDeg) {
-	AEVec2 world = GetMouseVec();
+	AEVec2 world = GetMouseWorldVec();
 
 	AEVec2 v = { 0,0 }, r = { 0,0 };
 	AEMtx33 A = { 0 };
@@ -70,7 +70,7 @@ bool IsPointOverRectRot(float posX, float posY, float width, float height, float
 
 bool IsCursorOverRectRot(AEVec2 pos, float width, float height, float degrees)
 {
-	AEVec2 world = GetMouseVec();
+	AEVec2 world = GetMouseWorldVec();
 	return IsPointOverRectRot(pos.x, pos.y, width, height, degrees, world.x, world.y);
 }
 

@@ -358,7 +358,7 @@ void GameState::Update(double dt)
         //Press L to spawn test chest at the mouse location
         if (AEInputCheckTriggered(AEVK_L)) {
             LootChest* chest = dynamic_cast<LootChest*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
-            AEVec2 m = GetMouseVec();
+            AEVec2 m = GetMouseWorldVec();
             chest->Init(m, { 75,75 }, 1, MESH_SQUARE, COL_RECT, { 75,75 }, CreateBitmask(1, GameObject::PLAYER), GameObject::INTERACTABLE);
         }
 

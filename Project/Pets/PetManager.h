@@ -4,6 +4,7 @@
 #include "../DesignPatterns/PostOffice.h"
 #include "PetConsts.h"
 #include "Pet.h"
+#include "../Actor/Player.h"
 
 class PetManager : public Singleton<PetManager>, public PostBox
 {
@@ -13,8 +14,8 @@ public:
 	//Place pet somewhere in world
 	void PlacePet(AEVec2 const& pos);
 	//Pass in player GO so pet can follow, and other stuff
-	void LinkPlayer(GameObject* playerGO);
-	GameObject const& GetPlayer() { return *player; }
+	void LinkPlayer(Player* playerGO);
+	Player const& GetPlayer() { return *player; }
 
 	//Sets the pet based on the type.
 	void SetPet(Pets::PET_TYPE pet, int dupes);
@@ -28,7 +29,7 @@ private:
 	//Constant data. info for each pet, not player-specific
 	std::map<Pets::PET_TYPE, Pet::PetData> petData{};
 	Pet* equippedPet{};
-	GameObject* player{};
+	Player* player{};
 
 	//TODO: pet inventory, with the dupe levels and stuff.
 

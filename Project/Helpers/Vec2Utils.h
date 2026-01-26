@@ -12,8 +12,11 @@ AEVec2 ToVec2(f32 x, f32 y);
 AEVec2 VecZero(void);
 AEVec2 VecOne(void);
 
-//Returns the mouse screen coords, converted to world space
-AEVec2 GetMouseVec(void);
+//Returns the mouse world coords
+AEVec2 GetMouseWorldVec(void);
+
+//Returns cursor position
+AEVec2 GetMouseScreenVec();
 
 //Inverses the values of v
 AEVec2 NegVec2(AEVec2 v);

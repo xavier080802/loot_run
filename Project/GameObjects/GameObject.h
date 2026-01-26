@@ -46,6 +46,8 @@ public:
 	void SetCollision(bool enabled);
 	//Set what layers this GO can collide with.
 	void SetCollisionLayers(Bitmask layers);
+	//Set what layer this GO is considered in.
+	void SetColliderLayer(COLLISION_LAYER layer);
 
 	//Apply a force (directional) on this go.
 	void ApplyForce(AEVec2 force);

@@ -125,6 +125,11 @@ void GameObject::SetCollisionLayers(Bitmask layers)
 	collisionLayers = layers;
 }
 
+void GameObject::SetColliderLayer(COLLISION_LAYER layer)
+{
+	colliderLayer = layer;
+}
+
 void GameObject::ApplyForce(AEVec2 force)
 {
 	//Reset vel to prevent it from compounding and breaking. Really should not tho, but ehh
