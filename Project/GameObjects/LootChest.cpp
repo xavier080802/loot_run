@@ -25,8 +25,7 @@ GameObject* LootChest::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _mesh
 
 void LootChest::OnCollide(CollisionData& other)
 {
-	//TEMP: Supposed to check go type
-	if (other.other.GetColliderLayer() == GameObject::COLLISION_LAYER::PLAYER
+	if (other.other.GetGOType() == GO_TYPE::PLAYER
 		&& AEInputCheckTriggered(AEVK_E)) {
 		DropLoot();
 	}

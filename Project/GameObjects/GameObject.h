@@ -39,6 +39,7 @@ public:
 	int GetZ() const;
 	Bitmask GetCollisionLayers()const;
 	COLLISION_LAYER GetColliderLayer()const;
+	GO_TYPE GetGOType() const;
 
 	void SetPos(AEVec2 nextPos);
 	void Move(AEVec2 moveAmt);

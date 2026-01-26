@@ -1,5 +1,6 @@
 #include "Player.h"
 #include "../Helpers/Vec2Utils.h"
+#include "../GameObjects/Projectile.h"
 
 namespace {
     const float dodgeCooldown{ 0.5f };
@@ -67,6 +68,26 @@ void Player::HandleMovementInput(double dt)
     SetPos(p);
 }
 
+static void Test_ProjHitCallback(GameObject::CollisionData& data) {
+    if (data.other.GetGOType() != GO_TYPE::ENEMY) return;
+    //Do dmg.
+    //TODO: get damage calc from weapon and buffs etc.
+    Actor& target = dynamic_cast<Actor&>(data.other);
+    target.TakeDamage(10);
+}
+
+void Player::HandleAttackInput(double dt)
+{
+    //Testing projectiles.
+    //The collide reaction should be controlled by the weapon through OnHitCallback
+    if (AEInputCheckTriggered(AEVK_F)) {
+        Projectile* proj = dynamic_cast<Projectile*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PROJECTILE));
+        AEVec2 m = GetMouseVec();
+        //Fire at cursor
+        proj->Fire(this, { m.x - pos.x, m.y - pos.y }, 10, 200, 3, Test_ProjHitCallback);
+    }
+}
+
 void Player::TryPickup(const PickupPayload& payload)
 {
     switch (payload.type)
@@ -101,20 +122,23 @@ AEVec2 Player::GetMoveDirNorm() const
 
 void Player::OnCollide(CollisionData& other)
 {
-    // Pickup collision: currently using COLLISION_LAYER::PET as "pickup layer".
-    if (other.other.GetColliderLayer() == GameObject::COLLISION_LAYER::PET)
+    switch (other.other.GetGOType())
     {
+    case GO_TYPE::ENEMY:
+        // contact damage, knockback, etc.
+        break;
+    case GO_TYPE::ITEM: {
         PickupGO* pickup = dynamic_cast<PickupGO*>(&other.other);
         if (pickup)
         {
             TryPickup(pickup->GetPayload());
             // PickupGO::OnCollide will disable itself when it receives the collision event.
         }
-        return;
-    }
 
-    if (other.other.GetColliderLayer() == GameObject::COLLISION_LAYER::ENEMIES)
-    {
-        // contact damage, knockback, etc.
+        break;
+    }
+    case GO_TYPE::LOOT_CHEST: //LootChest handles this.
+    default:
+        break;
     }
 }

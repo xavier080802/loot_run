@@ -16,6 +16,7 @@
 #include <iostream>
 #include <cmath>
 #include "../Actor/Player.h"
+#include "../Actor/Enemy.h"
 #include "../GameObjects/GameObjectManager.h"
 #include "../Helpers/BitmaskUtils.h"
 
@@ -306,6 +307,9 @@ void GameState::LoadState() {
     AEGfxTriAdd(-0.52f, -0.52f, 0xFFFFFFFF, 0, 0, 0.52f, 0.52f, 0xFFFFFFFF, 0, 0, -0.52f, 0.52f, 0xFFFFFFFF, 0, 0);
     wallMesh = AEGfxMeshEnd();
     fogTileMesh = wallMesh;
+
+    // TODO: Load Enemies
+    
 }
 
 void GameState::InitState()
@@ -351,14 +355,6 @@ void GameState::InitState()
 void GameState::Update(double dt)
 {
     #pragma region inputs_for_testing
-        //Testing projectiles. not firing from actual player cuz its not a GO yet
-        if (AEInputCheckTriggered(AEVK_F)) {
-            Projectile* proj = dynamic_cast<Projectile*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PROJECTILE));
-            AEVec2 m = GetMouseVec();
-            //Fire at cursor
-            proj->Fire(gPlayer, { m.x - gPlayer->GetPos().x, m.y - gPlayer->GetPos().y }, 10, 200, 3, nullptr);
-        }
-
         //Press L to spawn test chest at the mouse location
         if (AEInputCheckTriggered(AEVK_L)) {
             LootChest* chest = dynamic_cast<LootChest*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
@@ -373,6 +369,8 @@ void GameState::Update(double dt)
     #pragma endregion
 
     if (!gPlayer) return;
+
+    gPlayer->HandleAttackInput(dt);
     
     AEVec2 oldPos = gPlayer->GetPos();
     // Track input direction for minimap arrow (Player does the actual movement)

@@ -98,6 +98,11 @@ GameObject::COLLISION_LAYER GameObject::GetColliderLayer() const
 	return colliderLayer;
 }
 
+GO_TYPE GameObject::GetGOType() const
+{
+	return goType;
+}
+
 void GameObject::SetPos(AEVec2 nextPos)
 {
 	prevPos = pos;
