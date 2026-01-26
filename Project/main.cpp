@@ -5,6 +5,7 @@
 #include "game_state_manager.h"
 #include "./GameStates/main_menu_state.h"
 #include "./GameStates/game_state.h"
+#include "../Project/Shop.h"
 #include "./GameObjects/GameObjectManager.h"
 #include "./helpers/render_utils.h"
 #include "rendering_manager.h"
@@ -35,6 +36,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	stateManager = GameStateManager::GetInstance();
 	stateManager->AddGameState("MainMenuState", new MainMenuState);
 	stateManager->AddGameState("GameState", new GameState);
+	stateManager->AddGameState("GachaState", new GachaState);
 
 	//Enter first game state
 	stateManager->SetNextGameState("GameState", true, true);

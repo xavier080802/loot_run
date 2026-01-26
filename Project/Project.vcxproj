@@ -99,6 +99,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="animation_data.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="DesignPatterns\post_office.cpp" />
+    <ClCompile Include="Gacha.cpp" />
     <ClCompile Include="GameObjects\GameObject.cpp" />
     <ClCompile Include="GameObjects\GameObjectManager.cpp" />
     <ClCompile Include="GameStates\game_state.cpp" />
@@ -116,6 +117,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="rendering_manager.cpp" />
     <ClCompile Include="render_data.cpp" />
     <ClCompile Include="Music.cpp" />
+    <ClCompile Include="Shop.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="animation_data.h" />
@@ -125,6 +127,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="DesignPatterns\post_box.h" />
     <ClInclude Include="DesignPatterns\post_office.h" />
     <ClInclude Include="DesignPatterns\singleton.h" />
+    <ClInclude Include="Gacha.h" />
     <ClInclude Include="GameObjects\GameObject.h" />
     <ClInclude Include="GameObjects\GameObjectManager.h" />
     <ClInclude Include="GameStates\game_state.h" />
@@ -142,6 +145,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="rendering_manager.h" />
     <ClInclude Include="render_data.h" />
     <ClInclude Include="Music.h" />
+    <ClInclude Include="Shop.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
