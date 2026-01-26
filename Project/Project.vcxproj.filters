@@ -42,6 +42,7 @@
     </Filter>
     <Filter Include="Source Files\Helpers">
       <UniqueIdentifier>{4b43a601-e506-4b23-89d6-a4743a05cbfd}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Header Files\Actors">
       <UniqueIdentifier>{389eb84e-d061-4b5d-a960-aea5b0f30bba}</UniqueIdentifier>
     </Filter>
@@ -262,6 +263,7 @@
     </ClInclude>
     <ClInclude Include="GameObjects\LootChest.h">
       <Filter>Header Files\GameObjects</Filter>
+    </ClInclude>
     <ClInclude Include="GameDB.h">
       <Filter>Header Files</Filter>
     </ClInclude>

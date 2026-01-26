@@ -17,12 +17,18 @@ public:
     void InitPlayerRuntime(const ActorStats& baseStats);
 
     void Update(double dt) override;
+    void HandleMovementInput(double dt);
     void OnCollide(CollisionData& other) override;
 
     void RecalculateStats();
     void TryPickup(const PickupPayload& payload);
 
+    AEVec2 GetMoveDirNorm() const;
+
 private:
     ActorStats mBaseStats{};
     Inventory  mInventory{};
+    AEVec2 moveDirNorm{};
+
+    float dodgeCDTimer{};
 };

@@ -67,9 +67,6 @@ namespace {
     float minimapMargin = 20.0f;
     float minimapPlayerScaleFactor = 3.5f;
 
-    //go is the player.
-    GameObject* go, * enemy;
-
     // Logic to calculate which fog tiles are near the player and reveal them
     void UpdateDiscovery(float dt) {
         AEVec2 p = GetPlayerPos();
@@ -265,7 +262,7 @@ namespace {
         }
 
         // LAYER D: Player & UI Border 
-        AEVec2 playerPos = go->GetPos();
+        AEVec2 p = GetPlayerPos();
         AEMtx33 ps, pt, pf; AEMtx33Scale(&ps, playerMinimapRadius * 2, playerMinimapRadius * 2);
         AEMtx33Trans(&pt, mmX + p.x * scaleX, mmY + p.y * scaleY);
         AEMtx33Concat(&pf, &pt, &ps); AEGfxSetTransform(pf.m);
@@ -287,21 +284,13 @@ void GameState::LoadState() {
     AEVec2Zero(&camPos);
     AEVec2Zero(&camVel);
 
-    //Testing
     GameObjectManager::GetInstance()->InitCollisionGrid(static_cast<unsigned>(mapWidth), static_cast<unsigned>(mapHeight));
-    //Using this go as proxy for player
-    go = new GameObject;
-    go->Init({ 0, 0}, { playerRadius *2,playerRadius *2}, 0, MESH_CIRCLE, COL_CIRCLE, { playerRadius*2,playerRadius*2}, CreateBitmask(2, GameObject::ENEMIES, GameObject::INTERACTABLE), GameObject::COLLISION_LAYER::PLAYER);
-    /*go->GetRenderData().InitAnimation(6, 9)
-        ->LoopAnim()
-        ->AddTexture("Assets/sprite_test.png");*/
-
-    //enemy = new GameObject;
-    //enemy->Init({ 200,0 }, { 100,-100 }, 0, MESH_CIRCLE, COL_CIRCLE, { 100,100 }, CreateBitmask(1, GameObject::PLAYER), GameObject::ENEMIES);
 
     playerDir = { 1.0f, 0.0f };
 
-    PetManager::GetInstance()->LinkPlayer(go);
+    // --- Spawn player GO once ---
+    if (!gPlayer) gPlayer = new Player();
+    PetManager::GetInstance()->LinkPlayer(gPlayer);
     
     // Initialise the 4-point border mesh for the UI
     AEGfxMeshStart();
@@ -323,18 +312,15 @@ void GameState::InitState()
 {
     InitTutorial(currentLevel);
 
-    // --- Spawn player GO once ---
-    if (!gPlayer) gPlayer = new Player();
-
-    // Player collides with pickups (PET) + enemies
+    // Player collides with pickups + enemies
     Bitmask collideMask = CreateBitmask(2,
-        (int)GameObject::COLLISION_LAYER::PET,
-        (int)GameObject::COLLISION_LAYER::ENEMIES
+        GameObject::COLLISION_LAYER::ENEMIES,
+        GameObject::COLLISION_LAYER::INTERACTABLE
     );
 
     gPlayer->Init(
         currentLevel.startPos,
-        AEVec2{ 1.0f, 1.0f },
+        AEVec2{ playerRadius*2, playerRadius*2 },
         0,
         MESH_CIRCLE,
         COLLIDER_SHAPE::COL_CIRCLE,
@@ -364,25 +350,13 @@ void GameState::InitState()
 
 void GameState::Update(double dt)
 {
-    // Track input direction for minimap arrow (Player does the actual movement)
-    AEVec2 move = { 0,0 };
-    if (AEInputCheckCurr(AEVK_W)) move.y += 1;
-    if (AEInputCheckCurr(AEVK_S)) move.y -= 1;
-    if (AEInputCheckCurr(AEVK_A)) move.x -= 1;
-    if (AEInputCheckCurr(AEVK_D)) move.x += 1;
-    
-    f32 len = AEVec2Length(&move);
-    if (len > 0) {
-        AEVec2Normalize(&move, &move);
-    }
-
     #pragma region inputs_for_testing
         //Testing projectiles. not firing from actual player cuz its not a GO yet
         if (AEInputCheckTriggered(AEVK_F)) {
             Projectile* proj = dynamic_cast<Projectile*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PROJECTILE));
             AEVec2 m = GetMouseVec();
             //Fire at cursor
-            proj->Fire(go, { m.x - go->GetPos().x, m.y - go->GetPos().y }, 10, 200, 3, nullptr);
+            proj->Fire(gPlayer, { m.x - gPlayer->GetPos().x, m.y - gPlayer->GetPos().y }, 10, 200, 3, nullptr);
         }
 
         //Press L to spawn test chest at the mouse location
@@ -396,20 +370,21 @@ void GameState::Update(double dt)
         if (AEInputCheckTriggered(AEVK_R)) {
             PostOffice::GetInstance()->Send("PetManager", new PetSkillMsg(PetSkillMsg::CAST_SKILL));
         }
-
-        //Dodge. TODO: Map collision in GO
-        if (AEInputCheckTriggered(AEVK_SPACE)) {
-            go->ApplyForce(move * 500.f);
-        }
     #pragma endregion
 
     if (!gPlayer) return;
+    
+    AEVec2 oldPos = gPlayer->GetPos();
+    // Track input direction for minimap arrow (Player does the actual movement)
+    gPlayer->HandleMovementInput(dt);
+    //Normally inside GO.Update, but then theres no collision with the map for the player.
+    gPlayer->Temp_DoVelocityMovement(dt);
+    AEVec2 newPos = gPlayer->GetPos();
 
-    AEVec2 playerPos = go->GetPos();
-    //Normally inside GO.Update, but then theres no collision with the map.
-    go->Temp_DoVelocityMovement(dt);
+    AEVec2 move = gPlayer->GetMoveDirNorm();
+    f32 len = AEVec2Length(&move);
 
-    if (len > 0 || go->HasForceApplied()) {
+    if (len > 0 || gPlayer->HasForceApplied()) {
         playerDir = move;
         float subStep = (playerSpeed * (float)dt) / 10.0f;
 
@@ -425,28 +400,32 @@ void GameState::Update(double dt)
             return true;
         };
 
-        //TEMP: this vel thing is temporary, until map collision can be integrated with GO
-        AEVec2 vel = go->GetVelocity() * static_cast<float>(dt);
-        float velSubStep = AEVec2Length(&vel) / 10.f;
-        if (go->HasForceApplied()) {
-            AEVec2Normalize(&vel, &vel);
-        }
-        // Move in small increments to prevent tunneling through walls
-        for (int i = 0; i < 10; i++) {
-            //Checking X and Y separately for smoother diagonal movement along walls.
-            AEVec2 nextX = { playerPos.x + move.x * subStep + vel.x* velSubStep, playerPos.y };
-            if (IsClear(nextX)) playerPos = nextX;
-            AEVec2 nextY = { playerPos.x, playerPos.y + move.y * subStep + vel.y* velSubStep };
-            if (IsClear(nextY)) playerPos.y = nextY.y;
+        // If invalid, resolve by sub-stepping the attempted delta (same style as your old code)
+        if (!IsClear(newPos)) {
+            AEVec2 delta = { newPos.x - oldPos.x, newPos.y - oldPos.y };
+
+            const int steps = 10;
+            AEVec2 pos = oldPos;
+
+            for (int i = 0; i < steps; i++) {
+                AEVec2 nextX = { pos.x + delta.x / steps, pos.y };
+                if (IsClear(nextX)) pos.x = nextX.x;
+
+
+                AEVec2 nextY = { pos.x, pos.y + delta.y / steps };
+                if (IsClear(nextY)) pos.y = nextY.y;
+            }
+
+            gPlayer->SetPos(pos);
+            newPos = pos;
         }
     }
 
     // Clamp player inside map bounds
-    playerPos.x = AEClamp(playerPos.x, -halfMapWidth + playerRadius, halfMapWidth - playerRadius);
-    playerPos.y = AEClamp(playerPos.y, -halfMapHeight + playerRadius, halfMapHeight - playerRadius);
+    newPos.x = AEClamp(newPos.x, -halfMapWidth + playerRadius, halfMapWidth - playerRadius);
+    newPos.y = AEClamp(newPos.y, -halfMapHeight + playerRadius, halfMapHeight - playerRadius);
 
-    go->SetPos(playerPos);
-
+    gPlayer->SetPos(newPos);
 
     // Systems now read from gPlayer via GetPlayerPos()
     UpdateDiscovery((float)dt);

@@ -3,6 +3,7 @@
 enum GO_TYPE {
 	NONE,
 	PLAYER,
+	ENEMY,
 	PROJECTILE,
 	LOOT_CHEST,
 	ITEM, //Temp? for LootChest

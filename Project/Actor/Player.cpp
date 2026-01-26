@@ -1,4 +1,9 @@
 #include "Player.h"
+#include "../Helpers/Vec2Utils.h"
+
+namespace {
+    const float dodgeCooldown{ 0.5f };
+}
 
 GameObject* Player::Init(AEVec2 _pos, AEVec2 _scale, int _z,
     MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize,
@@ -31,22 +36,30 @@ void Player::RecalculateStats()
 void Player::Update(double dt)
 {
     GameObject::Update(dt);
+}
 
+void Player::HandleMovementInput(double dt)
+{
     float fdt = (float)dt;
+
+    if (dodgeCDTimer > 0.f) {
+        dodgeCDTimer -= fdt;
+    }
 
     AEVec2 dir{ 0.0f, 0.0f };
     if (AEInputCheckCurr('W')) dir.y += 1.0f;
     if (AEInputCheckCurr('S')) dir.y -= 1.0f;
     if (AEInputCheckCurr('A')) dir.x -= 1.0f;
     if (AEInputCheckCurr('D')) dir.x += 1.0f;
-
-    float lenSq = dir.x * dir.x + dir.y * dir.y;
-    if (lenSq > 1.0f)
-    {
-        float invLen = 1.0f / sqrtf(lenSq);
-        dir.x *= invLen;
-        dir.y *= invLen;
+    if (dodgeCDTimer <= 0.f && AEInputCheckTriggered(AEVK_SPACE)) {
+        ApplyForce(dir * 500.f);
+        dodgeCDTimer = dodgeCooldown;
     }
+
+    if (dir.x || dir.y) {
+        AEVec2Normalize(&dir, &dir);
+    }
+    moveDirNorm = dir;
 
     AEVec2 p = GetPos();
     p.x += dir.x * mStats.moveSpeed * fdt;
@@ -79,6 +92,11 @@ void Player::TryPickup(const PickupPayload& payload)
         // hook currency later
         break;
     }
+}
+
+AEVec2 Player::GetMoveDirNorm() const
+{
+    return moveDirNorm;
 }
 
 void Player::OnCollide(CollisionData& other)

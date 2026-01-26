@@ -9,7 +9,7 @@ namespace {
 	//Speed of pet when moving
 	const float petMoveSpeed{ 300.f };
 	//Distance from a point to consider it as "at" that point
-	const float pointTolerance{ 5 };
+	const float pointTolerance{ 10 };
 }
 
 void Pet::CastSkill(const PetSkills::SkillCastData& skillData)

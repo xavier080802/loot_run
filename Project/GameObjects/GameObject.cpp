@@ -122,6 +122,8 @@ void GameObject::SetCollisionLayers(Bitmask layers)
 
 void GameObject::ApplyForce(AEVec2 force)
 {
+	//Reset vel to prevent it from compounding and breaking. Really should not tho, but ehh
+	initialVel = velocity = VecZero();
 	velocity += force;
 	//To taper off velocity linearly, need the initial vel
 	//So the velocity falls off after about a second.
@@ -142,13 +144,13 @@ void GameObject::Temp_DoVelocityMovement(double dt)
 {
 	if (!HasForceApplied()) return;
 	//Testing: External force
-	//Move(velocity * dt); //TEMP, supposed to be uncommented
+	Move(velocity * dt); //TEMP, supposed to be uncommented
 
 	//Decay velocity
 	AEVec2 prevVel = velocity;
 	//Initial vel for a more linear decay
-	velocity.x -= initialVel.x * dt;
-	velocity.y -= initialVel.y * dt;
+	velocity.x = (abs(velocity.x) <= 1.f ? 0 : velocity.x - initialVel.x * dt);
+	velocity.y = (abs(velocity.y) <= 1.f ? 0 : velocity.y - initialVel.y * dt);
 	//Clamping to 0 if moveAmt pushes velocity to other direction.
 	if ((prevVel.x < 0 && velocity.x > 0) || (prevVel.x > 0 && velocity.x < 0)) velocity.x = 0;
 	if (prevVel.y < 0 && velocity.y > 0 || (prevVel.y > 0 && velocity.y < 0)) velocity.y = 0;
@@ -170,8 +172,6 @@ void GameObject::OnCollide(CollisionData& other)
 {
 	//Silence "unused param" warning.
 	(void)other;
-
-	renderingData->tint = CreateColor(0, 255, 0, 255);
 }
 
 void GameObject::CompleteClone(GameObject* const clone)

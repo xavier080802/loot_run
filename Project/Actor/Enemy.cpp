@@ -5,6 +5,7 @@ GameObject* Enemy::Init(AEVec2 _pos, AEVec2 _scale, int _z,
     MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize,
     Bitmask _collideWithLayers, COLLISION_LAYER _isInLayers)
 {
+    goType = GO_TYPE::ENEMY;
     return GameObject::Init(_pos, _scale, _z, _meshShape, _colShape, _colSize,
         _collideWithLayers, _isInLayers);
 }
