@@ -1,12 +1,14 @@
-#include "../Project/Shop.h"
-#include "../Project/Gacha.h"
+#include "../Project/Shop.h"   
+#include "../Project/Gacha.h"  
 #include "../Project/game_state_manager.h"
+#include "AEEngine.h"
 
 static GachaAnimation gStateAnim;
 static s8 gachaFont = -1;
 
 void GachaState::LoadState() {
     gachaFont = AEGfxCreateFont("Assets/Exo2/Exo2-SemiBoldItalic.ttf", 32);
+    EnsureOverlayMesh();
 }
 
 void GachaState::InitState() {
@@ -16,30 +18,37 @@ void GachaState::InitState() {
 void GachaState::Update(double dt) {
     bool skipPressed = AEInputCheckTriggered(AEVK_SPACE);
     bool exitPressed = AEInputCheckTriggered(AEVK_F);
+    
+    bool pull10  = AEInputCheckTriggered(0x52) || AEInputCheckTriggered(AEVK_R);
+    bool pull100 = AEInputCheckTriggered(0x54) || AEInputCheckTriggered(AEVK_T);
 
-    // 1. ESC to Quit Game (immediately breaks the loop in WinMain)
     if (AEInputCheckTriggered(AEVK_ESCAPE)) {
+        GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
         return;
     }
 
     UpdateGachaOverlay(gStateAnim, (float)dt, skipPressed);
 
-    // 2. Transition back to GameState only when finished and pressing F
-    if (gStateAnim.phase == GachaPhase::Done && exitPressed) {
-        // Matches your WinMain signature: Name, Restart flag, Init flag
-        GameStateManager::GetInstance()->SetNextGameState("GameState", true, true);
+    if (gStateAnim.isFinished) {
+        gStateAnim.phase = GachaPhase::Done;
+    }
+
+    if (gStateAnim.phase == GachaPhase::Done) {
+        if (pull10) {
+            BeginGachaOverlay(gStateAnim, 10, 0.1f, 0.8f, 0.2f);
+        }
+        else if (pull100) {
+            BeginGachaOverlay(gStateAnim, 100, 0.1f, 1.2f, 0.015f);
+        }
+        else if (exitPressed) {
+            GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
+        }
     }
 }
 
 void GachaState::Draw() {
-    // 1. Force a clear of the previous frame's settings
-    AEGfxSetRenderMode(AE_GFX_RM_NONE);
-
-    // 2. Set background manually here just in case
     AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
-
-    // 3. Now call your gacha drawing logic
-    // This function internally sets RM_COLOR and uses AEGfxPrint
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     DrawGachaOverlay(gStateAnim, gachaFont);
 }
 

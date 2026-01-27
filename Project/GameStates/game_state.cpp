@@ -363,13 +363,22 @@ void GameState::Update(double dt) {
     UpdateDiscovery((float)dt);
     UpdateWorldMap((float)dt);
 
-    // --- STATE TRANSITION EXAMPLE ---
+    // --- NAVIGATION CONTROLS ---
+
+    // 1. Press [F] to go to the SHOP (Gacha)
     if (AEInputCheckTriggered(AEVK_F)) {
         GameStateManager::GetInstance()->SetNextGameState("GachaState", true, true);
+    }
+
+    // 2. Press [M] to go back to the MAIN MENU hub
+    if (AEInputCheckTriggered(AEVK_M)) {
+        GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
     }
 }
 
 void GameState::Draw() {
+    AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
+
     RenderWorldMap();
 }
 

@@ -39,26 +39,24 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	stateManager->AddGameState("GachaState", new GachaState);
 
 	//Enter first game state
-	stateManager->SetNextGameState("GameState", true, true);
+	// ... inside WinMain after AddGameState calls ...
+	stateManager->SetNextGameState("MainMenuState", true, true);
 
     while (AESysDoesWindowExist()) {
         AESysFrameStart();
 
-        if (AEInputCheckTriggered(AEVK_ESCAPE))
-            break;
+        // Let the Update handle the ESC key (or logic)
+        f64 dt = AEFrameRateControllerGetFrameTime();
 
-        //------------- Game loop logic -------------
-		//Clear bg
-		AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
-		
-		//Update state logic
-		f64 dt = AEFrameRateControllerGetFrameTime();
-		stateManager->UpdateCurrState(dt);
+        // ------------- Game loop logic -------------
 
-		//Rendering
-		stateManager->DrawCurrState();
-        
-		//------------- Informing the system about the loop's end -------------
+        // 1. Update first
+        stateManager->UpdateCurrState(dt);
+
+        // 2. Draw second (The State's Draw will handle its own Background Color)
+        stateManager->DrawCurrState();
+
+        // ------------- End of frame -------------
         AESysFrameEnd();
     }
 
