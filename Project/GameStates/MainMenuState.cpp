@@ -89,14 +89,17 @@ void MainMenuState::InitState()
 void MainMenuState::ExitState()
 {
 	std::cout << "Exit main menu state\n";
-	AEGfxFontSystemEnd();
 }
 
 void MainMenuState::UnloadState()
 {
-	AEGfxDestroyFont(Font);
+	//unload fonts
+	if (Font >= 0)
+		AEGfxDestroyFont(Font);
+	if (BigFont >= 0)
+		AEGfxDestroyFont(BigFont);
 
-	// Unload hover audio
+	// Unload button audio
 	AEAudioUnloadAudio(hoverSound);
 	AEAudioUnloadAudio(clickSound);
 	AEAudioUnloadAudioGroup(buttonGroup);
@@ -142,7 +145,6 @@ void MainMenuState::Update(double dt)
 					break;
 
 				case 5:
-					AESysExit();
 					break;
 				}
 			}
