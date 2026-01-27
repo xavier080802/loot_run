@@ -22,7 +22,7 @@ namespace {
 		AEVec2 size;
 		const char* label;
 	};
-	struct Label
+	struct Title
 	{
 		AEVec2 pos;
 		AEVec2 size;
@@ -37,7 +37,7 @@ namespace {
 		{{ 200.f, 700.f }, { 235.f, 67.f }, "Credits"},
 		{{ 200.f, 800.f }, { 235.f, 67.f }, "Exit Game"}
 	};
-	Label label = { { DEFAULT_W / 2, 100.f }, { 675.f, 110.f }, "LOOT RUN" };
+	Title title = { { DEFAULT_W / 2, 100.f }, { 675.f, 110.f }, "LOOT RUN" };
 
 	constexpr int MENU_BTN_COUNT = sizeof(menuButtons) / sizeof(Button);
 
@@ -139,12 +139,27 @@ void MainMenuState::Update(double dt)
 
 				switch (i)
 				{
-				case 0:
+				case 0: //new game
 					GameStateManager::GetInstance()
 						->SetNextGameState("GameState", true, true);
 					break;
-
-				case 5:
+				case 1: // shop
+					/*GameStateManager::GetInstance()
+						->SetNextGameState("ShopState", true, true);*/
+					break;
+				case 2: // pet
+					/*GameStateManager::GetInstance()
+						->SetNextGameState("PetMenuState", true, true);*/
+					break;
+				case 3: //settings
+					/*GameStateManager::GetInstance()
+						->SetNextGameState("SettingsState", true, true);*/
+					break;
+				case 4: //credits
+					/*GameStateManager::GetInstance()
+						->SetNextGameState("CreditsState", true, true);*/
+					break;
+				case 5: //exit game
 					break;
 				}
 			}
@@ -162,18 +177,18 @@ void MainMenuState::Draw()
 	// ----------------
 	// Draw Title
 	// ----------------
-	AEVec2 labelPos = DefaultToWorld(
-		label.pos.x,
-		label.pos.y
+	AEVec2 titlePos = DefaultToWorld(
+		title.pos.x,
+		title.pos.y
 	);
 
 	AEVec2 labelSize = {
-		label.size.x * scale,
-		label.size.y * scale
+		title.size.x * scale,
+		title.size.y * scale
 	};
 
 	AEMtx33 mtx;
-	GetTransformMtx(mtx, labelPos, 0.0f, labelSize);
+	GetTransformMtx(mtx, titlePos, 0.0f, labelSize);
 	AEGfxSetTransform(mtx.m);
 
 	AEGfxSetColorToMultiply(
@@ -186,10 +201,7 @@ void MainMenuState::Draw()
 	AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 
 	DrawAEText(
-		BigFont,
-		label.label,
-		labelPos,
-		scale,
+		BigFont, title.label, titlePos, scale,
 		CreateColor(10, 10, 10, 255),
 		TEXT_MIDDLE
 	);
@@ -226,10 +238,7 @@ void MainMenuState::Draw()
 		AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 
 		DrawAEText(
-			Font,
-			menuButtons[i].label,
-			worldPos,
-			scale,
+			Font, menuButtons[i]. label, worldPos, scale,
 			CreateColor(10, 10, 10, 255),
 			TEXT_MIDDLE
 		);
