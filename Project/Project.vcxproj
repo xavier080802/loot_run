@@ -99,6 +99,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="animation_data.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="DesignPatterns\post_office.cpp" />
+    <ClCompile Include="gacha.cpp" />
     <ClCompile Include="GameObjects\GameObject.cpp" />
     <ClCompile Include="GameObjects\GameObjectManager.cpp" />
     <ClCompile Include="GameStates\game_state.cpp" />
@@ -125,6 +126,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="DesignPatterns\post_box.h" />
     <ClInclude Include="DesignPatterns\post_office.h" />
     <ClInclude Include="DesignPatterns\singleton.h" />
+    <ClInclude Include="gacha.h" />
     <ClInclude Include="GameObjects\GameObject.h" />
     <ClInclude Include="GameObjects\GameObjectManager.h" />
     <ClInclude Include="GameStates\game_state.h" />

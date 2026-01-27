@@ -1,3 +1,4 @@
+
 #include "game_state.h"
 #include "../Music.h"
 #include "../helpers/render_utils.h"
@@ -11,14 +12,15 @@
 #include "../Map.h"
 #include <iostream>
 #include <cmath>
+#include "../Gacha.h"   
 
 namespace {
     // --- GLOBAL SYSTEMS ---
     BGMManager bgm;
     AEGfxVertexList* circleMesh = nullptr;   // Used for Player, Enemies, Boss
     AEGfxVertexList* borderMesh = nullptr;   // Used for Minimap frame
-    AEGfxVertexList* fogTileMesh = nullptr; // Used for Fog grid squares
-    AEGfxVertexList* wallMesh = nullptr;    // Used for Walls, Doors, Chests
+    AEGfxVertexList* fogTileMesh = nullptr;  // Used for Fog grid squares
+    AEGfxVertexList* wallMesh = nullptr;     // Used for Walls, Doors, Chests
 
     // --- PLAYER DATA ---
     AEVec2 playerPos;
@@ -54,6 +56,27 @@ namespace {
     float minimapHeight = 200.0f;
     float minimapMargin = 20.0f;
     float minimapPlayerScaleFactor = 3.5f;
+
+    // ----------------------------------------------------------
+    // GACHA STATE (ADDED)
+    // ----------------------------------------------------------
+    static GachaAnimation gachaAnim;
+    static bool gachaActive = false;
+    static s8 gachaFont = -1;
+
+    // Start a new gacha roll animation (ADDED)
+    static void StartGachaRoll(int count)
+    {
+        gachaAnim.Reset();
+        gachaAnim.results = MultiRoll(count);
+
+        // Start revealing from index 0 over time
+        gachaAnim.currentIndex = -1;
+        gachaAnim.timer = 0.0f;
+        gachaAnim.isFinished = gachaAnim.results.empty();
+
+        gachaActive = !gachaAnim.results.empty();
+    }
 
     // Logic to calculate which fog tiles are near the player and reveal them
     void UpdateDiscovery(float dt) {
@@ -159,36 +182,61 @@ namespace {
             AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
         }
 
-        // To be replace boss logic
+        // Placeholder boss logic
         if (bossAlive) {
-            //placeholder boss
-            AEMtx33 bS, bT, bF; AEMtx33Scale(&bS, bossRadius * 2, bossRadius * 2); AEMtx33Trans(&bT, currentLevel.doorPos.x, currentLevel.doorPos.y);
-            AEMtx33Concat(&bF, &camMatrix, &bT); AEMtx33Concat(&bF, &bF, &bS); AEGfxSetTransform(bF.m);
-            AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
+            // placeholder boss
+            AEMtx33 bS, bT, bF;
+            AEMtx33Scale(&bS, bossRadius * 2, bossRadius * 2);
+            AEMtx33Trans(&bT, currentLevel.doorPos.x, currentLevel.doorPos.y);
+            AEMtx33Concat(&bF, &camMatrix, &bT);
+            AEMtx33Concat(&bF, &bF, &bS);
+            AEGfxSetTransform(bF.m);
+            AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f);
+            AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
 
             // World Door Rect 
-            AEMtx33 dS, dT, dF; AEMtx33Scale(&dS, 45.0f, 125.0f); AEMtx33Trans(&dT, currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y);
-            AEMtx33Concat(&dF, &camMatrix, &dT); AEMtx33Concat(&dF, &dF, &dS); AEGfxSetTransform(dF.m);
-            AEGfxSetColorToMultiply(0.0f, 0.8f, 0.0f, 1.0f); AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
+            AEMtx33 dS, dT, dF;
+            AEMtx33Scale(&dS, 45.0f, 125.0f);
+            AEMtx33Trans(&dT, currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y);
+            AEMtx33Concat(&dF, &camMatrix, &dT);
+            AEMtx33Concat(&dF, &dF, &dS);
+            AEGfxSetTransform(dF.m);
+            AEGfxSetColorToMultiply(0.0f, 0.8f, 0.0f, 1.0f);
+            AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
         }
 
         // Placeholder Chest
-        AEMtx33 cS, cT, cF; AEMtx33Scale(&cS, 35, 35); AEMtx33Trans(&cT, currentLevel.chestPos.x, currentLevel.chestPos.y);
-        AEMtx33Concat(&cF, &camMatrix, &cT); AEMtx33Concat(&cF, &cF, &cS); AEGfxSetTransform(cF.m);
-        AEGfxSetColorToMultiply(1.0f, 0.84f, 0.0f, 1.0f); AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
+        AEMtx33 cS, cT, cF;
+        AEMtx33Scale(&cS, 35, 35);
+        AEMtx33Trans(&cT, currentLevel.chestPos.x, currentLevel.chestPos.y);
+        AEMtx33Concat(&cF, &camMatrix, &cT);
+        AEMtx33Concat(&cF, &cF, &cS);
+        AEGfxSetTransform(cF.m);
+        AEGfxSetColorToMultiply(1.0f, 0.84f, 0.0f, 1.0f);
+        AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
 
         // Placeholder enemies
         AEVec2 enemies[] = { currentLevel.enemy1Pos, currentLevel.enemy2Pos };
         for (auto& e : enemies) {
-            AEMtx33 eS, eT, eF; AEMtx33Scale(&eS, 30, 30); AEMtx33Trans(&eT, e.x, e.y);
-            AEMtx33Concat(&eF, &camMatrix, &eT); AEMtx33Concat(&eF, &eF, &eS); AEGfxSetTransform(eF.m);
-            AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
+            AEMtx33 eS, eT, eF;
+            AEMtx33Scale(&eS, 30, 30);
+            AEMtx33Trans(&eT, e.x, e.y);
+            AEMtx33Concat(&eF, &camMatrix, &eT);
+            AEMtx33Concat(&eF, &eF, &eS);
+            AEGfxSetTransform(eF.m);
+            AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f);
+            AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
         }
 
         // Player
-        AEMtx33 pS, pT, pFinal; AEMtx33Scale(&pS, playerRadius * 2, playerRadius * 2); AEMtx33Trans(&pT, playerPos.x, playerPos.y);
-        AEMtx33Concat(&pFinal, &camMatrix, &pT); AEMtx33Concat(&pFinal, &pFinal, &pS); AEGfxSetTransform(pFinal.m);
-        AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
+        AEMtx33 pS, pT, pFinal;
+        AEMtx33Scale(&pS, playerRadius * 2, playerRadius * 2);
+        AEMtx33Trans(&pT, playerPos.x, playerPos.y);
+        AEMtx33Concat(&pFinal, &camMatrix, &pT);
+        AEMtx33Concat(&pFinal, &pFinal, &pS);
+        AEGfxSetTransform(pFinal.m);
+        AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
+        AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
 
         // --- MINIMAP RENDERING LAYERS ---
         float scaleX = minimapWidth / mapWidth, scaleY = minimapHeight / mapHeight;
@@ -199,48 +247,66 @@ namespace {
         // LAYER A: Minimap Walls 
         AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
         for (const auto& w : currentLevel.walls) {
-            AEMtx33 s, t, f; AEMtx33Scale(&s, (w.width + 4.0f) * scaleX, (w.height + 4.0f) * scaleY);
+            AEMtx33 s, t, f;
+            AEMtx33Scale(&s, (w.width + 4.0f) * scaleX, (w.height + 4.0f) * scaleY);
             AEMtx33Trans(&t, mmX + w.position.x * scaleX, mmY + w.position.y * scaleY);
-            AEMtx33Concat(&f, &t, &s); AEGfxSetTransform(f.m); AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
+            AEMtx33Concat(&f, &t, &s);
+            AEGfxSetTransform(f.m);
+            AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
         }
 
         // LAYER B: Minimap Quest Icons & Minimap Boss
         if (bossAlive) {
-            AEMtx33 bms, bmt, bmf; AEMtx33Scale(&bms, playerMinimapRadius * 2, playerMinimapRadius * 2);
+            AEMtx33 bms, bmt, bmf;
+            AEMtx33Scale(&bms, playerMinimapRadius * 2, playerMinimapRadius * 2);
             AEMtx33Trans(&bmt, mmX + currentLevel.doorPos.x * scaleX, mmY + currentLevel.doorPos.y * scaleY);
-            AEMtx33Concat(&bmf, &bmt, &bms); AEGfxSetTransform(bmf.m);
-            AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
+            AEMtx33Concat(&bmf, &bmt, &bms);
+            AEGfxSetTransform(bmf.m);
+            AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f);
+            AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
 
             // Minimap Door
-            AEMtx33 dms, dmt, dmf; AEMtx33Scale(&dms, playerMinimapRadius, playerMinimapRadius * 2.5f);
+            AEMtx33 dms, dmt, dmf;
+            AEMtx33Scale(&dms, playerMinimapRadius, playerMinimapRadius * 2.5f);
             AEMtx33Trans(&dmt, mmX + (currentLevel.doorPos.x - 335.0f) * scaleX, mmY + currentLevel.doorPos.y * scaleY);
-            AEMtx33Concat(&dmf, &dmt, &dms); AEGfxSetTransform(dmf.m);
-            AEGfxSetColorToMultiply(0.0f, 1.0f, 0.0f, 1.0f); AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
+            AEMtx33Concat(&dmf, &dmt, &dms);
+            AEGfxSetTransform(dmf.m);
+            AEGfxSetColorToMultiply(0.0f, 1.0f, 0.0f, 1.0f);
+            AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
         }
 
-        //  Minimap Chest
-        AEMtx33 mcs, mct, mcf; AEMtx33Scale(&mcs, playerMinimapRadius * 2, playerMinimapRadius * 2);
+        // Minimap Chest
+        AEMtx33 mcs, mct, mcf;
+        AEMtx33Scale(&mcs, playerMinimapRadius * 2, playerMinimapRadius * 2);
         AEMtx33Trans(&mct, mmX + currentLevel.chestPos.x * scaleX, mmY + currentLevel.chestPos.y * scaleY);
-        AEMtx33Concat(&mcf, &mct, &mcs); AEGfxSetTransform(mcf.m);
-        AEGfxSetColorToMultiply(1.0f, 0.84f, 0.0f, 1.0f); AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
+        AEMtx33Concat(&mcf, &mct, &mcs);
+        AEGfxSetTransform(mcf.m);
+        AEGfxSetColorToMultiply(1.0f, 0.84f, 0.0f, 1.0f);
+        AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
 
         // Minimap Enemies
         for (auto& e : enemies) {
-            AEMtx33 es, et, ef; AEMtx33Scale(&es, playerMinimapRadius * 2, playerMinimapRadius * 2);
+            AEMtx33 es, et, ef;
+            AEMtx33Scale(&es, playerMinimapRadius * 2, playerMinimapRadius * 2);
             AEMtx33Trans(&et, mmX + e.x * scaleX, mmY + e.y * scaleY);
-            AEMtx33Concat(&ef, &et, &es); AEGfxSetTransform(ef.m);
-            AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
+            AEMtx33Concat(&ef, &et, &es);
+            AEGfxSetTransform(ef.m);
+            AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f);
+            AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
         }
 
         // LAYER C: Fog Grid 
         for (int x = 0; x < FOG_GRID_SIZE; x++) {
             for (int y = 0; y < FOG_GRID_SIZE; y++) {
                 if (discoveryGrid[x][y] < 1.0f) {
-                    AEMtx33 s, t, f; AEMtx33Scale(&s, (tileWorldSizeX + 4.0f) * scaleX, (tileWorldSizeY + 4.0f) * scaleY);
+                    AEMtx33 s, t, f;
+                    AEMtx33Scale(&s, (tileWorldSizeX + 4.0f) * scaleX, (tileWorldSizeY + 4.0f) * scaleY);
                     float oX = (x * tileWorldSizeX) - halfMapWidth + tileWorldSizeX * 0.5f;
                     float oY = (y * tileWorldSizeY) - halfMapHeight + tileWorldSizeY * 0.5f;
                     AEMtx33Trans(&t, mmX + oX * scaleX, mmY + oY * scaleY);
-                    AEMtx33Concat(&f, &t, &s); AEGfxSetTransform(f.m);
+                    AEMtx33Concat(&f, &t, &s);
+                    AEGfxSetTransform(f.m);
+
                     // Use discoveryGrid value for Alpha (0.0 discovery = 1.0 alpha/darkness)
                     AEGfxSetColorToMultiply(0.1f, 0.1f, 0.1f, 1.0f - discoveryGrid[x][y]);
                     AEGfxMeshDraw(fogTileMesh, AE_GFX_MDM_TRIANGLES);
@@ -249,31 +315,48 @@ namespace {
         }
 
         // LAYER D: Player & UI Border 
-        AEMtx33 ps, pt, pf; AEMtx33Scale(&ps, playerMinimapRadius * 2, playerMinimapRadius * 2);
+        AEMtx33 ps, pt, pf;
+        AEMtx33Scale(&ps, playerMinimapRadius * 2, playerMinimapRadius * 2);
         AEMtx33Trans(&pt, mmX + playerPos.x * scaleX, mmY + playerPos.y * scaleY);
-        AEMtx33Concat(&pf, &pt, &ps); AEGfxSetTransform(pf.m);
-        AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
+        AEMtx33Concat(&pf, &pt, &ps);
+        AEGfxSetTransform(pf.m);
+        AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
+        AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
+
         DrawMinimapArrow(mmX, mmY, scaleX, scaleY);
 
         // Minimap frame
-        AEMtx33 bS, bT, bF; AEMtx33Scale(&bS, minimapWidth, minimapHeight); AEMtx33Trans(&bT, mmX, mmY);
-        AEMtx33Concat(&bF, &bT, &bS); AEGfxSetTransform(bF.m);
-        AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f); AEGfxMeshDraw(borderMesh, AE_GFX_MDM_LINES_STRIP);
+        AEMtx33 bS, bT, bF;
+        AEMtx33Scale(&bS, minimapWidth, minimapHeight);
+        AEMtx33Trans(&bT, mmX, mmY);
+        AEMtx33Concat(&bF, &bT, &bS);
+        AEGfxSetTransform(bF.m);
+        AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
+        AEGfxMeshDraw(borderMesh, AE_GFX_MDM_LINES_STRIP);
     }
-}
+} // end anonymous namespace
 
 void GameState::LoadState() {
-    bgm.Init(); bgm.PlayNormal();
-    halfMapWidth = mapWidth * 0.5f; halfMapHeight = mapHeight * 0.5f;
+    bgm.Init();
+    bgm.PlayNormal();
+
+    halfMapWidth = mapWidth * 0.5f;
+    halfMapHeight = mapHeight * 0.5f;
+
     circleMesh = RenderingManager::GetInstance()->GetMesh(MESH_CIRCLE);
+
+    // Load gacha font (you already had this)
+    gachaFont = AEGfxCreateFont("Assets/Exo2/Exo2-SemiBoldItalic.ttf", 24);
 
     // Initialise the 4-point border mesh for the UI
     AEGfxMeshStart();
     AEGfxVertexAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 0); AEGfxVertexAdd(0.5f, -0.5f, 0xFFFFFFFF, 0, 0);
     AEGfxVertexAdd(0.5f, 0.5f, 0xFFFFFFFF, 0, 0); AEGfxVertexAdd(-0.5f, 0.5f, 0xFFFFFFFF, 0, 0);
-    AEGfxVertexAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 0); borderMesh = AEGfxMeshEnd();
+    AEGfxVertexAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 0);
+    borderMesh = AEGfxMeshEnd();
 
-    tileWorldSizeX = mapWidth / (float)FOG_GRID_SIZE; tileWorldSizeY = mapHeight / (float)FOG_GRID_SIZE;
+    tileWorldSizeX = mapWidth / (float)FOG_GRID_SIZE;
+    tileWorldSizeY = mapHeight / (float)FOG_GRID_SIZE;
 
     // Initialise the square mesh used for walls and fog tiles
     AEGfxMeshStart();
@@ -284,14 +367,22 @@ void GameState::LoadState() {
 }
 
 void GameState::InitState() {
-    InitTutorial(currentLevel); playerPos = currentLevel.startPos;
-    camPos = playerPos; camVel = { 0,0 };
+    InitTutorial(currentLevel);
+    playerPos = currentLevel.startPos;
+
+    camPos = playerPos;
+    camVel = { 0,0 };
+
     // Start with a fully hidden map
     for (int i = 0; i < FOG_GRID_SIZE; i++)
         for (int j = 0; j < FOG_GRID_SIZE; j++) {
             discoveryGrid[i][j] = 0;
             regenTimerGrid[i][j] = 0;
         }
+
+    // Gacha initial state (optional but clean)
+    gachaAnim.Reset();
+    gachaActive = false;
 }
 
 void GameState::Update(double dt) {
@@ -311,6 +402,7 @@ void GameState::Update(double dt) {
         auto IsClear = [&](AEVec2 p) {
             for (const auto& w : currentLevel.walls)
                 if (CircleRectCollision(w.position, { w.width, w.height }, p, playerRadius)) return false;
+
             if (bossAlive) {
                 if (AEVec2Distance(&p, &currentLevel.doorPos) < (playerRadius + bossRadius)) return false;
                 if (CircleRectCollision({ currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y }, { 40, 120 }, p, playerRadius)) return false;
@@ -322,6 +414,7 @@ void GameState::Update(double dt) {
         for (int i = 0; i < 10; i++) {
             AEVec2 nextX = { playerPos.x + move.x * subStep, playerPos.y };
             if (IsClear(nextX)) playerPos.x = nextX.x;
+
             AEVec2 nextY = { playerPos.x, playerPos.y + move.y * subStep };
             if (IsClear(nextY)) playerPos.y = nextY.y;
         }
@@ -334,13 +427,59 @@ void GameState::Update(double dt) {
     // Refresh systems
     UpdateDiscovery((float)dt);
     UpdateWorldMap((float)dt);
+
+
+    // Toggle / open gacha overlay with F
+    if (AEInputCheckTriggered(AEVK_F))
+    {
+        if (!gachaActive)
+        {
+            BeginGachaOverlay(gachaAnim, 10, 0.6f, 1.2f, 0.3f); // intro, rolling, reveal delay
+            gachaActive = true;
+        }
+        else if (gachaAnim.phase == GachaPhase::Done)
+        {
+            // close only when done (your preferred behavior)
+            gachaActive = false;
+            gachaAnim.Reset();
+        }
+    }
+
+    // Update overlay if active
+    if (gachaActive)
+    {
+        bool skipPressed = AEInputCheckTriggered(AEVK_SPACE); // "Tap to skip"
+        UpdateGachaOverlay(gachaAnim, (float)dt, skipPressed);
+    }
 }
 
-void GameState::Draw() { RenderWorldMap(); }
+
+void GameState::Draw()
+{
+    RenderWorldMap();
+
+    if (gachaActive && gachaFont >= 0)
+    {
+        // ensure text/overlay isn't affected by world transforms
+        AEMtx33 I;
+        AEMtx33Identity(&I);
+        AEGfxSetTransform(I.m);
+
+        DrawGachaOverlay(gachaAnim, gachaFont);
+    }
+}
+
+
 void GameState::ExitState() {}
 
 void GameState::UnloadState() {
     if (borderMesh) AEGfxMeshFree(borderMesh);
     if (wallMesh) AEGfxMeshFree(wallMesh);
+
+    // Optional font cleanup (depends on your Alpha Engine build)
+    // If this causes "undefined" error, comment it out.
+    // if (gachaFont >= 0) AEGfxDestroyFont(gachaFont);
+    // gachaFont = -1;
+
     bgm.Exit();
 }

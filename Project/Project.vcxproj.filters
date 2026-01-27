@@ -99,6 +99,9 @@
     <ClCompile Include="Map.cpp">
       <Filter>Source Files\game_object</Filter>
     </ClCompile>
+    <ClCompile Include="gacha.cpp">
+      <Filter>Source Files\game_states</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -172,6 +175,9 @@
     </ClInclude>
     <ClInclude Include="Map.h">
       <Filter>Header Files\game_objects</Filter>
+    </ClInclude>
+    <ClInclude Include="gacha.h">
+      <Filter>Header Files\game_states</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
