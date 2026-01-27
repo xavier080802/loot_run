@@ -67,3 +67,18 @@ void Pet::SetData(const PetData& newData)
 {
 	data = newData;
 }
+
+const Pet::PetData& Pet::GetPetData()
+{
+	return data;
+}
+
+void Pet::Reset()
+{
+	size_t temp{ path.size() }; //Dont put path.size() into loop.
+	for (unsigned i = 0; i < temp; i++) {
+		path.pop();
+	}
+	targetPos = {};
+	cooldownTimer = 0.f;
+}

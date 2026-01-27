@@ -13,10 +13,10 @@ bool PetSkills::Pet1Skill(const SkillCastData& data)
     if (!proj) return false;
 
     AEVec2 mouse{ GetMouseWorldVec() };
-    proj->Fire(dynamic_cast<GameObject const*>(data.player), {mouse.x - data.thisPet->GetPos().x, mouse.y - data.thisPet->GetPos().y},
+    proj->Fire(data.player, {mouse.x - data.thisPet->GetPos().x, mouse.y - data.thisPet->GetPos().y},
         50, 200, 10, 
         //On collide callback: Damage enemy
-        [](GameObject::CollisionData& other) {
+        [](GameObject::CollisionData& other, Actor* caster) {
             if (other.other.GetGOType() != GO_TYPE::ENEMY) return;
             Actor& target = dynamic_cast<Actor&>(other.other);
             target.TakeDamage(25);

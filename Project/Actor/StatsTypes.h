@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _STATS_TYPES_H_
+#define _STATS_TYPES_H_
 
 struct ActorStats
 {
@@ -20,3 +21,9 @@ struct UpgradeMultipliers
 	float attackMult = 1.0f;
 	float defenseMult = 1.0f;
 };
+
+enum STAT_TYPE {
+	TEST_ATT,
+};
+
+#endif

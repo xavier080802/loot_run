@@ -1,7 +1,7 @@
 #include "Projectile.h"
 #include <iostream>
 
-Projectile* Projectile::Fire(const GameObject* const caster, AEVec2 fireDir, float radius, float spd, float lifetime, void (*onHitCallback)(CollisionData& target))
+Projectile* Projectile::Fire(Actor* const caster, AEVec2 fireDir, float radius, float spd, float lifetime, void (*onHitCallback)(CollisionData& target, Actor* caster))
 {
 	Init(caster->GetPos(), { radius * 2.f, radius * 2.f }, caster->GetZ(),
 		MESH_CIRCLE, COL_CIRCLE, { radius * 2.f, radius * 2.f },
@@ -33,7 +33,7 @@ void Projectile::Update(double dt)
 void Projectile::OnCollide(CollisionData& other)
 {
 	//Send callback
-	if (OnHit) OnHit(other);
+	if (OnHit) OnHit(other, owner);
 	//Disable self
 	isEnabled = false;
 }

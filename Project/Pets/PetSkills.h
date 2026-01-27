@@ -13,7 +13,7 @@ class Pet;
 namespace PetSkills {
 	//Stuff to pass to the cast function
 	struct SkillCastData {
-		Player const* player;
+		Player* player;
 		Pet const* thisPet;
 	};
 

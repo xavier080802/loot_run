@@ -100,6 +100,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="Actor\Enemy.cpp" />
     <ClCompile Include="Actor\Player.cpp" />
     <ClCompile Include="Actor\StatsCalc.cpp" />
+    <ClCompile Include="Actor\StatusEffect.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DesignPatterns\PostOffice.cpp" />
     <ClCompile Include="Drops\DropSystem.cpp" />
@@ -109,7 +110,6 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="GameObjects\GameObjectManager.cpp" />
     <ClCompile Include="GameObjects\LootChest.cpp" />
     <ClCompile Include="GameObjects\Projectile.cpp" />
-    <ClCompile Include="GameObjects\StatusEffect.cpp" />
     <ClCompile Include="GameStates\GameState.cpp" />
     <ClCompile Include="GameStateManager.cpp" />
     <ClCompile Include="GameStates\MainMenuState.cpp" />
@@ -138,6 +138,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="Actor\Player.h" />
     <ClInclude Include="Actor\StatsCalc.h" />
     <ClInclude Include="Actor\StatsTypes.h" />
+    <ClInclude Include="Actor\StatusEffect.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="DesignPatterns\ConcreteMessages.h" />
     <ClInclude Include="DesignPatterns\Message.h" />
@@ -154,7 +155,6 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="GameObjects\GOTypeList.h" />
     <ClInclude Include="GameObjects\LootChest.h" />
     <ClInclude Include="GameObjects\Projectile.h" />
-    <ClInclude Include="GameObjects\StatusEffect.h" />
     <ClInclude Include="GameStates\GameState.h" />
     <ClInclude Include="GameStateManager.h" />
     <ClInclude Include="GameStates\MainMenuState.h" />

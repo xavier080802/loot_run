@@ -333,6 +333,7 @@ void GameState::InitState()
         GameObject::COLLISION_LAYER::PLAYER
     );
     PetManager::GetInstance()->PlacePet(GetPlayerPos());
+    PetManager::GetInstance()->InitPetForGame();
 
     ActorStats base{};
     base.maxHP = 100.0f;
@@ -437,7 +438,10 @@ void GameState::Draw() {
     GameObjectManager::GetInstance()->DrawObjects();
     RenderMinimap();
 }
-void GameState::ExitState() {}
+
+void GameState::ExitState() {
+    gPlayer->ClearStatusEffects();
+}
 
 void GameState::UnloadState() {
     if (borderMesh) AEGfxMeshFree(borderMesh);

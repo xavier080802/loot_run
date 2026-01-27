@@ -1,6 +1,7 @@
 #include "Player.h"
 #include "../Helpers/Vec2Utils.h"
 #include "../GameObjects/Projectile.h"
+#include <iostream>
 
 namespace {
     const float dodgeCooldown{ 0.5f };
@@ -36,7 +37,7 @@ void Player::RecalculateStats()
 
 void Player::Update(double dt)
 {
-    GameObject::Update(dt);
+    Actor::Update(dt);
 }
 
 void Player::HandleMovementInput(double dt)
@@ -68,23 +69,22 @@ void Player::HandleMovementInput(double dt)
     SetPos(p);
 }
 
-static void Test_ProjHitCallback(GameObject::CollisionData& data) {
-    if (data.other.GetGOType() != GO_TYPE::ENEMY) return;
-    //Do dmg.
-    //TODO: get damage calc from weapon and buffs etc.
-    Actor& target = dynamic_cast<Actor&>(data.other);
-    target.TakeDamage(10);
-}
-
 void Player::HandleAttackInput(double dt)
 {
+    (void)dt;//Unused param
     //Testing projectiles.
     //The collide reaction should be controlled by the weapon through OnHitCallback
     if (AEInputCheckTriggered(AEVK_F)) {
         Projectile* proj = dynamic_cast<Projectile*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PROJECTILE));
         AEVec2 m = GetMouseWorldVec();
         //Fire at cursor
-        proj->Fire(this, { m.x - pos.x, m.y - pos.y }, 10, 200, 3, Test_ProjHitCallback);
+        proj->Fire(this, { m.x - pos.x, m.y - pos.y }, 10, 200, 3, 
+            [](GameObject::CollisionData& data, Actor* caster) {
+                if (data.other.GetGOType() != GO_TYPE::ENEMY || !caster) return;
+                //TODO: get damage calc from weapon and buffs etc.
+                Actor& target = dynamic_cast<Actor&>(data.other);
+                target.TakeDamage(caster->GetStatEffectValue(STAT_TYPE::TEST_ATT, 100));
+            });
     }
 }
 

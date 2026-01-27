@@ -123,9 +123,6 @@
     <ClCompile Include="GameObjects\Projectile.cpp">
       <Filter>Source Files\GameObjects</Filter>
     </ClCompile>
-    <ClCompile Include="GameObjects\StatusEffect.cpp">
-      <Filter>Source Files\GameObjects</Filter>
-    </ClCompile>
     <ClCompile Include="Pets\Pet.cpp">
       <Filter>Source Files\Pets</Filter>
     </ClCompile>
@@ -165,6 +162,9 @@
     </ClCompile>
     <ClCompile Include="GameDB.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Actor\StatusEffect.cpp">
+      <Filter>Source Files\Actors</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -243,9 +243,6 @@
     <ClInclude Include="GameObjects\GOTypeList.h">
       <Filter>Header Files\GameObjects</Filter>
     </ClInclude>
-    <ClInclude Include="GameObjects\StatusEffect.h">
-      <Filter>Header Files\GameObjects</Filter>
-    </ClInclude>
     <ClInclude Include="Pets\Pet.h">
       <Filter>Header Files\Pets</Filter>
     </ClInclude>
@@ -269,9 +266,6 @@
     </ClInclude>
     <ClInclude Include="Map.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Actor\Actor.h">
-      <Filter>Header Files\Actors</Filter>
     </ClInclude>
     <ClInclude Include="Actor\Enemy.h">
       <Filter>Header Files\Actors</Filter>
@@ -305,6 +299,12 @@
     </ClInclude>
     <ClInclude Include="Drops\PickupPayload.h">
       <Filter>Header Files\DropPick</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor\StatusEffect.h">
+      <Filter>Header Files\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor\Actor.h">
+      <Filter>Header Files\Actors</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
