@@ -83,21 +83,18 @@ namespace {
         float revealRadiusWorld = 180.0f;
         for (int x = 0; x < FOG_GRID_SIZE; ++x) {
             for (int y = 0; y < FOG_GRID_SIZE; ++y) {
-                // Decay discovery over time
                 if (regenTimerGrid[x][y] > 0.0f) regenTimerGrid[x][y] -= dt;
                 else {
                     discoveryGrid[x][y] -= FOG_REGEN_RATE * dt;
                     if (discoveryGrid[x][y] < 0.0f) discoveryGrid[x][y] = 0.0f;
                 }
 
-                // Calculate tile center position in world space
                 float tileWorldX = (x * tileWorldSizeX) - halfMapWidth + (tileWorldSizeX * 0.5f);
                 float tileWorldY = (y * tileWorldSizeY) - halfMapHeight + (tileWorldSizeY * 0.5f);
 
                 float dx = playerPos.x - tileWorldX;
                 float dy = playerPos.y - tileWorldY;
 
-                // If tile is within reveal range, set discovery to max
                 if ((dx * dx + dy * dy) < (revealRadiusWorld * revealRadiusWorld)) {
                     discoveryGrid[x][y] = 1.0f;
                     regenTimerGrid[x][y] = REGEN_DELAY;
@@ -106,7 +103,6 @@ namespace {
         }
     }
 
-    // Draws the small orientation arrow on the minimap
     void DrawMinimapArrow(float mmX, float mmY, float scaleX, float scaleY) {
         float cx = mmX + playerPos.x * scaleX;
         float cy = mmY + playerPos.y * scaleY;
@@ -116,10 +112,9 @@ namespace {
         if (mag < 1e-4f) { dx = 1.0f; dy = 0.0f; }
         else { dx /= mag; dy /= mag; }
 
-        float px = -dy, py = dx; // Perpendicular vector for width
+        float px = -dy, py = dx;
         float dotSize = playerRadius * scaleX * minimapPlayerScaleFactor;
 
-        // Offset arrow slightly in front of the player dot
         float ax = cx + dx * (dotSize + 2.0f), ay = cy + dy * (dotSize + 2.0f);
         float tipX = ax + dx * 8.0f, tipY = ay + dy * 8.0f;
         float bLX = ax + px * 4.0f, bLY = ay + py * 4.0f;
@@ -136,7 +131,6 @@ namespace {
         AEGfxMeshFree(arrowMesh);
     }
 
-    // Handles Camera movement and smooth damping
     void UpdateWorldMap(float dt) {
         float winW = (float)AEGfxGetWinMaxX(), winH = (float)AEGfxGetWinMaxY();
         float viewHalfW = (winW * 0.5f) / camZoom, viewHalfH = (winH * 0.5f) / camZoom;
@@ -144,11 +138,9 @@ namespace {
         AEVec2 camTarget = playerPos;
         float limitX = halfMapWidth - viewHalfW, limitY = halfMapHeight - viewHalfH;
 
-        // Keep camera within map bounds
         if (limitX > 0) camTarget.x = AEClamp(camTarget.x, -limitX, limitX); else camTarget.x = 0;
         if (limitY > 0) camTarget.y = AEClamp(camTarget.y, -limitY, limitY); else camTarget.y = 0;
 
-        // Critically damped spring for smooth camera movement
         float omega = 2.0f / camSmoothTime, xd = omega * dt;
         float expK = 1.0f / (1.0f + xd + 0.48f * xd * xd + 0.235f * xd * xd * xd);
         AEVec2 change = { camPos.x - camTarget.x, camPos.y - camTarget.y };
@@ -164,13 +156,11 @@ namespace {
         AEGfxSetBlendMode(AE_GFX_BM_BLEND);
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
-        // Camera matrix math
         AEMtx33 viewMtx, zoomMtx, camMatrix;
         AEMtx33Trans(&viewMtx, -camPos.x, -camPos.y);
         AEMtx33Scale(&zoomMtx, camZoom, camZoom);
         AEMtx33Concat(&camMatrix, &zoomMtx, &viewMtx);
 
-        // --- WORLD OBJECTS RENDERING ---
         AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
         for (const auto& wall : currentLevel.walls) {
             AEMtx33 s, t, final;
@@ -182,9 +172,7 @@ namespace {
             AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
         }
 
-        // Placeholder boss logic
         if (bossAlive) {
-            // placeholder boss
             AEMtx33 bS, bT, bF;
             AEMtx33Scale(&bS, bossRadius * 2, bossRadius * 2);
             AEMtx33Trans(&bT, currentLevel.doorPos.x, currentLevel.doorPos.y);
@@ -194,7 +182,6 @@ namespace {
             AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f);
             AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
 
-            // World Door Rect 
             AEMtx33 dS, dT, dF;
             AEMtx33Scale(&dS, 45.0f, 125.0f);
             AEMtx33Trans(&dT, currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y);
@@ -205,7 +192,6 @@ namespace {
             AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
         }
 
-        // Placeholder Chest
         AEMtx33 cS, cT, cF;
         AEMtx33Scale(&cS, 35, 35);
         AEMtx33Trans(&cT, currentLevel.chestPos.x, currentLevel.chestPos.y);
@@ -215,7 +201,6 @@ namespace {
         AEGfxSetColorToMultiply(1.0f, 0.84f, 0.0f, 1.0f);
         AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
 
-        // Placeholder enemies
         AEVec2 enemies[] = { currentLevel.enemy1Pos, currentLevel.enemy2Pos };
         for (auto& e : enemies) {
             AEMtx33 eS, eT, eF;
@@ -228,7 +213,6 @@ namespace {
             AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
         }
 
-        // Player
         AEMtx33 pS, pT, pFinal;
         AEMtx33Scale(&pS, playerRadius * 2, playerRadius * 2);
         AEMtx33Trans(&pT, playerPos.x, playerPos.y);
@@ -238,13 +222,11 @@ namespace {
         AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
         AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
 
-        // --- MINIMAP RENDERING LAYERS ---
         float scaleX = minimapWidth / mapWidth, scaleY = minimapHeight / mapHeight;
         float mmX = (float)AEGfxGetWinMaxX() - minimapWidth * 0.5f - minimapMargin;
         float mmY = (float)AEGfxGetWinMaxY() - minimapHeight * 0.5f - minimapMargin;
         float playerMinimapRadius = playerRadius * scaleX * minimapPlayerScaleFactor;
 
-        // LAYER A: Minimap Walls 
         AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
         for (const auto& w : currentLevel.walls) {
             AEMtx33 s, t, f;
@@ -255,7 +237,6 @@ namespace {
             AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
         }
 
-        // LAYER B: Minimap Quest Icons & Minimap Boss
         if (bossAlive) {
             AEMtx33 bms, bmt, bmf;
             AEMtx33Scale(&bms, playerMinimapRadius * 2, playerMinimapRadius * 2);
@@ -265,7 +246,6 @@ namespace {
             AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f);
             AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
 
-            // Minimap Door
             AEMtx33 dms, dmt, dmf;
             AEMtx33Scale(&dms, playerMinimapRadius, playerMinimapRadius * 2.5f);
             AEMtx33Trans(&dmt, mmX + (currentLevel.doorPos.x - 335.0f) * scaleX, mmY + currentLevel.doorPos.y * scaleY);
@@ -275,7 +255,6 @@ namespace {
             AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
         }
 
-        // Minimap Chest
         AEMtx33 mcs, mct, mcf;
         AEMtx33Scale(&mcs, playerMinimapRadius * 2, playerMinimapRadius * 2);
         AEMtx33Trans(&mct, mmX + currentLevel.chestPos.x * scaleX, mmY + currentLevel.chestPos.y * scaleY);
@@ -284,7 +263,6 @@ namespace {
         AEGfxSetColorToMultiply(1.0f, 0.84f, 0.0f, 1.0f);
         AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
 
-        // Minimap Enemies
         for (auto& e : enemies) {
             AEMtx33 es, et, ef;
             AEMtx33Scale(&es, playerMinimapRadius * 2, playerMinimapRadius * 2);
@@ -295,7 +273,6 @@ namespace {
             AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
         }
 
-        // LAYER C: Fog Grid 
         for (int x = 0; x < FOG_GRID_SIZE; x++) {
             for (int y = 0; y < FOG_GRID_SIZE; y++) {
                 if (discoveryGrid[x][y] < 1.0f) {
@@ -306,15 +283,12 @@ namespace {
                     AEMtx33Trans(&t, mmX + oX * scaleX, mmY + oY * scaleY);
                     AEMtx33Concat(&f, &t, &s);
                     AEGfxSetTransform(f.m);
-
-                    // Use discoveryGrid value for Alpha (0.0 discovery = 1.0 alpha/darkness)
                     AEGfxSetColorToMultiply(0.1f, 0.1f, 0.1f, 1.0f - discoveryGrid[x][y]);
                     AEGfxMeshDraw(fogTileMesh, AE_GFX_MDM_TRIANGLES);
                 }
             }
         }
 
-        // LAYER D: Player & UI Border 
         AEMtx33 ps, pt, pf;
         AEMtx33Scale(&ps, playerMinimapRadius * 2, playerMinimapRadius * 2);
         AEMtx33Trans(&pt, mmX + playerPos.x * scaleX, mmY + playerPos.y * scaleY);
@@ -325,7 +299,6 @@ namespace {
 
         DrawMinimapArrow(mmX, mmY, scaleX, scaleY);
 
-        // Minimap frame
         AEMtx33 bS, bT, bF;
         AEMtx33Scale(&bS, minimapWidth, minimapHeight);
         AEMtx33Trans(&bT, mmX, mmY);
@@ -345,10 +318,6 @@ void GameState::LoadState() {
 
     circleMesh = RenderingManager::GetInstance()->GetMesh(MESH_CIRCLE);
 
-    // Load gacha font (you already had this)
-    gachaFont = AEGfxCreateFont("Assets/Exo2/Exo2-SemiBoldItalic.ttf", 24);
-
-    // Initialise the 4-point border mesh for the UI
     AEGfxMeshStart();
     AEGfxVertexAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 0); AEGfxVertexAdd(0.5f, -0.5f, 0xFFFFFFFF, 0, 0);
     AEGfxVertexAdd(0.5f, 0.5f, 0xFFFFFFFF, 0, 0); AEGfxVertexAdd(-0.5f, 0.5f, 0xFFFFFFFF, 0, 0);
@@ -358,7 +327,6 @@ void GameState::LoadState() {
     tileWorldSizeX = mapWidth / (float)FOG_GRID_SIZE;
     tileWorldSizeY = mapHeight / (float)FOG_GRID_SIZE;
 
-    // Initialise the square mesh used for walls and fog tiles
     AEGfxMeshStart();
     AEGfxTriAdd(-0.52f, -0.52f, 0xFFFFFFFF, 0, 0, 0.52f, -0.52f, 0xFFFFFFFF, 0, 0, 0.52f, 0.52f, 0xFFFFFFFF, 0, 0);
     AEGfxTriAdd(-0.52f, -0.52f, 0xFFFFFFFF, 0, 0, 0.52f, 0.52f, 0xFFFFFFFF, 0, 0, -0.52f, 0.52f, 0xFFFFFFFF, 0, 0);
@@ -373,7 +341,6 @@ void GameState::InitState() {
     camPos = playerPos;
     camVel = { 0,0 };
 
-    // Start with a fully hidden map
     for (int i = 0; i < FOG_GRID_SIZE; i++)
         for (int j = 0; j < FOG_GRID_SIZE; j++) {
             discoveryGrid[i][j] = 0;
@@ -386,7 +353,6 @@ void GameState::InitState() {
 }
 
 void GameState::Update(double dt) {
-    // Basic movement input
     AEVec2 move = { 0,0 };
     if (AEInputCheckCurr(AEVK_W)) move.y += 1;
     if (AEInputCheckCurr(AEVK_S)) move.y -= 1;
@@ -398,7 +364,6 @@ void GameState::Update(double dt) {
         playerDir = move;
         float subStep = (playerSpeed * (float)dt) / 10.0f;
 
-        // Collision detection lambda
         auto IsClear = [&](AEVec2 p) {
             for (const auto& w : currentLevel.walls)
                 if (CircleRectCollision(w.position, { w.width, w.height }, p, playerRadius)) return false;
@@ -410,7 +375,6 @@ void GameState::Update(double dt) {
             return true;
             };
 
-        // Move in small increments to prevent tunneling through walls
         for (int i = 0; i < 10; i++) {
             AEVec2 nextX = { playerPos.x + move.x * subStep, playerPos.y };
             if (IsClear(nextX)) playerPos.x = nextX.x;
@@ -420,55 +384,30 @@ void GameState::Update(double dt) {
         }
     }
 
-    // Clamp player to world bounds
     playerPos.x = AEClamp(playerPos.x, -halfMapWidth + playerRadius, halfMapWidth - playerRadius);
     playerPos.y = AEClamp(playerPos.y, -halfMapHeight + playerRadius, halfMapHeight - playerRadius);
 
-    // Refresh systems
     UpdateDiscovery((float)dt);
     UpdateWorldMap((float)dt);
 
+    // --- NAVIGATION CONTROLS ---
 
-    // Toggle / open gacha overlay with F
-    if (AEInputCheckTriggered(AEVK_F))
-    {
-        if (!gachaActive)
-        {
-            BeginGachaOverlay(gachaAnim, 10, 0.6f, 1.2f, 0.3f); // intro, rolling, reveal delay
-            gachaActive = true;
-        }
-        else if (gachaAnim.phase == GachaPhase::Done)
-        {
-            // close only when done (your preferred behavior)
-            gachaActive = false;
-            gachaAnim.Reset();
-        }
+    // 1. Press [F] to go to the SHOP (Gacha)
+    if (AEInputCheckTriggered(AEVK_F)) {
+        GameStateManager::GetInstance()->SetNextGameState("GachaState", true, true);
     }
 
-    // Update overlay if active
-    if (gachaActive)
-    {
-        bool skipPressed = AEInputCheckTriggered(AEVK_SPACE); // "Tap to skip"
-        UpdateGachaOverlay(gachaAnim, (float)dt, skipPressed);
+    // 2. Press [M] to go back to the MAIN MENU hub
+    if (AEInputCheckTriggered(AEVK_M)) {
+        GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
     }
 }
 
+void GameState::Draw() {
+    AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 
-void GameState::Draw()
-{
     RenderWorldMap();
-
-    if (gachaActive && gachaFont >= 0)
-    {
-        // ensure text/overlay isn't affected by world transforms
-        AEMtx33 I;
-        AEMtx33Identity(&I);
-        AEGfxSetTransform(I.m);
-
-        DrawGachaOverlay(gachaAnim, gachaFont);
-    }
 }
-
 
 void GameState::ExitState() {}
 

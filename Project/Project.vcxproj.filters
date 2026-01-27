@@ -99,7 +99,10 @@
     <ClCompile Include="Map.cpp">
       <Filter>Source Files\game_object</Filter>
     </ClCompile>
-    <ClCompile Include="gacha.cpp">
+    <ClCompile Include="Gacha.cpp">
+      <Filter>Source Files\game_object</Filter>
+    </ClCompile>
+    <ClCompile Include="Shop.cpp">
       <Filter>Source Files\game_states</Filter>
     </ClCompile>
   </ItemGroup>
@@ -176,7 +179,10 @@
     <ClInclude Include="Map.h">
       <Filter>Header Files\game_objects</Filter>
     </ClInclude>
-    <ClInclude Include="gacha.h">
+    <ClInclude Include="Gacha.h">
+      <Filter>Header Files\game_objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Shop.h">
       <Filter>Header Files\game_states</Filter>
     </ClInclude>
   </ItemGroup>
