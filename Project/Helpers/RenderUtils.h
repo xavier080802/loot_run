@@ -79,7 +79,7 @@ void DrawBox(AEVec2 center, f32 width, f32 height, f32 thickness, Color col);
 /// <param name="size">Scale of the text based on the initialization size.</param>
 /// <param name="alignment">Where the anchor is relative to the text. Anchor is at pos</param>
 /// <param name="isHUD">If false, rendered in the world, based on the camera. Text always reorients to the camera</param>
-void DrawAEText(s8& font, const char* text, AEVec2 pos, f32 size, Color col, TextOriginPos alignment, int isHUD);
+void DrawAEText(s8& font, const char* text, AEVec2 pos, f32 size, Color col, TextOriginPos alignment, int isHUD=1);
 
 /// <summary>
 /// Basically sets the object anchor to a position in the World. <para/>

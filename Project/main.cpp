@@ -28,7 +28,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     AESysInit(hInstance, nCmdShow, 1600, 900, 1, 60, false, NULL);
     AESysSetWindowTitle("Loot Run");
     AESysReset();
-
+	
     //Pre-loop setup
 	goManager = GameObjectManager::GetInstance();
 	renderManager = RenderingManager::GetInstance();
@@ -41,7 +41,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	stateManager->AddGameState("GameState", new GameState);
 
 	//Enter first game state
-	stateManager->SetNextGameState("GameState", true, true);
+	stateManager->SetNextGameState("MainMenuState", true, true);
 
     while (AESysDoesWindowExist()) {
         AESysFrameStart();
