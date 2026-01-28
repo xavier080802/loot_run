@@ -11,7 +11,6 @@ public:
 	virtual AEGfxTexture* GetTexture() const;
 	virtual AEGfxTexture* SetActiveTexture(int index);
 	void AddTexture(const char* texturePath);
-	void ReplaceTexture(const char* texturePath, int index);
 	virtual AEVec2 GetTexOffset();
 	virtual AEGfxVertexList* GetMesh();
 	Color tint{};
