@@ -33,16 +33,6 @@ bool PostOffice::Send(PostBox* receiver, Message* message)
 	return receiver->Handle(message);
 }
 
-int PostOffice::Broadcast(Message& message)
-{
-	int count{};
-	for (auto& pair : addressBook) {
-		Message* msg = new Message(message);
-		count += Send(pair.second, msg) ? 1 : 0;
-	}
-	return count;
-}
-
 PostOffice::PostOffice()
 {
 }

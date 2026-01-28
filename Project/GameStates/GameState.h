@@ -14,6 +14,6 @@ public:
 	void Draw() override;
 
 private:
-	void HandleTutorialLogic();
+
 };
 #endif // !_GAME_STATE_H

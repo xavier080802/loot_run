@@ -16,7 +16,7 @@ bool IsPointOver(float posX, float posY, float width, float height, float pointX
 
 bool IsCursorOver(AEVec2 pos, float width, float height)
 {
-	AEVec2 mouse = GetMouseWorldVec();
+	AEVec2 mouse = GetMouseVec();
 	return IsPointOver(pos.x, pos.y, width, height, mouse.x, mouse.y);
 }
 
@@ -28,12 +28,12 @@ bool IsPointOverCircle(float posX, float posY, float diameter, float pointX, flo
 
 bool IsCursorOverCircle(AEVec2 pos, float diameter)
 {
-	AEVec2 world = GetMouseWorldVec();
+	AEVec2 world = GetMouseVec();
 	return (fabs(world.x - pos.x) <= diameter / 2.f && fabs(world.y - pos.y) <= diameter / 2.f) ? 1 : 0;
 }
 
 bool IsCursorOverOval(AEVec2 pos, AEVec2 size, f32 rotDeg) {
-	AEVec2 world = GetMouseWorldVec();
+	AEVec2 world = GetMouseVec();
 
 	AEVec2 v = { 0,0 }, r = { 0,0 };
 	AEMtx33 A = { 0 };
@@ -70,7 +70,7 @@ bool IsPointOverRectRot(float posX, float posY, float width, float height, float
 
 bool IsCursorOverRectRot(AEVec2 pos, float width, float height, float degrees)
 {
-	AEVec2 world = GetMouseWorldVec();
+	AEVec2 world = GetMouseVec();
 	return IsPointOverRectRot(pos.x, pos.y, width, height, degrees, world.x, world.y);
 }
 
@@ -86,18 +86,21 @@ bool IsRectsOverlapping(
 	return !((l1.x > r2.x || l2.x > r1.x) || (r1.y < l2.y || r2.y < l1.y));
 }
 
-bool CircleRectCollision(AEVec2 rectCenter, AEVec2 rectSize, AEVec2 circleCenter, float radius) {
-	// 1. Find the closest point on the rectangle to the circle center
-	float closestX = AEClamp(circleCenter.x, rectCenter.x - rectSize.x / 2.0f, rectCenter.x + rectSize.x / 2.0f);
-	float closestY = AEClamp(circleCenter.y, rectCenter.y - rectSize.y / 2.0f, rectCenter.y + rectSize.y / 2.0f);
+bool CircleRectCollision(AEVec2 rectPos, AEVec2 rectSize, AEVec2 circlePos, float circRad)
+{
+	rectSize.x /= 2.f;
+	rectSize.y /= 2.f;
+	//Vars for which rect edges to test
+	float testX = 0, testY = 0;
+	if (circlePos.x < rectPos.x - rectSize.x) testX = rectPos.x - rectSize.x; //C on left edge
+	else if (circlePos.x > rectPos.x + rectSize.x) testX = rectPos.x + rectSize.x; //C on right edge
+	if (circlePos.y < rectPos.y - rectSize.y) testY = rectPos.y - rectSize.y; //C on bottom edge
+	else if (circlePos.y > rectPos.y + rectSize.y) testY = rectPos.y + rectSize.y; //C on top edge
 
-	// 2. Calculate distance between circle center and this closest point
-	float distanceX = circleCenter.x - closestX;
-	float distanceY = circleCenter.y - closestY;
-
-	// 3. If distance is less than radius, they collide
-	float distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
-	return distanceSquared < (radius * radius);
+	float distX = circlePos.x - testX;
+	float distY = circlePos.y - testY;
+	float distSqr = distX * distX + distY * distY;
+	return distSqr <= circRad * circRad;
 }
 
 bool CircleCollision(AEVec2 pos1, AEVec2 pos2, float radius1, float radius2)

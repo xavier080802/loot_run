@@ -15,8 +15,6 @@ namespace {
 	GameObjectManager* goManager;
 	RenderingManager* renderManager;
 	PetManager* petManager;
-
-	bool gameRunningFlag{false};
 }
 
 //Entry point
@@ -30,8 +28,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     AESysInit(hInstance, nCmdShow, 1600, 900, 1, 60, false, NULL);
     AESysSetWindowTitle("Loot Run");
     AESysReset();
-	gameRunningFlag = true;
-
+	
     //Pre-loop setup
 	goManager = GameObjectManager::GetInstance();
 	renderManager = RenderingManager::GetInstance();
@@ -46,7 +43,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	//Enter first game state
 	stateManager->SetNextGameState("MainMenuState", true, true);
 
-    while (AESysDoesWindowExist() && gameRunningFlag) {
+    while (AESysDoesWindowExist()) {
         AESysFrameStart();
 
         if (AEInputCheckTriggered(AEVK_ESCAPE))
@@ -59,9 +56,6 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 		//Update state logic
 		f64 dt = AEFrameRateControllerGetFrameTime();
 		stateManager->UpdateCurrState(dt);
-
-		//In event of State terminating engine in Update, exit loop.
-		if (!gameRunningFlag) break;
 
 		//Rendering
 		stateManager->DrawCurrState();
@@ -76,7 +70,6 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
 void Terminate(void)
 {
-	gameRunningFlag = false;
 	stateManager->Destroy();
 	petManager->Destroy();
 	goManager->Destroy();
