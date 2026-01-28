@@ -19,6 +19,7 @@ namespace {
     // Meshes for rendering
     AEGfxVertexList* circleMesh = nullptr;
     AEGfxVertexList* borderMesh = nullptr;
+    AEGfxVertexList* squareMesh = nullptr;
 
     // Player state
     AEVec2 playerPos;
@@ -50,6 +51,12 @@ namespace {
     float minimapArrowThicknessPx = 8.0f;
     float minimapArrowExtraOffsetPx = 8.0f;
     unsigned int minimapArrowColor = 0xFF00FFFF; // cyan
+
+    //Boss HP progress bar
+	bool isBossActive = false;
+	float HPprogressBarWidth = 0.f;
+	float HPprogressBarHeight = 0.f;
+    float HPprogressBar = 100.f;
 
     // --------------------
     // Small helpers
@@ -232,7 +239,7 @@ namespace {
         float scaleX = minimapWidth / mapWidth;
         float scaleY = minimapHeight / mapHeight;
         float mmX = winW - minimapWidth * 0.5f - minimapMargin;
-        float mmY = winH - minimapHeight * 0.5f - minimapMargin;
+        float mmY = winH - minimapHeight * 0.5f - minimapMargin -50.f;
 
         // --------------------
         // Minimap Border
@@ -278,6 +285,32 @@ namespace {
         DrawMinimapArrow(mmX, mmY, scaleX, scaleY);
     }
 
+    void DrawHPProgressBar()
+    {
+        HPprogressBarHeight = 50.f;
+        HPprogressBarWidth = (float)AEGfxGetWinMaxX() - (float)AEGfxGetWinMinX();
+        float barX = -HPprogressBarWidth * 0.5f;
+        float barY = (float)AEGfxGetWinMaxY() - HPprogressBarHeight * 0.5f;
+        float hpRatio = HPprogressBar / 100.f;
+        hpRatio = AEClamp(hpRatio, 0.0f, 1.f);
+
+        // Background bar
+        AEVec2 bgSize = ToVec2(HPprogressBarWidth, HPprogressBarHeight);
+        AEVec2 hpbSize = ToVec2((HPprogressBarWidth - 4.f) * hpRatio, HPprogressBarHeight - 4.f);
+        AEVec2 bgPos = ToVec2(barX + HPprogressBarWidth * 0.5f, barY);
+        AEVec2 hpbPos = ToVec2(AEGfxGetWinMinX()+hpbSize.x/2, barY);
+        
+        AEMtx33 hpbMatrix;
+        GetTransformMtx(hpbMatrix, bgPos, 0, bgSize);
+        AEGfxSetTransform(hpbMatrix.m);
+        AEGfxSetColorToMultiply(0.5f,0.5f,0.5f,1.f);
+        AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
+
+        GetTransformMtx(hpbMatrix, hpbPos, 0, hpbSize);
+        AEGfxSetTransform(hpbMatrix.m);
+        (isBossActive) ? AEGfxSetColorToMultiply(0.9f, 0.9f, 0.9f, 1.f) : AEGfxSetColorToMultiply(0.7f, 0.2f, 0.2f, 1.f);
+        AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
+    }
     //TESTING
     GameObject* go, * enemy;
 }
@@ -292,6 +325,8 @@ void GameState::LoadState()
 
     circleMesh = RenderingManager::GetInstance()->GetMesh(MESH_CIRCLE);
     borderMesh = CreateBorderRectMesh(); 
+    squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
+
 
     AEVec2Zero(&playerPos);
     playerDir = { 1.0f, 0.0f };
@@ -368,6 +403,15 @@ void GameState::Update(double dt)
     playerPos.y = AEClamp(playerPos.y, -halfMapHeight + playerRadius, halfMapHeight - playerRadius);
     go->SetPos(playerPos); //TEMP
 
+    if (AEInputCheckTriggered(AEVK_1))HPprogressBar -= 10.f;
+    if (AEInputCheckTriggered(AEVK_2))HPprogressBar += 10.f;
+    HPprogressBar = AEClamp(HPprogressBar, 0.f, 100.f);
+
+    if(HPprogressBar == 100.f)
+        isBossActive = false;
+    else if(HPprogressBar == 0.f)
+		isBossActive = true;
+
     UpdateWorldMap(static_cast<float>(dt));
 
     GameObjectManager::GetInstance()->UpdateObjects(dt);
@@ -377,4 +421,5 @@ void GameState::Draw()
 {
     RenderWorldMap();
     GameObjectManager::GetInstance()->DrawObjects();
+    DrawHPProgressBar();
 }
