@@ -6,6 +6,7 @@
 #include "../RenderingManager.h"
 #include "../Helpers/RenderUtils.h"
 #include "../Helpers/ColorUtils.h"
+#include "../main.h"
 #include <iostream>
 
 //helpers
@@ -160,6 +161,7 @@ void MainMenuState::Update(double dt)
 						->SetNextGameState("CreditsState", true, true);*/
 					break;
 				case 5: //exit game
+					Terminate();
 					break;
 				}
 			}
