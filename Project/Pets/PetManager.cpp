@@ -19,7 +19,7 @@ void PetManager::Init() {
 	//Load pet data
 	//In the future, the values should be from a file.
 	Pet::PetData data1{ "Basic Pet", 2, PetSkills::Pet1Skill, "Assets/finn.png", passive};
-	data1.passive.AddMod(StatEffects::Mod(10, StatEffects::MULTIPLICATIVE, STAT_TYPE::TEST_ATT));
+	data1.passive.AddMod(StatEffects::Mod(10, StatEffects::MULTIPLICATIVE, STAT_TYPE::ATT));
 	petData.insert(std::pair<Pets::PET_TYPE, Pet::PetData>(Pets::PET_1, data1));
 
 	//Init pet GO

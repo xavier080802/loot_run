@@ -11,6 +11,7 @@ GameObject* Player::Init(AEVec2 _pos, AEVec2 _scale, int _z,
     MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize,
     Bitmask _collideWithLayers, COLLISION_LAYER _isInLayers)
 {
+    goType = GO_TYPE::PLAYER;
     return GameObject::Init(_pos, _scale, _z, _meshShape, _colShape, _colSize, _collideWithLayers, _isInLayers);
 }
 
@@ -27,7 +28,7 @@ void Player::RecalculateStats()
 {
     EquipmentModifiers eq = mInventory.GetEquipmentModifiers();
     UpgradeMultipliers up = mInventory.GetUpgradeMultipliers();
-
+    //TODO: status effect calculations
     mStats = StatsCalc::ComputeFinalStats(mBaseStats, eq, up);
 
     // Keep HP valid after stat changes
@@ -83,7 +84,7 @@ void Player::HandleAttackInput(double dt)
                 if (data.other.GetGOType() != GO_TYPE::ENEMY || !caster) return;
                 //TODO: get damage calc from weapon and buffs etc.
                 Actor& target = dynamic_cast<Actor&>(data.other);
-                target.TakeDamage(caster->GetStatEffectValue(STAT_TYPE::TEST_ATT, 100));
+                target.TakeDamage(caster->GetStatEffectValue(STAT_TYPE::ATT, 100));
             });
     }
 }
@@ -93,22 +94,26 @@ void Player::TryPickup(const PickupPayload& payload)
     switch (payload.type)
     {
     case DropType::Ammo:
+        std::cout << "Picked up ammo " << payload.amount << '\n';
         mInventory.AddAmmo(payload.amount);
         break;
 
     case DropType::Heal:
+        std::cout << "Picked up healing " << payload.amount << '\n';
         Heal((float)payload.amount);
         break;
 
     case DropType::Equipment:
         if (payload.equipment)
         {
+            std::cout << "Picked up equipment " << payload.equipment->name << '\n';
             mInventory.AddEquipment(payload.equipment);
             RecalculateStats();
         }
         break;
 
     case DropType::Coin:
+        std::cout << "Picked up coin(s) " << payload.amount << '\n';
     default:
         // hook currency later
         break;

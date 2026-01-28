@@ -26,6 +26,8 @@ public:
 
     AEVec2 GetMoveDirNorm() const;
 
+    GO_TYPE GetGOType()const override { return GO_TYPE::PLAYER; }
+
 private:
     ActorStats mBaseStats{};
     Inventory  mInventory{};

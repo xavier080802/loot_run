@@ -1,6 +1,7 @@
 #ifndef _STATS_TYPES_H_
 #define _STATS_TYPES_H_
 
+//TODO: make map instead. key - STAT_TYPE
 struct ActorStats
 {
 	float maxHP = 0.0f;
@@ -23,7 +24,11 @@ struct UpgradeMultipliers
 };
 
 enum STAT_TYPE {
-	TEST_ATT,
+	MAX_HP,
+	DEF,
+	ATT,
+	ATT_SPD,
+	MOVE_SPD,
 };
 
 #endif

@@ -2,6 +2,7 @@
 #include "AEEngine.h"
 #include <array>
 #include <random>
+#include "../Drops/DropSystem.h"
 
 namespace {
 	//Furthest distance from chest that loop can fall to
@@ -34,19 +35,17 @@ void LootChest::OnCollide(CollisionData& other)
 void LootChest::DropLoot()
 {
 	//TODO: From loot table, pick what items to drop.
-	//TEMP: using gameobject
 	int num{ RandInt(1,5) }; //Number of items to drop
 	for (int i{}; i < num; i++) {
 		//Create and scatter items nearby
-		GameObject* item = GameObjectManager::GetInstance()->FetchGO(GO_TYPE::ITEM);
 		int b{}, c{};
 		//Pythagoras theorem. Randomise x and y displacement, using ^2 to keep the spawn area a circle.
 		do {
 			c = RandInt(0, static_cast<int>(maxDropDist));
 			b = RandInt(0, static_cast<int>(maxDropDist));
 		} while (b * b + c * c > maxDropDist * maxDropDist);
-		//Initialize the dropped item
-		item->Init({pos.x + b, pos.y + c}, {10,10}, 0, MESH_CIRCLE, COL_CIRCLE, {20,20}, CreateBitmask(1, COLLISION_LAYER::PLAYER), COLLISION_LAYER::INTERACTABLE);
+
+		DropSystem::SpawnDrops(0, { pos.x + b, pos.y + c });
 	}
 
 	//Disable self

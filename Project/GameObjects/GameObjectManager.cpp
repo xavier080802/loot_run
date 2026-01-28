@@ -124,7 +124,7 @@ GameObject* GameObjectManager::FetchGO(GO_TYPE type)
 {
 	//Find existing disabled
 	for (GameObject* go : goList) {
-		if (go->isEnabled || go->goType != type) continue;
+		if (go->isEnabled || go->GetGOType() != type) continue;
 		go->isEnabled = true;
 		return go;
 	}
@@ -132,16 +132,16 @@ GameObject* GameObjectManager::FetchGO(GO_TYPE type)
 	//Create new
 	switch (type)
 	{
-	case NONE:
+	case GO_TYPE::NONE:
 		return new GameObject{};
-	case PROJECTILE:
+	case GO_TYPE::PROJECTILE:
 		return new Projectile{};
-	case LOOT_CHEST:
+	case GO_TYPE::LOOT_CHEST:
 		return new LootChest{};
-	case ITEM:
+	case GO_TYPE::ITEM:
 		return new GameObject{}; //TEMP
 	default:
-		std::cout << "WARNING: FetchGO implementation not done for GO_TYPE " << type << '\n';
+		std::cout << "WARNING: FetchGO implementation not done for GO_TYPE " << (int)type << '\n';
 		return nullptr;
 	}
 }
@@ -176,6 +176,7 @@ void GOCollision::SpatialGrid::SortObjects(GameObject** gos, size_t count)
 	cells.insert(cells.begin(), partitions * partitions, {});
 
 	for (unsigned i = 0;i < count; i++) {
+		if (!gos[i]->CanCollide()) continue;
 		AEVec2 pos = gos[i]->GetPos();
 		int cellX = static_cast<int>((pos.x + worldHalfWidth) / (float)cellWidth);
 		int cellY = static_cast<int>(std::abs(pos.y - worldhalfHeight) / (float)cellHeight);

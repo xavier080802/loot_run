@@ -37,9 +37,10 @@ public:
 	const AEVec2& GetScale() const;
 	const AEVec2& GetColSize() const;
 	int GetZ() const;
+	bool CanCollide() const;
 	Bitmask GetCollisionLayers()const;
 	COLLISION_LAYER GetColliderLayer()const;
-	GO_TYPE GetGOType() const;
+	virtual GO_TYPE GetGOType() const;
 
 	void SetPos(AEVec2 nextPos);
 	void Move(AEVec2 moveAmt);

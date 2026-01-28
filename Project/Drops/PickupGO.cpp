@@ -2,7 +2,7 @@
 #include "../GameObjects/GameObjectManager.h"
 #include "../Helpers/BitmaskUtils.h"  // adjust include path to match your project
 
-static const GO_TYPE PICKUP_TYPE_FALLBACK = NONE;
+static const GO_TYPE PICKUP_TYPE_FALLBACK = GO_TYPE::NONE;
 
 PickupGO* PickupGO::Spawn(const AEVec2& worldPos, const PickupPayload& payload)
 {
@@ -15,15 +15,15 @@ PickupGO* PickupGO::Spawn(const AEVec2& worldPos, const PickupPayload& payload)
 
     p->Init(
         worldPos,
-        AEVec2{ 1.0f, 1.0f },
+        AEVec2{ 10.0f, 10.0f },
         0,
         MESH_SQUARE,
         COLLIDER_SHAPE::COL_CIRCLE,
         AEVec2{ 32.0f, 32.0f },                 // tweak pickup radius/size
         collideWithPlayer,                      // can collide with Player
-        GameObject::COLLISION_LAYER::PET        // treat as pickup layer for now
+        GameObject::COLLISION_LAYER::INTERACTABLE
     );
-
+    p->goType = GO_TYPE::ITEM;
     p->InitPickup(payload);
     return p;
 }

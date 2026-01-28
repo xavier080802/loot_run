@@ -88,6 +88,11 @@ int GameObject::GetZ() const
 	return z;
 }
 
+bool GameObject::CanCollide() const
+{
+	return isEnabled && collisionEnabled;
+}
+
 Bitmask GameObject::GetCollisionLayers() const
 {
 	return collisionLayers;

@@ -135,10 +135,6 @@
     <ClCompile Include="Map.cpp">
       <Filter>Source Files\GameObjects</Filter>
     </ClCompile>
-    <ClCompile Include="GameObjects\LootChest.cpp">
-      <Filter>Source Files\GameObjects</Filter>
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Actor\Actor.cpp">
       <Filter>Source Files\Actors</Filter>
     </ClCompile>
@@ -165,6 +161,9 @@
     </ClCompile>
     <ClCompile Include="Actor\StatusEffect.cpp">
       <Filter>Source Files\Actors</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObjects\LootChest.cpp">
+      <Filter>Source Files\GameObjects</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
