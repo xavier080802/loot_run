@@ -4,6 +4,7 @@
 #include "../DesignPatterns/singleton.h"
 #include "GOTypeList.h"
 #include <vector>
+#include <queue>
 
 class GameObject; //Avoid circular dependency
 
@@ -59,8 +60,11 @@ public:
 private:
 	//z sorted in ascending order
 	std::vector<GameObject*> goList;
+	std::queue<GameObject*> goRegistrationQ;
 
 	GOCollision::SpatialGrid grid;
+
+	bool isLoopingThrList{ false };
 
 	~GameObjectManager();
 };

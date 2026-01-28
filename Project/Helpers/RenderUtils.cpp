@@ -83,10 +83,10 @@ void DrawMeshWithTexOffset(AEMtx33 transform, AEGfxVertexList* mesh, AEGfxTextur
 
 	// Set the the color to multiply to white, so that the sprite can 
 	// display the full range of colors (default is black).
-	AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
+	//AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
 
 	// Tint
-	AEGfxSetColorToAdd(tint.r, tint.g, tint.b, tint.a);
+	AEGfxSetColorToMultiply(tint.r/255.f, tint.g/255.f, tint.b/255.f, tint.a/255.f);
 
 	// Set blend mode to AE_GFX_BM_BLEND, which will allow transparency.
 	AEGfxSetBlendMode(AE_GFX_BM_BLEND);

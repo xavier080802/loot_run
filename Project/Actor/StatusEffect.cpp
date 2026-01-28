@@ -1,5 +1,6 @@
-#include "StatusEffect.h"
 #include "AEMath.h"
+#include "StatusEffect.h"
+#include "Actor.h"
 
 StatEffects::StatusEffect* StatEffects::StatusEffect::AddMod(Mod newMod)
 {
@@ -7,10 +8,10 @@ StatEffects::StatusEffect* StatEffects::StatusEffect::AddMod(Mod newMod)
 	return this;
 }
 
-void StatEffects::StatusEffect::OnApply(int tempPlsPutEntityClass_owner, int tempPlsPutEntityClass_Caster)
+void StatEffects::StatusEffect::OnApply(Actor* _owner, Actor* _caster)
 {
-	//TODO: assign owner ent and caster ent.
-
+	(void)_owner; //Unused param
+	caster = _caster;
 }
 
 void StatEffects::StatusEffect::Tick(double dt)
@@ -24,8 +25,7 @@ void StatEffects::StatusEffect::Tick(double dt)
 
 void StatEffects::StatusEffect::OnEnd()
 {
-	//Remove from owner
-
+	hasEnded = true;
 }
 
 void StatEffects::StatusEffect::OnReapply(int numStacks)

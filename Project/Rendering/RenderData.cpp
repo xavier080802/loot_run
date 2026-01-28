@@ -39,6 +39,15 @@ void RenderData::AddTexture(const char* texturePath)
 	texList[texCount - 1] = RenderingManager::GetInstance()->LoadTexture(texturePath);
 }
 
+void RenderData::ReplaceTexture(const char* texturePath, int index)
+{
+	if (index < 0) return;
+	if (index >= texCount) {
+		return AddTexture(texturePath);
+	}
+	texList[index] = RenderingManager::GetInstance()->LoadTexture(texturePath);
+}
+
 AEVec2 RenderData::GetTexOffset()
 {
 	return {};
