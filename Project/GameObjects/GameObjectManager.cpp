@@ -2,10 +2,18 @@
 #include "GameObject.h"
 #include "../helpers/CollisionUtils.h"
 #include "Projectile.h"
+#include "LootChest.h"
+#include "../Drops/PickupGO.h"
 #include <iostream>
 
 void GameObjectManager::RegisterGO(GameObject* go)
 {
+	//Modifying the goList while it's looping will explode.
+	if (isLoopingThrList) {
+		goRegistrationQ.push(go);
+		return;
+	}
+
 	//Place go based on z. Ascending order.
 	for (std::vector<GameObject*>::iterator it = goList.begin(); it != goList.end(); it++) {
 		GameObject* curr = *it;
@@ -31,6 +39,7 @@ void GameObjectManager::UpdateObjects(double dt)
 	//Collision
 	grid.SortObjects(goList.data(), goList.size());
 
+	isLoopingThrList = true;
 	for (GameObject* go : goList) {
 		//Only let "player" (Player, pets, player's projs) query grid
 		if (go->colliderLayer != GameObject::COLLISION_LAYER::PLAYER
@@ -75,6 +84,13 @@ void GameObjectManager::UpdateObjects(double dt)
 			}
 		}
 	}
+	isLoopingThrList = false;
+
+	//Clear up the registration queue
+	while (!goRegistrationQ.empty()) {
+		RegisterGO(goRegistrationQ.front());
+		goRegistrationQ.pop();
+	}
 }
 
 void GameObjectManager::DrawObjects()
@@ -109,7 +125,7 @@ GameObject* GameObjectManager::FetchGO(GO_TYPE type)
 {
 	//Find existing disabled
 	for (GameObject* go : goList) {
-		if (go->isEnabled || go->goType != type) continue;
+		if (go->isEnabled || go->GetGOType() != type) continue;
 		go->isEnabled = true;
 		return go;
 	}
@@ -117,11 +133,16 @@ GameObject* GameObjectManager::FetchGO(GO_TYPE type)
 	//Create new
 	switch (type)
 	{
-	case NONE:
+	case GO_TYPE::NONE:
 		return new GameObject{};
-	case PROJECTILE:
+	case GO_TYPE::PROJECTILE:
 		return new Projectile{};
+	case GO_TYPE::LOOT_CHEST:
+		return new LootChest{};
+	case GO_TYPE::ITEM:
+		return new PickupGO{}; 
 	default:
+		std::cout << "WARNING: FetchGO implementation not done for GO_TYPE " << (int)type << '\n';
 		return nullptr;
 	}
 }
@@ -156,6 +177,7 @@ void GOCollision::SpatialGrid::SortObjects(GameObject** gos, size_t count)
 	cells.insert(cells.begin(), partitions * partitions, {});
 
 	for (unsigned i = 0;i < count; i++) {
+		if (!gos[i]->CanCollide()) continue;
 		AEVec2 pos = gos[i]->GetPos();
 		int cellX = static_cast<int>((pos.x + worldHalfWidth) / (float)cellWidth);
 		int cellY = static_cast<int>(std::abs(pos.y - worldhalfHeight) / (float)cellHeight);

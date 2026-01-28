@@ -8,7 +8,9 @@ class PostBox {
 public:
 	virtual ~PostBox() {}
 
-	//After reading the message, it should be deleted.
+	//ALWAYS call delete message at the end of the function / after reading message.
+	//Use dynamic_cast<MsgClass>(message) to cast the message to another type. Check null afterwards.
+	//Return whether the message was read or not(invalid/not implemented)
 	virtual bool Handle(Message* message) = 0;
 };
 #endif // !_POST_BOX_H_
