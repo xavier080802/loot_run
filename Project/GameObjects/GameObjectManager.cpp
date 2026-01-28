@@ -3,6 +3,7 @@
 #include "../helpers/CollisionUtils.h"
 #include "Projectile.h"
 #include "LootChest.h"
+#include "../Drops/PickupGO.h"
 #include <iostream>
 
 void GameObjectManager::RegisterGO(GameObject* go)
@@ -139,7 +140,7 @@ GameObject* GameObjectManager::FetchGO(GO_TYPE type)
 	case GO_TYPE::LOOT_CHEST:
 		return new LootChest{};
 	case GO_TYPE::ITEM:
-		return new GameObject{}; //TEMP
+		return new PickupGO{}; 
 	default:
 		std::cout << "WARNING: FetchGO implementation not done for GO_TYPE " << (int)type << '\n';
 		return nullptr;

@@ -42,6 +42,7 @@ public:
 	COLLISION_LAYER GetColliderLayer()const;
 	virtual GO_TYPE GetGOType() const;
 
+	void SetEnabled(bool enable);
 	void SetPos(AEVec2 nextPos);
 	void Move(AEVec2 moveAmt);
 	void SetCollision(bool enabled);

@@ -27,7 +27,14 @@ void Pet::Update(double dt) {
 		cooldownTimer -= static_cast<float>(dt);
 	}
 
-	//Movement
+	//------------------Movement-------------------
+
+	//If not following player, complete path.
+	if (!followPlayer) {
+		targetPos = path.empty() ? pos : path.front();
+		MoveToTarget(dt);
+		return;
+	}
 
 	GameObject const& player = PetManager::GetInstance()->GetPlayer();
 
@@ -43,16 +50,7 @@ void Pet::Update(double dt) {
 	if (!isNearPlayer) {
 		//Set targetPos to the next path point.
 		targetPos = path.empty() ? playerPos : path.front();
-		AEVec2 step{ targetPos.x - pos.x, targetPos.y - pos.y };
-		AEVec2 stepNorm{};
-		if (step.x || step.y) { //Prevent NaN issue if step is 0,0
-			AEVec2Normalize(&stepNorm, &step);
-		}
-		pos.x += stepNorm.x * petMoveSpeed * static_cast<float>(dt);
-		pos.y += stepNorm.y * petMoveSpeed * static_cast<float>(dt);
-
-		//If near targetPos (reached path point), pop path point
-		if (!path.empty() && AEVec2SquareDistance(&pos, &targetPos) <= pointTolerance) path.pop();
+		MoveToTarget(dt);
 	}
 	else if (!path.empty()){
 		//Near player again. Clear path to prevent funny movement when player leaves vicinity.
@@ -60,6 +58,16 @@ void Pet::Update(double dt) {
 		for (unsigned i = 0; i < temp; i++) {
 			path.pop();
 		}
+	}
+}
+
+void Pet::SetPath(std::initializer_list<AEVec2> const& _path, bool append)
+{
+	if (!append) {
+		ClearPath();
+	}
+	for (AEVec2 const& p : _path) {
+		path.push(p);
 	}
 }
 
@@ -73,12 +81,32 @@ const Pet::PetData& Pet::GetPetData()
 	return data;
 }
 
-void Pet::Reset()
+void Pet::ClearPath()
 {
 	size_t temp{ path.size() }; //Dont put path.size() into loop.
 	for (unsigned i = 0; i < temp; i++) {
 		path.pop();
 	}
+}
+
+void Pet::Reset()
+{
+	ClearPath();
 	targetPos = {};
 	cooldownTimer = 0.f;
+	followPlayer = true;
+}
+
+void Pet::MoveToTarget(double dt)
+{
+	AEVec2 step{ targetPos.x - pos.x, targetPos.y - pos.y };
+	AEVec2 stepNorm{};
+	if (step.x || step.y) { //Prevent NaN issue if step is 0,0
+		AEVec2Normalize(&stepNorm, &step);
+	}
+	pos.x += stepNorm.x * petMoveSpeed * static_cast<float>(dt);
+	pos.y += stepNorm.y * petMoveSpeed * static_cast<float>(dt);
+
+	//If near targetPos (reached path point), pop path point
+	if (!path.empty() && AEVec2SquareDistance(&pos, &targetPos) <= pointTolerance) path.pop();
 }

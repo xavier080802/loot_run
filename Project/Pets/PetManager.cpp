@@ -26,9 +26,9 @@ void PetManager::Init() {
 	equippedPet = new Pet{};
 	//Values are TEMP
 	equippedPet->Init({}, { 25,25 }, 0, MESH_SQUARE, COL_CIRCLE, { 25,25 }, CreateBitmask(1, GameObject::COLLISION_LAYER::ENEMIES), GameObject::COLLISION_LAYER::PET);
-
+	equippedPet->SetEnabled(false);
 	//TEMP
-	SetPet(Pets::PET_1, 0);
+	//SetPet(Pets::PET_1, 0);
 }
 
 void PetManager::InitPetForGame()
@@ -67,6 +67,7 @@ void PetManager::SetPet(Pets::PET_TYPE pet, int dupes)
 	equippedPet->SetData(data);
 	equippedPet->GetRenderData().ReplaceTexture(data.texture.c_str(), 0);
 	equippedPet->isSet = true;
+	equippedPet->SetEnabled(true);
 }
 
 Pets::PET_RANK PetManager::GetPetRank(Pets::PET_TYPE pet)

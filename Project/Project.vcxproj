@@ -130,6 +130,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="Rendering\AnimationData.cpp" />
     <ClCompile Include="Rendering\RenderData.cpp" />
+    <ClCompile Include="TutorialData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor\Actor.h" />
@@ -145,6 +146,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="DesignPatterns\PostBox.h" />
     <ClInclude Include="DesignPatterns\PostOffice.h" />
     <ClInclude Include="DesignPatterns\Singleton.h" />
+    <ClInclude Include="DesignPatterns\Subscriber.h" />
     <ClInclude Include="Drops\DropSystem.h" />
     <ClInclude Include="Drops\DropTypes.h" />
     <ClInclude Include="Drops\PickupGO.h" />
@@ -177,6 +179,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="Map.h" />
     <ClInclude Include="Rendering\AnimationData.h" />
     <ClInclude Include="Rendering\RenderData.h" />
+    <ClInclude Include="TutorialData.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

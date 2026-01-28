@@ -165,6 +165,9 @@
     <ClCompile Include="GameObjects\LootChest.cpp">
       <Filter>Source Files\GameObjects</Filter>
     </ClCompile>
+    <ClCompile Include="TutorialData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -304,6 +307,12 @@
     </ClInclude>
     <ClInclude Include="Actor\Actor.h">
       <Filter>Header Files\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="TutorialData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DesignPatterns\Subscriber.h">
+      <Filter>Header Files\DesignPatterns</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

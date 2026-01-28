@@ -22,6 +22,7 @@ GameObject* GameObject::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _mes
 		renderingData = new AnimationData;
 	}
 	renderingData->Init(_meshShape);
+	renderingData->tint = CreateColor(255, 255, 255, 255);
 	GameObjectManager::GetInstance()->RegisterGO(this);
 	return this;
 }
@@ -46,7 +47,6 @@ void GameObject::Update(double dt)
 	//	velocity = initialVel = VecZero();
 	//}
 	renderingData->UpdateAnimation(dt);
-	renderingData->tint = CreateColor(0, 0, 0, 0);
 }
 
 void GameObject::Draw()
@@ -106,6 +106,11 @@ GameObject::COLLISION_LAYER GameObject::GetColliderLayer() const
 GO_TYPE GameObject::GetGOType() const
 {
 	return goType;
+}
+
+void GameObject::SetEnabled(bool enable)
+{
+	isEnabled = enable;
 }
 
 void GameObject::SetPos(AEVec2 nextPos)

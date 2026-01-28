@@ -7,6 +7,7 @@
 #include "PetConsts.h"
 #include "PetSkills.h"
 #include "../Actor/StatusEffect.h"
+#include <initializer_list>
 
 //This is the equipped pet during a run
 class Pet : public GameObject
@@ -25,14 +26,21 @@ public:
 	//Update pet logic (like skill cooldowns)
 	void Update(double dt) override;
 
+	//[0] being the start of the new path.
+	//Set append to true to add to existing path instead of clearing.
+	void SetPath(std::initializer_list<AEVec2> const& _path, bool append = false);
+
 	void SetData(const PetData& newData);
 	const PetData& GetPetData();
 
+	void ClearPath();
 	//Reset game-time variables
 	void Reset();
 
 	bool isSet{ false };
-private:
+protected:
+	void MoveToTarget(double dt);
+
 	PetData data{};
 	int dupeLevel{};
 
@@ -42,5 +50,6 @@ private:
 	//Movement
 	AEVec2 targetPos{};
 	std::queue<AEVec2> path;
+	bool followPlayer{ true };
 };
 #endif // !_PETS_H_

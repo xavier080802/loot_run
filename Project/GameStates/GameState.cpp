@@ -19,6 +19,8 @@
 #include "../Actor/Enemy.h"
 #include "../GameObjects/GameObjectManager.h"
 #include "../Helpers/BitmaskUtils.h"
+#include "../TutorialData.h"
+#define TUTORIAL 1
 
 namespace {
     // --- GLOBAL SYSTEMS ---
@@ -67,6 +69,10 @@ namespace {
     float minimapHeight = 200.0f;
     float minimapMargin = 20.0f;
     float minimapPlayerScaleFactor = 3.5f;
+
+    // --- TUTORIAL ---
+    Tutorial::TutorialFairy* fairy;
+    s8 font{};
 
     // Logic to calculate which fog tiles are near the player and reveal them
     void UpdateDiscovery(float dt) {
@@ -183,11 +189,6 @@ namespace {
             AEGfxSetColorToMultiply(0.0f, 0.8f, 0.0f, 1.0f); AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
         }
 
-        // Placeholder Chest
-        AEMtx33 cS, cT, cF; AEMtx33Scale(&cS, 35, 35); AEMtx33Trans(&cT, currentLevel.chestPos.x, currentLevel.chestPos.y);
-        AEMtx33Concat(&cF, &camMatrix, &cT); AEMtx33Concat(&cF, &cF, &cS); AEGfxSetTransform(cF.m);
-        AEGfxSetColorToMultiply(1.0f, 0.84f, 0.0f, 1.0f); AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
-
         // Placeholder enemies
         AEVec2 enemies[] = { currentLevel.enemy1Pos, currentLevel.enemy2Pos };
         for (auto& e : enemies) {
@@ -195,11 +196,6 @@ namespace {
             AEMtx33Concat(&eF, &camMatrix, &eT); AEMtx33Concat(&eF, &eF, &eS); AEGfxSetTransform(eF.m);
             AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
         }
-
-        // Player
-        // AEMtx33 pS, pT, pFinal; AEMtx33Scale(&pS, playerRadius * 2, playerRadius * 2); AEMtx33Trans(&pT, playerPos.x, playerPos.y);
-        // AEMtx33Concat(&pFinal, &camMatrix, &pT); AEMtx33Concat(&pFinal, &pFinal, &pS); AEGfxSetTransform(pFinal.m);
-        // AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
     }
 
     void RenderMinimap() {
@@ -278,6 +274,7 @@ namespace {
 }
 
 void GameState::LoadState() {
+    font = AEGfxCreateFont("Assets/placeholder.ttf", 72);
     bgm.Init(); bgm.PlayNormal();
     halfMapWidth = mapWidth * 0.5f; halfMapHeight = mapHeight * 0.5f;
     circleMesh = RenderingManager::GetInstance()->GetMesh(MESH_CIRCLE);
@@ -309,7 +306,10 @@ void GameState::LoadState() {
     fogTileMesh = wallMesh;
 
     // TODO: Load Enemies
-    
+
+    if (TUTORIAL) {
+        fairy = new Tutorial::TutorialFairy();
+    }
 }
 
 void GameState::InitState()
@@ -340,6 +340,11 @@ void GameState::InitState()
     base.moveSpeed = playerSpeed;
     gPlayer->InitPlayerRuntime(base);
 
+    //Init other gameobjects
+    LootChest* chest = dynamic_cast<LootChest*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
+    chest->Init(currentLevel.chestPos, { 35,35 }, 0, MESH_SQUARE, COL_RECT, { 35,35 }, CreateBitmask(1, GameObject::PLAYER), GameObject::INTERACTABLE)
+         ->GetRenderData().tint = CreateColor(255, 0.84f * 255.f, 0, 255);
+
     // Camera starts on player
     camPos = currentLevel.startPos;
     camVel = { 0,0 };
@@ -350,6 +355,10 @@ void GameState::InitState()
             discoveryGrid[i][j] = 0;
             regenTimerGrid[i][j] = 0;
         }
+    }
+
+    if (TUTORIAL) {
+        fairy->InitTutorial(gPlayer, &currentLevel);
     }
 }
 
@@ -437,6 +446,16 @@ void GameState::Draw() {
     RenderWorldMap(); 
     GameObjectManager::GetInstance()->DrawObjects();
     RenderMinimap();
+
+    HandleTutorialLogic();
+}
+
+void GameState::HandleTutorialLogic()
+{
+    if (!TUTORIAL || !fairy || !fairy->data.playDialogue) return;
+    //Render text
+    DrawAEText(font, fairy->data.dialogueLines[fairy->data.currDialogueLine].c_str(),
+        fairy->data.dialoguePos, fairy->data.dialogueSize, CreateColor(238, 128, 238, 255), TEXT_MIDDLE, 1);
 }
 
 void GameState::ExitState() {
@@ -447,4 +466,5 @@ void GameState::UnloadState() {
     if (borderMesh) AEGfxMeshFree(borderMesh);
     if (wallMesh) AEGfxMeshFree(wallMesh);
     bgm.Exit();
+    AEGfxDestroyFont(font);
 }

@@ -10,7 +10,7 @@ void InitTutorial(MapData& map)
     const float HALF = ROOM_SIZE * 0.5f;
 
     AEVec2 r1 = { -800,  600 }; // Start
-    AEVec2 r2 = { 0,  600 };
+    AEVec2 r2 = { 0,  600 }; // Dodging
     AEVec2 r3 = { 800,  600 }; // Enemy 1
     AEVec2 r4 = { 800, -600 }; // Chest
     AEVec2 r5 = { 0, -600 }; // Enemy 2
