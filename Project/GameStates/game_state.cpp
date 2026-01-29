@@ -12,7 +12,6 @@
 #include "../Map.h"
 #include <iostream>
 #include <cmath>
-#include "../Gacha.h"   
 
 namespace {
     // --- GLOBAL SYSTEMS ---
@@ -56,27 +55,6 @@ namespace {
     float minimapHeight = 200.0f;
     float minimapMargin = 20.0f;
     float minimapPlayerScaleFactor = 3.5f;
-
-    // ----------------------------------------------------------
-    // GACHA STATE (ADDED)
-    // ----------------------------------------------------------
-    static GachaAnimation gachaAnim;
-    static bool gachaActive = false;
-    static s8 gachaFont = -1;
-
-    // Start a new gacha roll animation (ADDED)
-    static void StartGachaRoll(int count)
-    {
-        gachaAnim.Reset();
-        gachaAnim.results = MultiRoll(count);
-
-        // Start revealing from index 0 over time
-        gachaAnim.currentIndex = -1;
-        gachaAnim.timer = 0.0f;
-        gachaAnim.isFinished = gachaAnim.results.empty();
-
-        gachaActive = !gachaAnim.results.empty();
-    }
 
     // Logic to calculate which fog tiles are near the player and reveal them
     void UpdateDiscovery(float dt) {
@@ -255,13 +233,31 @@ namespace {
             AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
         }
 
-        AEMtx33 mcs, mct, mcf;
-        AEMtx33Scale(&mcs, playerMinimapRadius * 2, playerMinimapRadius * 2);
-        AEMtx33Trans(&mct, mmX + currentLevel.chestPos.x * scaleX, mmY + currentLevel.chestPos.y * scaleY);
-        AEMtx33Concat(&mcf, &mct, &mcs);
-        AEGfxSetTransform(mcf.m);
-        AEGfxSetColorToMultiply(1.0f, 0.84f, 0.0f, 1.0f);
-        AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         for (auto& e : enemies) {
             AEMtx33 es, et, ef;
@@ -346,10 +342,6 @@ void GameState::InitState() {
             discoveryGrid[i][j] = 0;
             regenTimerGrid[i][j] = 0;
         }
-
-    // Gacha initial state (optional but clean)
-    gachaAnim.Reset();
-    gachaActive = false;
 }
 
 void GameState::Update(double dt) {

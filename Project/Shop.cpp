@@ -1,5 +1,5 @@
-#include "../Project/Shop.h"   
-#include "../Project/Gacha.h"  
+#include "../Project/Shop.h"
+#include "../Project/Gacha.h"
 #include "../Project/game_state_manager.h"
 #include "AEEngine.h"
 
@@ -16,10 +16,20 @@ void GachaState::InitState() {
 }
 
 void GachaState::Update(double dt) {
-    bool skipPressed = AEInputCheckTriggered(AEVK_SPACE);
+
+    // Key inputs
+    bool openPressed = AEInputCheckTriggered(AEVK_O) || AEInputCheckTriggered(0x4F); // 'O'
+    bool rawSkipPressed = AEInputCheckTriggered(AEVK_SPACE);
+
+    // Only allow skipping during Reveal/Done (prevents skipping the chest phase)
+    bool skipPressed =
+        (gStateAnim.phase == GachaPhase::Reveal || gStateAnim.phase == GachaPhase::Done)
+        ? rawSkipPressed
+        : false;
+
     bool exitPressed = AEInputCheckTriggered(AEVK_F);
-    
-    bool pull10  = AEInputCheckTriggered(0x52) || AEInputCheckTriggered(AEVK_R);
+
+    bool pull10 = AEInputCheckTriggered(0x52) || AEInputCheckTriggered(AEVK_R);
     bool pull100 = AEInputCheckTriggered(0x54) || AEInputCheckTriggered(AEVK_T);
 
     if (AEInputCheckTriggered(AEVK_ESCAPE)) {
@@ -27,12 +37,15 @@ void GachaState::Update(double dt) {
         return;
     }
 
-    UpdateGachaOverlay(gStateAnim, (float)dt, skipPressed);
+    // ? Call ONCE (this is the only call you need)
+    UpdateGachaOverlay(gStateAnim, (float)dt, skipPressed, openPressed);
 
+    // If animation completes, keep it in Done
     if (gStateAnim.isFinished) {
         gStateAnim.phase = GachaPhase::Done;
     }
 
+    // Post-roll options
     if (gStateAnim.phase == GachaPhase::Done) {
         if (pull10) {
             BeginGachaOverlay(gStateAnim, 10, 0.1f, 0.8f, 0.2f);

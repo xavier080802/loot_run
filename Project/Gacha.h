@@ -35,7 +35,7 @@ struct GachaAnimation {
 // Function Prototypes (EXPOSE THESE TO THE SHOP)
 void EnsureOverlayMesh();
 void BeginGachaOverlay(GachaAnimation& anim, int rollCount, float introTime, float rollingTime, float revealDelay);
-void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skipPressed);
+void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skipPressed, bool openPressed);
 void DrawGachaOverlay(GachaAnimation& anim, s8 fontId);
 
 #endif
