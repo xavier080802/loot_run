@@ -1,4 +1,4 @@
-#include "MainMenuState.h"
+#include "ShopState.h"
 #include "../Helpers/Vec2Utils.h"
 #include "../helpers/CoordUtils.h"
 #include "../Helpers/CollisionUtils.h"
@@ -31,14 +31,14 @@ namespace {
 	};
 	Button shopButtons[] =
 	{
-		{{ 200.f, 300.f }, { 235.f, 67.f }, "New Run"},
-		{{ 200.f, 400.f }, { 235.f, 67.f }, "Pets"},
-		{{ 200.f, 500.f }, { 235.f, 67.f }, "Shop"},
-		{{ 200.f, 600.f }, { 235.f, 67.f }, "Settings"},
-		{{ 200.f, 700.f }, { 235.f, 67.f }, "Credits"},
-		{{ 200.f, 800.f }, { 235.f, 67.f }, "Exit Game"}
+		{{ 500.f, 300.f }, { 450.f, 144.f }, "Damage"},
+		{{ 500.f, 500.f }, { 450.f, 144.f }, "Attack Speed"},
+		{{ 500.f, 700.f }, { 450.f, 144.f }, "Move Speed"},
+		{{ 1100.f, 300.f }, { 450.f, 144.f }, "Health"},
+		{{ 1100.f, 500.f }, { 450.f, 144.f }, "Dodge"},
+		{{ 1100.f, 700.f }, { 450.f, 144.f }, "placeholder"}
 	};
-	Title title = { { DEFAULT_W / 2, 100.f }, { 675.f, 110.f }, "LOOT RUN" };
+	Title title = { { DEFAULT_W / 2, 100.f }, { 675.f, 110.f }, "SHOP" };
 
 	constexpr int SHOP_BTN_COUNT = sizeof(shopButtons) / sizeof(Button);
 
@@ -63,19 +63,18 @@ namespace {
 	// Track previous hover state
 	bool btnHoverStates[SHOP_BTN_COUNT] = { false };
 }
-void MainMenuState::LoadState()
+void ShopState::LoadState()
 {
 	squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
-
 
 	buttonGroup = AEAudioCreateGroup();
 	hoverSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17767.wav");
 	clickSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17766.wav");
 }
 
-void MainMenuState::InitState()
+void ShopState::InitState()
 {
-	std::cout << "Main menu state enter\n";
+	std::cout << "Shop state enter\n";
 	AEGfxFontSystemStart();
 	Font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 38);
 	BigFont = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 75);
@@ -87,12 +86,12 @@ void MainMenuState::InitState()
 	for (int i = 0; i < SHOP_BTN_COUNT; ++i) btnHoverStates[i] = false;
 }
 
-void MainMenuState::ExitState()
+void ShopState::ExitState()
 {
-	std::cout << "Exit main menu state\n";
+	std::cout << "Exit shop state\n";
 }
 
-void MainMenuState::UnloadState()
+void ShopState::UnloadState()
 {
 	//unload fonts
 	if (Font >= 0)
@@ -106,7 +105,7 @@ void MainMenuState::UnloadState()
 	AEAudioUnloadAudioGroup(buttonGroup);
 }
 
-void MainMenuState::Update(double dt)
+void ShopState::Update(double dt)
 {
 	for (int i = 0; i < SHOP_BTN_COUNT; ++i)
 	{
@@ -140,29 +139,23 @@ void MainMenuState::Update(double dt)
 
 				switch (i)
 				{
-				case 0: //new game
-					GameStateManager::GetInstance()
-						->SetNextGameState("GameState", true, true);
+				case 0: // Damage
 					
 					break;
-				case 1: // pet
-					/*GameStateManager::GetInstance()
-						->SetNextGameState("PetMenuState", true, true);*/
+				case 1: // Attack Speed
+					
 					break;
-				case 2: // shop
-					GameStateManager::GetInstance()
-						->SetNextGameState("ShopState", true, true);
+				case 2: // Move Speed
+					
 					break;
-				case 3: //settings
-					/*GameStateManager::GetInstance()
-						->SetNextGameState("SettingsState", true, true);*/
+				case 3: // Health
+					
 					break;
-				case 4: //credits
-					/*GameStateManager::GetInstance()
-						->SetNextGameState("CreditsState", true, true);*/
+				case 4: // Dodge
+					
 					break;
-				case 5: //exit game
-					Terminate();
+				case 5: // placeholder
+					
 					break;
 				}
 			}
@@ -170,7 +163,7 @@ void MainMenuState::Update(double dt)
 	}
 }
 
-void MainMenuState::Draw()
+void ShopState::Draw()
 {
 	AEGfxSetBackgroundColor(0.2f, 0.2f, 0.2f);
 	AEGfxStart();

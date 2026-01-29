@@ -168,6 +168,9 @@
     <ClCompile Include="TutorialData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GameStates\ShopState.cpp">
+      <Filter>Source Files\GameStates</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -313,6 +316,9 @@
     </ClInclude>
     <ClInclude Include="DesignPatterns\Subscriber.h">
       <Filter>Header Files\DesignPatterns</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStates\ShopState.h">
+      <Filter>Header Files\GameStates</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -113,6 +113,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="GameStates\GameState.cpp" />
     <ClCompile Include="GameStateManager.cpp" />
     <ClCompile Include="GameStates\MainMenuState.cpp" />
+    <ClCompile Include="GameStates\ShopState.cpp" />
     <ClCompile Include="helpers\BitmaskUtils.cpp" />
     <ClCompile Include="helpers\CollisionUtils.cpp" />
     <ClCompile Include="helpers\ColorUtils.cpp" />
@@ -160,6 +161,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="GameStates\GameState.h" />
     <ClInclude Include="GameStateManager.h" />
     <ClInclude Include="GameStates\MainMenuState.h" />
+    <ClInclude Include="GameStates\ShopState.h" />
     <ClInclude Include="helpers\BitmaskUtils.h" />
     <ClInclude Include="helpers\CollisionUtils.h" />
     <ClInclude Include="helpers\ColorUtils.h" />
