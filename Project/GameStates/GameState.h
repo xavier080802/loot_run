@@ -16,4 +16,9 @@ public:
 private:
 	void HandleTutorialLogic();
 };
+bool getBossAlive();
+float getBossHPProgressBar();
+void setBossHPProgressBar(float current);
+float getBossMaxHPProgressBar();
+void setBossMaxHPProgressBar(float max);
 #endif // !_GAME_STATE_H

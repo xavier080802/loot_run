@@ -77,11 +77,11 @@ namespace {
     Tutorial::TutorialFairy* fairy;
     s8 font{};
 
-    //Boss HP & progress bar
-	bool isBossActive = false;
-	float HPprogressBarWidth = 0.f;
-	float HPprogressBarHeight = 0.f;
-    float HPprogressBar = 100.f;
+    //Boss HP & BossProgress bar
+	float bossHPProgressBarWidth = 0.f;
+	float bossHPProgressBarHeight = 0.f;
+    float bossHPProgressBar = 100.f;
+    float bossMaxHPProgressBar = 100.f;
 
     // --------------------
     // Small helpers
@@ -285,34 +285,34 @@ namespace {
         AEMtx33Concat(&bF, &bT, &bS); AEGfxSetTransform(bF.m);
         AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f); AEGfxMeshDraw(borderMesh, AE_GFX_MDM_LINES_STRIP);
     }
-	// Draws the boss HP progress bar at the top of the screen
-    void DrawHPProgressBar()
+	// Draws the boss HP BossProgress bar at the top of the screen
+    void DrawBossHPProgressBar()
     {
-        HPprogressBarHeight = 50.f;
-        HPprogressBarWidth = (float)AEGfxGetWinMaxX() - (float)AEGfxGetWinMinX();
-        float barX = -HPprogressBarWidth * 0.5f;
-        float barY = (float)AEGfxGetWinMaxY() - HPprogressBarHeight * 0.5f;
-        float hpbMargin = 4.f;
-        float hpRatio = HPprogressBar / 100.f;
+        bossHPProgressBarHeight = 50.f;
+        bossHPProgressBarWidth = (float)AEGfxGetWinMaxX() - (float)AEGfxGetWinMinX();
+        float barX = -bossHPProgressBarWidth * 0.5f;
+        float barY = (float)AEGfxGetWinMaxY() - bossHPProgressBarHeight * 0.5f;
+        float bhpbMargin = 4.f;
+        float hpRatio = bossHPProgressBar / bossMaxHPProgressBar;
         hpRatio = AEClamp(hpRatio, 0.0f, 1.f);
 
         // Background bar
-        AEVec2 bgSize = ToVec2(HPprogressBarWidth, HPprogressBarHeight);
-        AEVec2 hpbSize = ToVec2((HPprogressBarWidth - hpbMargin) * hpRatio, HPprogressBarHeight - hpbMargin);
-        AEVec2 bgPos = ToVec2(barX + HPprogressBarWidth * 0.5f, barY);
-        AEVec2 hpbPos = ToVec2(AEGfxGetWinMinX()+hpbSize.x / 2 + hpbMargin / 2, barY);
+        AEVec2 bgSize = ToVec2(bossHPProgressBarWidth, bossHPProgressBarHeight);
+        AEVec2 bhpbSize = ToVec2((bossHPProgressBarWidth - bhpbMargin) * hpRatio, bossHPProgressBarHeight - bhpbMargin);
+        AEVec2 bgPos = ToVec2(barX + bossHPProgressBarWidth * 0.5f, barY);
+        AEVec2 bhpbPos = ToVec2(AEGfxGetWinMinX()+bhpbSize.x / 2 + bhpbMargin / 2, barY);
         
-        AEMtx33 hpbMatrix;
+        AEMtx33 bhpbMatrix;
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
         AEGfxTextureSet(nullptr, 0, 0);
-        GetTransformMtx(hpbMatrix, bgPos, 0, bgSize);
-        AEGfxSetTransform(hpbMatrix.m);
+        GetTransformMtx(bhpbMatrix, bgPos, 0, bgSize);
+        AEGfxSetTransform(bhpbMatrix.m);
         AEGfxSetColorToMultiply(0.3f,0.3f,0.3f,1.f);
         AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 
-        GetTransformMtx(hpbMatrix, hpbPos, 0, hpbSize);
-        AEGfxSetTransform(hpbMatrix.m);
-        (isBossActive) ? AEGfxSetColorToMultiply(0.9f, 0.9f, 0.9f, 1.f) : AEGfxSetColorToMultiply(0.7f, 0.2f, 0.2f, 1.f);
+        GetTransformMtx(bhpbMatrix, bhpbPos, 0, bhpbSize);
+        AEGfxSetTransform(bhpbMatrix.m);
+        (bossAlive) ? AEGfxSetColorToMultiply(0.7f, 0.2f, 0.2f, 1.f) : AEGfxSetColorToMultiply(0.9f, 0.9f, 0.9f, 1.f);
         AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
     }
 }
@@ -482,17 +482,16 @@ void GameState::Update(double dt)
     newPos.x = AEClamp(newPos.x, -halfMapWidth + playerRadius, halfMapWidth - playerRadius);
     newPos.y = AEClamp(newPos.y, -halfMapHeight + playerRadius, halfMapHeight - playerRadius);
 
-	// Boss HP progress bar testing. press 1 to decrease bar, 2 to increase bar
-    if (AEInputCheckTriggered(AEVK_1))HPprogressBar -= 10.f;
-    if (AEInputCheckTriggered(AEVK_2))HPprogressBar += 10.f;
-	// Clamp HPprogressBar between 0% and 100%
-    HPprogressBar = AEClamp(HPprogressBar, 0.f, 100.f);
+	// Boss HP BossProgress bar testing. press 1 to decrease bar, 2 to increase bar
+    if (AEInputCheckTriggered(AEVK_1))bossHPProgressBar -= 10.f;
+    if (AEInputCheckTriggered(AEVK_2))bossHPProgressBar += 10.f;
+    bossHPProgressBar = AEClamp(bossHPProgressBar, 0.f, bossMaxHPProgressBar);
 
 	// Boss active state toggle
-    if(HPprogressBar == 100.f)
-        isBossActive = false;
-    else if(HPprogressBar == 0.f)
-		isBossActive = true;
+    if(bossHPProgressBar == bossMaxHPProgressBar)
+        bossAlive = true;
+    else if(bossHPProgressBar == 0.f)
+		bossAlive = false;
 
     
     gPlayer->SetPos(newPos);
@@ -507,7 +506,7 @@ void GameState::Update(double dt)
 void GameState::Draw() { 
     RenderWorldMap(); 
     GameObjectManager::GetInstance()->DrawObjects();
-    DrawHPProgressBar();
+    DrawBossHPProgressBar();
     RenderMinimap();
 
     HandleTutorialLogic();
@@ -531,4 +530,20 @@ void GameState::UnloadState() {
     bgm.Exit();
     if (font >= 0)
     AEGfxDestroyFont(font);
+}
+
+bool getBossAlive(){
+    return bossAlive;
+}
+float getBossHPProgressBar() {
+	return bossHPProgressBar;
+}
+void setBossHPProgressBar(float current) {
+    bossHPProgressBar = current;
+}
+float getBossMaxHPProgressBar() {
+	return bossMaxHPProgressBar;
+}
+void setBossMaxHPProgressBar(float max) {
+    bossMaxHPProgressBar = max;
 }
