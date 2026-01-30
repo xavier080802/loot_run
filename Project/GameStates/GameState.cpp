@@ -532,6 +532,8 @@ void GameState::UnloadState() {
     AEGfxDestroyFont(font);
 }
 
+// Boss getters and setters (please dont kill me Edna, i'll move them somewhere else later. i promise)
+
 bool getBossAlive(){
     return bossAlive;
 }
