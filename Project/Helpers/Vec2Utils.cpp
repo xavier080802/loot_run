@@ -81,3 +81,8 @@ AEVec2 operator*(AEVec2 lhs, float rhs)
 {
     return {lhs.x * rhs, lhs.y * rhs};
 }
+
+std::ostream& operator<<(std::ostream& os, AEVec2 const& vec)
+{
+    return os << vec.x << " " << vec.y;
+}

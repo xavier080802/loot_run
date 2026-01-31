@@ -47,6 +47,7 @@ void GameObject::Update(double dt)
 	//	velocity = initialVel = VecZero();
 	//}
 	renderingData->UpdateAnimation(dt);
+	prevPos = pos;
 }
 
 void GameObject::Draw()
@@ -115,13 +116,11 @@ void GameObject::SetEnabled(bool enable)
 
 void GameObject::SetPos(AEVec2 nextPos)
 {
-	prevPos = pos;
 	pos = nextPos;
 }
 
 void GameObject::Move(AEVec2 moveAmt)
 {
-	prevPos = pos;
 	SetPos(pos + moveAmt);
 }
 
@@ -164,13 +163,14 @@ void GameObject::Temp_DoVelocityMovement(double dt)
 {
 	if (!HasForceApplied()) return;
 	//Testing: External force
-	Move(velocity * dt); //TEMP, supposed to be uncommented
+	Move(velocity * dt); 
 
 	//Decay velocity
 	AEVec2 prevVel = velocity;
 	//Initial vel for a more linear decay
 	velocity.x = (abs(velocity.x) <= 1.f ? 0 : velocity.x - initialVel.x * dt);
 	velocity.y = (abs(velocity.y) <= 1.f ? 0 : velocity.y - initialVel.y * dt);
+
 	//Clamping to 0 if moveAmt pushes velocity to other direction.
 	if ((prevVel.x < 0 && velocity.x > 0) || (prevVel.x > 0 && velocity.x < 0)) velocity.x = 0;
 	if (prevVel.y < 0 && velocity.y > 0 || (prevVel.y > 0 && velocity.y < 0)) velocity.y = 0;

@@ -6,6 +6,7 @@
 #ifndef _VEC2_UTILS_H_
 #define _VEC2_UTILS_H_
 #include "AEEngine.h"
+#include <ostream>
 
 AEVec2 ToVec2(f32 x, f32 y);
 
@@ -38,4 +39,6 @@ AEVec2 operator+(AEVec2 lhs, AEVec2 rhs);
 AEVec2 operator+=(AEVec2& lhs, AEVec2 rhs);
 
 AEVec2 operator*(AEVec2 lhs, float rhs);
+
+std::ostream& operator<<(std::ostream& os, AEVec2 const& vec);
 #endif // !_VEC2_UTILS_H_
