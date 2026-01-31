@@ -46,6 +46,9 @@ namespace Tutorial {
 		//Subscription
 		void SubscriptionAlert(LootChestSubContent content) override;
 
+		//Barrier to keep player in the room
+		AEVec2 GetTutBarrier();
+
 	private:
 		bool DoDialogue(float dt);
 	};

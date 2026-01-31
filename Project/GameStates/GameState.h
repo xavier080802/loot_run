@@ -14,7 +14,7 @@ public:
 	void Draw() override;
 
 private:
-	void HandleTutorialLogic();
+	void HandleTutorialDialogueRender();
 };
 bool getBossAlive();
 float getBossHPProgressBar();

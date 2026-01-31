@@ -8,6 +8,7 @@
 namespace {
 	const float roomSize = 700.f;
 	const float dialogueDur = 2.f;
+	const float barrierOffset = roomSize * 0.5f + 160.f;
 }
 
 namespace Tutorial {
@@ -272,6 +273,30 @@ namespace Tutorial {
 			return;
 		}
 		ChangeStage(RANGE);
+	}
+
+	AEVec2 TutorialFairy::GetTutBarrier()
+	{
+		switch (data.stage)
+		{
+		case Tutorial::START:
+		case Tutorial::MOVEMENT:
+			return { -800 + barrierOffset, 600 };
+		case Tutorial::DODGE:
+			return { barrierOffset, 600 };
+		case Tutorial::MELEE:
+			return { 800, 600 - barrierOffset};
+		case Tutorial::LOOT:
+			return { 800 - barrierOffset, -600 };
+		case Tutorial::RANGE:
+			return { -barrierOffset, -600 };
+
+		case Tutorial::BOSS:
+		case Tutorial::END:
+			
+		default:
+			return {2000,2000}; //arbitrary large number
+		}
 	}
 
 	//Dialogue Update handling (line duration and moving to next line)

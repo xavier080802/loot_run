@@ -454,6 +454,9 @@ void GameState::Update(double dt)
                 if (AEVec2Distance(&p, &currentLevel.doorPos) < (playerRadius + bossRadius)) return false;
                 if (CircleRectCollision({ currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y }, { 40, 120 }, p, playerRadius)) return false;
             }
+            if (TUTORIAL) {
+                if (CircleRectCollision(fairy->GetTutBarrier(), { 200, 200 }, p, playerRadius)) return false;
+            }
             return true;
         };
 
@@ -509,10 +512,10 @@ void GameState::Draw() {
     DrawBossHPProgressBar();
     RenderMinimap();
 
-    HandleTutorialLogic();
+    HandleTutorialDialogueRender();
 }
 
-void GameState::HandleTutorialLogic()
+void GameState::HandleTutorialDialogueRender()
 {
     if (!TUTORIAL || !fairy || !fairy->data.playDialogue) return;
     //Render text
@@ -532,7 +535,7 @@ void GameState::UnloadState() {
     AEGfxDestroyFont(font);
 }
 
-// Boss getters and setters (please dont kill me Edna, i'll move them somewhere else later. i promise)
+// Boss getters and setters
 
 bool getBossAlive(){
     return bossAlive;
