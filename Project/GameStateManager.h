@@ -44,14 +44,14 @@ public:
 	/// <param name="initNext">If true, the next state will have its Init called.</param>
 	/// <param name="exitCurr">If true, the next state will have its Exit called</param>
 	/// <returns>Whether the operation is successful/state exists</returns>
-	bool SetNextGameState(std::string nextName, bool initNext, bool exitCurr);
+	bool SetNextGameState(std::string nextName, bool initNext = true, bool exitCurr = true);
 	/// <summary>
 	/// Changes the game state to the previous state (if any)
 	/// </summary>
 	/// <param name="reInitPrev">Whether to call prev state's Init</param>
 	/// <param name="exitCurr">Whether to call current state's Exit</param>
 	/// <returns>Whether the state exists/operation is successful</returns>
-	bool ReturnToPrevState(bool reInitPrev, bool exitCurr);
+	bool ReturnToPrevState(bool reInitPrev, bool exitCurr = true);
 	void UpdateCurrState(double dt);
 	void DrawCurrState();
 
