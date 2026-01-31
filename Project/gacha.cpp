@@ -6,9 +6,6 @@
 #include <string>
 #include <map>
 
-// ============================================================
-// Visual State
-// ============================================================
 static float s_screenShake = 0.0f;
 static bool  s_chestOpened = false;
 static float s_chestLightTimer = 0.0f;
@@ -25,9 +22,6 @@ struct GachaParticle {
 };
 static std::vector<GachaParticle> s_particles;
 
-// ============================================================
-// Helpers
-// ============================================================
 static void SpawnBurst(float x, float y, float r, float g, float b, int count) {
     for (int i = 0; i < count; ++i) {
         float a = (rand() % 360) * 0.0174533f;
@@ -192,7 +186,6 @@ void DrawGachaOverlay(GachaAnimation& anim, s8 fontId) {
             if (i >= (int)anim.results.size()) continue;
             auto& e = anim.results[i];
 
-            // RESTORED: This is the logic that shows the "NEW" name in the center for high rarities
             if (i == anim.currentIndex && RarityRank(e.rarity) >= 4 && !anim.isFinished) {
                 AEGfxPrint(fontId, "!!! NEW !!!", -0.16f, 0.30f, 2.0f, 1, 1, 0, 1);
                 float charOffset = (e.word.length() * 0.045f);
@@ -219,10 +212,8 @@ void DrawGachaOverlay(GachaAnimation& anim, s8 fontId) {
 
     if (anim.phase == GachaPhase::Rolling) {
         float glow = 0.25f + 0.15f * sinf(s_idleGlowTimer * 2.0f);
-        // Chest size: 400x300 (Much Bigger)
         DrawSolidRect(I, 0.0f, -110.0f + s_chestBounceOffset, 400.0f, 300.0f, 1.0f, 1.0f, 0.0f, s_chestOpened ? 1.0f : glow);
         if (!s_chestOpened) {
-            // Moved X to -0.20f to push the text toward the center-right
             AEGfxPrint(fontId, "[O]: Open Chest          [ESC]: Quit", -0.20f, -0.75f, 0.85f, 1, 1, 1, 1);
         }
     }

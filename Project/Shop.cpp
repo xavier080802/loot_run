@@ -23,20 +23,17 @@ void GachaState::InitState() {
 }
 
 void GachaState::Update(double dt) {
-    // 1. Capture Raw Inputs
-    bool openPressed = AEInputCheckTriggered(AEVK_O) || AEInputCheckTriggered(0x4F); // 'O'
+    bool openPressed = AEInputCheckTriggered(AEVK_O) || AEInputCheckTriggered(0x4F);
     bool skipPressed = AEInputCheckTriggered(AEVK_SPACE);
-    bool pull10 = AEInputCheckTriggered(AEVK_R) || AEInputCheckTriggered(0x52); // 'R'
-    bool pull100 = AEInputCheckTriggered(AEVK_T) || AEInputCheckTriggered(0x54); // 'T'
+    bool pull10 = AEInputCheckTriggered(AEVK_R) || AEInputCheckTriggered(0x52); 
+    bool pull100 = AEInputCheckTriggered(AEVK_T) || AEInputCheckTriggered(0x54);
     bool exitPressed = AEInputCheckTriggered(AEVK_F) || AEInputCheckTriggered(AEVK_ESCAPE);
 
-    // 2. State Transition: Exit
     if (exitPressed) {
         GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
         return;
     }
 
-    // 3. Handle Pulling Logic (Only allow when the previous animation is Done)
     if (gStateAnim.phase == GachaPhase::Done) {
         if (pull10) {
             BeginGachaOverlay(gStateAnim, 10, 0.1f, 0.8f, 0.3f);
@@ -46,8 +43,6 @@ void GachaState::Update(double dt) {
         }
     }
 
-    // 4. Update the Animation Logic
-    // Pass skipPressed directly; rarity filtering must be handled inside UpdateGachaOverlay
     UpdateGachaOverlay(
         gStateAnim,
         static_cast<float>(dt),
@@ -55,7 +50,6 @@ void GachaState::Update(double dt) {
         openPressed
     );
 
-    // 5. Finalize State
     if (gStateAnim.isFinished) {
         gStateAnim.phase = GachaPhase::Done;
     }
