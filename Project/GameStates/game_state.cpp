@@ -15,7 +15,6 @@
 
 namespace {
     // --- GLOBAL SYSTEMS ---
-    BGMManager bgm;
     AEGfxVertexList* circleMesh = nullptr;   // Used for Player, Enemies, Boss
     AEGfxVertexList* borderMesh = nullptr;   // Used for Minimap frame
     AEGfxVertexList* fogTileMesh = nullptr;  // Used for Fog grid squares
@@ -232,32 +231,6 @@ namespace {
             AEGfxSetColorToMultiply(0.0f, 1.0f, 0.0f, 1.0f);
             AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
         }
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         for (auto& e : enemies) {
             AEMtx33 es, et, ef;
