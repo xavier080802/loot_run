@@ -20,6 +20,7 @@ void Enemy::InitEnemyRuntime(const EnemyDef* def)
 
 void Enemy::Update(double dt)
 {
+    Temp_DoVelocityMovement(dt);
     GameObject::Update(dt);
     // TODO: AI later (chase player, etc.)
 }
@@ -31,5 +32,8 @@ void Enemy::OnDeath()
 
     // Disable (manager keeps ownership / avoids delete mid-frame)
     isEnabled = false;
-    collisionEnabled = false;
+}
+
+void Enemy::Free() {
+    if (mDef) delete mDef;
 }

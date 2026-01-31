@@ -89,6 +89,12 @@ void Actor::OnDeath()
 {
     isEnabled = false;
     collisionEnabled = false;
+
+    //Alert subscribers
+    for (ActorDeadSub* s : onDeathSubs) {
+        //TODO: get killer
+        s->SubscriptionAlert({ nullptr, this });
+    }
 }
 
 void Actor::ClearStatusEffects()
@@ -97,4 +103,22 @@ void Actor::ClearStatusEffects()
         delete pair.second;
     }
     statusEffectsDict.clear();
+}
+
+void Actor::SubToGotKill(ActorGotKillSub* sub)
+{
+    //Check dupe
+    for (ActorGotKillSub* s : onKilledAnotherSubs) {
+        if (s == sub) return;
+    }
+    onKilledAnotherSubs.push_back(sub);
+}
+
+void Actor::SubToOnDeath(ActorDeadSub* sub)
+{
+    //Check dupe
+    for (ActorDeadSub* s : onDeathSubs) {
+        if (s == sub) return;
+    }
+    onDeathSubs.push_back(sub);
 }

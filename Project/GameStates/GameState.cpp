@@ -47,6 +47,7 @@ namespace {
     // --- BOSS PLACEHOLDER ---
     bool bossAlive = true;
     float bossRadius = 60.0f;
+    Enemy* boss, *enemy1, *enemy2;
 
     // --- CAMERA DATA ---
     AEVec2 camPos, camVel;
@@ -83,11 +84,6 @@ namespace {
     float bossHPProgressBar = 100.f;
     float bossMaxHPProgressBar = 100.f;
 
-    // --------------------
-    // Small helpers
-    // --------------------
-    inline float Saturate(float x) { return AEClamp(x, 0.0f, 1.0f); }
-    inline float Lerp(float a, float b, float t) { return a + (b - a) * t; }
     // Logic to calculate which fog tiles are near the player and reveal them
     void UpdateDiscovery(float dt) {
         AEVec2 p = GetPlayerPos();
@@ -191,11 +187,11 @@ namespace {
         }
 
         // To be replace boss logic
-        if (bossAlive) {
+        if (!bossAlive) {
             //placeholder boss
-            AEMtx33 bS, bT, bF; AEMtx33Scale(&bS, bossRadius * 2, bossRadius * 2); AEMtx33Trans(&bT, currentLevel.doorPos.x, currentLevel.doorPos.y);
+            /*AEMtx33 bS, bT, bF; AEMtx33Scale(&bS, bossRadius * 2, bossRadius * 2); AEMtx33Trans(&bT, currentLevel.doorPos.x, currentLevel.doorPos.y);
             AEMtx33Concat(&bF, &camMatrix, &bT); AEMtx33Concat(&bF, &bF, &bS); AEGfxSetTransform(bF.m);
-            AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
+            AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);*/
 
             // World Door Rect 
             AEMtx33 dS, dT, dF; AEMtx33Scale(&dS, 45.0f, 125.0f); AEMtx33Trans(&dT, currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y);
@@ -204,12 +200,12 @@ namespace {
         }
 
         // Placeholder enemies
-        AEVec2 enemies[] = { currentLevel.enemy1Pos, currentLevel.enemy2Pos };
+        /*AEVec2 enemies[] = { currentLevel.enemy1Pos, currentLevel.enemy2Pos };
         for (auto& e : enemies) {
             AEMtx33 eS, eT, eF; AEMtx33Scale(&eS, 30, 30); AEMtx33Trans(&eT, e.x, e.y);
             AEMtx33Concat(&eF, &camMatrix, &eT); AEMtx33Concat(&eF, &eF, &eS); AEGfxSetTransform(eF.m);
             AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
-        }
+        }*/
     }
 
     void RenderMinimap() {
@@ -288,6 +284,8 @@ namespace {
 	// Draws the boss HP BossProgress bar at the top of the screen
     void DrawBossHPProgressBar()
     {
+        if (TUTORIAL && fairy->data.stage != Tutorial::BOSS) return; //Only show hp bar at tut boss stage.
+
         bossHPProgressBarHeight = 50.f;
         bossHPProgressBarWidth = (float)AEGfxGetWinMaxX() - (float)AEGfxGetWinMinX();
         float barX = -bossHPProgressBarWidth * 0.5f;
@@ -324,7 +322,6 @@ void GameState::LoadState() {
     circleMesh = RenderingManager::GetInstance()->GetMesh(MESH_CIRCLE);
     squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
 
-
     AEVec2Zero(&playerPos);
     playerDir = { 1.0f, 0.0f };
 
@@ -354,7 +351,10 @@ void GameState::LoadState() {
     wallMesh = AEGfxMeshEnd();
     fogTileMesh = wallMesh;
 
-    // TODO: Load Enemies
+    // Load Enemies
+    boss = new Enemy();
+    enemy1 = new Enemy();
+    enemy2 = new Enemy();
 
     if (TUTORIAL) {
         fairy = new Tutorial::TutorialFairy();
@@ -393,6 +393,17 @@ void GameState::InitState()
     LootChest* chest = dynamic_cast<LootChest*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
     chest->Init(currentLevel.chestPos, { 35,35 }, 0, MESH_SQUARE, COL_RECT, { 35,35 }, CreateBitmask(1, GameObject::PLAYER), GameObject::INTERACTABLE)
          ->GetRenderData().tint = CreateColor(255, 0.84f * 255.f, 0, 255);
+
+    Color red = CreateColor(255, 0, 0, 255);
+    boss->Init(currentLevel.doorPos, { bossRadius * 2.f, bossRadius * 2.f }, 0, MESH_CIRCLE, COL_CIRCLE, { bossRadius * 2.f, bossRadius * 2.f }, CreateBitmask(1, GameObject::PLAYER), GameObject::ENEMIES)
+        ->GetRenderData().tint = red;
+    boss->InitEnemyRuntime(new EnemyDef{ 0, {100}, 0 });
+    enemy1->Init(currentLevel.enemy1Pos, { 30,30 }, 0, MESH_CIRCLE, COL_CIRCLE, { 30,30 }, CreateBitmask(1, GameObject::PLAYER), GameObject::ENEMIES)
+        ->GetRenderData().tint = red;
+    enemy1->InitEnemyRuntime(new EnemyDef{ 0, {30}, 0 });
+    enemy2->Init(currentLevel.enemy2Pos, { 30,30 }, 0, MESH_CIRCLE, COL_CIRCLE, { 30,30 }, CreateBitmask(1, GameObject::PLAYER), GameObject::ENEMIES)
+        ->GetRenderData().tint = red;
+    enemy2->InitEnemyRuntime(new EnemyDef{ 0, {30}, 0 });
 
     // Camera starts on player
     camPos = currentLevel.startPos;
@@ -451,9 +462,10 @@ void GameState::Update(double dt)
                 if (CircleRectCollision(w.position, { w.width, w.height }, p, playerRadius)) return false;
             }
             if (bossAlive) {
+                //Collision against boss object
                 if (AEVec2Distance(&p, &currentLevel.doorPos) < (playerRadius + bossRadius)) return false;
-                if (CircleRectCollision({ currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y }, { 40, 120 }, p, playerRadius)) return false;
             }
+            else if (CircleRectCollision({ currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y }, { 40, 120 }, p, playerRadius)) return false;
             if (TUTORIAL) {
                 if (CircleRectCollision(fairy->GetTutBarrier(), { 200, 200 }, p, playerRadius)) return false;
             }
@@ -485,17 +497,16 @@ void GameState::Update(double dt)
     newPos.x = AEClamp(newPos.x, -halfMapWidth + playerRadius, halfMapWidth - playerRadius);
     newPos.y = AEClamp(newPos.y, -halfMapHeight + playerRadius, halfMapHeight - playerRadius);
 
+    //Set hp bar to follow boss hp
+    bossHPProgressBar = (boss->GetHP() / boss->GetMaxHP()) * bossMaxHPProgressBar;
 	// Boss HP BossProgress bar testing. press 1 to decrease bar, 2 to increase bar
-    if (AEInputCheckTriggered(AEVK_1))bossHPProgressBar -= 10.f;
-    if (AEInputCheckTriggered(AEVK_2))bossHPProgressBar += 10.f;
-    bossHPProgressBar = AEClamp(bossHPProgressBar, 0.f, bossMaxHPProgressBar);
-
-	// Boss active state toggle
-    if(bossHPProgressBar == bossMaxHPProgressBar)
-        bossAlive = true;
-    else if(bossHPProgressBar == 0.f)
-		bossAlive = false;
-
+    /*if (AEInputCheckTriggered(AEVK_1))bossHPProgressBar -= 10.f;
+    if (AEInputCheckTriggered(AEVK_2))bossHPProgressBar += 10.f;*/
+    //bossHPProgressBar = AEClamp(bossHPProgressBar, 0.f, bossMaxHPProgressBar);
+    bossAlive = !boss->IsDead();
+    if (TUTORIAL && fairy->data.stage == Tutorial::BOSS && !bossAlive) {
+        fairy->ChangeStage(Tutorial::END);
+    }
     
     gPlayer->SetPos(newPos);
 

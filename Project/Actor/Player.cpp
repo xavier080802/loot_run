@@ -84,7 +84,7 @@ void Player::HandleAttackInput(double dt)
                 if (data.other.GetGOType() != GO_TYPE::ENEMY || !caster) return;
                 //TODO: get damage calc from weapon and buffs etc.
                 Actor& target = dynamic_cast<Actor&>(data.other);
-                target.TakeDamage(caster->GetStatEffectValue(STAT_TYPE::ATT, 100));
+                target.TakeDamage(10);
             });
     }
 }

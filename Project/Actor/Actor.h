@@ -4,7 +4,9 @@
 #include "../GameObjects/GameObject.h"
 #include "StatsTypes.h"
 #include "StatusEffect.h"
+#include "ActorSubscriptions.h"
 #include <map>
+#include <vector>
 
 class Actor : public GameObject
 {
@@ -16,7 +18,7 @@ public:
 	void Free() override;
 
 	void Update(double dt) override;
-
+	//TODO: Function to damage another actor. Do calcs and stuff, call TakeDamage, and call alerts
 	void TakeDamage(float dmg);
 	void Heal(float amt);
 
@@ -34,10 +36,19 @@ public:
 	//Delete and clear.
 	void ClearStatusEffects();
 
+	//Subscribe to be alerted when this actor kills another actor. WIP (alert not implemented)
+	void SubToGotKill(ActorGotKillSub* sub);
+	//Subscribe to be alerted when this actor dies. 
+	void SubToOnDeath(ActorDeadSub* sub);
+
 protected:
 	virtual void OnDeath();
 
 	ActorStats mStats{};
 	float mCurrentHP = 0.0f;
 	std::map<std::string, StatEffects::StatusEffect*> statusEffectsDict;
+
+private:
+	std::vector<ActorGotKillSub*> onKilledAnotherSubs;
+	std::vector<ActorDeadSub*> onDeathSubs;
 };

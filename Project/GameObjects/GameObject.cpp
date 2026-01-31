@@ -29,23 +29,6 @@ GameObject* GameObject::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _mes
 
 void GameObject::Update(double dt)
 {
-	////Testing: External force
-	//Move(velocity * dt);
-
-	////If there is velocity, decay it.
-	//if (velocity.x || velocity.y) {
-	//	AEVec2 prevVel = velocity;
-	//	//Initial vel for a more linear decay
-	//	velocity.x -= initialVel.x * dt;
-	//	velocity.y -= initialVel.y * dt;
-	//	//Clamping to 0 if moveAmt pushes velocity to other direction.
-	//	if ((prevVel.x < 0 && velocity.x > 0) || (prevVel.x > 0 && velocity.x < 0)) velocity.x = 0;
-	//	if (prevVel.y < 0 && velocity.y > 0 || (prevVel.y > 0 && velocity.y < 0)) velocity.y = 0;
-	//}
-
-	//if (AEVec2Length(&velocity) <= 1.f) {
-	//	velocity = initialVel = VecZero();
-	//}
 	renderingData->UpdateAnimation(dt);
 	prevPos = pos;
 }

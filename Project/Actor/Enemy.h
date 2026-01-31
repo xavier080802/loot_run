@@ -12,7 +12,8 @@ public:
 
     void InitEnemyRuntime(const EnemyDef* def);
 
-    void Update(double dt) override;
+    virtual void Update(double dt) override;
+    virtual void Free() override;
 
 protected:
     void OnDeath() override;

@@ -192,10 +192,7 @@ namespace Tutorial {
 				}
 				break;
 			}
-			//TODO: change state when boss is killed.
-			if (AEInputCheckTriggered(AEVK_B)) {
-				ChangeStage(END);
-			}
+			//Controlled in game state, changes state when boss dies.
 			break;
 		}
 		case Tutorial::END: {
