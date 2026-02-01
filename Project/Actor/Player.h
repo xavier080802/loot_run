@@ -5,6 +5,7 @@
 #include "StatsCalc.h"
 #include "../Drops/PickupGO.h"
 #include "../Helpers/BitmaskUtils.h"
+#include "../Inventory/EquipmentTypes.h"
 
 class Player : public Actor
 {
@@ -29,9 +30,26 @@ public:
     GO_TYPE GetGOType()const override { return GO_TYPE::PLAYER; }
 
 private:
+    enum class HeldWeapon : unsigned char
+    {
+        Weapon1,
+        Weapon2,
+        Bow
+    };
+
+    const EquipmentData* GetHeldWeaponData() const;
+    void DoAttackWithWeapon(const EquipmentData* weapon);
+
+private:
     ActorStats mBaseStats{};
     Inventory  mInventory{};
     AEVec2 moveDirNorm{};
 
     float dodgeCDTimer{};
+
+    // Which slot the player is currently "holding" for Left Mouse attack
+    HeldWeapon heldWeapon = HeldWeapon::Weapon1;
+
+    // Simple attack gating based on attackSpeed
+    float attackCooldownTimer = 0.0f;
 };
