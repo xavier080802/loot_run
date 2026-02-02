@@ -1,10 +1,17 @@
 #include "Music.h"
 
+BGMManager bgm;
+
 void BGMManager::Init() {
     group = AEAudioCreateGroup();
-    normalTrack = AEAudioLoadMusic("Assets/Audio/Musical, Loop, Epic, Ambient, Woodwind, Voice, Dune SND115714.wav");
-    //eliteTrack = AEAudioLoadMusic("Assets/Audio/bgm_elite.mp3");
-   // bossTrack = AEAudioLoadMusic("Assets/Audio/bgm_boss.mp3");
+    normalTrack = AEAudioLoadMusic(
+        "Assets/Audio/Musical, Loop, Epic, Ambient, Woodwind, Voice, Dune SND115714.wav"
+    );
+
+    gachaGroup = AEAudioCreateGroup();
+    gachaTrack = AEAudioLoadMusic(
+        "Assets/Audio/MagicCartoon CTE01_93.3.wav"
+    );
 }
 
 void BGMManager::PlayNormal() {
@@ -22,17 +29,25 @@ void BGMManager::PlayBoss() {
     AEAudioPlay(bossTrack, group, 1.0f, 1.0f, -1);
 }
 
-void BGMManager::FadeTo(AEAudio track, float fadeTimeSec) {
-    // simple fade logic (instant for now)
-    AEAudioSetGroupVolume(group, 0.0f);
+void BGMManager::StopGameplayBGM() {
     AEAudioStopGroup(group);
-    AEAudioPlay(track, group, 1.0f, 1.0f, -1);
-    AEAudioSetGroupVolume(group, 1.0f);
+}
+
+void BGMManager::PlayGacha() {
+    AEAudioStopGroup(gachaGroup);
+    AEAudioPlay(gachaTrack, gachaGroup, 1.0f, 1.0f, -1);
+}
+
+void BGMManager::StopGacha(float) {
+    AEAudioStopGroup(gachaGroup);
 }
 
 void BGMManager::Exit() {
     AEAudioUnloadAudio(normalTrack);
     AEAudioUnloadAudio(eliteTrack);
     AEAudioUnloadAudio(bossTrack);
+    AEAudioUnloadAudio(gachaTrack);
+
     AEAudioUnloadAudioGroup(group);
+    AEAudioUnloadAudioGroup(gachaGroup);
 }

@@ -6,21 +6,32 @@
 #include <string>
 #include <map>
 
+static float s_screenShake = 0.0f;
+static bool  s_chestOpened = false;
+static float s_chestLightTimer = 0.0f;
+static const float s_chestLightMax = 0.85f;
+static float s_chestBounceTimer = 0.0f;
+static float s_chestBounceOffset = 0.0f;
+static float s_idleGlowTimer = 0.0f;
+static WordEntry s_highestEntry;
+static AEGfxVertexList* s_overlayQuad = nullptr;
 
 struct GachaParticle {
     float x, y, vx, vy, life, r, g, b;
+    float floorY;
 };
-
 static std::vector<GachaParticle> s_particles;
-static std::map<std::string, int> s_rarityCounts;
-static float s_screenShake = 0.0f;
-static AEGfxVertexList* s_overlayQuad = nullptr;
 
-static bool  s_chestOpened = false;
-static float s_chestLightTimer = 0.0f;
-static const float s_chestLightMax = 0.85f; 
-static WordEntry s_highestEntry;           
-
+static void SpawnBurst(float x, float y, float r, float g, float b, int count) {
+    for (int i = 0; i < count; ++i) {
+        float a = (rand() % 360) * 0.0174533f;
+        float s = (rand() % 100) / 600.0f + 0.02f;
+        float vx = cosf(a) * s;
+        float vy = sinf(a) * s + 0.02f;
+        float pFloor = -0.85f - ((rand() % 100) / 1000.0f);
+        s_particles.push_back({ x, y, vx, vy, 1.2f, r, g, b, pFloor });
+    }
+}
 
 static std::vector<WordEntry> gachaPool = {
     {"Fire",      "Common",     63,        1.0f, 1.0f, 1.0f},
@@ -31,355 +42,179 @@ static std::vector<WordEntry> gachaPool = {
     {"Infinity",  "Mythical",    0.000001f,1.0f, 0.84f,0.0f}
 };
 
-
-static void SpawnBurst(float x, float y, float r, float g, float b, int count) {
-    for (int i = 0; i < count; ++i) {
-        float angle = (rand() % 360) * (3.14159f / 180.0f);
-        float speed = (rand() % 100) / 1000.0f + 0.01f;
-        s_particles.push_back({ x, y, cosf(angle) * speed, sinf(angle) * speed, 1.0f, r, g, b });
-    }
+int RarityRank(const std::string& r) {
+    if (r == "Common") return 0;
+    if (r == "Uncommon") return 1;
+    if (r == "Rare") return 2;
+    if (r == "Epic") return 3;
+    if (r == "Legendary") return 4;
+    if (r == "Mythical") return 5;
+    return -1;
 }
 
 WordEntry RollGachaWord() {
-    float totalWeight = 0.0f;
-    for (const auto& entry : gachaPool) totalWeight += entry.weight;
-
-    float roll = (float)rand() / (float)RAND_MAX * totalWeight;
-    for (const auto& entry : gachaPool) {
-        if (roll < entry.weight) return entry;
-        roll -= entry.weight;
+    float total = 0.0f;
+    for (auto& e : gachaPool) total += e.weight;
+    float r = ((float)rand() / RAND_MAX) * total;
+    for (auto& e : gachaPool) {
+        if (r < e.weight) return e;
+        r -= e.weight;
     }
     return gachaPool.back();
 }
 
-static int RarityRank(const std::string& r) {
-    if (r == "Common")    return 0;
-    if (r == "Uncommon")  return 1;
-    if (r == "Rare")      return 2;
-    if (r == "Epic")      return 3;
-    if (r == "Legendary") return 4;
-    if (r == "Mythical")  return 5;
-    return -1;
-}
-
-static WordEntry FindHighestRarity(const std::vector<WordEntry>& results) {
-    if (results.empty())
-        return { "", "Common", 1.0f, 1.0f, 1.0f, 1.0f };
-
-    WordEntry best = results[0];
-    for (const auto& e : results) {
+static WordEntry FindHighestRarity(const std::vector<WordEntry>& r) {
+    WordEntry best = r[0];
+    for (auto& e : r)
         if (RarityRank(e.rarity) > RarityRank(best.rarity))
             best = e;
-    }
     return best;
-}
-
-static void SetIdentityTransform() {
-    AEMtx33 S, T, I;
-    AEMtx33Scale(&S, 1.0f, 1.0f);
-    AEMtx33Trans(&T, 0.0f, 0.0f);
-    AEMtx33Concat(&I, &T, &S);
-    AEGfxSetTransform(I.m);
-}
-
-static void DrawSolidRect(const AEMtx33& parent,
-    float x, float y, float w, float h,
-    float mulR, float mulG, float mulB, float mulA,
-    float addR, float addG, float addB, float addA,
-    AEGfxBlendMode bm)
-{
-    if (!s_overlayQuad) return;
-
-    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-    AEGfxSetBlendMode(bm);
-
-    AEGfxSetColorToMultiply(mulR, mulG, mulB, mulA);
-    AEGfxSetColorToAdd(addR, addG, addB, addA);
-    AEMtx33 S, T, local, M;
-    AEMtx33Scale(&S, w, h);
-    AEMtx33Trans(&T, x, y);
-    AEMtx33Concat(&local, &T, &S);
-    AEMtx33Concat(&M, &parent, &local);
-    AEGfxSetTransform(M.m);
-    AEGfxMeshDraw(s_overlayQuad, AE_GFX_MDM_TRIANGLES);
 }
 
 void EnsureOverlayMesh() {
     if (s_overlayQuad) return;
-
     AEGfxMeshStart();
-
-    AEGfxTriAdd(
-        -0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 0.0f,
-        0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
-        0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 1.0f
-    );
-    AEGfxTriAdd(
-        -0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 0.0f,
-        0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
-        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 1.0f
-    );
-
+    AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 0, 0.5f, -0.5f, 0xFFFFFFFF, 1, 0, 0.5f, 0.5f, 0xFFFFFFFF, 1, 1);
+    AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 0, 0.5f, 0.5f, 0xFFFFFFFF, 1, 1, -0.5f, 0.5f, 0xFFFFFFFF, 0, 1);
     s_overlayQuad = AEGfxMeshEnd();
 }
 
-void UpdateGachaAnimation(GachaAnimation& anim, float dt) {
-    if (s_screenShake > 0) s_screenShake -= dt * 2.0f;
+static void DrawSolidRect(const AEMtx33& parent, float x, float y, float w, float h, float r, float g, float b, float a) {
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+    AEGfxTextureSet(NULL, 0.0f, 0.0f);
+    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+    AEGfxSetTransparency(1.0f);
+    AEGfxSetColorToMultiply(r, g, b, a);
+    AEMtx33 S, T, M;
+    AEMtx33Scale(&S, w, h);
+    AEMtx33Trans(&T, x, y);
+    AEMtx33Concat(&M, &T, &S);
+    AEMtx33Concat(&M, &parent, &M);
+    AEGfxSetTransform(M.m);
+    if (s_overlayQuad) AEGfxMeshDraw(s_overlayQuad, AE_GFX_MDM_TRIANGLES);
+}
+
+void BeginGachaOverlay(GachaAnimation& anim, int count, float intro, float roll, float delay) {
+    anim.Reset();
+    anim.currentIndex = -1;
+    s_particles.clear();
+    s_chestOpened = false;
+    for (int i = 0; i < count; ++i) anim.results.push_back(RollGachaWord());
+    s_highestEntry = FindHighestRarity(anim.results);
+    anim.phase = GachaPhase::Intro;
+    anim.introTimer = intro;
+    anim.revealDelay = delay;
+}
+
+void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skip, bool open) {
+    if (anim.phase == GachaPhase::Intro) {
+        anim.introTimer -= dt;
+        if (anim.introTimer <= 0.0f) anim.phase = GachaPhase::Rolling;
+        return;
+    }
+    s_idleGlowTimer += dt;
+    if (s_chestBounceTimer > 0.0f) {
+        s_chestBounceTimer -= dt;
+        s_chestBounceOffset = sinf((s_chestBounceTimer / 0.35f) * 3.14159f) * 15.0f;
+    }
+    else s_chestBounceOffset = 0.0f;
+
+    if (anim.phase == GachaPhase::Rolling && open && !s_chestOpened) {
+        s_chestOpened = true;
+        s_chestBounceTimer = 0.35f;
+        s_chestLightTimer = s_chestLightMax;
+        SpawnBurst(0, 0, s_highestEntry.r, s_highestEntry.g, s_highestEntry.b, 260);
+    }
+
+    if (s_chestOpened && anim.phase == GachaPhase::Rolling) {
+        s_chestLightTimer -= dt;
+        if (s_chestLightTimer <= 0.0f) { anim.phase = GachaPhase::Reveal; anim.timer = 0.0f; }
+    }
+
+    if (anim.phase == GachaPhase::Reveal) {
+        if (skip) {
+            for (int i = anim.currentIndex + 1; i < (int)anim.results.size(); ++i) {
+                if (RarityRank(anim.results[i].rarity) >= 4) {
+                    anim.currentIndex = i - 1; anim.timer = 0.0f; goto skip_stop;
+                }
+                anim.currentIndex = i;
+            }
+            anim.phase = GachaPhase::Done; anim.isFinished = true; return;
+        }
+    skip_stop:
+        if (open) anim.timer = -1.0f;
+        anim.timer -= dt;
+        if (anim.timer <= 0.0f) {
+            anim.currentIndex++;
+            if (anim.currentIndex < (int)anim.results.size()) {
+                auto& e = anim.results[anim.currentIndex];
+                float bX = 0, bY = 0;
+                int i = anim.currentIndex;
+                if (anim.results.size() <= 10) {
+                    if (i < 3) { bX = -0.55f + i * 0.55f; bY = 0.70f; }
+                    else if (i < 6) { bX = -0.55f + (i - 3) * 0.55f; bY = 0.40f; }
+                    else if (i < 9) { bX = -0.55f + (i - 6) * 0.55f; bY = 0.10f; }
+                    else { bX = 0.0f; bY = -0.20f; }
+                }
+                else {
+                    bX = -0.72f + ((i % 10) * 0.16f); bY = 0.65f - ((i / 10) * 0.11f);
+                }
+                SpawnBurst(bX, bY, e.r, e.g, e.b, (RarityRank(e.rarity) >= 4 ? 200 : 25));
+                anim.timer = (RarityRank(e.rarity) >= 4) ? 1.5f : anim.revealDelay;
+            }
+            else { anim.phase = GachaPhase::Done; anim.isFinished = true; }
+        }
+    }
 
     for (int i = 0; i < (int)s_particles.size();) {
-        s_particles[i].x += s_particles[i].vx;
-        s_particles[i].y += s_particles[i].vy;
-        s_particles[i].life -= dt * 2.0f;
-
-        if (s_particles[i].life <= 0) {
-            s_particles[i] = s_particles.back();
-            s_particles.pop_back();
-        }
-        else {
-            ++i;
-        }
-    }
-
-    if (anim.isFinished) return;
-
-    anim.timer -= dt;
-    if (anim.timer <= 0.0f) {
-        anim.currentIndex++;
-
-        float currentDelay = (anim.results.size() > 10) ? 0.02f : anim.revealDelay;
-        anim.timer = currentDelay;
-
-        if (anim.currentIndex < (int)anim.results.size()) {
-            const auto& e = anim.results[anim.currentIndex];
-
-            if (e.rarity == "Legendary" || e.rarity == "Mythical") {
-                SpawnBurst(0.0f, 0.0f, e.r, e.g, e.b, 120);
-                s_screenShake = 0.35f;
-                anim.timer = 1.3f;
-            }
-            else if (anim.results.size() <= 10) {
-                SpawnBurst(0.0f, 0.55f - (anim.currentIndex * 0.12f), e.r, e.g, e.b, 12);
-            }
-        }
-
-        if (anim.currentIndex >= (int)anim.results.size() - 1) {
-            anim.isFinished = true;
-            anim.phase = GachaPhase::Done;
-        }
+        s_particles[i].vy -= dt * 0.35f;
+        s_particles[i].x += s_particles[i].vx; s_particles[i].y += s_particles[i].vy;
+        if (s_particles[i].y < s_particles[i].floorY) { s_particles[i].y = s_particles[i].floorY; s_particles[i].vy *= -0.5f; }
+        s_particles[i].life -= dt;
+        if (s_particles[i].life <= 0) { s_particles[i] = s_particles.back(); s_particles.pop_back(); }
+        else ++i;
     }
 }
-
-void BeginGachaOverlay(GachaAnimation& anim, int rollCount, float introTime, float rollingTime, float revealDelay) {
-    anim.Reset();
-    anim.isFinished = false;
-
-    s_particles.clear();
-    s_rarityCounts.clear();
-    s_screenShake = 0.0f;
-
-    // Reset chest/shines
-    s_chestOpened = false;
-    s_chestLightTimer = 0.0f;
-
-    for (int i = 0; i < rollCount; ++i) {
-        WordEntry res = RollGachaWord();
-        anim.results.push_back(res);
-        s_rarityCounts[res.rarity]++;
-    }
-
-    // Highest rarity color
-    s_highestEntry = FindHighestRarity(anim.results);
-
-    anim.phase = GachaPhase::Intro;
-    anim.introTimer = introTime;
-
-    anim.rollingTimer = rollingTime;
-
-    anim.revealDelay = revealDelay;
-}
-
-void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skipPressed, bool openPressed) {
-    if (anim.phase == GachaPhase::None) return;
-    anim.elapsed += dt;
-
-    // skip to results
-    if (skipPressed && anim.phase != GachaPhase::Done) {
-        bool highRarityFound = false;
-        for (int i = anim.currentIndex + 1; i < (int)anim.results.size(); ++i) {
-            if (anim.results[i].rarity == "Legendary" || anim.results[i].rarity == "Mythical") {
-                anim.currentIndex = i - 1;
-                highRarityFound = true;
-                break;
-            }
-        }
-        if (!highRarityFound) {
-            anim.currentIndex = (int)anim.results.size() - 1;
-            anim.isFinished = true;
-            anim.phase = GachaPhase::Done;
-        }
-    }
-
-    switch (anim.phase) {
-    case GachaPhase::Intro:
-        anim.introTimer -= dt;
-        if (anim.introTimer <= 0.0f)
-            anim.phase = GachaPhase::Rolling; 
-        break;
-
-    case GachaPhase::Rolling:
-        if (!s_chestOpened) {
-            if (openPressed) {
-                s_chestOpened = true;
-                s_chestLightTimer = s_chestLightMax;
-                // Burst + shake on open (uses highest rarity color)
-                SpawnBurst(0.0f, 0.0f, s_highestEntry.r, s_highestEntry.g, s_highestEntry.b, 260);
-                s_screenShake = 0.45f;
-            }
-        }
-        else {
-            s_chestLightTimer -= dt;
-            if (s_chestLightTimer <= 0.0f) {
-                s_chestLightTimer = 0.0f;
-                anim.phase = GachaPhase::Reveal;
-                anim.timer = 0.0f;
-            }
-        }
-        break;
-
-    case GachaPhase::Reveal:
-    case GachaPhase::Done:
-        UpdateGachaAnimation(anim, dt);
-        break;
-
-    default:
-        break;
-    }
-}
-
 
 void DrawGachaOverlay(GachaAnimation& anim, s8 fontId) {
+    EnsureOverlayMesh();
+    AEMtx33 I; AEMtx33Identity(&I);
+    for (auto& p : s_particles) { AEGfxPrint(fontId, ".", p.x, p.y, 1.2f, p.r, p.g, p.b, p.life); }
 
-    AEGfxSetCamPosition(0.0f, 0.0f);
-
-    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-    AEGfxSetColorToMultiply(1, 1, 1, 1);
-    AEGfxSetColorToAdd(0, 0, 0, 0);
-
-    float oX = (s_screenShake > 0) ? ((rand() % 100) / 1000.0f - 0.05f) * s_screenShake * 10.0f : 0.0f;
-    float oY = (s_screenShake > 0) ? ((rand() % 100) / 1000.0f - 0.05f) * s_screenShake * 10.0f : 0.0f;
-    AEMtx33 shake; AEMtx33Trans(&shake, oX, oY);
-    AEGfxSetTransform(shake.m);
-
-    // Particles
-    for (auto& p : s_particles)
-        AEGfxPrint(fontId, ".", p.x, p.y, 1.2f, p.r, p.g, p.b, p.life);
-
-    if (anim.phase == GachaPhase::Rolling) {
-
-        float minX = AEGfxGetWinMinX();
-        float maxX = AEGfxGetWinMaxX();
-        float minY = AEGfxGetWinMinY();
-        float maxY = AEGfxGetWinMaxY();
-        float winW = (maxX - minX);
-        float winH = (maxY - minY);
-
-        // chest
-        float boxY = -winH * 0.08f;
-        DrawSolidRect(
-            shake,
-            0.0f, 0.0f,
-            winW * 0.30f, winH * 0.22f,
-            1.0f, 1.0f, 0.0f, 1.0f,    
-            0.0f, 0.0f, 0.0f, 0.0f,     
-            AE_GFX_BM_BLEND
-        );
-
-        // Reveal highest rarerity light
-        if (s_chestOpened && s_chestLightTimer > 0.0f)
-        {
-            float t = s_chestLightTimer / s_chestLightMax; 
-            if (t < 0.0f) t = 0.0f;
-            if (t > 1.0f) t = 1.0f;
-            float pulse = 0.5f + 0.5f * sinf((1.0f - t) * 12.0f); 
-            float alpha = (0.25f + 0.55f * pulse) * t;          
-            AEMtx33 ident;
-            AEMtx33Trans(&ident, 0.0f, 0.0f);
-            DrawSolidRect(
-                ident,
-                0.0f, 0.0f,
-                winW * 1.05f, winH * 1.05f,
-                s_highestEntry.r, s_highestEntry.g, s_highestEntry.b, alpha, 
-                0.0f, 0.0f, 0.0f, 0.0f,                                      
-                AE_GFX_BM_BLEND                                              
-            );
-        }
-       
-        AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-        AEGfxSetColorToMultiply(1, 1, 1, 1);
-        AEGfxSetColorToAdd(0, 0, 0, 0);
-        SetIdentityTransform();
-
-        if (!s_chestOpened) {
-            AEGfxPrint(fontId, "[O] Open", -0.12f, -0.9f, 0.8f, 1, 1, 1, 1);
-        }
-
-        return; 
-    }
-
-    if (anim.results.size() <= 10) {
-        // 10-PULL GRID (3-3-3-1)
+    if (anim.phase == GachaPhase::Reveal || anim.phase == GachaPhase::Done) {
         for (int i = 0; i <= anim.currentIndex; ++i) {
-            const auto& e = anim.results[i];
-            float x = 0.0f, y = 0.0f;
-            float sc = 1.3f;
+            if (i >= (int)anim.results.size()) continue;
+            auto& e = anim.results[i];
 
-            if (i < 3) { x = -0.55f + (i * 0.55f); y = 0.70f; }
-            else if (i < 6) { x = -0.55f + ((i - 3) * 0.55f); y = 0.40f; }
-            else if (i < 9) { x = -0.55f + ((i - 6) * 0.55f); y = 0.10f; }
-            else { x = 0.0f; y = -0.20f; }
-
-            float offset = -((float)e.word.length() * sc * 0.022f);
-            AEGfxPrint(fontId, e.word.c_str(), x + offset, y, sc, e.r, e.g, e.b, 1.0f);
-        }
-    }
-    else {
-        // 100-PULL COMPACT GRID
-        for (int i = 0; i <= anim.currentIndex; ++i) {
-            int row = i / 10;
-            int col = i % 10;
-            const auto& e = anim.results[i];
-
-            if (i == anim.currentIndex &&
-                (e.rarity == "Legendary" || e.rarity == "Mythical") &&
-                !anim.isFinished)
-            {
-                AEGfxPrint(fontId, "!!! NEW !!!", -0.12f, 0.25f, 1.0f, 1, 1, 0, 1);
-                AEGfxPrint(fontId, e.word.c_str(), -0.25f, 0.0f, 4.0f, e.r, e.g, e.b, 1.0f);
-                AEGfxPrint(fontId, e.rarity.c_str(), -0.15f, -0.2f, 1.2f, e.r, e.g, e.b, 1.0f);
+            if (i == anim.currentIndex && RarityRank(e.rarity) >= 4 && !anim.isFinished) {
+                AEGfxPrint(fontId, "!!! NEW !!!", -0.16f, 0.30f, 2.0f, 1, 1, 0, 1);
+                float charOffset = (e.word.length() * 0.045f);
+                AEGfxPrint(fontId, e.word.c_str(), -charOffset, 0.05f, 4.0f, e.r, e.g, e.b, 1.0f);
             }
             else {
-                AEGfxPrint(fontId, ".", -0.72f + (col * 0.16f), 0.65f - (row * 0.11f),
-                    1.2f, e.r, e.g, e.b, 1.0f);
+                float x = 0, y = 0;
+                if (anim.results.size() <= 10) {
+                    if (i < 3) { x = -0.55f + i * 0.55f; y = 0.70f; }
+                    else if (i < 6) { x = -0.55f + (i - 3) * 0.55f; y = 0.40f; }
+                    else if (i < 9) { x = -0.55f + (i - 6) * 0.55f; y = 0.10f; }
+                    else { x = 0.0f; y = -0.20f; }
+                    AEGfxPrint(fontId, e.word.c_str(), x - (e.word.length() * 0.02f), y, 1.3f, e.r, e.g, e.b, 1.0f);
+                }
+                else {
+                    x = -0.72f + ((i % 10) * 0.16f); y = 0.65f - ((i / 10) * 0.11f);
+                    AEGfxPrint(fontId, ".", x, y, 1.2f, e.r, e.g, e.b, 1.0f);
+                }
             }
         }
+        if (anim.phase == GachaPhase::Done) { AEGfxPrint(fontId, "[SPACE] Skip | [R] 10x | [T] 100x | [ESC] Exit", -0.50f, -0.9f, 0.85f, 1, 1, 1, 1); }
+        else { AEGfxPrint(fontId, "[SPACE] Fast-Forward | [ESC] Exit", -0.25f, -0.9f, 0.85f, 1, 1, 1, 1); }
+    }
 
-        if (anim.phase == GachaPhase::Done) {
-            std::string s = "MYTHIC: " + std::to_string(s_rarityCounts["Mythical"]) +
-                " | LEGEND: " + std::to_string(s_rarityCounts["Legendary"]);
-            AEGfxPrint(fontId, s.c_str(), -0.42f, -0.65f, 0.8f, 1, 1, 0, 1);
+    if (anim.phase == GachaPhase::Rolling) {
+        float glow = 0.25f + 0.15f * sinf(s_idleGlowTimer * 2.0f);
+        DrawSolidRect(I, 0.0f, -110.0f + s_chestBounceOffset, 400.0f, 300.0f, 1.0f, 1.0f, 0.0f, s_chestOpened ? 1.0f : glow);
+        if (!s_chestOpened) {
+            AEGfxPrint(fontId, "[O]: Open Chest          [ESC]: Quit", -0.20f, -0.75f, 0.85f, 1, 1, 1, 1);
         }
     }
-
-    const char* h;
-    float startX;
-    if (anim.phase == GachaPhase::Done) {
-        h = "[R]: 10 Pull | [T]: 100 Pull | [ESC]: Quit";
-        startX = -0.45f;
-    }
-    else {
-        h = "[SPACE]: Skip Animation";
-        startX = -0.25f;
-    }
-    AEGfxPrint(fontId, h, startX, -0.9f, 0.8f, 1, 1, 1, 1);
 }

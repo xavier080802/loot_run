@@ -32,7 +32,9 @@ struct GachaAnimation {
     }
 };
 
-// Function Prototypes (EXPOSE THESE TO THE SHOP)
+
+int RarityRank(const std::string& r);
+
 void EnsureOverlayMesh();
 void BeginGachaOverlay(GachaAnimation& anim, int rollCount, float introTime, float rollingTime, float revealDelay);
 void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skipPressed, bool openPressed);
