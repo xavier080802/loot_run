@@ -96,10 +96,6 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="animation_data.cpp" />
-    <ClCompile Include="camera.cpp" />
-    <ClCompile Include="DesignPatterns\post_office.cpp" />
-    <ClCompile Include="Gacha.cpp" />
     <ClCompile Include="Actor\Actor.cpp" />
     <ClCompile Include="Actor\Enemy.cpp" />
     <ClCompile Include="Actor\Player.cpp" />
@@ -132,17 +128,6 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="Pets\PetSkills.cpp" />
     <ClCompile Include="RenderingManager.cpp" />
     <ClCompile Include="Music.cpp" />
-    <ClCompile Include="Shop.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="animation_data.h" />
-    <ClInclude Include="camera.h" />
-    <ClInclude Include="DesignPatterns\concrete_messages.h" />
-    <ClInclude Include="DesignPatterns\message.h" />
-    <ClInclude Include="DesignPatterns\post_box.h" />
-    <ClInclude Include="DesignPatterns\post_office.h" />
-    <ClInclude Include="DesignPatterns\singleton.h" />
-    <ClInclude Include="Gacha.h" />
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="Rendering\AnimationData.cpp" />
     <ClCompile Include="Rendering\RenderData.cpp" />
@@ -194,7 +179,6 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="Pets\PetSkills.h" />
     <ClInclude Include="RenderingManager.h" />
     <ClInclude Include="Music.h" />
-    <ClInclude Include="Shop.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="Rendering\AnimationData.h" />
     <ClInclude Include="Rendering\RenderData.h" />

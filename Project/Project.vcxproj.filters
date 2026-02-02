@@ -171,9 +171,6 @@
     <ClCompile Include="GameStates\ShopState.cpp">
       <Filter>Source Files\GameStates</Filter>
     </ClCompile>
-    <ClCompile Include="Gacha.cpp">
-      <Filter>Source Files\game_object</Filter>
-    </ClCompile>
     <ClCompile Include="Shop.cpp">
       <Filter>Source Files\game_states</Filter>
     </ClCompile>
@@ -325,9 +322,6 @@
     </ClInclude>
     <ClInclude Include="GameStates\ShopState.h">
       <Filter>Header Files\GameStates</Filter>
-    </ClInclude>
-    <ClInclude Include="Gacha.h">
-      <Filter>Header Files\game_objects</Filter>
     </ClInclude>
     <ClInclude Include="Shop.h">
       <Filter>Header Files\game_states</Filter>

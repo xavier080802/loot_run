@@ -59,6 +59,9 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 		//In event of State terminating engine in Update, exit loop.
 		if (!gameRunningFlag) break;
 
+		//In event of State terminating engine in Update, exit loop.
+		if (!gameRunningFlag) break;
+
 		//Rendering
 		stateManager->DrawCurrState();
         
