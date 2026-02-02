@@ -1,7 +1,7 @@
-#include "camera.h"
-#include "Helpers/vec2_utils.h"
-#include "Helpers/matrix_utils.h"
-#include "Helpers/render_utils.h"
+#include "Camera.h"
+#include "Helpers/Vec2Utils.h"
+#include "Helpers/MatrixUtils.h"
+#include "Helpers/RenderUtils.h"
 
 static AEVec2 translation{};
 static float rotation{}, zoom{ 1 };
@@ -56,6 +56,7 @@ float GetCameraRotation(void)
 	return rotation;
 }
 
+//For rendering a mesh in the world
 void GetObjViewFromCamera(AEVec2* pos, f32* rot, AEVec2* _scale)
 {
 	//*_scale = MultVec2(*_scale, scale);

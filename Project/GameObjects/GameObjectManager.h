@@ -2,9 +2,11 @@
 #define _GAME_OBJECT_MANAGER_H_
 #include "AEEngine.h"
 #include "../DesignPatterns/singleton.h"
+#include "GOTypeList.h"
 #include <vector>
+#include <queue>
 
-class GameObject;
+class GameObject; //Avoid circular dependency
 
 namespace GOCollision {
 	//Representation of an object
@@ -50,11 +52,19 @@ public:
 
 	GameObject* Clone(GameObject* const original);
 
+	//Fetches an inactive gameobject of the given type, and enables it.
+	//If no existing go is found, creates a new one. Returns nullptr if type is invalid/unimplemented
+	//Always init the go returned.
+	GameObject* FetchGO(GO_TYPE type);
+
 private:
 	//z sorted in ascending order
 	std::vector<GameObject*> goList;
+	std::queue<GameObject*> goRegistrationQ;
 
 	GOCollision::SpatialGrid grid;
+
+	bool isLoopingThrList{ false };
 
 	~GameObjectManager();
 };

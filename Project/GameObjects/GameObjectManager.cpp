@@ -1,14 +1,26 @@
 #include "GameObjectManager.h"
 #include "GameObject.h"
-#include "../helpers/collision.h"
+#include "../helpers/CollisionUtils.h"
+#include "Projectile.h"
+#include "LootChest.h"
+#include "../Drops/PickupGO.h"
 #include <iostream>
 
-//Assuming that GO->Init is called once in the GO's lifetime (so not checking for dupe)
 void GameObjectManager::RegisterGO(GameObject* go)
 {
+	//Modifying the goList while it's looping will explode.
+	if (isLoopingThrList) {
+		goRegistrationQ.push(go);
+		return;
+	}
+
 	//Place go based on z. Ascending order.
 	for (std::vector<GameObject*>::iterator it = goList.begin(); it != goList.end(); it++) {
 		GameObject* curr = *it;
+		if (go == curr) {
+			//Dupe
+			return;
+		}
 		if (go->z < curr->z) {
 			goList.insert(it, go); //Inserts go before curr.
 			return;
@@ -27,6 +39,7 @@ void GameObjectManager::UpdateObjects(double dt)
 	//Collision
 	grid.SortObjects(goList.data(), goList.size());
 
+	isLoopingThrList = true;
 	for (GameObject* go : goList) {
 		//Only let "player" (Player, pets, player's projs) query grid
 		if (go->colliderLayer != GameObject::COLLISION_LAYER::PLAYER
@@ -60,8 +73,23 @@ void GameObjectManager::UpdateObjects(double dt)
 					go->OnCollide(data);
 					other->OnCollide(otherData);
 				}
+				//Check if this go has been disabled in current collision(if any)
+				if (!go->isEnabled) {
+					break;
+				}
+			}
+			//Check if this go has been disabled after checking this cell
+			if (!go->isEnabled) {
+				break;
 			}
 		}
+	}
+	isLoopingThrList = false;
+
+	//Clear up the registration queue
+	while (!goRegistrationQ.empty()) {
+		RegisterGO(goRegistrationQ.front());
+		goRegistrationQ.pop();
 	}
 }
 
@@ -91,6 +119,32 @@ GameObject* GameObjectManager::Clone(GameObject* const original)
 	original->CompleteClone(newGo);
 	RegisterGO(newGo);
 	return newGo;
+}
+
+GameObject* GameObjectManager::FetchGO(GO_TYPE type)
+{
+	//Find existing disabled
+	for (GameObject* go : goList) {
+		if (go->isEnabled || go->GetGOType() != type) continue;
+		go->isEnabled = true;
+		return go;
+	}
+
+	//Create new
+	switch (type)
+	{
+	case GO_TYPE::NONE:
+		return new GameObject{};
+	case GO_TYPE::PROJECTILE:
+		return new Projectile{};
+	case GO_TYPE::LOOT_CHEST:
+		return new LootChest{};
+	case GO_TYPE::ITEM:
+		return new PickupGO{}; 
+	default:
+		std::cout << "WARNING: FetchGO implementation not done for GO_TYPE " << (int)type << '\n';
+		return nullptr;
+	}
 }
 
 GameObjectManager::~GameObjectManager()
@@ -123,6 +177,7 @@ void GOCollision::SpatialGrid::SortObjects(GameObject** gos, size_t count)
 	cells.insert(cells.begin(), partitions * partitions, {});
 
 	for (unsigned i = 0;i < count; i++) {
+		if (!gos[i]->CanCollide()) continue;
 		AEVec2 pos = gos[i]->GetPos();
 		int cellX = static_cast<int>((pos.x + worldHalfWidth) / (float)cellWidth);
 		int cellY = static_cast<int>(std::abs(pos.y - worldhalfHeight) / (float)cellHeight);

@@ -1,10 +1,11 @@
 #ifndef _GAME_OBJECT_H_
 #define _GAME_OBJECT_H_
 #include "AEEngine.h"
-#include "../Helpers/collision.h"
-#include "../Helpers/bitmask_utils.h"
-#include "../animation_data.h"
+#include "../Helpers/CollisionUtils.h"
+#include "../Helpers/BitmaskUtils.h"
+#include "../Rendering/AnimationData.h"
 #include "GameObjectManager.h"	
+#include "../Map.h"
 
 class GameObject {
 	friend class GameObjectManager; //Allow manager access to private members.
@@ -13,7 +14,9 @@ public:
 		NONE,
 		PLAYER,
 		ENEMIES,
-		OBSTACLE
+		OBSTACLE,
+		INTERACTABLE,
+		PET,
 	};
 	//Making this a struct so we can extend easier
 	struct CollisionData {
@@ -21,17 +24,41 @@ public:
 	};
 	
 	//Set values and register to the manager. Call only once per GO
-	//Need to manually initialize 
-	virtual GameObject* Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, COLLISION_LAYER _isInLayers);
+	//Need to manually call init.
+	//Ps. set goType for derived game objects
+	virtual GameObject* Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, COLLISION_LAYER _isInLayer);
 	virtual void Update(double dt);
 	virtual void Draw();
 	virtual void Free();
 	virtual void OnCollide(CollisionData& other);
 
 	AnimationData& GetRenderData();
-	AEVec2& GetPos();
-	AEVec2& GetColSize();
+	const AEVec2& GetPos() const;
+	const AEVec2& GetScale() const;
+	const AEVec2& GetColSize() const;
+	int GetZ() const;
+	bool CanCollide() const;
+	Bitmask GetCollisionLayers()const;
+	COLLISION_LAYER GetColliderLayer()const;
+	virtual GO_TYPE GetGOType() const;
+
+	void SetEnabled(bool enable);
+	void SetPos(AEVec2 nextPos);
+	void Move(AEVec2 moveAmt);
 	void SetCollision(bool enabled);
+	//Set what layers this GO can collide with.
+	void SetCollisionLayers(Bitmask layers);
+	//Set what layer this GO is considered in.
+	void SetColliderLayer(COLLISION_LAYER layer);
+
+	//Apply a force (directional) on this go.
+	void ApplyForce(AEVec2 force);
+	bool HasForceApplied() const;
+	AEVec2 const& GetVelocity() const;
+
+	//TEMP
+	void Temp_DoVelocityMovement(double dt);
+
 	std::vector<unsigned> cellIndexes{};
 
 protected:
@@ -41,7 +68,7 @@ protected:
 	virtual void CompleteClone(GameObject*const clone);
 
 	AEVec2 pos{}, scale{ 1,1 };
-	int z{};
+	int z{}; //Rendering order. Higher = rendered above an obj with lower z
 	float rotationDeg{};
 	bool isEnabled{ false };
 	bool collisionEnabled{true};
@@ -52,5 +79,9 @@ protected:
 	//Layer that this GO is in
 	COLLISION_LAYER colliderLayer{};
 	AnimationData* renderingData{};
+
+	AEVec2 velocity{}, prevPos{}, initialVel{};
+
+	GO_TYPE goType{};
 };
 #endif // !_GAME_OBJECT_H_

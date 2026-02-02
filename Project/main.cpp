@@ -2,18 +2,22 @@
 #include <math.h>             
 #include "AEEngine.h"
 #include "main.h"
-#include "game_state_manager.h"
-#include "./GameStates/main_menu_state.h"
-#include "./GameStates/game_state.h"
-#include "../Project/Shop.h"
+#include "GameStateManager.h"
+#include "./GameStates/MainMenuState.h"
+#include "./GameStates/GameState.h"
+#include "./GameStates/ShopState.h"
 #include "./GameObjects/GameObjectManager.h"
-#include "./helpers/render_utils.h"
-#include "rendering_manager.h"
+#include "./Helpers/RenderUtils.h"
+#include "RenderingManager.h"
+#include "./Pets/PetManager.h"
 
 namespace {
 	GameStateManager* stateManager;
 	GameObjectManager* goManager;
 	RenderingManager* renderManager;
+	PetManager* petManager;
+
+	bool gameRunningFlag{false};
 }
 
 //Entry point
@@ -27,22 +31,24 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     AESysInit(hInstance, nCmdShow, 1600, 900, 1, 60, false, NULL);
     AESysSetWindowTitle("Loot Run");
     AESysReset();
+	gameRunningFlag = true;
 
     //Pre-loop setup
 	goManager = GameObjectManager::GetInstance();
 	renderManager = RenderingManager::GetInstance();
+	petManager = PetManager::GetInstance();
 	renderManager->Init();
+	petManager->Init();
 
 	stateManager = GameStateManager::GetInstance();
 	stateManager->AddGameState("MainMenuState", new MainMenuState);
 	stateManager->AddGameState("GameState", new GameState);
-	stateManager->AddGameState("GachaState", new GachaState);
+	stateManager->AddGameState("ShopState", new ShopState);
 
 	//Enter first game state
-	// ... inside WinMain after AddGameState calls ...
 	stateManager->SetNextGameState("MainMenuState", true, true);
 
-    while (AESysDoesWindowExist()) {
+    while (AESysDoesWindowExist() && gameRunningFlag) {
         AESysFrameStart();
 
         // Let the Update handle the ESC key (or logic)
@@ -50,13 +56,13 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
         // ------------- Game loop logic -------------
 
-        // 1. Update first
-        stateManager->UpdateCurrState(dt);
+		//In event of State terminating engine in Update, exit loop.
+		if (!gameRunningFlag) break;
 
-        // 2. Draw second (The State's Draw will handle its own Background Color)
-        stateManager->DrawCurrState();
-
-        // ------------- End of frame -------------
+		//Rendering
+		stateManager->DrawCurrState();
+        
+		//------------- Informing the system about the loop's end -------------
         AESysFrameEnd();
     }
 
@@ -66,9 +72,14 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
 void Terminate(void)
 {
+	if (gameRunningFlag)
+	{
+	gameRunningFlag = false;
 	stateManager->Destroy();
+	petManager->Destroy();
 	goManager->Destroy();
 	renderManager->Destroy();
 	// free the system
 	AESysExit();
+	}
 }
