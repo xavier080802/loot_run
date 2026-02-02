@@ -24,7 +24,6 @@
 
 namespace {
     // --- GLOBAL SYSTEMS ---
-    BGMManager bgm;
     AEGfxVertexList* circleMesh = nullptr;   // Used for Player, Enemies, Boss
     AEGfxVertexList* borderMesh = nullptr;   // Used for Minimap frame
     AEGfxVertexList* fogTileMesh = nullptr; // Used for Fog grid squares
