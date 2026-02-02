@@ -6,9 +6,7 @@
 #include <string>
 #include <map>
 
-// ============================================================
-// Particle System
-// ============================================================
+
 struct GachaParticle {
     float x, y, vx, vy, life, r, g, b;
 };
@@ -16,23 +14,14 @@ struct GachaParticle {
 static std::vector<GachaParticle> s_particles;
 static std::map<std::string, int> s_rarityCounts;
 static float s_screenShake = 0.0f;
-
-// ============================================================
-// Solid Quad Mesh (for yellow box + fullscreen shine)
-// ============================================================
 static AEGfxVertexList* s_overlayQuad = nullptr;
 
-// ============================================================
-// Chest/Shine State (replaces slot machine)
-// ============================================================
 static bool  s_chestOpened = false;
 static float s_chestLightTimer = 0.0f;
-static const float s_chestLightMax = 0.85f; // shine duration
-static WordEntry s_highestEntry;            // used ONLY for its RGB (no text shown)
+static const float s_chestLightMax = 0.85f; 
+static WordEntry s_highestEntry;           
 
-// ============================================================
-// Gacha Pool
-// ============================================================
+
 static std::vector<WordEntry> gachaPool = {
     {"Fire",      "Common",     63,        1.0f, 1.0f, 1.0f},
     {"Nature",    "Uncommon",   20,        0.0f, 1.0f, 0.0f},
@@ -42,9 +31,7 @@ static std::vector<WordEntry> gachaPool = {
     {"Infinity",  "Mythical",    0.000001f,1.0f, 0.84f,0.0f}
 };
 
-// ============================================================
-// Helpers
-// ============================================================
+
 static void SpawnBurst(float x, float y, float r, float g, float b, int count) {
     for (int i = 0; i < count; ++i) {
         float angle = (rand() % 360) * (3.14159f / 180.0f);
@@ -95,7 +82,6 @@ static void SetIdentityTransform() {
     AEGfxSetTransform(I.m);
 }
 
-// Draw solid rectangle using RM_COLOR + Multiply/Add
 static void DrawSolidRect(const AEMtx33& parent,
     float x, float y, float w, float h,
     float mulR, float mulG, float mulB, float mulA,
@@ -107,30 +93,22 @@ static void DrawSolidRect(const AEMtx33& parent,
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     AEGfxSetBlendMode(bm);
 
-    // These affect RM_COLOR meshes reliably
     AEGfxSetColorToMultiply(mulR, mulG, mulB, mulA);
     AEGfxSetColorToAdd(addR, addG, addB, addA);
-
     AEMtx33 S, T, local, M;
     AEMtx33Scale(&S, w, h);
     AEMtx33Trans(&T, x, y);
     AEMtx33Concat(&local, &T, &S);
     AEMtx33Concat(&M, &parent, &local);
-
     AEGfxSetTransform(M.m);
     AEGfxMeshDraw(s_overlayQuad, AE_GFX_MDM_TRIANGLES);
 }
 
-// ============================================================
-// Mesh builder
-// ============================================================
 void EnsureOverlayMesh() {
     if (s_overlayQuad) return;
 
     AEGfxMeshStart();
 
-    // Unit quad centered at origin
-    // If your AEEngine fork doesn't have AEGfxTriAdd, replace with your project’s mesh-add call.
     AEGfxTriAdd(
         -0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 0.0f,
         0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
@@ -145,9 +123,6 @@ void EnsureOverlayMesh() {
     s_overlayQuad = AEGfxMeshEnd();
 }
 
-// ============================================================
-// Reveal Animation (unchanged)
-// ============================================================
 void UpdateGachaAnimation(GachaAnimation& anim, float dt) {
     if (s_screenShake > 0) s_screenShake -= dt * 2.0f;
 
@@ -194,9 +169,6 @@ void UpdateGachaAnimation(GachaAnimation& anim, float dt) {
     }
 }
 
-// ============================================================
-// Begin Overlay
-// ============================================================
 void BeginGachaOverlay(GachaAnimation& anim, int rollCount, float introTime, float rollingTime, float revealDelay) {
     anim.Reset();
     anim.isFinished = false;
@@ -215,26 +187,22 @@ void BeginGachaOverlay(GachaAnimation& anim, int rollCount, float introTime, flo
         s_rarityCounts[res.rarity]++;
     }
 
-    // Highest rarity COLOR for the shine (no text shown)
+    // Highest rarity color
     s_highestEntry = FindHighestRarity(anim.results);
 
     anim.phase = GachaPhase::Intro;
     anim.introTimer = introTime;
 
-    // Rolling now = waiting for player to press O (manual open)
     anim.rollingTimer = rollingTime;
 
     anim.revealDelay = revealDelay;
 }
 
-// ============================================================
-// Update Overlay (signature includes openPressed)
-// ============================================================
 void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skipPressed, bool openPressed) {
     if (anim.phase == GachaPhase::None) return;
     anim.elapsed += dt;
 
-    // Skip behavior (unchanged)
+    // skip to results
     if (skipPressed && anim.phase != GachaPhase::Done) {
         bool highRarityFound = false;
         for (int i = anim.currentIndex + 1; i < (int)anim.results.size(); ++i) {
@@ -255,7 +223,7 @@ void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skipPressed, bool o
     case GachaPhase::Intro:
         anim.introTimer -= dt;
         if (anim.introTimer <= 0.0f)
-            anim.phase = GachaPhase::Rolling; // Rolling = waiting for O
+            anim.phase = GachaPhase::Rolling; 
         break;
 
     case GachaPhase::Rolling:
@@ -263,7 +231,6 @@ void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skipPressed, bool o
             if (openPressed) {
                 s_chestOpened = true;
                 s_chestLightTimer = s_chestLightMax;
-
                 // Burst + shake on open (uses highest rarity color)
                 SpawnBurst(0.0f, 0.0f, s_highestEntry.r, s_highestEntry.g, s_highestEntry.b, 260);
                 s_screenShake = 0.45f;
@@ -289,21 +256,16 @@ void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skipPressed, bool o
     }
 }
 
-// ============================================================
-// Draw Overlay
-// ============================================================
+
 void DrawGachaOverlay(GachaAnimation& anim, s8 fontId) {
 
-    // ? FORCE camera reset to avoid mesh being off-screen due to other states
     AEGfxSetCamPosition(0.0f, 0.0f);
 
-    // Reset render state to avoid leakage
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     AEGfxSetBlendMode(AE_GFX_BM_BLEND);
     AEGfxSetColorToMultiply(1, 1, 1, 1);
     AEGfxSetColorToAdd(0, 0, 0, 0);
 
-    // Screen shake transform (world-space)
     float oX = (s_screenShake > 0) ? ((rand() % 100) / 1000.0f - 0.05f) * s_screenShake * 10.0f : 0.0f;
     float oY = (s_screenShake > 0) ? ((rand() % 100) / 1000.0f - 0.05f) * s_screenShake * 10.0f : 0.0f;
     AEMtx33 shake; AEMtx33Trans(&shake, oX, oY);
@@ -313,12 +275,8 @@ void DrawGachaOverlay(GachaAnimation& anim, s8 fontId) {
     for (auto& p : s_particles)
         AEGfxPrint(fontId, ".", p.x, p.y, 1.2f, p.r, p.g, p.b, p.life);
 
-    // --------------------------------------------------------
-    // Rolling Phase: Yellow box + fullscreen shine (no rarity/word shown)
-    // --------------------------------------------------------
     if (anim.phase == GachaPhase::Rolling) {
 
-        // Use window world extents so box/shine always appears
         float minX = AEGfxGetWinMinX();
         float maxX = AEGfxGetWinMaxX();
         float minY = AEGfxGetWinMinY();
@@ -326,44 +284,37 @@ void DrawGachaOverlay(GachaAnimation& anim, s8 fontId) {
         float winW = (maxX - minX);
         float winH = (maxY - minY);
 
-        // Yellow box (center)
+        // chest
         float boxY = -winH * 0.08f;
         DrawSolidRect(
             shake,
             0.0f, 0.0f,
             winW * 0.30f, winH * 0.22f,
-            1.0f, 1.0f, 0.0f, 1.0f,     // multiply = yellow
-            0.0f, 0.0f, 0.0f, 0.0f,     // add = none
+            1.0f, 1.0f, 0.0f, 1.0f,    
+            0.0f, 0.0f, 0.0f, 0.0f,     
             AE_GFX_BM_BLEND
         );
 
-        // Fullscreen shine after open (tinted to highest rarity color)
+        // Reveal highest rarerity light
         if (s_chestOpened && s_chestLightTimer > 0.0f)
         {
-            float t = s_chestLightTimer / s_chestLightMax; // 1 -> 0
+            float t = s_chestLightTimer / s_chestLightMax; 
             if (t < 0.0f) t = 0.0f;
             if (t > 1.0f) t = 1.0f;
-
-            // pulse + fade (still looks juicy but not white)
-            float pulse = 0.5f + 0.5f * sinf((1.0f - t) * 12.0f); // 0..1
-            float alpha = (0.25f + 0.55f * pulse) * t;           // max ~0.80 then fades
-
+            float pulse = 0.5f + 0.5f * sinf((1.0f - t) * 12.0f); 
+            float alpha = (0.25f + 0.55f * pulse) * t;          
             AEMtx33 ident;
             AEMtx33Trans(&ident, 0.0f, 0.0f);
-
-            // IMPORTANT: Use BLEND + multiply = rarity color, no add
             DrawSolidRect(
                 ident,
                 0.0f, 0.0f,
                 winW * 1.05f, winH * 1.05f,
-                s_highestEntry.r, s_highestEntry.g, s_highestEntry.b, alpha,  // multiply = rarity tint
-                0.0f, 0.0f, 0.0f, 0.0f,                                       // no add
-                AE_GFX_BM_BLEND                                               // blend (no white clipping)
+                s_highestEntry.r, s_highestEntry.g, s_highestEntry.b, alpha, 
+                0.0f, 0.0f, 0.0f, 0.0f,                                      
+                AE_GFX_BM_BLEND                                              
             );
         }
        
-
-        // OPTIONAL hint (remove if you want absolutely no text)
         AEGfxSetBlendMode(AE_GFX_BM_BLEND);
         AEGfxSetColorToMultiply(1, 1, 1, 1);
         AEGfxSetColorToAdd(0, 0, 0, 0);
@@ -373,12 +324,9 @@ void DrawGachaOverlay(GachaAnimation& anim, s8 fontId) {
             AEGfxPrint(fontId, "[O] Open", -0.12f, -0.9f, 0.8f, 1, 1, 1, 1);
         }
 
-        return; // don't draw reveal/grid during Rolling
+        return; 
     }
 
-    // --------------------------------------------------------
-    // Reveal/Done (unchanged)
-    // --------------------------------------------------------
     if (anim.results.size() <= 10) {
         // 10-PULL GRID (3-3-3-1)
         for (int i = 0; i <= anim.currentIndex; ++i) {
@@ -423,7 +371,6 @@ void DrawGachaOverlay(GachaAnimation& anim, s8 fontId) {
         }
     }
 
-    // UI Hint Text (normal)
     const char* h;
     float startX;
     if (anim.phase == GachaPhase::Done) {
