@@ -54,10 +54,9 @@ int APIENTRY WinMain(HINSTANCE hInstance,
         // Let the Update handle the ESC key (or logic)
         f64 dt = AEFrameRateControllerGetFrameTime();
 
-        // ------------- Game loop logic -------------
+		stateManager->UpdateCurrState(dt);
 
-		//In event of State terminating engine in Update, exit loop.
-		if (!gameRunningFlag) break;
+        // ------------- Game loop logic -------------
 
 		//In event of State terminating engine in Update, exit loop.
 		if (!gameRunningFlag) break;

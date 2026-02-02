@@ -422,7 +422,11 @@ void GameState::InitState()
 }
 
 void GameState::Update(double dt)
-{
+{       
+    if (AEInputCheckTriggered(AEVK_M)) {
+        GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
+        return; // Exit the update early since we are switching states
+    }
     #pragma region inputs_for_testing
         //Press L to spawn test chest at the mouse location
         if (AEInputCheckTriggered(AEVK_L)) {

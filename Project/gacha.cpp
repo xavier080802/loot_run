@@ -34,12 +34,12 @@ static void SpawnBurst(float x, float y, float r, float g, float b, int count) {
 }
 
 static std::vector<WordEntry> gachaPool = {
-    {"Fire",      "Common",     63,        1.0f, 1.0f, 1.0f},
-    {"Nature",    "Uncommon",   20,        0.0f, 1.0f, 0.0f},
-    {"Water",     "Rare",       10,        0.0f, 0.5f, 1.0f},
-    {"Shadow",    "Epic",        5,        0.6f, 0.1f, 0.9f},
-    {"Space",     "Legendary",   1.999999f,1.0f, 0.5f, 0.0f},
-    {"Infinity",  "Mythical",    0.000001f,1.0f, 0.84f,0.0f}
+    {"Rock",      "Common",     63,        1.0f, 1.0f, 1.0f},
+    {"Slime",    "Uncommon",   20,        0.0f, 1.0f, 0.0f},
+    {"Wolf",     "Rare",       10,        0.0f, 0.5f, 1.0f},
+    {"Whale",    "Epic",        5,        0.6f, 0.1f, 0.9f},
+    {"Garuda",     "Legendary",   1.999999f,1.0f, 0.5f, 0.0f},
+    {"Dragon",  "Mythical",    0.000001f,1.0f, 0.84f,0.0f}
 };
 
 int RarityRank(const std::string& r) {
