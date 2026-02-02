@@ -4,8 +4,8 @@
 struct DropEntry
 {
 	DropType type = DropType::Coin;
-	int itemId = 0;      // equipmentId if Equipment, else 0
-	float chance = 0.0f; // 0..1
+	int itemId = 0;// equipmentId if Equipment, else 0
+	float chance = 0.0f;
 	int minAmount = 0;
 	int maxAmount = 0;
 };

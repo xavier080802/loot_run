@@ -20,6 +20,7 @@
 #include "../GameObjects/GameObjectManager.h"
 #include "../Helpers/BitmaskUtils.h"
 #include "../TutorialData.h"
+#include "../GameDB.h"
 #define TUTORIAL 1
 
 namespace {
@@ -315,6 +316,11 @@ namespace {
 }
 
 void GameState::LoadState() {
+    
+    if (!GameDB::LoadEnemyDefs("Assets/Data/enemies.json"))
+    {
+        std::cout << "WARNING: enemies.json failed to load.\n";
+    }
     font = AEGfxCreateFont("Assets/placeholder.ttf", 72);
     bgm.Init(); bgm.PlayNormal();
     halfMapWidth = mapWidth * 0.5f; halfMapHeight = mapHeight * 0.5f;
@@ -385,6 +391,8 @@ void GameState::InitState()
 
     ActorStats base{};
     base.maxHP = 100.0f;
+	base.attack = 10.0f;
+	base.attackSpeed = 1.0f;
     base.moveSpeed = playerSpeed;
     gPlayer->InitPlayerRuntime(base);
 
@@ -393,16 +401,50 @@ void GameState::InitState()
     chest->Init(currentLevel.chestPos, { 35,35 }, 0, MESH_SQUARE, COL_RECT, { 35,35 }, CreateBitmask(1, GameObject::PLAYER), GameObject::INTERACTABLE)
          ->GetRenderData().tint = CreateColor(255, 0.84f * 255.f, 0, 255);
 
-    Color red = CreateColor(255, 0, 0, 255);
-    boss->Init(currentLevel.doorPos, { bossRadius * 2.f, bossRadius * 2.f }, 0, MESH_CIRCLE, COL_CIRCLE, { bossRadius * 2.f, bossRadius * 2.f }, CreateBitmask(1, GameObject::PLAYER), GameObject::ENEMIES)
-        ->GetRenderData().tint = red;
-    boss->InitEnemyRuntime(new EnemyDef{ 0, {100}, 0 });
-    enemy1->Init(currentLevel.enemy1Pos, { 30,30 }, 0, MESH_CIRCLE, COL_CIRCLE, { 30,30 }, CreateBitmask(1, GameObject::PLAYER), GameObject::ENEMIES)
-        ->GetRenderData().tint = red;
-    enemy1->InitEnemyRuntime(new EnemyDef{ 0, {30}, 0 });
-    enemy2->Init(currentLevel.enemy2Pos, { 30,30 }, 0, MESH_CIRCLE, COL_CIRCLE, { 30,30 }, CreateBitmask(1, GameObject::PLAYER), GameObject::ENEMIES)
-        ->GetRenderData().tint = red;
-    enemy2->InitEnemyRuntime(new EnemyDef{ 0, {30}, 0 });
+    //Color red = CreateColor(255, 0, 0, 255);
+    //boss->Init(currentLevel.doorPos, { bossRadius * 2.f, bossRadius * 2.f }, 0, MESH_CIRCLE, COL_CIRCLE, { bossRadius * 2.f, bossRadius * 2.f }, CreateBitmask(1, GameObject::PLAYER), GameObject::ENEMIES)
+    //    ->GetRenderData().tint = red;
+    //boss->InitEnemyRuntime(new EnemyDef{ 0, {100}, 0 });
+    //enemy1->Init(currentLevel.enemy1Pos, { 30,30 }, 0, MESH_CIRCLE, COL_CIRCLE, { 30,30 }, CreateBitmask(1, GameObject::PLAYER), GameObject::ENEMIES)
+    //    ->GetRenderData().tint = red;
+    //enemy1->InitEnemyRuntime(new EnemyDef{ 0, {30}, 0 });
+    //enemy2->Init(currentLevel.enemy2Pos, { 30,30 }, 0, MESH_CIRCLE, COL_CIRCLE, { 30,30 }, CreateBitmask(1, GameObject::PLAYER), GameObject::ENEMIES)
+    //    ->GetRenderData().tint = red;
+    //enemy2->InitEnemyRuntime(new EnemyDef{ 0, {30}, 0 });
+
+    const EnemyDef* bossDef = GameDB::GetEnemyDef(2);
+    const EnemyDef* slimeDef = GameDB::GetEnemyDef(1);
+
+    std::cout << "bossDef=" << (bossDef ? "OK" : "NULL")
+              << " slimeDef=" << (slimeDef ? "OK" : "NULL") << "\n";
+
+    auto SpawnEnemyFromDef = [&](Enemy* enemy, const EnemyDef* def, AEVec2 pos)
+        {
+            if (!enemy || !def) return;
+
+            float r = def->render.radius;
+
+            MESH_SHAPE meshShape = (def->render.mesh == EnemyMesh::Square) ? MESH_SQUARE : MESH_CIRCLE;
+            COLLIDER_SHAPE colShape = (meshShape == MESH_SQUARE) ? COL_RECT : COL_CIRCLE;
+
+            enemy->Init(
+                pos,
+                { r * 2.0f, r * 2.0f },
+                0,
+                meshShape,
+                colShape,
+                { r * 2.0f, r * 2.0f },
+                CreateBitmask(1, GameObject::PLAYER),
+                GameObject::ENEMIES
+            )->GetRenderData().tint = def->render.tint;
+
+            enemy->InitEnemyRuntime(def);
+        };
+
+    SpawnEnemyFromDef(enemy1, slimeDef, currentLevel.enemy1Pos);
+    SpawnEnemyFromDef(enemy2, slimeDef, currentLevel.enemy2Pos);
+    SpawnEnemyFromDef(boss, bossDef, currentLevel.doorPos);
+
 
     // Camera starts on player
     camPos = currentLevel.startPos;

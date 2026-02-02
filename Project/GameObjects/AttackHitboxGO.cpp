@@ -1,0 +1,78 @@
+#include "AttackHitboxGO.h"
+#include "../Helpers/ColorUtils.h"
+AttackHitboxGO* AttackHitboxGO::Start(const AttackHitboxConfig& cfg)
+{
+    owner = cfg.owner;
+    lifespan = cfg.lifetime;
+    offset = cfg.offset;
+    followOwner = cfg.followOwner;
+    disableOnHit = cfg.disableOnHit;
+    OnHit = cfg.onHit;
+
+	hitOnce.clear();
+	collisionEnabled = true;
+
+    if (!owner)
+    {
+        isEnabled = false;
+        return this;
+    }
+
+    AEVec2 spawnPos = owner->GetPos();
+    spawnPos.x += offset.x;
+    spawnPos.y += offset.y;
+
+    Init(
+        spawnPos,
+        cfg.renderScale,
+        owner->GetZ(),
+        MESH_CIRCLE,
+        cfg.colliderShape,
+        cfg.colliderSize,
+        owner->GetCollisionLayers(),
+        owner->GetColliderLayer()
+    );
+
+	GetRenderData().tint = CreateColor(160, 160, 160, 180);
+    goType = GO_TYPE::ATTACK_HITBOX;
+
+    return this;
+}
+
+void AttackHitboxGO::Update(double dt)
+{
+    lifespan -= (float)dt;
+
+    if (owner && followOwner)
+    {
+        AEVec2 p = owner->GetPos();
+        p.x += offset.x;
+        p.y += offset.y;
+        pos = p;
+    }
+
+    if (lifespan <= 0.0f)
+    {
+        isEnabled = false;
+    }
+}
+
+void AttackHitboxGO::OnCollide(CollisionData& other)
+{
+	if (!owner) return;
+
+    // Only care about enemies (prevents storing random walls/items)
+    if (other.other.GetGOType() != GO_TYPE::ENEMY) return;
+
+    // Already hit this enemy during this hitbox lifetime? ignore
+    for (GameObject* g : hitOnce) {
+        if (g == &other.other) { return; }
+    }
+
+    hitOnce.push_back(&other.other);
+
+    if (OnHit) OnHit(other, owner);
+
+    if (disableOnHit)
+        isEnabled = false;
+}

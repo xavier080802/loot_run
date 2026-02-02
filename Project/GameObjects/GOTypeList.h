@@ -6,6 +6,7 @@ enum class GO_TYPE {
 	PLAYER,
 	ENEMY,
 	PROJECTILE,
+	ATTACK_HITBOX,
 	LOOT_CHEST,
 	ITEM, //Temp? for LootChest
 

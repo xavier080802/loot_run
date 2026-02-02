@@ -1,15 +1,21 @@
 #pragma once
+
 #include "./Drops/DropTypes.h"
 #include "./Inventory/EquipmentTypes.h"
+#include "./Actor/EnemyDef.h"
 
 namespace GameDB
 {
     const DropTable* GetDropTable(int id);
 
-    // Equipment lookup
+    // Enemies
+    bool LoadEnemyDefs(const char* path);
+    const EnemyDef* GetEnemyDef(int id);
+
+    // Equipment
     const EquipmentData* GetEquipmentData(int id);
 
-    // persistent-ish runtime owned state (might not use)
+    // runtime owned flags not used yet ignore
     void InitEquipmentRuntime();
     bool IsOwned(int id);
     void SetOwned(int id, bool owned);

@@ -1,0 +1,38 @@
+{
+  "enemies": [
+    {
+      "id": 1,
+      "name": "Slime",
+      "dropTableId": 0,
+      "baseStats": {
+        "maxHP": 30,
+        "attack": 5,
+        "defense": 0,
+        "moveSpeed": 120,
+        "attackSpeed": 1.0
+      },
+      "render": {
+        "radius": 15,
+        "mesh": "circle",
+        "tint": [255, 0, 0, 255]
+      }
+    },
+    {
+      "id": 2,
+      "name": "Boss",
+      "dropTableId": 0,
+      "baseStats": {
+        "maxHP": 100,
+        "attack": 15,
+        "defense": 0,
+        "moveSpeed": 0,
+        "attackSpeed": 0.8
+      },
+      "render": {
+        "radius": 60,
+        "mesh": "circle",
+        "tint": [255, 0, 0, 255]
+      }
+    }
+  ]
+}

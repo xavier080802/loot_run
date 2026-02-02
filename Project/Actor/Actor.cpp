@@ -4,7 +4,7 @@
 GameObject* Actor::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, COLLISION_LAYER _isInLayer)
 {
     ClearStatusEffects();
-    return Init(_pos, _scale, _z, _meshShape, _colShape, _colSize, _collideWithLayers, _isInLayer);
+    return GameObject::Init(_pos, _scale, _z, _meshShape, _colShape, _colSize, _collideWithLayers, _isInLayer);
 }
 
 void Actor::InitActorRuntime(const ActorStats& finalStats)
@@ -86,7 +86,8 @@ float Actor::GetStatEffectValue(STAT_TYPE stat, float baseStat)
 }
 
 void Actor::OnDeath()
-{
+{    
+    // Disable immediately to prevent further collision or updates
     isEnabled = false;
     collisionEnabled = false;
 

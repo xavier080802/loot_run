@@ -8,13 +8,17 @@
 #include <map>
 #include <vector>
 
+// Base class for all combat-capable entities (Player, Enemy, Boss)
 class Actor : public GameObject
 {
 public:
 	virtual ~Actor() {}
 
 	GameObject* Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, COLLISION_LAYER _isInLayer) override;
+	
+	// Must be called after final stats are computed (base + equipment + upgrades)
 	void InitActorRuntime(const ActorStats& finalStats);
+
 	void Free() override;
 
 	void Update(double dt) override;
@@ -23,6 +27,8 @@ public:
 	void Heal(float amt);
 
 	bool IsDead() const { return mCurrentHP <= 0.0f; }
+
+	const ActorStats& GetStats() const { return mStats; }
 	float GetHP() const { return mCurrentHP; }
 	float GetMaxHP() const { return mStats.maxHP; }
 
@@ -30,8 +36,10 @@ public:
 	//Expecting the StatusEffect to be new'd
 	void ApplyStatusEffect(StatEffects::StatusEffect* eff, Actor* caster);
 	void UpdateStatusEffects(double dt);
+
 	//For the given stat type, compiles the StatusEffect Mod effects based on the baseStat.
 	//Final value excludes base stat amount.
+	// Returns total modifier from all active status effects (does NOT include base stat)
 	float GetStatEffectValue(STAT_TYPE stat, float baseStat);
 	//Delete and clear.
 	void ClearStatusEffects();
@@ -42,6 +50,7 @@ public:
 	void SubToOnDeath(ActorDeadSub* sub);
 
 protected:
+	// Override point for Player/Enemy-specific death behavior
 	virtual void OnDeath();
 
 	ActorStats mStats{};

@@ -3,6 +3,7 @@
 #include "Actor.h"
 #include "EnemyDef.h"
 
+// Runtime enemy entity driven by an immutable EnemyDef
 class Enemy : public Actor
 {
 public:
@@ -10,14 +11,17 @@ public:
         MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize,
         Bitmask _collideWithLayers, COLLISION_LAYER _isInLayers) override;
 
+    // Binds this enemy instance to its data definition and initializes stats
     void InitEnemyRuntime(const EnemyDef* def);
 
     virtual void Update(double dt) override;
     virtual void Free() override;
 
 protected:
+    // Spawns drops and disables the enemy; actual deletion is manager-controlled
     void OnDeath() override;
 
 private:
+    // Non-owning pointer to static enemy definition data
     const EnemyDef* mDef = 0;
 };
