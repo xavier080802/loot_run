@@ -17,6 +17,8 @@ public:
     virtual void Update(double dt) override;
     virtual void Free() override;
 
+    EnemyDef const& GetDefinition() const { return *mDef; }
+
 protected:
     // Spawns drops and disables the enemy; actual deletion is manager-controlled
     void OnDeath() override;

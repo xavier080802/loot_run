@@ -460,7 +460,7 @@ void GameState::InitState()
     }
 
     if (TUTORIAL) {
-        fairy->InitTutorial(gPlayer, &currentLevel);
+        fairy->InitTutorial(gPlayer, &currentLevel, {enemy1, enemy2, boss});
     }
 }
 
