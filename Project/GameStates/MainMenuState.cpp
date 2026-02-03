@@ -108,6 +108,11 @@ void MainMenuState::UnloadState()
 
 void MainMenuState::Update(double dt)
 {
+	if (AEInputCheckTriggered(AEVK_ESCAPE))
+	{
+		Terminate();
+		return;
+	}
 	for (int i = 0; i < SHOP_BTN_COUNT; ++i)
 	{
 		AEVec2 worldPos = DefaultToWorld(
