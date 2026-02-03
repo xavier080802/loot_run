@@ -45,9 +45,11 @@ public:
 	void ClearStatusEffects();
 
 	//Subscribe to be alerted when this actor kills another actor. WIP (alert not implemented)
-	void SubToGotKill(ActorGotKillSub* sub);
+	void SubToGotKill(ActorGotKillSub* sub, bool remove=false);
 	//Subscribe to be alerted when this actor dies. 
-	void SubToOnDeath(ActorDeadSub* sub);
+	void SubToOnDeath(ActorDeadSub* sub, bool remove = false);
+	//Subscribe to be alerted when actor is about to cast something
+	void SubToBeforeCast(ActorBeforeCastSub* sub, bool remove = false);
 
 protected:
 	// Override point for Player/Enemy-specific death behavior
@@ -57,7 +59,7 @@ protected:
 	float mCurrentHP = 0.0f;
 	std::map<std::string, StatEffects::StatusEffect*> statusEffectsDict;
 
-private:
 	std::vector<ActorGotKillSub*> onKilledAnotherSubs;
 	std::vector<ActorDeadSub*> onDeathSubs;
+	std::vector<ActorBeforeCastSub*> beforeCastSubs;
 };

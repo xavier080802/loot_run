@@ -3,6 +3,8 @@
 #include "./Pets/Pet.h"
 #include "./Map.h"
 #include "./GameObjects/LootChest.h"
+#include "./Actor/ActorSubscriptions.h"
+#include "./Actor/Enemy.h"
 
 namespace Tutorial {
 	enum TUT_STAGE {
@@ -33,9 +35,10 @@ namespace Tutorial {
 		std::string checks{};
 	};
 
-	class TutorialFairy : public Pet, LootChestOpenedSub {
+	class TutorialFairy : public Pet, 
+		LootChestOpenedSub, ActorDeadSub, ActorBeforeCastSub {
 	public:
-		void InitTutorial(Player* _player, MapData* _map);
+		void InitTutorial(Player* _player, MapData* _map, std::initializer_list<Enemy*> enemies);
 		void Update(double dt) override;
 
 		TutorialData data{};
@@ -45,6 +48,8 @@ namespace Tutorial {
 
 		//Subscription
 		void SubscriptionAlert(LootChestSubContent content) override;
+		void SubscriptionAlert(ActorBeforeCastContent content) override;
+		void SubscriptionAlert(ActorDeadSubContent content) override;
 
 		//Barrier to keep player in the room
 		AEVec2 GetTutBarrier();
