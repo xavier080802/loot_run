@@ -35,7 +35,7 @@ void Enemy::OnDeath()
         DropSystem::SpawnDrops(mDef->dropTableId, GetPos());
 
     // Disable (manager keeps ownership / avoids delete mid-frame)
-    Actor::OnDeath();
+    isEnabled = false;
 }
 
 void Enemy::Free()

@@ -77,10 +77,12 @@ void Player::InitPlayerRuntime(const ActorStats& baseStats)
 		mInventory.EquipBow(bow);// Bow slot
 		//checking if bow equip worked
 		std::cout << "bow ptr=" << bow << " name=" << SafeName(bow) << "\n";
+
 	}
 
 	// Give some starter ammo so bow can shoot
 	mInventory.AddAmmo(50);
+
 
 	RecalculateStats();
 	InitActorRuntime(mStats);
@@ -253,18 +255,12 @@ void Player::HandleAttackInput(double dt)
 	}
 
 	DoAttackWithWeapon(GetHeldWeaponData());
+
 }
 
 void Player::DoAttackWithWeapon(const EquipmentData* weapon)
 {
 	if (!weapon) return;
-
-	//Check if subscribers want to cancel the cast.
-	bool allowCast{ true };
-	for (ActorBeforeCastSub* sub : beforeCastSubs) {
-		sub->SubscriptionAlert({ allowCast, this, weapon });
-		if (!allowCast) return;
-	}
 
 	// Convert attackSpeed into seconds-per-attack cooldown
 	float atkSpd = mStats.attackSpeed;

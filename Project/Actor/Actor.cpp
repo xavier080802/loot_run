@@ -106,38 +106,20 @@ void Actor::ClearStatusEffects()
     statusEffectsDict.clear();
 }
 
-void Actor::SubToGotKill(ActorGotKillSub* sub, bool remove)
+void Actor::SubToGotKill(ActorGotKillSub* sub)
 {
     //Check dupe
-    for (auto it = onKilledAnotherSubs.begin(); it != onKilledAnotherSubs.end(); ++it) {
-        if (*it == sub) {
-            if (remove) onKilledAnotherSubs.erase(it);
-            return;
-        }
+    for (ActorGotKillSub* s : onKilledAnotherSubs) {
+        if (s == sub) return;
     }
     onKilledAnotherSubs.push_back(sub);
 }
 
-void Actor::SubToOnDeath(ActorDeadSub* sub, bool remove)
+void Actor::SubToOnDeath(ActorDeadSub* sub)
 {
     //Check dupe
-    for (auto it = onDeathSubs.begin(); it != onDeathSubs.end(); ++it) {
-        if (*it == sub) {
-            if (remove) onDeathSubs.erase(it);
-            return;
-        }
+    for (ActorDeadSub* s : onDeathSubs) {
+        if (s == sub) return;
     }
     onDeathSubs.push_back(sub);
-}
-
-void Actor::SubToBeforeCast(ActorBeforeCastSub* sub, bool remove)
-{
-    //Check dupe
-    for (auto it = beforeCastSubs.begin(); it != beforeCastSubs.end(); ++it) {
-        if (*it == sub) {
-            if (remove) beforeCastSubs.erase(it);
-            return;
-        }
-    }
-    beforeCastSubs.push_back(sub);
 }
