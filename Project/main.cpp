@@ -51,16 +51,12 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     while (AESysDoesWindowExist() && gameRunningFlag) {
         AESysFrameStart();
 
-        if (AEInputCheckTriggered(AEVK_ESCAPE))
-            break;
+        // Let the Update handle the ESC key (or logic)
+        f64 dt = AEFrameRateControllerGetFrameTime();
 
-        //------------- Game loop logic -------------
-		//Clear bg
-		AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
-		
-		//Update state logic
-		f64 dt = AEFrameRateControllerGetFrameTime();
 		stateManager->UpdateCurrState(dt);
+
+        // ------------- Game loop logic -------------
 
 		//In event of State terminating engine in Update, exit loop.
 		if (!gameRunningFlag) break;

@@ -1,16 +1,22 @@
 #pragma once
-#include "AEAudio.h"   // include Alpha Engine audio headers
+#include "AEAudio.h"
 
 struct BGMManager {
-    AEAudioGroup group;
+    AEAudioGroup group;      
+    AEAudioGroup gachaGroup;  
     AEAudio normalTrack;
     AEAudio eliteTrack;
     AEAudio bossTrack;
+    AEAudio gachaTrack;
 
     void Init();
     void PlayNormal();
     void PlayElite();
     void PlayBoss();
-    void FadeTo(AEAudio track, float fadeTimeSec);
+    void StopGameplayBGM();  
+    void PlayGacha();
+    void StopGacha(float fadeTimeSec);
     void Exit();
-}; 
+};
+
+extern BGMManager bgm;
