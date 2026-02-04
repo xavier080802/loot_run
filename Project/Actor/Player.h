@@ -22,6 +22,8 @@ public:
     void HandleAttackInput(double dt);
     void OnCollide(CollisionData& other) override;
 
+    void Draw() override;
+
     void RecalculateStats();
     void TryPickup(const PickupPayload& payload);
 
@@ -52,4 +54,6 @@ private:
 
     // Simple attack gating based on attackSpeed
     float attackCooldownTimer = 0.0f;
+
+    float playerSpeed = 300.f;
 };

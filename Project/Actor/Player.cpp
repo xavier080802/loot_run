@@ -101,11 +101,18 @@ void Player::RecalculateStats()
 
 void Player::Update(double dt)
 {
-	Actor::Update(dt);
-
 	float fdt = (float)dt;
 	if (attackCooldownTimer > 0.0f)
 		attackCooldownTimer -= fdt;
+
+	prevPos = pos;
+
+	HandleAttackInput(dt);
+	// Track input direction for minimap arrow (Player does the actual movement)
+	HandleMovementInput(dt);
+	Temp_DoVelocityMovement(dt);
+
+	Actor::Update(dt);
 }
 
 void Player::HandleMovementInput(double dt)
@@ -289,7 +296,9 @@ void Player::DoAttackWithWeapon(const EquipmentData* weapon)
 
 		// Fire(caster, direction, radius, speed, lifetime, callback)
 		proj->Fire(this, fireDir, 10.0f, 200.0f, 3.0f, &OnProjectileHit);
-		proj->SetCollisionLayers(CreateBitmask(1, COLLISION_LAYER::ENEMIES)); //Proj will scan for interactables otherwise
+		Bitmask bm{ proj->GetCollisionLayers() };
+		ResetFlagAtPos(&bm, GameObject::COLLISION_LAYER::INTERACTABLE);
+		proj->SetCollisionLayers(bm); //Proj will scan for interactables otherwise
 		break;
 	}
 
@@ -409,4 +418,9 @@ void Player::OnCollide(CollisionData& other)
 	default:
 		break;
 	}
+}
+
+void Player::Draw()
+{
+	Actor::Draw();
 }

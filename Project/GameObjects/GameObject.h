@@ -31,6 +31,7 @@ public:
 	virtual void Draw();
 	virtual void Free();
 	virtual void OnCollide(CollisionData& other);
+	//virtual void OnCollideTile(TileMap::Tile* tile);
 
 	AnimationData& GetRenderData();
 	const AEVec2& GetPos() const;

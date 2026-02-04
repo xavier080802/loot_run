@@ -21,7 +21,8 @@
 #include "../Helpers/BitmaskUtils.h"
 #include "../TutorialData.h"
 #include "../GameDB.h"
-#define TUTORIAL 1
+#include "../TileMap.h"
+#define TUTORIAL 0
 
 namespace {
     // --- GLOBAL SYSTEMS ---
@@ -59,6 +60,7 @@ namespace {
     float mapHeight = 2000.0f;
     float halfMapWidth, halfMapHeight;
     MapData currentLevel;
+    TileMap* map{};
 
     // --- FOG OF WAR SETTINGS ---
     const int FOG_GRID_SIZE = 40;
@@ -164,27 +166,27 @@ namespace {
     }
 
     void RenderWorldMap() {
-        AEGfxStart();
-        AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-        AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+        //AEGfxStart();
+        //AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+        //AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
-        // Camera matrix math
-        AEMtx33 viewMtx, zoomMtx, camMatrix;
-        AEMtx33Trans(&viewMtx, -camPos.x, -camPos.y);
-        AEMtx33Scale(&zoomMtx, camZoom, camZoom);
-        AEMtx33Concat(&camMatrix, &zoomMtx, &viewMtx);
+        //// Camera matrix math
+        //AEMtx33 viewMtx, zoomMtx, camMatrix;
+        //AEMtx33Trans(&viewMtx, -camPos.x, -camPos.y);
+        //AEMtx33Scale(&zoomMtx, camZoom, camZoom);
+        //AEMtx33Concat(&camMatrix, &zoomMtx, &viewMtx);
 
-        // --- WORLD OBJECTS RENDERING ---
-        AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
-        for (const auto& wall : currentLevel.walls) {
-            AEMtx33 s, t, final;
-            AEMtx33Scale(&s, wall.width + 4.0f, wall.height + 4.0f);
-            AEMtx33Trans(&t, std::floor(wall.position.x), std::floor(wall.position.y));
-            AEMtx33Concat(&final, &camMatrix, &t);
-            AEMtx33Concat(&final, &final, &s);
-            AEGfxSetTransform(final.m);
-            AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
-        }
+        //// --- WORLD OBJECTS RENDERING ---
+        //AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
+        //for (const auto& wall : currentLevel.walls) {
+        //    AEMtx33 s, t, final;
+        //    AEMtx33Scale(&s, wall.width + 4.0f, wall.height + 4.0f);
+        //    AEMtx33Trans(&t, std::floor(wall.position.x), std::floor(wall.position.y));
+        //    AEMtx33Concat(&final, &camMatrix, &t);
+        //    AEMtx33Concat(&final, &final, &s);
+        //    AEGfxSetTransform(final.m);
+        //    AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
+        //}
 
         // To be replace boss logic
         if (!bossAlive) {
@@ -194,9 +196,12 @@ namespace {
             AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);*/
 
             // World Door Rect 
-            AEMtx33 dS, dT, dF; AEMtx33Scale(&dS, 45.0f, 125.0f); AEMtx33Trans(&dT, currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y);
+            /*AEMtx33 dS, dT, dF; AEMtx33Scale(&dS, 45.0f, 125.0f); AEMtx33Trans(&dT, currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y);
             AEMtx33Concat(&dF, &camMatrix, &dT); AEMtx33Concat(&dF, &dF, &dS); AEGfxSetTransform(dF.m);
-            AEGfxSetColorToMultiply(0.0f, 0.8f, 0.0f, 1.0f); AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
+            AEGfxSetColorToMultiply(0.0f, 0.8f, 0.0f, 1.0f); AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);*/
+
+            DrawTintedMesh(GetTransformMtx({ currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y }, 0, { 45,125 }),
+                wallMesh, nullptr, { 0, 0.8f * 255, 0, 255 }, 255);
         }
 
         // Placeholder enemies
@@ -206,6 +211,8 @@ namespace {
             AEMtx33Concat(&eF, &camMatrix, &eT); AEMtx33Concat(&eF, &eF, &eS); AEGfxSetTransform(eF.m);
             AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
         }*/
+
+        map->Render();
     }
 
     void RenderMinimap() {
@@ -327,6 +334,8 @@ void GameState::LoadState() {
     circleMesh = RenderingManager::GetInstance()->GetMesh(MESH_CIRCLE);
     squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
 
+    map = new TileMap("Assets/test_csv.csv");
+
     AEVec2Zero(&playerPos);
     playerDir = { 1.0f, 0.0f };
 
@@ -371,9 +380,10 @@ void GameState::InitState()
     InitTutorial(currentLevel);
 
     // Player collides with pickups + enemies
-    Bitmask collideMask = CreateBitmask(2,
+    Bitmask collideMask = CreateBitmask(3,
         GameObject::COLLISION_LAYER::ENEMIES,
-        GameObject::COLLISION_LAYER::INTERACTABLE
+        GameObject::COLLISION_LAYER::INTERACTABLE,
+        GameObject::COLLISION_LAYER::OBSTACLE
     );
 
     gPlayer->Init(
@@ -441,9 +451,9 @@ void GameState::InitState()
             enemy->InitEnemyRuntime(def);
         };
 
-    SpawnEnemyFromDef(enemy1, slimeDef, currentLevel.enemy1Pos);
+    /*SpawnEnemyFromDef(enemy1, slimeDef, currentLevel.enemy1Pos);
     SpawnEnemyFromDef(enemy2, slimeDef, currentLevel.enemy2Pos);
-    SpawnEnemyFromDef(boss, bossDef, currentLevel.doorPos);
+    SpawnEnemyFromDef(boss, bossDef, currentLevel.doorPos);*/
 
 
     // Camera starts on player
@@ -485,62 +495,62 @@ void GameState::Update(double dt)
 
     if (!gPlayer) return;
 
-    gPlayer->HandleAttackInput(dt);
+    //gPlayer->HandleAttackInput(dt);
     
-    AEVec2 oldPos = gPlayer->GetPos();
-    // Track input direction for minimap arrow (Player does the actual movement)
-    gPlayer->HandleMovementInput(dt);
-    //Normally inside GO.Update, but then theres no collision with the map for the player.
-    gPlayer->Temp_DoVelocityMovement(dt);
-    AEVec2 newPos = gPlayer->GetPos();
+    //AEVec2 oldPos = gPlayer->GetPos();
+    //// Track input direction for minimap arrow (Player does the actual movement)
+    //gPlayer->HandleMovementInput(dt);
+    ////Normally inside GO.Update, but then theres no collision with the map for the player.
+    //gPlayer->Temp_DoVelocityMovement(dt);
+    //AEVec2 newPos = gPlayer->GetPos();
 
     AEVec2 move = gPlayer->GetMoveDirNorm();
     f32 len = AEVec2Length(&move);
-
     if (len > 0 || gPlayer->HasForceApplied()) {
-        playerDir = move;
-        float subStep = (playerSpeed * (float)dt) / 10.0f;
+        playerDir = gPlayer->GetMoveDirNorm();
+        //playerDir = move;
+        //float subStep = (playerSpeed * (float)dt) / 10.0f;
 
-        // Collision detection lambda
-        auto IsClear = [&](AEVec2 p) {
-            for (const auto& w : currentLevel.walls) {
-                if (CircleRectCollision(w.position, { w.width, w.height }, p, playerRadius)) return false;
-            }
-            if (bossAlive) {
-                //Collision against boss object
-                if (AEVec2Distance(&p, &currentLevel.doorPos) < (playerRadius + bossRadius)) return false;
-            }
-            else if (CircleRectCollision({ currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y }, { 40, 120 }, p, playerRadius)) return false;
-            if (TUTORIAL) {
-                if (CircleRectCollision(fairy->GetTutBarrier(), { 200, 200 }, p, playerRadius)) return false;
-            }
-            return true;
-        };
+        //// Collision detection lambda
+        //auto IsClear = [&](AEVec2 p) {
+        //    for (const auto& w : currentLevel.walls) {
+        //        if (CircleRectCollision(w.position, { w.width, w.height }, p, playerRadius)) return false;
+        //    }
+        //    if (bossAlive) {
+        //        //Collision against boss object
+        //        if (AEVec2Distance(&p, &currentLevel.doorPos) < (playerRadius + bossRadius)) return false;
+        //    }
+        //    else if (CircleRectCollision({ currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y }, { 40, 120 }, p, playerRadius)) return false;
+        //    if (TUTORIAL) {
+        //        if (CircleRectCollision(fairy->GetTutBarrier(), { 200, 200 }, p, playerRadius)) return false;
+        //    }
+        //    return true;
+        //};
 
-        // If invalid, resolve by sub-stepping the attempted delta (same style as your old code)
-        if (!IsClear(newPos)) {
-            AEVec2 delta = { newPos.x - oldPos.x, newPos.y - oldPos.y };
+        //// If invalid, resolve by sub-stepping the attempted delta (same style as your old code)
+        //if (!IsClear(newPos)) {
+        //    AEVec2 delta = { newPos.x - oldPos.x, newPos.y - oldPos.y };
 
-            const int steps = 10;
-            AEVec2 pos = oldPos;
+        //    const int steps = 10;
+        //    AEVec2 pos = oldPos;
 
-            for (int i = 0; i < steps; i++) {
-                AEVec2 nextX = { pos.x + delta.x / steps, pos.y };
-                if (IsClear(nextX)) pos.x = nextX.x;
+        //    for (int i = 0; i < steps; i++) {
+        //        AEVec2 nextX = { pos.x + delta.x / steps, pos.y };
+        //        if (IsClear(nextX)) pos.x = nextX.x;
 
 
-                AEVec2 nextY = { pos.x, pos.y + delta.y / steps };
-                if (IsClear(nextY)) pos.y = nextY.y;
-            }
+        //        AEVec2 nextY = { pos.x, pos.y + delta.y / steps };
+        //        if (IsClear(nextY)) pos.y = nextY.y;
+        //    }
 
-            gPlayer->SetPos(pos);
-            newPos = pos;
-        }
+        //    gPlayer->SetPos(pos);
+        //    newPos = pos;
+        //}
     }
 
     // Clamp player inside map bounds
-    newPos.x = AEClamp(newPos.x, -halfMapWidth + playerRadius, halfMapWidth - playerRadius);
-    newPos.y = AEClamp(newPos.y, -halfMapHeight + playerRadius, halfMapHeight - playerRadius);
+    /*newPos.x = AEClamp(newPos.x, -halfMapWidth + playerRadius, halfMapWidth - playerRadius);
+    newPos.y = AEClamp(newPos.y, -halfMapHeight + playerRadius, halfMapHeight - playerRadius);*/
 
     //Set hp bar to follow boss hp
     bossHPProgressBar = (boss->GetHP() / boss->GetMaxHP()) * bossMaxHPProgressBar;
@@ -553,13 +563,13 @@ void GameState::Update(double dt)
         fairy->ChangeStage(Tutorial::END);
     }
     
-    gPlayer->SetPos(newPos);
+    //gPlayer->SetPos(newPos);
 
     // Systems now read from gPlayer via GetPlayerPos()
     UpdateDiscovery((float)dt);
     UpdateWorldMap((float)dt);
 
-    GameObjectManager::GetInstance()->UpdateObjects(dt);
+    GameObjectManager::GetInstance()->UpdateObjects(dt, map);
 }
 
 void GameState::Draw() { 
@@ -586,6 +596,7 @@ void GameState::ExitState() {
 void GameState::UnloadState() {
     if (borderMesh) AEGfxMeshFree(borderMesh);
     if (wallMesh) AEGfxMeshFree(wallMesh);
+    delete map;
     bgm.Exit();
     if (font >= 0)
     AEGfxDestroyFont(font);

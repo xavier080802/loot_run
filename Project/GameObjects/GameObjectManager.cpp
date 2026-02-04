@@ -5,6 +5,9 @@
 #include "LootChest.h"
 #include "../Drops/PickupGO.h"
 #include "AttackHitboxGO.h"
+#include "../TileMap.h"
+#include "../Helpers/Vec2Utils.h"
+#include "../Helpers/RenderUtils.h"
 
 #include <iostream>
 
@@ -32,8 +35,9 @@ void GameObjectManager::RegisterGO(GameObject* go)
 	goList.push_back(go);
 }
 
-void GameObjectManager::UpdateObjects(double dt)
+void GameObjectManager::UpdateObjects(double dt, TileMap const* tilemap)
 {
+	isLoopingThrList = true;
 	for (GameObject* go : goList) {
 		if (!go->isEnabled) continue;
 		go->Update(dt);
@@ -41,7 +45,44 @@ void GameObjectManager::UpdateObjects(double dt)
 	//Collision
 	grid.SortObjects(goList.data(), goList.size());
 
-	isLoopingThrList = true;
+	//Collide with tilemap
+	for (GameObject* go : goList) {
+		if (!go->collisionEnabled || !go->isEnabled) continue;
+
+		if (go->colShape == COL_CIRCLE) {
+			//Circle hotspots at 45 deg angle intervals (0->360, 8 total)
+			for (int h{}; h < 8;++h) {
+				AEVec2 hotspotDir{ AECosDeg(h * 45), AESinDeg(h * 45) };
+				//Check if hotspot collides with a tile by checking if hotspot is on a collidable tile.
+				AEVec2 tileInd{ tilemap->GetTileIndFromPos(go->pos + hotspotDir * go->scale * 0.5f) };
+				TileMap::Tile const* tile{tilemap->QueryTile(tileInd.y, tileInd.x)};
+				if (!tile || !BitmaskContainsFlag(go->collisionLayers, tile->layer)) {
+					continue; //Hotspot no collision detected.
+				}
+				//Collided with tile. Prevent clipping.
+				AEVec2 tilePos{ tilemap->GetTilePosition(tileInd.y, tileInd.x) };
+				//Get pos of the edge closest to the go.
+				AEVec2 closest{ AEClamp(go->pos.x, tilePos.x - tilemap->GetTileSize().x * 0.5f, tilePos.x + tilemap->GetTileSize().x * 0.5f),
+							AEClamp(go->pos.y, tilePos.y - tilemap->GetTileSize().y * 0.5f, tilePos.y + tilemap->GetTileSize().y * 0.5f) };
+				//Distance between go and the closest edge.
+				closest = go->pos - closest;
+				//Overlap amount (how much the go is currently inside the tile): Radius - dist of go from edge
+				float pen = go->scale.x*0.5f - AEVec2Length(&closest); //TODO: not use hardcoded scale.x
+				//Normalize to get dir to closest edge.
+				AEVec2 closestNorm{};
+				if (closest.x || closest.y) AEVec2Normalize(&closestNorm, &closest);
+				//Push the GO away along the overlap direction.
+				go->pos += closestNorm * pen;
+
+				//TODO: Call OnCollide
+				
+				//break; //Commenting this fixes clipping when dodging by letting other hotspots check after an overlap fix
+			}
+			continue;
+		}
+		//TODO: Rect collider
+	}
+
 	for (GameObject* go : goList) {
 		//Only let "player" (Player, pets, player's projs) query grid
 		if (go->colliderLayer != GameObject::COLLISION_LAYER::PLAYER
