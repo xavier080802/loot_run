@@ -41,7 +41,7 @@ void PickupGO::Update(double dt)
 void PickupGO::OnCollide(CollisionData& other)
 {
     // If player touched it, disable pickup. Player will read payload + consume it.
-    if (other.other.GetColliderLayer() == GameObject::COLLISION_LAYER::PLAYER)
+    if (other.other.GetGOType() == GO_TYPE::PLAYER)
     {
         isEnabled = false;
         collisionEnabled = false;

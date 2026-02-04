@@ -289,6 +289,7 @@ void Player::DoAttackWithWeapon(const EquipmentData* weapon)
 
 		// Fire(caster, direction, radius, speed, lifetime, callback)
 		proj->Fire(this, fireDir, 10.0f, 200.0f, 3.0f, &OnProjectileHit);
+		proj->SetCollisionLayers(CreateBitmask(1, COLLISION_LAYER::ENEMIES)); //Proj will scan for interactables otherwise
 		break;
 	}
 

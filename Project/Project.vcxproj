@@ -110,7 +110,6 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="DesignPatterns\PostOffice.cpp" />
     <ClCompile Include="Drops\DropSystem.cpp" />
     <ClCompile Include="Drops\PickupGO.cpp" />
-    <ClCompile Include="File\CSV.cpp" />
     <ClCompile Include="gacha.cpp" />
     <ClCompile Include="GameDB.cpp" />
     <ClCompile Include="GameObjects\AttackHitboxGO.cpp" />
@@ -162,7 +161,6 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="Drops\DropTypes.h" />
     <ClInclude Include="Drops\PickupGO.h" />
     <ClInclude Include="Drops\PickupPayload.h" />
-    <ClInclude Include="File\CSV.h" />
     <ClInclude Include="gacha.h" />
     <ClInclude Include="GameDB.h" />
     <ClInclude Include="GameObjects\AttackHitboxGO.h" />
