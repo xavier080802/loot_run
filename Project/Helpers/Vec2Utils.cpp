@@ -53,7 +53,7 @@ bool CompareVec2(AEVec2 const& a, AEVec2 const& b)
 
 AEVec2 operator-(AEVec2 lhs, AEVec2 rhs)
 {
-    AEVec2 out{ lhs.x - rhs.x, lhs.y - rhs.x };
+    AEVec2 out{ lhs.x - rhs.x, lhs.y - rhs.y };
     return out;
 }
 
@@ -80,6 +80,21 @@ AEVec2 operator+=(AEVec2& lhs, AEVec2 rhs)
 AEVec2 operator*(AEVec2 lhs, float rhs)
 {
     return {lhs.x * rhs, lhs.y * rhs};
+}
+
+AEVec2 operator*(AEVec2 lhs, AEVec2 rhs)
+{
+    return {lhs.x * rhs.x, lhs.y * rhs.y};
+}
+
+AEVec2 operator/(AEVec2 lhs, float rhs)
+{
+    return {lhs.x / rhs, lhs.y / rhs};
+}
+
+AEVec2 operator/(AEVec2 lhs, AEVec2 rhs)
+{
+    return {lhs.x / rhs.x, lhs.y / rhs.y};
 }
 
 std::ostream& operator<<(std::ostream& os, AEVec2 const& vec)

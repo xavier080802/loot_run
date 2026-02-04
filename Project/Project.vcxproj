@@ -110,6 +110,8 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="DesignPatterns\PostOffice.cpp" />
     <ClCompile Include="Drops\DropSystem.cpp" />
     <ClCompile Include="Drops\PickupGO.cpp" />
+    <ClCompile Include="File\CSV.cpp" />
+    <ClCompile Include="gacha.cpp" />
     <ClCompile Include="GameDB.cpp" />
     <ClCompile Include="GameObjects\AttackHitboxGO.cpp" />
     <ClCompile Include="GameObjects\GameObject.cpp" />
@@ -137,6 +139,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="Rendering\AnimationData.cpp" />
     <ClCompile Include="Rendering\RenderData.cpp" />
+    <ClCompile Include="TileMap.cpp" />
     <ClCompile Include="TutorialData.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -159,6 +162,8 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="Drops\DropTypes.h" />
     <ClInclude Include="Drops\PickupGO.h" />
     <ClInclude Include="Drops\PickupPayload.h" />
+    <ClInclude Include="File\CSV.h" />
+    <ClInclude Include="gacha.h" />
     <ClInclude Include="GameDB.h" />
     <ClInclude Include="GameObjects\AttackHitboxGO.h" />
     <ClInclude Include="GameObjects\GameObject.h" />
@@ -189,6 +194,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="Map.h" />
     <ClInclude Include="Rendering\AnimationData.h" />
     <ClInclude Include="Rendering\RenderData.h" />
+    <ClInclude Include="TileMap.h" />
     <ClInclude Include="TutorialData.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

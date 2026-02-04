@@ -61,6 +61,12 @@
     <Filter Include="Source Files\DropPick">
       <UniqueIdentifier>{48d6ac06-1d91-4da1-8bbb-3c665aa641e6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\File">
+      <UniqueIdentifier>{28aed408-a4c2-4574-b0a5-35398d633894}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\File">
+      <UniqueIdentifier>{4b9b177a-d5f1-4aaf-be0f-0d5a27ca985b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -132,9 +138,6 @@
     <ClCompile Include="Pets\PetSkills.cpp">
       <Filter>Source Files\Pets</Filter>
     </ClCompile>
-    <ClCompile Include="Map.cpp">
-      <Filter>Source Files\GameObjects</Filter>
-    </ClCompile>
     <ClCompile Include="Actor\Actor.cpp">
       <Filter>Source Files\Actors</Filter>
     </ClCompile>
@@ -174,13 +177,25 @@
     <ClCompile Include="GameObjects\AttackHitboxGO.cpp">
       <Filter>Source Files\GameObjects</Filter>
     </ClCompile>
-    <ClCompile Include="..\Extern\jsoncpp\src\lib_json\json_reader.cpp">
+    <ClCompile Include="gacha.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Extern\jsoncpp\src\lib_json\json_value.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="File\CSV.cpp">
+      <Filter>Source Files\File</Filter>
     </ClCompile>
     <ClCompile Include="..\Extern\jsoncpp\src\lib_json\json_writer.cpp">
+      <Filter>Source Files\File</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Extern\jsoncpp\src\lib_json\json_reader.cpp">
+      <Filter>Source Files\File</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Extern\jsoncpp\src\lib_json\json_value.cpp">
+      <Filter>Source Files\File</Filter>
+    </ClCompile>
+    <ClCompile Include="Map.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TileMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -272,9 +287,6 @@
     <ClInclude Include="Pets\PetSkills.h">
       <Filter>Header Files\Pets</Filter>
     </ClInclude>
-    <ClInclude Include="Map.h">
-      <Filter>Header Files\GameObjects</Filter>
-    </ClInclude>
     <ClInclude Include="GameObjects\LootChest.h">
       <Filter>Header Files\GameObjects</Filter>
     </ClInclude>
@@ -337,6 +349,18 @@
     </ClInclude>
     <ClInclude Include="Actor\ActorSubscriptions.h">
       <Filter>Header Files\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="gacha.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="File\CSV.h">
+      <Filter>Header Files\File</Filter>
+    </ClInclude>
+    <ClInclude Include="Map.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TileMap.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

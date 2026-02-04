@@ -30,7 +30,6 @@ GameObject* GameObject::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _mes
 void GameObject::Update(double dt)
 {
 	renderingData->UpdateAnimation(dt);
-	prevPos = pos;
 }
 
 void GameObject::Draw()

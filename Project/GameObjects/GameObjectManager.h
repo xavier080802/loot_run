@@ -7,6 +7,7 @@
 #include <queue>
 
 class GameObject; //Avoid circular dependency
+class TileMap;
 
 namespace GOCollision {
 	//Representation of an object
@@ -44,7 +45,7 @@ class GameObjectManager : public Singleton<GameObjectManager>{
 public:
 	void RegisterGO(GameObject* go);
 	//Note: Called by State
-	void UpdateObjects(double dt);
+	void UpdateObjects(double dt, TileMap const* tilemap);
 	//Note: Called by State
 	void DrawObjects();
 	//Ensure large enough to cover whole playing area, otherwise the object wont have collision
