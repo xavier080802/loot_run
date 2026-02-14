@@ -51,8 +51,8 @@ namespace {
 }
 
 GameObject* Player::Init(AEVec2 _pos, AEVec2 _scale, int _z,
-	MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize,
-	Bitmask _collideWithLayers, COLLISION_LAYER _isInLayers)
+	MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize,
+	Bitmask _collideWithLayers, Collision::LAYER _isInLayers)
 {
 	goType = GO_TYPE::PLAYER;
 	return GameObject::Init(_pos, _scale, _z, _meshShape, _colShape, _colSize, _collideWithLayers, _isInLayers);
@@ -297,7 +297,7 @@ void Player::DoAttackWithWeapon(const EquipmentData* weapon)
 		// Fire(caster, direction, radius, speed, lifetime, callback)
 		proj->Fire(this, fireDir, 10.0f, 200.0f, 3.0f, &OnProjectileHit);
 		Bitmask bm{ proj->GetCollisionLayers() };
-		ResetFlagAtPos(&bm, GameObject::COLLISION_LAYER::INTERACTABLE);
+		ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
 		proj->SetCollisionLayers(bm); //Proj will scan for interactables otherwise
 		break;
 	}
@@ -327,7 +327,7 @@ void Player::DoAttackWithWeapon(const EquipmentData* weapon)
 		cfg.lifetime = 0.30f;
 
 		// Tentative version: circle hitbox that follows player for demo ig
-		cfg.colliderShape = COL_CIRCLE;
+		cfg.colliderShape = Collision::COL_CIRCLE;
 		cfg.colliderSize = { 50.0f, 50.0f };   // diameter
 		cfg.renderScale = { 50.0f, 50.0f };
 

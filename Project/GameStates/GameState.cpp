@@ -381,20 +381,20 @@ void GameState::InitState()
 
     // Player collides with pickups + enemies
     Bitmask collideMask = CreateBitmask(3,
-        GameObject::COLLISION_LAYER::ENEMIES,
-        GameObject::COLLISION_LAYER::INTERACTABLE,
-        GameObject::COLLISION_LAYER::OBSTACLE
+        Collision::LAYER::ENEMIES,
+        Collision::LAYER::INTERACTABLE,
+        Collision::LAYER::OBSTACLE
     );
 
     gPlayer->Init(
         currentLevel.startPos,
-        AEVec2{ playerRadius*2, playerRadius*2 },
+        AEVec2{ playerRadius*2.f, playerRadius*2.f },
         0,
         MESH_CIRCLE,
-        COLLIDER_SHAPE::COL_CIRCLE,
-        AEVec2{ playerRadius * 2.0f, playerRadius * 2.0f },
+        Collision::SHAPE::COL_CIRCLE,
+        AEVec2{ playerRadius * 2.f, playerRadius * 2.f },
         collideMask,
-        GameObject::COLLISION_LAYER::PLAYER
+        Collision::LAYER::PLAYER
     );
     PetManager::GetInstance()->PlacePet(GetPlayerPos());
     PetManager::GetInstance()->InitPetForGame();
@@ -408,7 +408,7 @@ void GameState::InitState()
 
     //Init other gameobjects
     LootChest* chest = dynamic_cast<LootChest*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
-    chest->Init(currentLevel.chestPos, { 35,35 }, 0, MESH_SQUARE, COL_RECT, { 35,35 }, CreateBitmask(1, GameObject::PLAYER), GameObject::INTERACTABLE)
+    chest->Init(currentLevel.chestPos, { 35,35 }, 0, MESH_SQUARE, Collision::COL_RECT, { 35,35 }, CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE)
          ->GetRenderData().tint = CreateColor(255, 0.84f * 255.f, 0, 255);
 
     //Color red = CreateColor(255, 0, 0, 255);
@@ -435,7 +435,7 @@ void GameState::InitState()
             float r = def->render.radius;
 
             MESH_SHAPE meshShape = (def->render.mesh == EnemyMesh::Square) ? MESH_SQUARE : MESH_CIRCLE;
-            COLLIDER_SHAPE colShape = (meshShape == MESH_SQUARE) ? COL_RECT : COL_CIRCLE;
+            Collision::SHAPE colShape = (meshShape == MESH_SQUARE) ? Collision::COL_RECT : Collision::COL_CIRCLE;
 
             enemy->Init(
                 pos,
@@ -444,8 +444,8 @@ void GameState::InitState()
                 meshShape,
                 colShape,
                 { r * 2.0f, r * 2.0f },
-                CreateBitmask(1, GameObject::PLAYER),
-                GameObject::ENEMIES
+                CreateBitmask(1, Collision::PLAYER),
+                Collision::ENEMIES
             )->GetRenderData().tint = def->render.tint;
 
             enemy->InitEnemyRuntime(def);
@@ -484,7 +484,7 @@ void GameState::Update(double dt)
         if (AEInputCheckTriggered(AEVK_L)) {
             LootChest* chest = dynamic_cast<LootChest*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
             AEVec2 m = GetMouseWorldVec();
-            chest->Init(m, { 75,75 }, 1, MESH_SQUARE, COL_RECT, { 75,75 }, CreateBitmask(1, GameObject::PLAYER), GameObject::INTERACTABLE);
+            chest->Init(m, { 75,75 }, 1, MESH_SQUARE, Collision::COL_RECT, { 75,75 }, CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE);
         }
 
         //Pet skill test. check cout

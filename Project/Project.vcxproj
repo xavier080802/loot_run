@@ -152,6 +152,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="Actor\StatsTypes.h" />
     <ClInclude Include="Actor\StatusEffect.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="CollisionConstants.h" />
     <ClInclude Include="DesignPatterns\ConcreteMessages.h" />
     <ClInclude Include="DesignPatterns\Message.h" />
     <ClInclude Include="DesignPatterns\PostBox.h" />

@@ -2,8 +2,8 @@
 #include "../Drops/DropSystem.h"
 
 GameObject* Enemy::Init(AEVec2 _pos, AEVec2 _scale, int _z,
-    MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize,
-    Bitmask _collideWithLayers, COLLISION_LAYER _isInLayers)
+    MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize,
+    Bitmask _collideWithLayers, Collision::LAYER _isInLayers)
 {
     // Used by collision, filtering, and game logic to identify enemy objects
     goType = GO_TYPE::ENEMY;

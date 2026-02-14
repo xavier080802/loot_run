@@ -4,7 +4,7 @@
 #include <map>
 #include <vector>
 #include "AEEngine.h"
-#include "GameObjects/GameObject.h"
+#include "CollisionConstants.h"
 
 class TileMap
 {
@@ -17,10 +17,9 @@ public:
 	};
 
 	//A tile on the map
-	//Using struct if we want to add A star pathfinding later.
 	struct Tile {
 		TILE_TYPE type;
-		GameObject::COLLISION_LAYER layer;
+		Collision::LAYER layer;
 	};
 
 	//Note: If a value in csv is invalid, defaults to TILE_NONE.
@@ -28,7 +27,7 @@ public:
 	TileMap(std::string filename, AEVec2 offset = {0,0}, float tileX = 25.f, float tileY = 25.f);
 
 	void Render() const;
-	//NOTE: y is row, x is col
+	//NOTE: y is row, x is col. Gets the center of the tile at the indices
 	AEVec2 GetTilePosition(unsigned rowInd, unsigned colInd) const;
 	//Calculates where the pos will be in the tilemap (in index). Return values are rounded to whole numbers
 	AEVec2 GetTileIndFromPos(AEVec2 pos) const;
@@ -36,8 +35,15 @@ public:
 	Tile const* QueryTile(AEVec2 pos) const;
 	//NOTE: y is row, x is col
 	Tile const* QueryTile(unsigned rowInd, unsigned colInd) const;
+	//Get the Tile, and its Index. Tile will be nullptr if the pos is out of bounds.
+	//First: Pointer to the tile at the pos
+	//Second: Index of the tile
+	std::pair<Tile const*, AEVec2> QueryTileAndInd(AEVec2 pos) const;
 
 	AEVec2 GetTileSize() const { return tileSize; }
+
+	//Change tile type. Returns the tile
+	Tile const* ChangeTile(unsigned row, unsigned col, TILE_TYPE newType);
 
 private:
 	static void LoadStatics();

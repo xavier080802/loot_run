@@ -67,6 +67,8 @@ private:
 
 	bool isLoopingThrList{ false };
 
+	void Helper_HandleGOTileCollision(AEVec2 tileInd, GameObject& go, TileMap const& tilemap);
+
 	~GameObjectManager();
 };
 

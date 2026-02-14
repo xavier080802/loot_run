@@ -11,17 +11,17 @@ PickupGO* PickupGO::Spawn(const AEVec2& worldPos, const PickupPayload& payload)
 
     // Pickups only need to collide with Player.
     // Using PET as a temporary "pickup layer" to avoid editing the enum.
-    Bitmask collideWithPlayer = CreateBitmask(1, (int)GameObject::COLLISION_LAYER::PLAYER);
+    Bitmask collideWithPlayer = CreateBitmask(1, (int)Collision::LAYER::PLAYER);
 
     p->Init(
         worldPos,
         AEVec2{ 10.0f, 10.0f },
         0,
         MESH_SQUARE,
-        COLLIDER_SHAPE::COL_CIRCLE,
+        Collision::SHAPE::COL_CIRCLE,
         AEVec2{ 32.0f, 32.0f },                 // tweak pickup radius/size
         collideWithPlayer,                      // can collide with Player
-        GameObject::COLLISION_LAYER::INTERACTABLE
+        Collision::LAYER::INTERACTABLE
     );
     p->goType = GO_TYPE::ITEM;
     p->InitPickup(payload);

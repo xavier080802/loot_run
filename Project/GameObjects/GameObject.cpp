@@ -6,7 +6,7 @@
 #include "../Camera.h"
 #include <iostream>
 
-GameObject* GameObject::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, COLLISION_LAYER _isInLayer) {
+GameObject* GameObject::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, Collision::LAYER _isInLayer) {
 	isEnabled = true;
 	pos = _pos;
 	scale = _scale;
@@ -81,7 +81,7 @@ Bitmask GameObject::GetCollisionLayers() const
 	return collisionLayers;
 }
 
-GameObject::COLLISION_LAYER GameObject::GetColliderLayer() const
+Collision::LAYER GameObject::GetColliderLayer() const
 {
 	return colliderLayer;
 }
@@ -116,7 +116,7 @@ void GameObject::SetCollisionLayers(Bitmask layers)
 	collisionLayers = layers;
 }
 
-void GameObject::SetColliderLayer(COLLISION_LAYER layer)
+void GameObject::SetColliderLayer(Collision::LAYER layer)
 {
 	colliderLayer = layer;
 }
@@ -174,6 +174,11 @@ void GameObject::OnCollide(CollisionData& other)
 {
 	//Silence "unused param" warning.
 	(void)other;
+}
+
+void GameObject::OnCollideTile(std::pair<TileMap::Tile const&, AEVec2> tile)
+{
+	(void)tile; //Silence unused param warning
 }
 
 void GameObject::CompleteClone(GameObject* const clone)

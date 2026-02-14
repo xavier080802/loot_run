@@ -102,6 +102,20 @@ TileMap::Tile const* TileMap::QueryTile(unsigned rowInd, unsigned colInd) const
 	return &tiles[rowInd][colInd];
 }
 
+std::pair<TileMap::Tile const*, AEVec2> TileMap::QueryTileAndInd(AEVec2 pos) const
+{
+	AEVec2 inds{ GetTileIndFromPos(pos) };
+	//If Index out of bounds, tile should be nullptr
+	return std::make_pair((inds.x < 0 || inds.x >= cols || inds.y < 0 || inds.y >= rows) ? nullptr : &tiles[inds.y][inds.x], inds);
+}
+
+TileMap::Tile const* TileMap::ChangeTile(unsigned row, unsigned col, TILE_TYPE newType)
+{
+	if (col < 0 || col >= cols || row < 0 || row >= rows) return nullptr;
+	tiles[row][col] = tileMap[newType];
+	return &tiles[row][col];
+}
+
 void TileMap::LoadStatics()
 {
 	//Load textures (once each per tile type)
@@ -112,10 +126,10 @@ void TileMap::LoadStatics()
 
 	//By default, all tiles are obstacles.
 	for (int i{}; i < TILE_NUM; ++i) {
-		tileMap.insert(TilePair(static_cast<TILE_TYPE>(i), { static_cast<TILE_TYPE>(i), GameObject::OBSTACLE }));
+		tileMap.insert(TilePair(static_cast<TILE_TYPE>(i), { static_cast<TILE_TYPE>(i), Collision::OBSTACLE }));
 	}
 	//Exceptions
-	tileMap[TILE_NONE].layer = GameObject::NONE;
+	tileMap[TILE_NONE].layer = Collision::NONE;
 
 	//======================Texture map======================
 

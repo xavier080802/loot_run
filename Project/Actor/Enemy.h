@@ -8,8 +8,8 @@ class Enemy : public Actor
 {
 public:
     GameObject* Init(AEVec2 _pos, AEVec2 _scale, int _z,
-        MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize,
-        Bitmask _collideWithLayers, COLLISION_LAYER _isInLayers) override;
+        MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize,
+        Bitmask _collideWithLayers, Collision::LAYER _isInLayers) override;
 
     // Binds this enemy instance to its data definition and initializes stats
     void InitEnemyRuntime(const EnemyDef* def);

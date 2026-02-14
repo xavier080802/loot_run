@@ -14,7 +14,7 @@ struct AttackHitboxConfig
 	bool pendingDisable = false;
 
     // Hitbox shape + size
-    COLLIDER_SHAPE colliderShape = COLLIDER_SHAPE::COL_CIRCLE;
+    Collision::SHAPE colliderShape = Collision::SHAPE::COL_CIRCLE;
     AEVec2 colliderSize = { 30.0f, 30.0f };
 
     // Visual size

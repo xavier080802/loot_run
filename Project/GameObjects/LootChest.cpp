@@ -20,7 +20,7 @@ namespace {
 //Initialize static
 std::forward_list<LootChestOpenedSub*> LootChest::openedChestSubs_static{};
 
-GameObject* LootChest::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, COLLISION_LAYER _isInLayer)
+GameObject* LootChest::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, Collision::LAYER _isInLayer)
 {
 	GameObject::Init(_pos, _scale, _z, _meshShape, _colShape, _colSize, _collideWithLayers, _isInLayer);
 	goType = GO_TYPE::LOOT_CHEST;

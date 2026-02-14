@@ -6,18 +6,12 @@
 #include "../Rendering/AnimationData.h"
 #include "GameObjectManager.h"	
 #include "../Map.h"
+#include "../CollisionConstants.h"
+#include "../TileMap.h"
 
 class GameObject {
 	friend class GameObjectManager; //Allow manager access to private members.
 public:
-	enum COLLISION_LAYER {
-		NONE,
-		PLAYER,
-		ENEMIES,
-		OBSTACLE,
-		INTERACTABLE,
-		PET,
-	};
 	//Making this a struct so we can extend easier
 	struct CollisionData {
 		GameObject& other;
@@ -26,12 +20,15 @@ public:
 	//Set values and register to the manager. Call only once per GO
 	//Need to manually call init.
 	//Ps. set goType for derived game objects
-	virtual GameObject* Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, COLLISION_LAYER _isInLayer);
+	virtual GameObject* Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, Collision::LAYER _isInLayer);
 	virtual void Update(double dt);
 	virtual void Draw();
 	virtual void Free();
 	virtual void OnCollide(CollisionData& other);
-	//virtual void OnCollideTile(TileMap::Tile* tile);
+	//Called when colliding with a tile that is inside the GO's collision layers
+	//First: Tile ref
+	//Second: Indices (col, row) of tile.
+	virtual void OnCollideTile(std::pair<TileMap::Tile const&, AEVec2> tile);
 
 	AnimationData& GetRenderData();
 	const AEVec2& GetPos() const;
@@ -40,7 +37,7 @@ public:
 	int GetZ() const;
 	bool CanCollide() const;
 	Bitmask GetCollisionLayers()const;
-	COLLISION_LAYER GetColliderLayer()const;
+	Collision::LAYER GetColliderLayer()const;
 	virtual GO_TYPE GetGOType() const;
 
 	void SetEnabled(bool enable);
@@ -50,7 +47,7 @@ public:
 	//Set what layers this GO can collide with.
 	void SetCollisionLayers(Bitmask layers);
 	//Set what layer this GO is considered in.
-	void SetColliderLayer(COLLISION_LAYER layer);
+	void SetColliderLayer(Collision::LAYER layer);
 
 	//Apply a force (directional) on this go.
 	void ApplyForce(AEVec2 force);
@@ -73,12 +70,12 @@ protected:
 	float rotationDeg{};
 	bool isEnabled{ false };
 	bool collisionEnabled{true};
-	COLLIDER_SHAPE colShape{ COLLIDER_SHAPE::COL_CIRCLE };
+	Collision::SHAPE colShape{ Collision::SHAPE::COL_CIRCLE };
 	AEVec2 colSize{};
 	//Layers to collide with
 	Bitmask collisionLayers{};
 	//Layer that this GO is in
-	COLLISION_LAYER colliderLayer{};
+	Collision::LAYER colliderLayer{};
 	AnimationData* renderingData{};
 
 	AEVec2 velocity{}, prevPos{}, initialVel{};
