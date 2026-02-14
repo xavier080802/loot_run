@@ -14,6 +14,14 @@ void RenderingManager::Init()
 		case MESH_SHAPE::MESH_CIRCLE:
 			meshList[i] = CreateCircleMesh(0.5f, CreateColor(255, 255, 255, 255), 60);
 			break;
+		case MESH_SHAPE::MESH_BORDER:
+			//4-point mesh for a border
+			AEGfxMeshStart();
+			AEGfxVertexAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 0); AEGfxVertexAdd(0.5f, -0.5f, 0xFFFFFFFF, 0, 0);
+			AEGfxVertexAdd(0.5f, 0.5f, 0xFFFFFFFF, 0, 0); AEGfxVertexAdd(-0.5f, 0.5f, 0xFFFFFFFF, 0, 0);
+			AEGfxVertexAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 0); 
+			meshList[i] = AEGfxMeshEnd();
+			break;
 		case MESH_SHAPE::MESH_SQUARE_ANIM: //Need spritesheet row/cols, left to AnimationData
 			break;
 		default:

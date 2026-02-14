@@ -57,7 +57,7 @@ public:
 	//TEMP
 	void Temp_DoVelocityMovement(double dt);
 
-	std::vector<unsigned> cellIndexes{};
+	std::vector<unsigned> cellIndexes{}; //temp
 
 protected:
 	/// For GameObject derivatives (derived from GameObject) to clone properly.

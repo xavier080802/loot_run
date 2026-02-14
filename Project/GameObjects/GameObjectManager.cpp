@@ -57,7 +57,8 @@ void GameObjectManager::UpdateObjects(double dt, TileMap const* tilemap)
 			if (!tile.first || !BitmaskContainsFlag(go->collisionLayers, tile.first->layer)) {
 				continue; //Hotspot no collision detected.
 			}
-			Helper_HandleGOTileCollision(tile.second, *go, *tilemap);
+			//Position snapback to not overlap tile.
+			if (tile.first->isSolid) Helper_HandleGOTileCollision(tile.second, *go, *tilemap);
 
 			go->OnCollideTile(std::make_pair(*tile.first, tile.second));
 		}
@@ -172,6 +173,7 @@ GameObject* GameObjectManager::FetchGO(GO_TYPE type)
 	}
 }
 
+//Prevent clipping with solid tile
 void GameObjectManager::Helper_HandleGOTileCollision(AEVec2 tileInd, GameObject& go, TileMap const& tilemap)
 {
 	//Collided with tile. Prevent clipping.

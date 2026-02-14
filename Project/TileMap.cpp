@@ -68,6 +68,23 @@ void TileMap::Render() const
 	}
 }
 
+void TileMap::Render(AEVec2 offsetPos,float rotOffset, AEVec2 scale, bool isHud) const
+{
+	for (unsigned int r = 0; r < rows; r++) {
+		for (unsigned int c = 0; c < cols; c++) {
+			if (tiles[r][c].type == TILE_NONE) continue;
+
+			f32 rot = rotOffset;
+			AEVec2 pos{ GetTilePosition(r,c) * scale }; //Change pos based on new tile size
+			AEVec2 tileScale = tileSize;
+			if (!isHud) GetObjViewFromCamera(&pos, &rot, &tileScale);
+			DrawTintedMesh(GetTransformMtx(pos + offsetPos, rot, tileScale * scale),
+				pMesh, textureMap.at(tiles[r][c].type),
+				{ 255,255,255,255 }, 255);
+		}
+	}
+}
+
 AEVec2 TileMap::GetTilePosition(unsigned rowInd, unsigned colInd) const
 {
 	//Normally, Bottom left of map is at origin.
@@ -130,9 +147,11 @@ void TileMap::LoadStatics()
 	}
 	//Exceptions
 	tileMap[TILE_NONE].layer = Collision::NONE;
+	tileMap[TILE_NONE].isSolid = false;
 
 	//======================Texture map======================
 
-	textureMap.insert(TileTex(TILE_NONE, rm->LoadTexture("Assets/tiny.png")));
+	textureMap.insert(TileTex(TILE_NONE, nullptr));
 	textureMap.insert(TileTex(TILE_WALL, rm->LoadTexture("Assets/finn.png")));
+	textureMap.insert(TileTex(TILE_DOOR, rm->LoadTexture("Assets/tiny.png")));
 }

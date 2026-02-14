@@ -3,14 +3,19 @@
 
 enum class GO_TYPE {
 	NONE,
-	PLAYER,
-	ENEMY,
 	PROJECTILE,
 	ATTACK_HITBOX,
-	LOOT_CHEST,
-	ITEM, //Temp? for LootChest
+	ITEM,
 
-	NUM_GO_TYPES //Last
+	//NOTE: GOs below this comment are visible to minimap.
+	PLAYER,
+	LOOT_CHEST,
+	ENEMY,
+
+	NUM_GO_TYPES //Not a type. Last
 };
+
+// GoType >= this: Visible on minimap.
+const GO_TYPE GO_TYPE_MINIMAP_RENDERABLE = GO_TYPE::PLAYER;
 #endif // !_GO_LIST_H
 

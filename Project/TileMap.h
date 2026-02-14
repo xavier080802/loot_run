@@ -12,6 +12,7 @@ public:
 	enum TILE_TYPE {
 		TILE_NONE = 0,
 		TILE_WALL,
+		TILE_DOOR,
 
 		TILE_NUM, //Last
 	};
@@ -20,6 +21,11 @@ public:
 	struct Tile {
 		TILE_TYPE type;
 		Collision::LAYER layer;
+		bool isSolid; //Whether can pass through (while still triggering OnCollideTile)
+
+		Tile(TILE_TYPE _type = TILE_NONE, Collision::LAYER _layer = Collision::OBSTACLE, bool _isSolid = true)
+			: type{ _type }, layer{ _layer }, isSolid{_isSolid}
+		{}
 	};
 
 	//Note: If a value in csv is invalid, defaults to TILE_NONE.
@@ -27,6 +33,7 @@ public:
 	TileMap(std::string filename, AEVec2 offset = {0,0}, float tileX = 25.f, float tileY = 25.f);
 
 	void Render() const;
+	void Render(AEVec2 offsetPos, float rotOffset, AEVec2 scale, bool isHud) const;
 	//NOTE: y is row, x is col. Gets the center of the tile at the indices
 	AEVec2 GetTilePosition(unsigned rowInd, unsigned colInd) const;
 	//Calculates where the pos will be in the tilemap (in index). Return values are rounded to whole numbers
@@ -41,9 +48,14 @@ public:
 	std::pair<Tile const*, AEVec2> QueryTileAndInd(AEVec2 pos) const;
 
 	AEVec2 GetTileSize() const { return tileSize; }
+	//Get Cols(first) and Rows(second) of the map
+	std::pair<unsigned, unsigned> GetMapSize() const { return std::make_pair(cols, rows); };
+	AEVec2 GetFullMapSize() const { return { tileSize.x * cols, tileSize.y * rows }; }
 
 	//Change tile type. Returns the tile
 	Tile const* ChangeTile(unsigned row, unsigned col, TILE_TYPE newType);
+
+	std::vector<std::vector<Tile>> const& GetTileData() const { return tiles; }
 
 private:
 	static void LoadStatics();

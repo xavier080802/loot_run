@@ -51,12 +51,15 @@ public:
 	//Ensure large enough to cover whole playing area, otherwise the object wont have collision
 	void InitCollisionGrid(unsigned width, unsigned height);
 
+	//TODO: redo wtih copy swap idiom, and proper copy ctor
 	GameObject* Clone(GameObject* const original);
 
 	//Fetches an inactive gameobject of the given type, and enables it.
 	//If no existing go is found, creates a new one. Returns nullptr if type is invalid/unimplemented
 	//Always init the go returned.
 	GameObject* FetchGO(GO_TYPE type);
+
+	std::vector<GameObject*> const& GetGameObjects() const { return goList; }
 
 private:
 	//z sorted in ascending order
