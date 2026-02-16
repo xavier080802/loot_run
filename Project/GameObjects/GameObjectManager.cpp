@@ -130,6 +130,13 @@ void GameObjectManager::InitCollisionGrid(unsigned width, unsigned height)
 	grid.Init(width, height, 5);
 }
 
+void GameObjectManager::DisableAllGOs()
+{
+	for (GameObject* go : goList) {
+		go->SetEnabled(false);
+	}
+}
+
 GameObject* GameObjectManager::Clone(GameObject* const original)
 {
 	GameObject* newGo = new GameObject(*original);

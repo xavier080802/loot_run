@@ -40,6 +40,8 @@ namespace GOCollision {
 //Manages Update, Drawing, and collision.
 //Currently needs the State to manually call Update/Draw to control the order.
 //NOTE: 13/1: Assuming only 1 state has game objects, otherwise need to implement something to prevent updating objs in other scenes.
+//NOTE: 16/2: In GameStateManager, all GOs are disabled before the next state's Init.
+//GOs should be Init in InitState which enabled them, hopefully preventing some weird behavior if there are multiple game states that need GOs.
 class GameObjectManager : public Singleton<GameObjectManager>{
 	friend Singleton<GameObjectManager>;
 public:
@@ -50,6 +52,8 @@ public:
 	void DrawObjects();
 	//Ensure large enough to cover whole playing area, otherwise the object wont have collision
 	void InitCollisionGrid(unsigned width, unsigned height);
+	//Disable all gameobjects
+	void DisableAllGOs();
 
 	//TODO: redo wtih copy swap idiom, and proper copy ctor
 	GameObject* Clone(GameObject* const original);
