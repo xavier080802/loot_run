@@ -24,7 +24,7 @@ void Enemy::Update(double dt)
 {
     // Handles knockback or impulse-based movement
     Temp_DoVelocityMovement(dt);
-    GameObject::Update(dt);
+    Actor::Update(dt);
     // TODO: AI later (chase player, etc.)
 }
 
