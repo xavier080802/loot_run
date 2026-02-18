@@ -1,4 +1,5 @@
 #include "Actor.h"
+#include "../Elements/Element.h"
 #include <algorithm>
 
 GameObject* Actor::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, Collision::LAYER _isInLayer)
@@ -51,8 +52,11 @@ void Actor::ApplyStatusEffect(StatEffects::StatusEffect* eff, Actor* caster)
         statusEffectsDict[eff->GetName()]->OnReapply();
         delete eff;
     }
-    else {
-        //New, insert
+    else { //New, insert
+        //Check for reaction
+        if (Elements::CheckReaction(this, statusEffectsDict, eff)) {
+            return; //Reaction handled.
+        }
         statusEffectsDict.insert(std::pair<std::string, StatEffects::StatusEffect*>(eff->GetName(), eff));
         eff->OnApply(this, caster);
     }

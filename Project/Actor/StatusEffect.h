@@ -24,10 +24,14 @@ namespace StatEffects {
 			: value(_val), mathType(_mathType), stat(_statToAffect){}
 	};
 
+	//Note: Don't change order, >= DEBUFF is considered debuff (Elements)
 	enum EFF_TYPE {
 		NONE,
 		BUFF,
-		DEBUFF
+		DEBUFF,
+		BLOOD, //Main blood effect
+		SUN, //Main sun effect
+		MOON, //Main moon effect
 	};
 
 	//Status effect can have several stat buffs/debuffs

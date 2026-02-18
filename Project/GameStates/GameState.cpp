@@ -347,7 +347,6 @@ void GameState::Update(double dt)
         //TODO: change a tile to type DOOR
     }
     
-
     // Systems now read from gPlayer via GetPlayerPos()
     minimap->Update(dt, *map, *gPlayer);
     UpdateWorldMap((float)dt);

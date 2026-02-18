@@ -67,6 +67,12 @@
     <Filter Include="Source Files\File">
       <UniqueIdentifier>{4b9b177a-d5f1-4aaf-be0f-0d5a27ca985b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Elements">
+      <UniqueIdentifier>{e48e0cf0-51c6-4c32-8d00-ff7deb322e87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Elements">
+      <UniqueIdentifier>{af61897d-929b-40f4-9890-7ac5ac2235ea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -200,6 +206,18 @@
     </ClCompile>
     <ClCompile Include="Minimap.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Elements\Element.cpp">
+      <Filter>Source Files\Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="Elements\BloodElement.cpp">
+      <Filter>Source Files\Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="Elements\SunElement.cpp">
+      <Filter>Source Files\Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="Elements\MoonElement.cpp">
+      <Filter>Source Files\Elements</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -370,6 +388,18 @@
     </ClInclude>
     <ClInclude Include="Minimap.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Elements\Element.h">
+      <Filter>Header Files\Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="Elements\BloodElement.h">
+      <Filter>Header Files\Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="Elements\SunElement.h">
+      <Filter>Header Files\Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="Elements\MoonElement.h">
+      <Filter>Header Files\Elements</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
