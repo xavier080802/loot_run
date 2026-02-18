@@ -24,15 +24,21 @@ namespace StatEffects {
 			: value(_val), mathType(_mathType), stat(_statToAffect){}
 	};
 
+	enum EFF_TYPE {
+		NONE,
+		BUFF,
+		DEBUFF
+	};
+
 	//Status effect can have several stat buffs/debuffs
 	class StatusEffect
 	{
 	public:
 		//Set duration to -1 for no-timeout
 		//Caster can be nullptr on construction. Will be set again when applied.
-		StatusEffect(Actor* _caster, float _duration, unsigned _maxStacks, std::string _name)
+		StatusEffect(Actor* _caster, float _duration, unsigned _maxStacks, std::string _name, unsigned startStacks=1, EFF_TYPE _effType = EFF_TYPE::NONE)
 			: caster(_caster), duration(_duration), maxStacks(_maxStacks), durationTimer(0.f), name(_name),
-			isPermanent(_duration == -1){};
+			isPermanent(_duration == -1), effType(_effType), stacks(startStacks){};
 
 		//Add mod to the mods list of this SE. Can be chained.
 		virtual StatusEffect* AddMod(Mod newMod);
@@ -51,9 +57,10 @@ namespace StatEffects {
 		virtual bool IsEnded() { return hasEnded; };
 
 		std::string const& GetName() const { return name; };
+		EFF_TYPE GetType() const { return effType; }
 
 	protected:
-		Actor* caster{};
+		Actor* caster{}, * owner{};
 		//ID, should be unique.
 		std::string name{};
 		//Doesnt time out, but can be removed externally.
@@ -61,13 +68,20 @@ namespace StatEffects {
 		bool hasEnded{ false };
 		float duration{};
 		float durationTimer{}; //to count down
-
+		EFF_TYPE effType{};
 		std::vector<Mod> mods{};
 
 		unsigned stacks{}, maxStacks{};
 
-		//Called when status effect duration ends
-		virtual void OnEnd();
+		//Reason for SE to end
+		enum END_REASON {
+			TIMED_OUT,
+			STACKS_ZERO,
+			REMOVED,
+		};
+
+		//Called when status effect ends (via timeout or removal)
+		virtual void OnEnd(END_REASON reason = TIMED_OUT);
 	};
 }
 

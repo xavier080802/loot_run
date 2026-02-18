@@ -49,6 +49,7 @@ void Actor::ApplyStatusEffect(StatEffects::StatusEffect* eff, Actor* caster)
     //Check if existing
     if (statusEffectsDict.find(eff->GetName()) != statusEffectsDict.end()) {
         statusEffectsDict[eff->GetName()]->OnReapply();
+        delete eff;
     }
     else {
         //New, insert
@@ -140,4 +141,16 @@ void Actor::SubToBeforeCast(ActorBeforeCastSub* sub, bool remove)
         }
     }
     beforeCastSubs.push_back(sub);
+}
+
+void Actor::SubToOnHit(ActorOnHitSub* sub, bool remove)
+{
+    //Check dupe
+    for (auto it = onHitSubs.begin(); it != onHitSubs.end(); ++it) {
+        if (*it == sub) {
+            if (remove) onHitSubs.erase(it);
+            return;
+        }
+    }
+    onHitSubs.push_back(sub);
 }

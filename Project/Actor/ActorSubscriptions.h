@@ -53,6 +53,18 @@ struct ActorBeforeCastSub : Subscriber<ActorBeforeCastContent> {
 	void SubscriptionAlert(ActorBeforeCastContent content) override = 0;
 };
 
-//===============================================================================
+//===============================================================================\
 
+struct OnHitContent {
+	Actor* attacker, *actor;
+	//Add hit details here
+	const EquipmentData* weapon;
+	float dmgDealt;
+};
+//Alert when actor is hit by something (specifically on-hit effect)
+struct ActorOnHitSub : Subscriber<OnHitContent> {
+	void SubscriptionAlert(OnHitContent content) override = 0;
+};
+
+//===============================================================================
 #endif // !_ACTOR_SUBSCRIPTIONS_H_

@@ -50,6 +50,8 @@ public:
 	void SubToOnDeath(ActorDeadSub* sub, bool remove = false);
 	//Subscribe to be alerted when actor is about to cast something
 	void SubToBeforeCast(ActorBeforeCastSub* sub, bool remove = false);
+	//Subscribe to be alerted when actor is hit (on-hit)
+	void SubToOnHit(ActorOnHitSub* sub, bool remove = false);
 
 protected:
 	// Override point for Player/Enemy-specific death behavior
@@ -62,4 +64,5 @@ protected:
 	std::vector<ActorGotKillSub*> onKilledAnotherSubs;
 	std::vector<ActorDeadSub*> onDeathSubs;
 	std::vector<ActorBeforeCastSub*> beforeCastSubs;
+	std::vector<ActorOnHitSub*> onHitSubs;
 };
