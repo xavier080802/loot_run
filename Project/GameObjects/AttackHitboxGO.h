@@ -31,6 +31,10 @@ struct AttackHitboxConfig
 
     // Callback invoked when hitbox collides with something it can collide with
     void (*onHit)(GameObject::CollisionData& target, Actor* caster) = nullptr;
+
+    // Time between re-hitting. If -1, hitbox can only hit each target once.
+    // Cooldown is tied to the hitbox, not per enemy.
+    float hitCooldown = -1;
 };
 
 class AttackHitboxGO : public GameObject
@@ -44,7 +48,8 @@ public:
 
 private:
     Actor* owner = nullptr;
-    float lifespan = 0.0f;
+    float lifespan = 0.0f, hitTimer=0.0f;
+    float hitCooldown{ -1 };
     int ticks{ 0 };//Number of frame ticks this has went through.
     AEVec2 offset = { 0.0f, 0.0f };
     bool followOwner = true;

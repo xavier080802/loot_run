@@ -9,6 +9,8 @@ AttackHitboxGO* AttackHitboxGO::Start(const AttackHitboxConfig& cfg)
     followOwner = cfg.followOwner;
     disableOnHit = cfg.disableOnHit;
     OnHit = cfg.onHit;
+    hitCooldown = cfg.hitCooldown;
+    hitTimer = 0.f;
 
 	hitOnce.clear();
 	collisionEnabled = true;
@@ -50,6 +52,16 @@ void AttackHitboxGO::Update(double dt)
         p.y += offset.y;
         pos = p;
     }
+
+    //If hit timer reaches cooldown (unless -1), can query collision again.
+    if (hitCooldown != -1.f) {
+        hitTimer += (float)dt;
+        if (hitTimer >= hitCooldown) {
+            hitOnce.clear();
+            hitTimer = 0.f;
+        }
+    }
+
     //Check ticks in event that lifespan < dt (otherwise it wont have an opportunity to collide)
     if (lifespan <= 0.0f && ticks > 0)
     {
