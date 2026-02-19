@@ -17,14 +17,19 @@ void GameObjectManager::RegisterGO(GameObject* go)
 		goRegistrationQ.push(go);
 		return;
 	}
-
-	//Place go based on z. Ascending order.
+	//Check dupe and remove previous entry
+	//Iterate through entire array to guarantee that dupes are removed.
 	for (std::vector<GameObject*>::iterator it = goList.begin(); it != goList.end(); it++) {
 		GameObject* curr = *it;
 		if (go == curr) {
-			//Dupe
-			return;
+			//Allow it to re-add itself to the list.
+			goList.erase(it);
+			break;
 		}
+	}
+	//Place go based on z. Ascending order.
+	for (std::vector<GameObject*>::iterator it = goList.begin(); it != goList.end(); it++) {
+		GameObject* curr = *it;
 		if (go->z < curr->z) {
 			goList.insert(it, go); //Inserts go before curr.
 			return;
