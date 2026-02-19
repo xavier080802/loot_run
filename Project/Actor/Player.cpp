@@ -18,7 +18,7 @@ namespace {
 		Actor& target = static_cast<Actor&>(data.other);
 		//target.TakeDamage(caster->GetStats().attack);
 		
-		Elements::ApplyElement(Elements::ELEMENT_TYPE::BLOOD, caster, &target); //TEMP
+		Elements::ApplyElement(Elements::ELEMENT_TYPE::SUN, caster, &target); //TEMP
 	}
 
 	void OnMeleeHit(GameObject::CollisionData& data, Actor* caster)
@@ -344,6 +344,10 @@ void Player::DoAttackWithWeapon(const EquipmentData* weapon)
 		cfg.onHit = &OnMeleeHit;
 
 		hb->Start(cfg);
+		//Remove Interactable from collision layers
+		Bitmask bm{ GetCollisionLayers() };
+		ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
+		hb->SetCollisionLayers(bm);
 		break;
 	}
 

@@ -23,5 +23,6 @@ void BloodElement::TriggerDoT()
 
 void BloodElement::OnReapply(int numStacks)
 {
+	StatusEffect::OnReapply(numStacks);
 	TriggerDoT();
 }
