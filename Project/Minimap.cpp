@@ -65,7 +65,7 @@ void Minimap::Render(TileMap const& tilemap, Player const& player) const
     //Render gameobjects
     std::vector<GameObject*> const& gos{ GameObjectManager::GetInstance()->GetGameObjects() };
     for (GameObject const* go : gos) {
-        if (go->GetGOType() < GO_TYPE_MINIMAP_RENDERABLE) continue;
+        if (go->GetGOType() < GO_TYPE_MINIMAP_RENDERABLE || !go->IsEnabled()) continue;
         DrawTintedMesh(GetTransformMtx(AEVec2{ mmX, mmY } + go->GetPos() * AEVec2{ scaleX, scaleY }, 0, {gameobjectRadius*2, gameobjectRadius*2}),
             circleMesh, nullptr, gameobjectTints.find(go->GetGOType()) != gameobjectTints.end() ? gameobjectTints.at(go->GetGOType()) : Color{255,255,255,255}, 255);
     }
