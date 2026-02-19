@@ -287,7 +287,7 @@ void GameState::InitState()
                 meshShape,
                 colShape,
                 { r * 2.0f, r * 2.0f },
-                CreateBitmask(1, Collision::PLAYER),
+                CreateBitmask(2, Collision::PLAYER, Collision::OBSTACLE),
                 Collision::ENEMIES
             )->GetRenderData().tint = def->render.tint;
 

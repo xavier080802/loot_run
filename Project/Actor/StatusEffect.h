@@ -34,6 +34,13 @@ namespace StatEffects {
 		MOON, //Main moon effect
 	};
 
+	//Reason for SE to end
+	enum END_REASON {
+		TIMED_OUT,
+		STACKS_ZERO,
+		REMOVED,
+	};
+
 	//Status effect can have several stat buffs/debuffs
 	class StatusEffect
 	{
@@ -43,6 +50,8 @@ namespace StatEffects {
 		StatusEffect(Actor* _caster, float _duration, unsigned _maxStacks, std::string _name, unsigned startStacks=1, EFF_TYPE _effType = EFF_TYPE::NONE)
 			: caster(_caster), duration(_duration), maxStacks(_maxStacks), durationTimer(0.f), name(_name),
 			isPermanent(_duration == -1), effType(_effType), stacks(startStacks){};
+
+		virtual ~StatusEffect() {}
 
 		//Add mod to the mods list of this SE. Can be chained.
 		virtual StatusEffect* AddMod(Mod newMod);
@@ -54,6 +63,9 @@ namespace StatEffects {
 		virtual void Tick(double dt);
 		//Call when a new stack is to be applied.
 		virtual void OnReapply(int numStacks = 1);
+		//Call when status effect ends (via timeout or removal). Func cleans up SE
+		virtual void OnEnd(END_REASON reason = TIMED_OUT);
+
 		//Get the value of all mods of a stat. Multiplicative is based on the baseVal.
 		//Result will be an additive value
 		virtual float GetFinalModVal(STAT_TYPE stat, float baseVal) const;
@@ -69,6 +81,7 @@ namespace StatEffects {
 		std::string name{};
 		//Doesnt time out, but can be removed externally.
 		bool isPermanent{ false };
+		//Set in OnEnd
 		bool hasEnded{ false };
 		float duration{};
 		float durationTimer{}; //to count down
@@ -76,16 +89,6 @@ namespace StatEffects {
 		std::vector<Mod> mods{};
 
 		unsigned stacks{}, maxStacks{};
-
-		//Reason for SE to end
-		enum END_REASON {
-			TIMED_OUT,
-			STACKS_ZERO,
-			REMOVED,
-		};
-
-		//Called when status effect ends (via timeout or removal)
-		virtual void OnEnd(END_REASON reason = TIMED_OUT);
 	};
 }
 

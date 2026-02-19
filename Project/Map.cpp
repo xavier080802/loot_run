@@ -78,8 +78,8 @@ void InitTutorial(MapData& map)
 
     // --- Entity Placement ---
     map.startPos = {}; //r1
-    map.enemy1Pos = r3; //r3
+    map.enemy1Pos = {75,-35}; //r3
     map.chestPos = r4;
-    map.enemy2Pos = r5;
+    map.enemy2Pos = {110,-35}; //r5
     map.doorPos = r6;
 }

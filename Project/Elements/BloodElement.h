@@ -9,14 +9,15 @@
 class BloodElement : public StatEffects::StatusEffect
 {
 public:
-	BloodElement(std::string _name) : StatEffects::StatusEffect{ nullptr, Elements::elementDur, 1, _name, 1, StatEffects::BLOOD }{}
+	BloodElement(std::string _name, StatEffects::EFF_TYPE _type = StatEffects::BLOOD) : StatEffects::StatusEffect{ nullptr, Elements::elementDur, 1, _name, 1, _type }{}
+	virtual ~BloodElement() {}
 	void Tick(double dt) override;
 	void OnReapply(int numStacks = 1) override;
 
 private:
 	float tickCd{};
 
-	void TriggerDoT();
+	virtual void TriggerDoT();
 };
 
 #endif // !_BLOOD_ELEMENT_H_

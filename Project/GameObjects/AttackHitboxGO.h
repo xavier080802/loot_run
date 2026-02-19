@@ -45,6 +45,7 @@ public:
 private:
     Actor* owner = nullptr;
     float lifespan = 0.0f;
+    int ticks{ 0 };//Number of frame ticks this has went through.
     AEVec2 offset = { 0.0f, 0.0f };
     bool followOwner = true;
     bool disableOnHit = true;

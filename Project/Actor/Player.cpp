@@ -3,6 +3,7 @@
 #include "../GameObjects/Projectile.h"
 #include "../GameObjects/AttackHitboxGO.h"
 #include "../GameDB.h"
+#include "../Elements/Element.h"
 #include <iostream>
 
 namespace {
@@ -15,7 +16,9 @@ namespace {
 		if (data.other.GetGOType() != GO_TYPE::ENEMY) return;
 
 		Actor& target = static_cast<Actor&>(data.other);
-		target.TakeDamage(caster->GetStats().attack);
+		//target.TakeDamage(caster->GetStats().attack);
+		
+		Elements::ApplyElement(Elements::ELEMENT_TYPE::BLOOD, caster, &target); //TEMP
 	}
 
 	void OnMeleeHit(GameObject::CollisionData& data, Actor* caster)
@@ -24,7 +27,8 @@ namespace {
 		if (data.other.GetGOType() != GO_TYPE::ENEMY) return;
 
 		Actor& target = static_cast<Actor&>(data.other);
-		target.TakeDamage(caster->GetStats().attack);
+		//target.TakeDamage(caster->GetStats().attack);
+		Elements::ApplyElement(Elements::ELEMENT_TYPE::SUN, caster, &target); //TEMP
 
 		//Knockback
 		AEVec2 dir = {

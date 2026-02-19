@@ -20,7 +20,8 @@ namespace Elements {
 	//Checks if eff reacts with any other element in the dictionary.
 	//If no, effectively does nothing
 	//If reacts, function will handle reaction effect entirely.
-	extern bool CheckReaction(Actor* actor, std::map<std::string, StatEffects::StatusEffect*>& dict, StatEffects::StatusEffect* eff);
+	extern bool CheckReaction(Actor* actor, Actor* caster, std::map<std::string, StatEffects::StatusEffect*>& dict,
+		StatEffects::StatusEffect* eff);
 
 	//All element Settings
 	extern float elementDur;
@@ -38,6 +39,9 @@ namespace Elements {
 	//Moon
 	extern const std::string moonName;
 	extern unsigned maxMoonStacks;
+
+	//Blood+Sun reaction
+	extern std::string bloodSunName;
 }
 
 #endif // !_ELEMENT_H_

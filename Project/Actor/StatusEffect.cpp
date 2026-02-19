@@ -19,7 +19,7 @@ void StatEffects::StatusEffect::Tick(double dt)
 	durationTimer += static_cast<float>(dt);
 
 	if (durationTimer >= duration || !stacks) {
-		OnEnd();
+		OnEnd(stacks ? END_REASON::TIMED_OUT : END_REASON::STACKS_ZERO);
 	}
 }
 

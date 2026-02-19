@@ -10,12 +10,14 @@ class SunElement : public StatEffects::StatusEffect, ActorOnHitSub, ActorDeadSub
 public:
 	SunElement(unsigned _stacks) 
 		: StatusEffect{ nullptr, Elements::elementDur, Elements::maxSunStacks, Elements::sunName, _stacks, StatEffects::SUN } {};
+	//Remove subs from owner (if OnApply is called, owner should be non-null)
+	~SunElement();
 
 	void SubscriptionAlert(OnHitContent content) override;
 	void SubscriptionAlert(ActorDeadSubContent content) override;
 
 	void OnApply(Actor* _owner, Actor* _caster) override;
-	void OnEnd(END_REASON reason = TIMED_OUT) override;
+	void OnEnd(StatEffects::END_REASON reason = StatEffects::END_REASON::TIMED_OUT) override;
 
 private:
 	//The buff that sun stacks convert to when attacker hits this actor

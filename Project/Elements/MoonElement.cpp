@@ -2,10 +2,15 @@
 #include "../Actor/Actor.h"
 #include "../Inventory/EquipmentTypes.h"
 
+MoonElement::~MoonElement()
+{
+	OnEnd(StatEffects::REMOVED);
+}
+
 void MoonElement::SubscriptionAlert(OnHitContent content)
 {
 	//Heal attacker. If hit with melee, heal more
-	content.attacker->Heal((content.weapon->isRanged ? 5.f : 7.5f) * stacks);
+	content.attacker->Heal(((!content.weapon || content.weapon->isRanged) ? 5.f : 7.5f) * stacks);
 }
 
 void MoonElement::SubscriptionAlert(ActorDeadSubContent content)
@@ -24,9 +29,12 @@ void MoonElement::OnApply(Actor* _owner, Actor* _caster)
 	AddMod({ 5, StatEffects::MATH_TYPE::MULTIPLICATIVE, STAT_TYPE::DEF });
 }
 
-void MoonElement::OnEnd(END_REASON reason)
+void MoonElement::OnEnd(StatEffects::END_REASON reason)
 {
+	if (hasEnded) return;
 	StatusEffect::OnEnd(reason);
-	owner->SubToOnHit(this, true);
-	owner->SubToOnDeath(this, true);
+	if (owner) {
+		owner->SubToOnHit(this, true);
+		owner->SubToOnDeath(this, true);
+	}
 }

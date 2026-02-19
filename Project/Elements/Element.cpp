@@ -4,6 +4,9 @@
 #include "SunElement.h"
 #include "BloodElement.h"
 #include "MoonElement.h"
+#include "BloodSunElement.h"
+
+#include <iostream>
 
 namespace Elements {
 	//All element Settings
@@ -23,6 +26,15 @@ namespace Elements {
 	const std::string moonName{ "Wax and Wane" };
 	unsigned maxMoonStacks{ 5 };
 
+	//Blood+Sun reaction
+	std::string bloodSunName{"Boiling Blood"};
+
+	//Blood+Moon reaction
+	
+
+	//Sun+Moon reaction
+
+
 	//==========================================================================================================//
 
 	//Static function to apply an element
@@ -33,12 +45,17 @@ namespace Elements {
 		{
 		case ELEMENT_TYPE::BLOOD:
 			se = new BloodElement{ Elements::bloodName }; //Note: when applied via Eclipse, use other name
+			std::cout << "APPLIED BLOOD\n";
 			break;
-		case ELEMENT_TYPE::SUN:
-			se = new SunElement((rand() % (Elements::sunHighRange - Elements::sunLowRange + 1)) + Elements::sunLowRange);
+		case ELEMENT_TYPE::SUN: {
+			unsigned s{ (rand() % (Elements::sunHighRange - Elements::sunLowRange + 1)) + Elements::sunLowRange };
+			se = new SunElement(s);
+			std::cout << "APPLIED SUN " << s << '\n';
 			break;
+		}
 		case ELEMENT_TYPE::MOON:
 			se = new MoonElement{};
+			std::cout << "APPLIED MOON\n";
 			break;
 		default:
 			return false;
@@ -47,7 +64,7 @@ namespace Elements {
 		return true;
 	}
 
-	bool CheckReaction(Actor* actor, std::map<std::string, StatEffects::StatusEffect*>& dict, StatEffects::StatusEffect* eff)
+	bool CheckReaction(Actor* actor, Actor* caster, std::map<std::string, StatEffects::StatusEffect*>& dict, StatEffects::StatusEffect* eff)
 	{
 		StatEffects::EFF_TYPE first{ eff->GetType() };
 		if (eff->GetType() <= StatEffects::EFF_TYPE::DEBUFF) return false;
@@ -61,15 +78,18 @@ namespace Elements {
 			if ((first == StatEffects::EFF_TYPE::BLOOD) && (second == StatEffects::EFF_TYPE::SUN)
 				|| (first == StatEffects::EFF_TYPE::SUN) && (second == StatEffects::EFF_TYPE::BLOOD)) {
 				//Blood + Sun: Add Boiling Blood effect.
-
+				actor->ApplyStatusEffect(new BloodSunElement(Elements::bloodSunName), caster);
+				std::cout << "REACTION BLOOD SUN\n";
 			}
 			else if ((first == StatEffects::EFF_TYPE::BLOOD) && (second == StatEffects::EFF_TYPE::MOON)
 				|| (first == StatEffects::EFF_TYPE::MOON) && (second == StatEffects::EFF_TYPE::BLOOD)) {
 				//Blood + Moon: Place moon object.
+				std::cout << "REACTION BLOOD MOON\n";
 			}
 			else if ((first == StatEffects::EFF_TYPE::MOON) && (second == StatEffects::EFF_TYPE::SUN)
 				|| (first == StatEffects::EFF_TYPE::SUN) && (second == StatEffects::EFF_TYPE::MOON)) {
 				//Sun + Moon: Place Eclipse object.
+				std::cout << "REACTION SUN MOON\n";
 
 			}
 			else return false; //No match.

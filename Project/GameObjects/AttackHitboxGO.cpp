@@ -4,6 +4,7 @@ AttackHitboxGO* AttackHitboxGO::Start(const AttackHitboxConfig& cfg)
 {
     owner = cfg.owner;
     lifespan = cfg.lifetime;
+    ticks = 0;
     offset = cfg.offset;
     followOwner = cfg.followOwner;
     disableOnHit = cfg.disableOnHit;
@@ -35,7 +36,6 @@ AttackHitboxGO* AttackHitboxGO::Start(const AttackHitboxConfig& cfg)
 
 	GetRenderData().tint = CreateColor(160, 160, 160, 180);
     goType = GO_TYPE::ATTACK_HITBOX;
-
     return this;
 }
 
@@ -50,11 +50,12 @@ void AttackHitboxGO::Update(double dt)
         p.y += offset.y;
         pos = p;
     }
-
-    if (lifespan <= 0.0f)
+    //Check ticks in event that lifespan < dt (otherwise it wont have an opportunity to collide)
+    if (lifespan <= 0.0f && ticks > 0)
     {
         isEnabled = false;
     }
+    ++ticks;
 }
 
 void AttackHitboxGO::OnCollide(CollisionData& other)
