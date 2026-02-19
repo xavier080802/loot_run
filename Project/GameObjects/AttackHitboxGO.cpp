@@ -36,7 +36,7 @@ AttackHitboxGO* AttackHitboxGO::Start(const AttackHitboxConfig& cfg)
         owner->GetColliderLayer()
     );
 
-	GetRenderData().tint = CreateColor(160, 160, 160, 180);
+	GetRenderData().tint = cfg.tint;
     goType = GO_TYPE::ATTACK_HITBOX;
     return this;
 }
