@@ -111,6 +111,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="Drops\DropSystem.cpp" />
     <ClCompile Include="Drops\PickupGO.cpp" />
     <ClCompile Include="Elements\BloodElement.cpp" />
+    <ClCompile Include="Elements\BloodMoonElement.cpp" />
     <ClCompile Include="Elements\BloodSunElement.cpp" />
     <ClCompile Include="Elements\Element.cpp" />
     <ClCompile Include="Elements\MoonElement.cpp" />
@@ -170,6 +171,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="Drops\PickupGO.h" />
     <ClInclude Include="Drops\PickupPayload.h" />
     <ClInclude Include="Elements\BloodElement.h" />
+    <ClInclude Include="Elements\BloodMoonElement.h" />
     <ClInclude Include="Elements\BloodSunElement.h" />
     <ClInclude Include="Elements\Element.h" />
     <ClInclude Include="Elements\MoonElement.h" />

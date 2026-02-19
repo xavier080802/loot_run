@@ -28,7 +28,7 @@ namespace {
 
 		Actor& target = static_cast<Actor&>(data.other);
 		//target.TakeDamage(caster->GetStats().attack);
-		Elements::ApplyElement(Elements::ELEMENT_TYPE::SUN, caster, &target); //TEMP
+		Elements::ApplyElement(Elements::ELEMENT_TYPE::MOON, caster, &target); //TEMP
 
 		//Knockback
 		AEVec2 dir = {
@@ -329,6 +329,7 @@ void Player::DoAttackWithWeapon(const EquipmentData* weapon)
 		AttackHitboxConfig cfg{};
 		cfg.owner = this;
 		cfg.lifetime = 0.30f;
+		cfg.zIndex = GetZ();
 
 		// Tentative version: circle hitbox that follows player for demo ig
 		cfg.colliderShape = Collision::COL_CIRCLE;

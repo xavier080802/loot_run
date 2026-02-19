@@ -37,6 +37,8 @@ struct AttackHitboxConfig
     float hitCooldown = -1;
 
     Color tint{ 160,160,160,180 };
+
+    int zIndex{ 0 };
 };
 
 class AttackHitboxGO : public GameObject

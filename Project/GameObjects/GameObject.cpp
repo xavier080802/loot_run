@@ -91,6 +91,11 @@ GO_TYPE GameObject::GetGOType() const
 	return goType;
 }
 
+bool GameObject::IsEnabled() const
+{
+	return isEnabled;
+}
+
 void GameObject::SetEnabled(bool enable)
 {
 	isEnabled = enable;
@@ -119,6 +124,11 @@ void GameObject::SetCollisionLayers(Bitmask layers)
 void GameObject::SetColliderLayer(Collision::LAYER layer)
 {
 	colliderLayer = layer;
+}
+
+void GameObject::SetZ(int _z)
+{
+	z = _z;
 }
 
 void GameObject::ApplyForce(AEVec2 force)

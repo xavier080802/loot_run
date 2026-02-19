@@ -39,6 +39,7 @@ public:
 	Bitmask GetCollisionLayers()const;
 	Collision::LAYER GetColliderLayer()const;
 	virtual GO_TYPE GetGOType() const;
+	bool IsEnabled() const;
 
 	void SetEnabled(bool enable);
 	void SetPos(AEVec2 nextPos);
@@ -48,6 +49,7 @@ public:
 	void SetCollisionLayers(Bitmask layers);
 	//Set what layer this GO is considered in.
 	void SetColliderLayer(Collision::LAYER layer);
+	void SetZ(int _z);
 
 	//Apply a force (directional) on this go.
 	void ApplyForce(AEVec2 force);

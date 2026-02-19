@@ -1,6 +1,7 @@
 #ifndef _ELEMENT_H_
 #define _ELEMENT_H_
 #include "../Actor/StatusEffect.h"
+#include "AEEngine.h"
 #include <string>
 #include <map>
 
@@ -42,6 +43,14 @@ namespace Elements {
 
 	//Blood+Sun reaction
 	extern std::string bloodSunName;
+
+	//Blood+Moon reaction
+	extern float bloodMoonLifetime;
+	extern AEVec2 bloodMoonSize;
+	extern float bloodMoonProcTime; //Time between procs
+	extern float bloodMoonDebuffDur;
+	extern unsigned bloodMoonDebuffMaxStacks;
+	extern std::string bloodMoonDebuffName;
 }
 
 #endif // !_ELEMENT_H_

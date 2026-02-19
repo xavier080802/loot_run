@@ -1,10 +1,13 @@
 #include "Element.h"
+#include "../GameObjects/GameObjectManager.h"
 #include "../Actor/Actor.h"
 #include "../Actor/StatusEffect.h"
+#include "../GameObjects/AttackHitboxGO.h"
 #include "SunElement.h"
 #include "BloodElement.h"
 #include "MoonElement.h"
 #include "BloodSunElement.h"
+#include "BloodMoonElement.h"
 
 #include <iostream>
 
@@ -30,7 +33,12 @@ namespace Elements {
 	std::string bloodSunName{"Boiling Blood"};
 
 	//Blood+Moon reaction
-	
+	float bloodMoonLifetime{15.f};
+	AEVec2 bloodMoonSize{ 200,200 };
+	float bloodMoonProcTime{1.25f}; //Time between procs
+	float bloodMoonDebuffDur{2.f};
+	unsigned bloodMoonDebuffMaxStacks{3};
+	std::string bloodMoonDebuffName{"Sanguine Oppression"};
 
 	//Sun+Moon reaction
 
@@ -84,6 +92,19 @@ namespace Elements {
 			else if ((first == StatEffects::EFF_TYPE::BLOOD) && (second == StatEffects::EFF_TYPE::MOON)
 				|| (first == StatEffects::EFF_TYPE::MOON) && (second == StatEffects::EFF_TYPE::BLOOD)) {
 				//Blood + Moon: Place moon object.
+				AttackHitboxGO* hb{ dynamic_cast<AttackHitboxGO*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::ATTACK_HITBOX)) };
+				if (hb) {
+					AttackHitboxConfig cfg{ };
+					cfg.owner = caster;
+					cfg.colliderSize = cfg.renderScale = bloodMoonSize;
+					cfg.tint = { 186, 0,0,180 };
+					cfg.lifetime = bloodMoonLifetime;
+					cfg.disableOnHit = cfg.followOwner = false;
+					cfg.hitCooldown = bloodMoonProcTime;
+					cfg.onHit = Elements::BloodMoonEffect;
+					cfg.zIndex = -2;
+					hb->Start(cfg);
+				}
 				std::cout << "REACTION BLOOD MOON\n";
 			}
 			else if ((first == StatEffects::EFF_TYPE::MOON) && (second == StatEffects::EFF_TYPE::SUN)

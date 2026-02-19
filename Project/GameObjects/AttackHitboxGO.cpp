@@ -28,7 +28,7 @@ AttackHitboxGO* AttackHitboxGO::Start(const AttackHitboxConfig& cfg)
     Init(
         spawnPos,
         cfg.renderScale,
-        owner->GetZ(),
+        cfg.zIndex,
         MESH_CIRCLE,
         cfg.colliderShape,
         cfg.colliderSize,

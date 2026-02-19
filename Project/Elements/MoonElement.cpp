@@ -9,12 +9,14 @@ MoonElement::~MoonElement()
 
 void MoonElement::SubscriptionAlert(OnHitContent content)
 {
+	if (!content.attacker) return;
 	//Heal attacker. If hit with melee, heal more
 	content.attacker->Heal(((!content.weapon || content.weapon->isRanged) ? 5.f : 7.5f) * stacks);
 }
 
 void MoonElement::SubscriptionAlert(ActorDeadSubContent content)
 {
+	if (!content.killer) return;
 	//Heal killer by % of owner's max hp.
 	content.killer->Heal(owner->GetMaxHP() * 2.5f * stacks);
 }
