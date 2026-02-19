@@ -31,11 +31,11 @@ void StatEffects::StatusEffect::OnEnd(END_REASON reason)
 
 void StatEffects::StatusEffect::OnReapply(int numStacks)
 {
-	if (stacks == maxStacks) return;
-
-	//Add stacks up to the cap.
-	stacks += numStacks;
-	if (stacks > maxStacks) stacks = maxStacks;
+	if (stacks < maxStacks) {
+		//Add stacks up to the cap.
+		stacks += numStacks;
+		if (stacks > maxStacks) stacks = maxStacks;
+	}
 
 	//Refresh timer
 	durationTimer = 0.f;

@@ -61,7 +61,7 @@ namespace StatEffects {
 
 		//Update. Always call base (duration update)
 		virtual void Tick(double dt);
-		//Call when a new stack is to be applied.
+		//Call when a new stack is to be applied. Increments stacks without needing a new SE
 		virtual void OnReapply(int numStacks = 1);
 		//Call when status effect ends (via timeout or removal). Func cleans up SE
 		virtual void OnEnd(END_REASON reason = TIMED_OUT);
