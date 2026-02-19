@@ -32,6 +32,9 @@ struct AttackHitboxConfig
     // Callback invoked when hitbox collides with something it can collide with
     void (*onHit)(GameObject::CollisionData& target, Actor* caster) = nullptr;
 
+    // Callback invoked when hitbox lifetime ends.
+    void (*onEnd)(Actor* caster) = nullptr;
+
     // Time between re-hitting. If -1, hitbox can only hit each target once.
     // Cooldown is tied to the hitbox, not per enemy.
     float hitCooldown = -1;
@@ -60,5 +63,6 @@ private:
     bool disableOnHit = true;
 
     void (*OnHit)(CollisionData& target, Actor* caster) = nullptr;
+    void (*OnEnd)(Actor* caster);
     std::vector<GameObject*> hitOnce; // enemies already damaged this swing
 };

@@ -9,6 +9,7 @@ AttackHitboxGO* AttackHitboxGO::Start(const AttackHitboxConfig& cfg)
     followOwner = cfg.followOwner;
     disableOnHit = cfg.disableOnHit;
     OnHit = cfg.onHit;
+    OnEnd = cfg.onEnd;
     hitCooldown = cfg.hitCooldown;
     hitTimer = 0.f;
 
@@ -66,6 +67,7 @@ void AttackHitboxGO::Update(double dt)
     if (lifespan <= 0.0f && ticks > 0)
     {
         isEnabled = false;
+        if (OnEnd) OnEnd(owner);
     }
     ++ticks;
 }
@@ -73,9 +75,6 @@ void AttackHitboxGO::Update(double dt)
 void AttackHitboxGO::OnCollide(CollisionData& other)
 {
 	if (!owner) return;
-
-    // Only care about enemies (prevents storing random walls/items)
-    if (other.other.GetGOType() != GO_TYPE::ENEMY) return;
 
     // Already hit this enemy during this hitbox lifetime? ignore
     for (GameObject* g : hitOnce) {
@@ -86,6 +85,8 @@ void AttackHitboxGO::OnCollide(CollisionData& other)
 
     if (OnHit) OnHit(other, owner);
 
-    if (disableOnHit)
+    if (disableOnHit) {
         isEnabled = false;
+        if (OnEnd) OnEnd(owner);
+    }
 }

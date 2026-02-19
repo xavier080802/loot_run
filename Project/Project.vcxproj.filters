@@ -225,6 +225,9 @@
     <ClCompile Include="Elements\BloodMoonElement.cpp">
       <Filter>Source Files\Elements</Filter>
     </ClCompile>
+    <ClCompile Include="Elements\SunMoonElement.cpp">
+      <Filter>Source Files\Elements</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -411,6 +414,9 @@
       <Filter>Header Files\Elements</Filter>
     </ClInclude>
     <ClInclude Include="Elements\BloodMoonElement.h">
+      <Filter>Header Files\Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="Elements\SunMoonElement.h">
       <Filter>Header Files\Elements</Filter>
     </ClInclude>
   </ItemGroup>

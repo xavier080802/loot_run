@@ -116,6 +116,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="Elements\Element.cpp" />
     <ClCompile Include="Elements\MoonElement.cpp" />
     <ClCompile Include="Elements\SunElement.cpp" />
+    <ClCompile Include="Elements\SunMoonElement.cpp" />
     <ClCompile Include="File\CSV.cpp" />
     <ClCompile Include="gacha.cpp" />
     <ClCompile Include="GameDB.cpp" />
@@ -176,6 +177,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="Elements\Element.h" />
     <ClInclude Include="Elements\MoonElement.h" />
     <ClInclude Include="Elements\SunElement.h" />
+    <ClInclude Include="Elements\SunMoonElement.h" />
     <ClInclude Include="File\CSV.h" />
     <ClInclude Include="gacha.h" />
     <ClInclude Include="GameDB.h" />
