@@ -1,7 +1,9 @@
 #include "Actor.h"
+#include "../Elements/Element.h"
 #include <algorithm>
+#include <iostream>
 
-GameObject* Actor::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, COLLISION_LAYER _isInLayer)
+GameObject* Actor::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, Collision::LAYER _isInLayer)
 {
     ClearStatusEffects();
     return GameObject::Init(_pos, _scale, _z, _meshShape, _colShape, _colSize, _collideWithLayers, _isInLayer);
@@ -31,6 +33,13 @@ void Actor::TakeDamage(float dmg)
     if (dmg <= 0.0f) return;
     mCurrentHP -= dmg;
 
+    //TEMP
+    std::cout << "DMG: " << mCurrentHP << '\n';
+    for (ActorOnHitSub* sub : onHitSubs) {
+        if (!sub) continue;
+        sub->SubscriptionAlert({ nullptr, this, nullptr, dmg });
+    }
+
     if (mCurrentHP <= 0.0f)
     {
         mCurrentHP = 0.0f;
@@ -42,6 +51,8 @@ void Actor::Heal(float amt)
 {
     if (amt <= 0.0f) return;
     mCurrentHP = AEClamp(mCurrentHP + amt, 0.0f, mStats.maxHP);
+
+    std::cout << "HEAL: " << mCurrentHP << '\n';
 }
 
 void Actor::ApplyStatusEffect(StatEffects::StatusEffect* eff, Actor* caster)
@@ -49,9 +60,13 @@ void Actor::ApplyStatusEffect(StatEffects::StatusEffect* eff, Actor* caster)
     //Check if existing
     if (statusEffectsDict.find(eff->GetName()) != statusEffectsDict.end()) {
         statusEffectsDict[eff->GetName()]->OnReapply();
+        delete eff;
     }
-    else {
-        //New, insert
+    else { //New, insert
+        //Check for reaction
+        if (Elements::CheckReaction(this, caster, statusEffectsDict, eff)) {
+            return; //Reaction handled.
+        }
         statusEffectsDict.insert(std::pair<std::string, StatEffects::StatusEffect*>(eff->GetName(), eff));
         eff->OnApply(this, caster);
     }
@@ -67,10 +82,10 @@ void Actor::UpdateStatusEffects(double dt)
         //Remove effect if it has ended
         if (!rit->second->IsEnded()) continue;
 
-        StatEffects::StatusEffect* s = rit->second;
-        delete s;
+        delete rit->second;
         //"it" is pointing to after the element.
-        statusEffectsDict.erase(std::next(rit).base());
+        //statusEffectsDict.erase(std::next(rit).base());
+        statusEffectsDict.erase(rit->first);
 
         if (statusEffectsDict.empty()) break;
     }
@@ -85,6 +100,11 @@ float Actor::GetStatEffectValue(STAT_TYPE stat, float baseStat)
     return final;
 }
 
+std::map<std::string, StatEffects::StatusEffect*> const& Actor::GetStatusEffects() const
+{
+    return statusEffectsDict;
+}
+
 void Actor::OnDeath()
 {    
     // Disable immediately to prevent further collision or updates
@@ -93,6 +113,7 @@ void Actor::OnDeath()
 
     //Alert subscribers
     for (ActorDeadSub* s : onDeathSubs) {
+        if (!s) continue;
         //TODO: get killer
         s->SubscriptionAlert({ nullptr, this });
     }
@@ -112,6 +133,7 @@ void Actor::SubToGotKill(ActorGotKillSub* sub)
     for (ActorGotKillSub* s : onKilledAnotherSubs) {
         if (s == sub) return;
     }
+    if (remove) return;
     onKilledAnotherSubs.push_back(sub);
 }
 
@@ -121,5 +143,32 @@ void Actor::SubToOnDeath(ActorDeadSub* sub)
     for (ActorDeadSub* s : onDeathSubs) {
         if (s == sub) return;
     }
+    if (remove) return;
     onDeathSubs.push_back(sub);
+}
+
+void Actor::SubToBeforeCast(ActorBeforeCastSub* sub, bool remove)
+{
+    //Check dupe
+    for (auto it = beforeCastSubs.begin(); it != beforeCastSubs.end(); ++it) {
+        if (*it == sub) {
+            if (remove) beforeCastSubs.erase(it);
+            return;
+        }
+    }
+    if (remove) return;
+    beforeCastSubs.push_back(sub);
+}
+
+void Actor::SubToOnHit(ActorOnHitSub* sub, bool remove)
+{
+    //Check dupe
+    for (auto it = onHitSubs.begin(); it != onHitSubs.end(); ++it) {
+        if (*it == sub) {
+            if (remove) onHitSubs.erase(it);
+            return;
+        }
+    }
+    if (remove) return;
+    onHitSubs.push_back(sub);
 }

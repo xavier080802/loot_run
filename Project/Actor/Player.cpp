@@ -3,6 +3,7 @@
 #include "../GameObjects/Projectile.h"
 #include "../GameObjects/AttackHitboxGO.h"
 #include "../GameDB.h"
+#include "../Elements/Element.h"
 #include <iostream>
 
 namespace {
@@ -15,7 +16,9 @@ namespace {
 		if (data.other.GetGOType() != GO_TYPE::ENEMY) return;
 
 		Actor& target = static_cast<Actor&>(data.other);
-		target.TakeDamage(caster->GetStats().attack);
+		//target.TakeDamage(caster->GetStats().attack);
+		
+		Elements::ApplyElement(Elements::ELEMENT_TYPE::SUN, caster, &target); //TEMP
 	}
 
 	void OnMeleeHit(GameObject::CollisionData& data, Actor* caster)
@@ -24,7 +27,8 @@ namespace {
 		if (data.other.GetGOType() != GO_TYPE::ENEMY) return;
 
 		Actor& target = static_cast<Actor&>(data.other);
-		target.TakeDamage(caster->GetStats().attack);
+		//target.TakeDamage(caster->GetStats().attack);
+		Elements::ApplyElement(Elements::ELEMENT_TYPE::MOON, caster, &target); //TEMP
 
 		//Knockback
 		AEVec2 dir = {
@@ -51,8 +55,8 @@ namespace {
 }
 
 GameObject* Player::Init(AEVec2 _pos, AEVec2 _scale, int _z,
-	MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize,
-	Bitmask _collideWithLayers, COLLISION_LAYER _isInLayers)
+	MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize,
+	Bitmask _collideWithLayers, Collision::LAYER _isInLayers)
 {
 	goType = GO_TYPE::PLAYER;
 	return GameObject::Init(_pos, _scale, _z, _meshShape, _colShape, _colSize, _collideWithLayers, _isInLayers);
@@ -103,11 +107,18 @@ void Player::RecalculateStats()
 
 void Player::Update(double dt)
 {
-	Actor::Update(dt);
-
 	float fdt = (float)dt;
 	if (attackCooldownTimer > 0.0f)
 		attackCooldownTimer -= fdt;
+
+	prevPos = pos;
+
+	HandleAttackInput(dt);
+	// Track input direction for minimap arrow (Player does the actual movement)
+	HandleMovementInput(dt);
+	Temp_DoVelocityMovement(dt);
+
+	Actor::Update(dt);
 }
 
 void Player::HandleMovementInput(double dt)
@@ -285,6 +296,9 @@ void Player::DoAttackWithWeapon(const EquipmentData* weapon)
 
 		// Fire(caster, direction, radius, speed, lifetime, callback)
 		proj->Fire(this, fireDir, 10.0f, 200.0f, 3.0f, &OnProjectileHit);
+		Bitmask bm{ proj->GetCollisionLayers() };
+		ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
+		proj->SetCollisionLayers(bm); //Proj will scan for interactables otherwise
 		break;
 	}
 
@@ -311,9 +325,10 @@ void Player::DoAttackWithWeapon(const EquipmentData* weapon)
 		AttackHitboxConfig cfg{};
 		cfg.owner = this;
 		cfg.lifetime = 0.30f;
+		cfg.zIndex = GetZ();
 
 		// Tentative version: circle hitbox that follows player for demo ig
-		cfg.colliderShape = COL_CIRCLE;
+		cfg.colliderShape = Collision::COL_CIRCLE;
 		cfg.colliderSize = { 50.0f, 50.0f };   // diameter
 		cfg.renderScale = { 50.0f, 50.0f };
 
@@ -325,6 +340,10 @@ void Player::DoAttackWithWeapon(const EquipmentData* weapon)
 		cfg.onHit = &OnMeleeHit;
 
 		hb->Start(cfg);
+		//Remove Interactable from collision layers
+		Bitmask bm{ GetCollisionLayers() };
+		ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
+		hb->SetCollisionLayers(bm);
 		break;
 	}
 
@@ -404,4 +423,9 @@ void Player::OnCollide(CollisionData& other)
 	default:
 		break;
 	}
+}
+
+void Player::Draw()
+{
+	Actor::Draw();
 }

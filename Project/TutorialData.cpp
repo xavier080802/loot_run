@@ -14,7 +14,7 @@ namespace {
 namespace Tutorial {
 	void TutorialFairy::InitTutorial(Player* _player, MapData* _map)
 	{
-		Init({}, { 50,50 }, 1, MESH_SQUARE, COL_CIRCLE, {}, 0, GameObject::COLLISION_LAYER::NONE)
+		Init({}, { 50,50 }, 1, MESH_SQUARE, Collision::COL_CIRCLE, {}, 0, Collision::LAYER::NONE)
 			->GetRenderData().AddTexture("Assets/finn.png");
 
 		data.dialogueLines.reserve(4);

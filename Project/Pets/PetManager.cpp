@@ -25,7 +25,7 @@ void PetManager::Init() {
 	//Init pet GO
 	equippedPet = new Pet{};
 	//Values are TEMP
-	equippedPet->Init({}, { 25,25 }, 0, MESH_SQUARE, COL_CIRCLE, { 25,25 }, CreateBitmask(1, GameObject::COLLISION_LAYER::ENEMIES), GameObject::COLLISION_LAYER::PET);
+	equippedPet->Init({}, { 25,25 }, 0, MESH_SQUARE, Collision::COL_CIRCLE, { 25,25 }, CreateBitmask(1, Collision::LAYER::ENEMIES), Collision::LAYER::PET);
 	equippedPet->SetEnabled(false);
 	//TEMP
 	//SetPet(Pets::PET_1, 0);

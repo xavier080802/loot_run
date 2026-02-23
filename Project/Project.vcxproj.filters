@@ -61,6 +61,18 @@
     <Filter Include="Source Files\DropPick">
       <UniqueIdentifier>{48d6ac06-1d91-4da1-8bbb-3c665aa641e6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\File">
+      <UniqueIdentifier>{28aed408-a4c2-4574-b0a5-35398d633894}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\File">
+      <UniqueIdentifier>{4b9b177a-d5f1-4aaf-be0f-0d5a27ca985b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Elements">
+      <UniqueIdentifier>{e48e0cf0-51c6-4c32-8d00-ff7deb322e87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Elements">
+      <UniqueIdentifier>{af61897d-929b-40f4-9890-7ac5ac2235ea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -132,9 +144,6 @@
     <ClCompile Include="Pets\PetSkills.cpp">
       <Filter>Source Files\Pets</Filter>
     </ClCompile>
-    <ClCompile Include="Map.cpp">
-      <Filter>Source Files\GameObjects</Filter>
-    </ClCompile>
     <ClCompile Include="Actor\Actor.cpp">
       <Filter>Source Files\Actors</Filter>
     </ClCompile>
@@ -174,14 +183,50 @@
     <ClCompile Include="GameObjects\AttackHitboxGO.cpp">
       <Filter>Source Files\GameObjects</Filter>
     </ClCompile>
-    <ClCompile Include="..\Extern\jsoncpp\src\lib_json\json_reader.cpp">
+    <ClCompile Include="gacha.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Extern\jsoncpp\src\lib_json\json_value.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="File\CSV.cpp">
+      <Filter>Source Files\File</Filter>
     </ClCompile>
     <ClCompile Include="..\Extern\jsoncpp\src\lib_json\json_writer.cpp">
+      <Filter>Source Files\File</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Extern\jsoncpp\src\lib_json\json_reader.cpp">
+      <Filter>Source Files\File</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Extern\jsoncpp\src\lib_json\json_value.cpp">
+      <Filter>Source Files\File</Filter>
+    </ClCompile>
+    <ClCompile Include="Map.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TileMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Minimap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Elements\Element.cpp">
+      <Filter>Source Files\Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="Elements\BloodElement.cpp">
+      <Filter>Source Files\Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="Elements\SunElement.cpp">
+      <Filter>Source Files\Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="Elements\MoonElement.cpp">
+      <Filter>Source Files\Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="Elements\BloodSunElement.cpp">
+      <Filter>Source Files\Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="Elements\BloodMoonElement.cpp">
+      <Filter>Source Files\Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="Elements\SunMoonElement.cpp">
+      <Filter>Source Files\Elements</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -272,9 +317,6 @@
     <ClInclude Include="Pets\PetSkills.h">
       <Filter>Header Files\Pets</Filter>
     </ClInclude>
-    <ClInclude Include="Map.h">
-      <Filter>Header Files\GameObjects</Filter>
-    </ClInclude>
     <ClInclude Include="GameObjects\LootChest.h">
       <Filter>Header Files\GameObjects</Filter>
     </ClInclude>
@@ -337,6 +379,48 @@
     </ClInclude>
     <ClInclude Include="GameObjects\AttackHitboxGO.h">
       <Filter>Header Files\GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor\ActorSubscriptions.h">
+      <Filter>Header Files\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="gacha.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="File\CSV.h">
+      <Filter>Header Files\File</Filter>
+    </ClInclude>
+    <ClInclude Include="Map.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TileMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionConstants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Minimap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Elements\Element.h">
+      <Filter>Header Files\Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="Elements\BloodElement.h">
+      <Filter>Header Files\Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="Elements\SunElement.h">
+      <Filter>Header Files\Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="Elements\MoonElement.h">
+      <Filter>Header Files\Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="Elements\BloodSunElement.h">
+      <Filter>Header Files\Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="Elements\BloodMoonElement.h">
+      <Filter>Header Files\Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="Elements\SunMoonElement.h">
+      <Filter>Header Files\Elements</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

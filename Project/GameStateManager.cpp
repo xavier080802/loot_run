@@ -1,5 +1,6 @@
 #include "GameStateManager.h"
 #include "AEEngine.h"
+#include "GameObjects/GameObjectManager.h"
 
 void GameStateManager::AddGameState(std::string stateName, State* state)
 {
@@ -20,6 +21,8 @@ bool GameStateManager::SetNextGameState(std::string nextName, bool initNext, boo
 		stateList.find(currState.first)->second->ExitState();
 	}
 	prevState = currState;
+	//Disable all gameobjects in manager. Let InitState reenable needed GOs
+	GameObjectManager::GetInstance()->DisableAllGOs();
 	//Enter new state
 	currState.first = nextName;
 	currState.second = stateList.find(nextName)->second;

@@ -39,6 +39,10 @@ AEVec2 operator+(AEVec2 lhs, AEVec2 rhs);
 AEVec2 operator+=(AEVec2& lhs, AEVec2 rhs);
 
 AEVec2 operator*(AEVec2 lhs, float rhs);
+AEVec2 operator*(AEVec2 lhs, AEVec2 rhs);
+
+AEVec2 operator/(AEVec2 lhs, float rhs);
+AEVec2 operator/(AEVec2 lhs, AEVec2 rhs);
 
 std::ostream& operator<<(std::ostream& os, AEVec2 const& vec);
 #endif // !_VEC2_UTILS_H_

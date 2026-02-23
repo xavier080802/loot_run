@@ -12,6 +12,7 @@ public:
 	Projectile* Fire(Actor* const caster, AEVec2 fireDir, float radius, float spd, float lifetime, void (*onHitCallback)(CollisionData& target, Actor* caster));
 	void Update(double dt) override;
 	void OnCollide(CollisionData& other) override;
+	void OnCollideTile(std::pair<TileMap::Tile const&, AEVec2> tile) override;
 
 protected:
 	AEVec2 dir{};

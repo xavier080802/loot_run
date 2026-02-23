@@ -24,15 +24,34 @@ namespace StatEffects {
 			: value(_val), mathType(_mathType), stat(_statToAffect){}
 	};
 
+	//Note: Don't change order, >= DEBUFF is considered debuff (Elements)
+	enum EFF_TYPE {
+		NONE,
+		BUFF,
+		DEBUFF,
+		BLOOD, //Main blood effect
+		SUN, //Main sun effect
+		MOON, //Main moon effect
+	};
+
+	//Reason for SE to end
+	enum END_REASON {
+		TIMED_OUT,
+		STACKS_ZERO,
+		REMOVED,
+	};
+
 	//Status effect can have several stat buffs/debuffs
 	class StatusEffect
 	{
 	public:
 		//Set duration to -1 for no-timeout
 		//Caster can be nullptr on construction. Will be set again when applied.
-		StatusEffect(Actor* _caster, float _duration, unsigned _maxStacks, std::string _name)
+		StatusEffect(Actor* _caster, float _duration, unsigned _maxStacks, std::string _name, unsigned startStacks=1, EFF_TYPE _effType = EFF_TYPE::NONE)
 			: caster(_caster), duration(_duration), maxStacks(_maxStacks), durationTimer(0.f), name(_name),
-			isPermanent(_duration == -1){};
+			isPermanent(_duration == -1), effType(_effType), stacks(startStacks){};
+
+		virtual ~StatusEffect() {}
 
 		//Add mod to the mods list of this SE. Can be chained.
 		virtual StatusEffect* AddMod(Mod newMod);
@@ -42,8 +61,11 @@ namespace StatEffects {
 
 		//Update. Always call base (duration update)
 		virtual void Tick(double dt);
-		//Call when a new stack is to be applied.
+		//Call when a new stack is to be applied. Increments stacks without needing a new SE
 		virtual void OnReapply(int numStacks = 1);
+		//Call when status effect ends (via timeout or removal). Func cleans up SE
+		virtual void OnEnd(END_REASON reason = TIMED_OUT);
+
 		//Get the value of all mods of a stat. Multiplicative is based on the baseVal.
 		//Result will be an additive value
 		virtual float GetFinalModVal(STAT_TYPE stat, float baseVal) const;
@@ -51,23 +73,22 @@ namespace StatEffects {
 		virtual bool IsEnded() { return hasEnded; };
 
 		std::string const& GetName() const { return name; };
+		EFF_TYPE GetType() const { return effType; }
 
 	protected:
-		Actor* caster{};
+		Actor* caster{}, * owner{};
 		//ID, should be unique.
 		std::string name{};
 		//Doesnt time out, but can be removed externally.
 		bool isPermanent{ false };
+		//Set in OnEnd
 		bool hasEnded{ false };
 		float duration{};
 		float durationTimer{}; //to count down
-
+		EFF_TYPE effType{};
 		std::vector<Mod> mods{};
 
 		unsigned stacks{}, maxStacks{};
-
-		//Called when status effect duration ends
-		virtual void OnEnd();
 	};
 }
 

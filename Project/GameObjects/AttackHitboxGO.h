@@ -14,7 +14,7 @@ struct AttackHitboxConfig
 	bool pendingDisable = false;
 
     // Hitbox shape + size
-    COLLIDER_SHAPE colliderShape = COLLIDER_SHAPE::COL_CIRCLE;
+    Collision::SHAPE colliderShape = Collision::SHAPE::COL_CIRCLE;
     AEVec2 colliderSize = { 30.0f, 30.0f };
 
     // Visual size
@@ -31,6 +31,17 @@ struct AttackHitboxConfig
 
     // Callback invoked when hitbox collides with something it can collide with
     void (*onHit)(GameObject::CollisionData& target, Actor* caster) = nullptr;
+
+    // Callback invoked when hitbox lifetime ends.
+    void (*onEnd)(Actor* caster) = nullptr;
+
+    // Time between re-hitting. If -1, hitbox can only hit each target once.
+    // Cooldown is tied to the hitbox, not per enemy.
+    float hitCooldown = -1;
+
+    Color tint{ 160,160,160,180 };
+
+    int zIndex{ 0 };
 };
 
 class AttackHitboxGO : public GameObject
@@ -44,11 +55,14 @@ public:
 
 private:
     Actor* owner = nullptr;
-    float lifespan = 0.0f;
+    float lifespan = 0.0f, hitTimer=0.0f;
+    float hitCooldown{ -1 };
+    int ticks{ 0 };//Number of frame ticks this has went through.
     AEVec2 offset = { 0.0f, 0.0f };
     bool followOwner = true;
     bool disableOnHit = true;
 
     void (*OnHit)(CollisionData& target, Actor* caster) = nullptr;
+    void (*OnEnd)(Actor* caster);
     std::vector<GameObject*> hitOnce; // enemies already damaged this swing
 };

@@ -1,10 +1,11 @@
 #include "Projectile.h"
+#include "../TileMap.h"
 #include <iostream>
 
 Projectile* Projectile::Fire(Actor* const caster, AEVec2 fireDir, float radius, float spd, float lifetime, void (*onHitCallback)(CollisionData& target, Actor* caster))
 {
 	Init(caster->GetPos(), { radius * 2.f, radius * 2.f }, caster->GetZ(),
-		MESH_CIRCLE, COL_CIRCLE, { radius * 2.f, radius * 2.f },
+		MESH_CIRCLE, Collision::COL_CIRCLE, { radius * 2.f, radius * 2.f },
 		caster->GetCollisionLayers(), caster->GetColliderLayer());
 
 	owner = caster;
@@ -34,6 +35,12 @@ void Projectile::OnCollide(CollisionData& other)
 {
 	//Send callback
 	if (OnHit) OnHit(other, owner);
+	//Disable self
+	isEnabled = false;
+}
+
+void Projectile::OnCollideTile(std::pair<TileMap::Tile const&, AEVec2> tile)
+{
 	//Disable self
 	isEnabled = false;
 }

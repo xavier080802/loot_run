@@ -4,10 +4,14 @@ AttackHitboxGO* AttackHitboxGO::Start(const AttackHitboxConfig& cfg)
 {
     owner = cfg.owner;
     lifespan = cfg.lifetime;
+    ticks = 0;
     offset = cfg.offset;
     followOwner = cfg.followOwner;
     disableOnHit = cfg.disableOnHit;
     OnHit = cfg.onHit;
+    OnEnd = cfg.onEnd;
+    hitCooldown = cfg.hitCooldown;
+    hitTimer = 0.f;
 
 	hitOnce.clear();
 	collisionEnabled = true;
@@ -25,7 +29,7 @@ AttackHitboxGO* AttackHitboxGO::Start(const AttackHitboxConfig& cfg)
     Init(
         spawnPos,
         cfg.renderScale,
-        owner->GetZ(),
+        cfg.zIndex,
         MESH_CIRCLE,
         cfg.colliderShape,
         cfg.colliderSize,
@@ -33,9 +37,8 @@ AttackHitboxGO* AttackHitboxGO::Start(const AttackHitboxConfig& cfg)
         owner->GetColliderLayer()
     );
 
-	GetRenderData().tint = CreateColor(160, 160, 160, 180);
+	GetRenderData().tint = cfg.tint;
     goType = GO_TYPE::ATTACK_HITBOX;
-
     return this;
 }
 
@@ -51,18 +54,27 @@ void AttackHitboxGO::Update(double dt)
         pos = p;
     }
 
-    if (lifespan <= 0.0f)
+    //If hit timer reaches cooldown (unless -1), can query collision again.
+    if (hitCooldown != -1.f) {
+        hitTimer += (float)dt;
+        if (hitTimer >= hitCooldown) {
+            hitOnce.clear();
+            hitTimer = 0.f;
+        }
+    }
+
+    //Check ticks in event that lifespan < dt (otherwise it wont have an opportunity to collide)
+    if (lifespan <= 0.0f && ticks > 0)
     {
         isEnabled = false;
+        if (OnEnd) OnEnd(owner);
     }
+    ++ticks;
 }
 
 void AttackHitboxGO::OnCollide(CollisionData& other)
 {
 	if (!owner) return;
-
-    // Only care about enemies (prevents storing random walls/items)
-    if (other.other.GetGOType() != GO_TYPE::ENEMY) return;
 
     // Already hit this enemy during this hitbox lifetime? ignore
     for (GameObject* g : hitOnce) {
@@ -73,6 +85,8 @@ void AttackHitboxGO::OnCollide(CollisionData& other)
 
     if (OnHit) OnHit(other, owner);
 
-    if (disableOnHit)
+    if (disableOnHit) {
         isEnabled = false;
+        if (OnEnd) OnEnd(owner);
+    }
 }

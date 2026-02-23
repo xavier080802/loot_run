@@ -1,6 +1,8 @@
 #ifndef MAP_H
 #define MAP_H
 
+//Deprecated, use TileMap
+
 #include "AEEngine.h"
 #include <vector>
 

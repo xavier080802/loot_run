@@ -10,7 +10,7 @@ struct LootChestOpenedSub;
 class LootChest : public GameObject
 {
 public:
-	GameObject* Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, COLLIDER_SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, COLLISION_LAYER _isInLayer) override;
+	GameObject* Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, Collision::LAYER _isInLayer) override;
 	void OnCollide(CollisionData& other) override;
 
 	//Global: subscriber pattern stuff

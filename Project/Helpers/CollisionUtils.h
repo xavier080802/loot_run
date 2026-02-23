@@ -7,11 +7,6 @@
 #define _COLLISION_H_
 #include "AEEngine.h"
 
-enum COLLIDER_SHAPE {
-	COL_CIRCLE,
-	COL_RECT,
-};
-
 bool IsPointOver(float posX, float posY, float width, float height, float pointX, float pointY);
 bool IsCursorOver(AEVec2 pos, float width, float height);
 
