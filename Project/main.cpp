@@ -10,6 +10,7 @@
 #include "./Helpers/RenderUtils.h"
 #include "RenderingManager.h"
 #include "./Pets/PetManager.h"
+#include "Elements/Element.h"
 
 namespace {
 	GameStateManager* stateManager;
@@ -39,6 +40,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	petManager = PetManager::GetInstance();
 	renderManager->Init();
 	petManager->Init();
+	Elements::InitElementalSystem();
 
 	stateManager = GameStateManager::GetInstance();
 	stateManager->AddGameState("MainMenuState", new MainMenuState);

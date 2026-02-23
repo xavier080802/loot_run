@@ -2,9 +2,19 @@
 #include "StatusEffect.h"
 #include "Actor.h"
 
+#include <json/json.h>
+
 StatEffects::StatusEffect* StatEffects::StatusEffect::AddMod(Mod newMod)
 {
 	mods.push_back(newMod);
+	return this;
+}
+
+StatEffects::StatusEffect* StatEffects::StatusEffect::AddMod(std::vector<Mod> mods)
+{
+	for (Mod const& m : mods) {
+		AddMod(m);
+	}
 	return this;
 }
 
@@ -86,4 +96,11 @@ float StatEffects::Mod::GetValFromActor(Actor const& actor) const
 	}
 
 	return out * (value / 100.f);
+}
+
+StatEffects::Mod StatEffects::Mod::ParseFromJSON(Json::Value const& v)
+{
+	return Mod{ v.get("value", 0).asFloat(),
+			static_cast<StatEffects::MATH_TYPE>(v.get("mathType", StatEffects::MATH_TYPE::MULTIPLICATIVE).asInt()),
+			static_cast<STAT_TYPE>(v.get("stat", STAT_TYPE::ATT).asInt()) };
 }

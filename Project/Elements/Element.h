@@ -4,6 +4,7 @@
 #include "AEEngine.h"
 #include <string>
 #include <map>
+#include "../Helpers/ColorUtils.h"
 
 //NOTE: Declare extern and define in Element.cpp, otherwise linker error :<
 
@@ -14,6 +15,10 @@ namespace Elements {
 		SUN,
 		MOON,
 	};
+
+	//Load values from json
+	extern bool InitElementalSystem();
+
 	//Static function to apply element to a target.
 	//Returns whether the element was applied or not
 	extern bool ApplyElement(ELEMENT_TYPE ele, Actor* applier, Actor* target);
@@ -28,21 +33,30 @@ namespace Elements {
 	extern float elementDur;
 
 	//Blood
-	extern const std::string bloodName;
+	extern std::string bloodName;
+	extern std::vector<StatEffects::Mod> bloodDmgMods;
 
 	//Sun
-	extern const std::string sunName;
-	extern const std::string sunBuffName;
+	extern std::string sunName;
+	extern std::string sunBuffName;
 	extern unsigned maxSunStacks;
 	extern float sunBuffDur;
 	extern unsigned sunLowRange, sunHighRange;
+	extern std::vector<StatEffects::Mod> sunBuffMods;
 
 	//Moon
-	extern const std::string moonName;
+	extern std::string moonName;
 	extern unsigned maxMoonStacks;
+	extern std::vector<StatEffects::Mod> healMods;
+	extern std::vector<StatEffects::Mod> moonKillHealMods;
+	extern float moonMeleeHealMult;
+	extern std::vector<StatEffects::Mod> moonDebuffMods;
 
 	//Blood+Sun reaction
 	extern std::string bloodSunName;
+	extern std::vector<StatEffects::Mod> bloodSunDotDmg;
+	extern std::vector<StatEffects::Mod> bloodSunDetonateDmg;
+	extern AEVec2 bloodSunDetoSize;
 
 	//Blood+Moon reaction
 	extern float bloodMoonLifetime;
@@ -51,14 +65,20 @@ namespace Elements {
 	extern float bloodMoonDebuffDur;
 	extern unsigned bloodMoonDebuffMaxStacks;
 	extern std::string bloodMoonDebuffName;
+	extern std::vector<StatEffects::Mod> bloodMoonDebuffMods;
+	extern std::vector<StatEffects::Mod> bloodMoonDmgMods;
+	extern Color bloodMoonTint;
 
 	//Sun+Moon reaction
 	extern float sunMoonLifetime;
 	extern AEVec2 sunMoonSize;
 	extern float sunMoonProcTime;
-	extern float sunMoonSlowDur;
-	extern unsigned sunMoonSlowMaxStacks;
-	extern std::string sunMoonSlowName;
+	extern float sunMoonDebuffDur;
+	extern unsigned sunMoonDebuffMaxStacks;
+	extern std::string sunMoonDebuffName;
+	extern std::vector<StatEffects::Mod> sunMoonDebuffMods;
+	extern std::vector<StatEffects::Mod> sunMoonDmgMods;
+	extern Color sunMoonTint;
 }
 
 #endif // !_ELEMENT_H_

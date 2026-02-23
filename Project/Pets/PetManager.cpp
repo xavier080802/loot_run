@@ -106,7 +106,7 @@ bool PetManager::Handle(Message* message)
 
 void PetManager::LoadPetData()
 {
-	std::ifstream ifs{ "Assets/Data/Pets.json", std::ios_base::binary };
+	std::ifstream ifs{ "Assets/Data/pets.json", std::ios_base::binary };
 
 	if (!ifs.is_open()) {
 		std::cout << "PET DATA FAILED TO OPEN\n";
@@ -139,18 +139,14 @@ void PetManager::LoadPetData()
 		if (passive) {
 			for (Json::Value const& m : v["passive"]) {
 				//Each value should be a mod
-				pd.passive.AddMod(StatEffects::Mod{ m.get("value", 0).asFloat(),
-					static_cast<StatEffects::MATH_TYPE>(m.get("mathType", StatEffects::MATH_TYPE::MULTIPLICATIVE).asInt()),
-						static_cast<STAT_TYPE>(m.get("stat", STAT_TYPE::ATT).asInt()) });
+				pd.passive.AddMod(StatEffects::Mod::ParseFromJSON(m));
 			}
 		}
 		//Load multipliers
 		if (v.findArray("multipliers")) {
 			for (Json::Value const& m : v["multipliers"]) {
 				//Each value should be a mod
-				pd.multipliers.push_back(StatEffects::Mod{ m.get("value", 0).asFloat(),
-					static_cast<StatEffects::MATH_TYPE>(m.get("mathType", StatEffects::MATH_TYPE::MULTIPLICATIVE).asInt()),
-						static_cast<STAT_TYPE>(m.get("stat", STAT_TYPE::ATT).asInt()) });
+				pd.multipliers.push_back(StatEffects::Mod::ParseFromJSON(m));
 			}
 		}
 		//Rarity scalings (array of numbers)

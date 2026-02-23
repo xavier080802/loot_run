@@ -7,6 +7,10 @@
 //Circular dependency
 class Actor;
 
+namespace Json {
+	class Value;
+}
+
 namespace StatEffects {
 	enum MATH_TYPE {
 		FLAT, //Stat type doesnt matter, takes value as-is
@@ -26,6 +30,9 @@ namespace StatEffects {
 		//Get this Mod's true value based on actor's base stats.
 		//if mathType is MULT, returns value
 		float GetValFromActor(Actor const& actor) const;
+
+		//Object must contain "value"(float), "mathType"(0/1) and "stat"(int)
+		static Mod ParseFromJSON(Json::Value const& v);
 	};
 
 	//Note: Don't change order, >= DEBUFF is considered debuff (Elements)
@@ -59,6 +66,7 @@ namespace StatEffects {
 
 		//Add mod to the mods list of this SE. Can be chained.
 		virtual StatusEffect* AddMod(Mod newMod);
+		StatusEffect* AddMod(std::vector<Mod> mods);
 
 		//Call when applying this effect to the entity (thereby referred to as owner)
 		virtual void OnApply(Actor* _owner, Actor* _caster);

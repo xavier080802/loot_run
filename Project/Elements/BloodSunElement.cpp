@@ -5,17 +5,27 @@
 
 namespace {
 	//On-death AOE dmg callback. Put here cuz otherwise hitbox onHit throws error.
+	//caster is the status effect owner
 	void AoEDmg(GameObject::CollisionData& target, Actor* caster)
 	{
 		Actor* other{ dynamic_cast<Actor*>(&target.other) };
 		if (!other) return;
-		other->TakeDamage(10);
+
+		float dmg{};
+		for (StatEffects::Mod const& m : Elements::bloodSunDetonateDmg) {
+			dmg += m.GetValFromActor(*caster);
+		}
+		other->TakeDamage(dmg);
 	}
 }
 
 void BloodSunElement::TriggerDoT()
 {
-	owner->TakeDamage(owner->GetMaxHP() * 0.25f * stacks);
+	float dmg{};
+	for (StatEffects::Mod const& m : Elements::bloodSunDotDmg) {
+		dmg += m.GetValFromActor(*owner);
+	}
+	owner->TakeDamage(dmg);
 }
 
 void BloodSunElement::SubscriptionAlert(ActorDeadSubContent content)
@@ -26,7 +36,7 @@ void BloodSunElement::SubscriptionAlert(ActorDeadSubContent content)
 
 	AttackHitboxConfig cfg{};
 	cfg.owner = owner;
-	cfg.colliderSize = cfg.renderScale = { 150,150 };
+	cfg.colliderSize = cfg.renderScale = Elements::bloodSunDetoSize;
 	cfg.followOwner = cfg.disableOnHit = false;
 	cfg.onHit = AoEDmg;
 	hb->Start(cfg);
