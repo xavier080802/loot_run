@@ -10,11 +10,13 @@ class TileMap
 {
 public:
 	enum TILE_TYPE {
-		TILE_NONE = 0,
-		TILE_WALL,
-		TILE_DOOR,
+		TILE_NONE = 0,    // 0: Floor
+		TILE_WALL,        // 1: Solid Wall
+		TILE_DOOR,        // 2: The Exit Door (Room 6)
+		TILE_ENEMY,       // 3: Enemy Spawn Point
+		TILE_CHEST,       // 4: Loot Chest
 
-		TILE_NUM, //Last
+		TILE_NUM, // Total: 5
 	};
 
 	//A tile on the map

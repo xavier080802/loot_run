@@ -68,18 +68,29 @@ void TileMap::Render() const
 	}
 }
 
-void TileMap::Render(AEVec2 offsetPos,float rotOffset, AEVec2 scale, bool isHud) const
+void TileMap::Render(AEVec2 offsetPos, float rotOffset, AEVec2 scale, bool isHud) const
 {
 	for (unsigned int r = 0; r < rows; r++) {
 		for (unsigned int c = 0; c < cols; c++) {
 			if (tiles[r][c].type == TILE_NONE) continue;
 
+			// --- THE CRASH FIX: SAFE LOOKUP ---
+			auto it = textureMap.find(tiles[r][c].type);
+
+			// If the ID (like 3 or 4) isn't in the map, skip it instead of crashing
+			if (it == textureMap.end() || it->second == nullptr) {
+				continue;
+			}
+
 			f32 rot = rotOffset;
-			AEVec2 pos{ GetTilePosition(r,c) * scale }; //Change pos based on new tile size
+			AEVec2 pos{ GetTilePosition(r,c) * scale };
 			AEVec2 tileScale = tileSize;
+
 			if (!isHud) GetObjViewFromCamera(&pos, &rot, &tileScale);
+
+			// Use it->second to access the safe texture pointer
 			DrawTintedMesh(GetTransformMtx(pos + offsetPos, rot, tileScale * scale),
-				pMesh, textureMap.at(tiles[r][c].type),
+				pMesh, it->second,
 				{ 255,255,255,255 }, 255);
 		}
 	}
@@ -149,9 +160,17 @@ void TileMap::LoadStatics()
 	tileMap[TILE_NONE].layer = Collision::NONE;
 	tileMap[TILE_NONE].isSolid = false;
 
+	tileMap[TILE_ENEMY].layer = Collision::NONE; 
+	tileMap[TILE_ENEMY].isSolid = false;
+
+	tileMap[TILE_CHEST].layer = Collision::NONE;
+	tileMap[TILE_CHEST].isSolid = false;
+
 	//======================Texture map======================
 
 	textureMap.insert(TileTex(TILE_NONE, nullptr));
 	textureMap.insert(TileTex(TILE_WALL, rm->LoadTexture("Assets/finn.png")));
 	textureMap.insert(TileTex(TILE_DOOR, rm->LoadTexture("Assets/tiny.png")));
+	textureMap.insert(TileTex(TILE_ENEMY, rm->LoadTexture("Assets/enemyplaceholder.png")));
+	textureMap.insert(TileTex(TILE_CHEST, rm->LoadTexture("Assets/chestplaceholder.png")));
 }

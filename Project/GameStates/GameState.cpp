@@ -180,19 +180,28 @@ namespace {
 }
 
 void GameState::LoadState() {
-    
-    if (!GameDB::LoadEnemyDefs("Assets/Data/enemies.json"))
-    {
+    if (!GameDB::LoadEnemyDefs("Assets/Data/enemies.json")) {
         std::cout << "WARNING: enemies.json failed to load.\n";
     }
+
     font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 72);
-    bgm.Init(); bgm.PlayNormal();
-    halfMapWidth = mapWidth * 0.5f; halfMapHeight = mapHeight * 0.5f;
+    bgm.Init();
+    bgm.PlayNormal();
+
     circleMesh = RenderingManager::GetInstance()->GetMesh(MESH_CIRCLE);
     squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
 
-    map = new TileMap("Assets/test_csv.csv");
+    // 1. Create the map first with your preferred tile scale
+    map = new TileMap("Assets/TutorialMap.csv", { 0,0 }, 115.f, 115.f);
     minimap = new Minimap{};
+
+    // 2. CRITICAL FIX: Update global map dimensions from the actual CSV data
+    // This fixes the wonky minimap and camera clamping
+    AEVec2 actualSize = map->GetFullMapSize();
+    mapWidth = actualSize.x;
+    mapHeight = actualSize.y;
+    halfMapWidth = mapWidth * 0.5f;
+    halfMapHeight = mapHeight * 0.5f;
 
     AEVec2Zero(&playerPos);
     playerDir = { 1.0f, 0.0f };
@@ -200,14 +209,16 @@ void GameState::LoadState() {
     AEVec2Zero(&camPos);
     AEVec2Zero(&camVel);
 
-    GameObjectManager::GetInstance()->InitCollisionGrid(static_cast<unsigned>(mapWidth), static_cast<unsigned>(mapHeight));
-
-    playerDir = { 1.0f, 0.0f };
+    // 3. Update the collision grid with the CORRECT dimensions
+    GameObjectManager::GetInstance()->InitCollisionGrid(
+        static_cast<unsigned>(mapWidth),
+        static_cast<unsigned>(mapHeight)
+    );
 
     // --- Spawn player GO once ---
     if (!gPlayer) gPlayer = new Player();
     PetManager::GetInstance()->LinkPlayer(gPlayer);
-    
+
     // Load Enemies
     boss = new Enemy();
     enemy1 = new Enemy();
@@ -222,6 +233,7 @@ void GameState::InitState()
 {
     InitTutorial(currentLevel);
 
+    AEVec2 safeSpawnPos = map->GetTilePosition(2, 2);
     // Player collides with pickups + enemies
     Bitmask collideMask = CreateBitmask(3,
         Collision::LAYER::ENEMIES,
@@ -230,8 +242,8 @@ void GameState::InitState()
     );
 
     gPlayer->Init(
-        currentLevel.startPos,
-        AEVec2{ playerRadius*2.f, playerRadius*2.f },
+        safeSpawnPos,
+        AEVec2{ playerRadius * 2.f, playerRadius * 2.f },
         0,
         MESH_CIRCLE,
         Collision::SHAPE::COL_CIRCLE,
@@ -300,7 +312,7 @@ void GameState::InitState()
 
 
     // Camera starts on player
-    camPos = currentLevel.startPos;
+    camPos = safeSpawnPos; 
     camVel = { 0,0 };
 
     minimap->Reset();
