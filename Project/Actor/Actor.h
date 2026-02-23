@@ -41,6 +41,8 @@ public:
 	//Final value excludes base stat amount.
 	// Returns total modifier from all active status effects (does NOT include base stat)
 	float GetStatEffectValue(STAT_TYPE stat, float baseStat);
+	//Get the dictionary of status effects affecting this actor.
+	std::map<std::string, StatEffects::StatusEffect*> const& GetStatusEffects() const;
 	//Delete and clear.
 	void ClearStatusEffects();
 

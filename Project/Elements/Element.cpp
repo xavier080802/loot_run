@@ -8,6 +8,8 @@
 #include "MoonElement.h"
 #include "BloodSunElement.h"
 #include "BloodMoonElement.h"
+#include "SunMoonElement.h"
+#include "../Helpers/Vec2Utils.h"
 
 #include <iostream>
 
@@ -41,7 +43,12 @@ namespace Elements {
 	std::string bloodMoonDebuffName{"Sanguine Oppression"};
 
 	//Sun+Moon reaction
-
+	float sunMoonLifetime{5.f};
+	AEVec2 sunMoonSize{210, 210};
+	float sunMoonProcTime{1.f};
+	float sunMoonSlowDur{1.5f};
+	unsigned sunMoonSlowMaxStacks{1};
+	std::string sunMoonSlowName{"Eclipsing Awe"};
 
 	//==========================================================================================================//
 
@@ -97,11 +104,11 @@ namespace Elements {
 					AttackHitboxConfig cfg{ };
 					cfg.owner = caster;
 					cfg.colliderSize = cfg.renderScale = bloodMoonSize;
-					cfg.tint = { 186, 0,0,180 };
+					cfg.tint = { 186, 0,0,100 };
 					cfg.lifetime = bloodMoonLifetime;
 					cfg.disableOnHit = cfg.followOwner = false;
 					cfg.hitCooldown = bloodMoonProcTime;
-					cfg.onHit = Elements::BloodMoonEffect;
+					cfg.onHit = BloodMoonEffect;
 					cfg.zIndex = -2;
 					hb->Start(cfg);
 				}
@@ -110,8 +117,26 @@ namespace Elements {
 			else if ((first == StatEffects::EFF_TYPE::MOON) && (second == StatEffects::EFF_TYPE::SUN)
 				|| (first == StatEffects::EFF_TYPE::SUN) && (second == StatEffects::EFF_TYPE::MOON)) {
 				//Sun + Moon: Place Eclipse object.
+				AttackHitboxGO* hb{ dynamic_cast<AttackHitboxGO*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::ATTACK_HITBOX)) };
+				if (hb) {
+					AttackHitboxConfig cfg{ };
+					cfg.owner = caster;
+					cfg.offset = actor->GetPos() - caster->GetPos(); //Place on victim, not caster
+					cfg.colliderSize = cfg.renderScale = sunMoonSize;
+					cfg.tint = { 127,46,0,130 };
+					cfg.lifetime = sunMoonLifetime;
+					cfg.disableOnHit = cfg.followOwner = false;
+					cfg.hitCooldown = sunMoonProcTime;
+					cfg.onHit = SunMoonEffect;
+					cfg.onEnd = SunMoonDetonate;
+					cfg.zIndex = -2;
+					hb->Start(cfg);
+					//Change collision layer to include caster
+					Bitmask bm = caster->GetCollisionLayers();
+					SetFlagAtPos(&bm, caster->GetColliderLayer());
+					hb->SetCollisionLayers(bm);
+				}
 				std::cout << "REACTION SUN MOON\n";
-
 			}
 			else return false; //No match.
 

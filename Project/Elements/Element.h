@@ -51,6 +51,14 @@ namespace Elements {
 	extern float bloodMoonDebuffDur;
 	extern unsigned bloodMoonDebuffMaxStacks;
 	extern std::string bloodMoonDebuffName;
+
+	//Sun+Moon reaction
+	extern float sunMoonLifetime;
+	extern AEVec2 sunMoonSize;
+	extern float sunMoonProcTime;
+	extern float sunMoonSlowDur;
+	extern unsigned sunMoonSlowMaxStacks;
+	extern std::string sunMoonSlowName;
 }
 
 #endif // !_ELEMENT_H_

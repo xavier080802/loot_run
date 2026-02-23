@@ -100,6 +100,11 @@ float Actor::GetStatEffectValue(STAT_TYPE stat, float baseStat)
     return final;
 }
 
+std::map<std::string, StatEffects::StatusEffect*> const& Actor::GetStatusEffects() const
+{
+    return statusEffectsDict;
+}
+
 void Actor::OnDeath()
 {    
     // Disable immediately to prevent further collision or updates
