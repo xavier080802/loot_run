@@ -374,6 +374,9 @@
     <ClInclude Include="GameStates\ShopState.h">
       <Filter>Header Files\GameStates</Filter>
     </ClInclude>
+    <ClInclude Include="Actor\ActorSubscriptions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="GameObjects\AttackHitboxGO.h">
       <Filter>Header Files\GameObjects</Filter>
     </ClInclude>

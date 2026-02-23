@@ -15,7 +15,7 @@ namespace {
 		for (StatEffects::Mod const& m : Elements::bloodSunDetonateDmg) {
 			dmg += m.GetValFromActor(*caster);
 		}
-		other->TakeDamage(dmg);
+		other->TakeDamage(dmg, caster, DAMAGE_TYPE::ELEMENTAL);
 	}
 }
 
@@ -25,7 +25,7 @@ void BloodSunElement::TriggerDoT()
 	for (StatEffects::Mod const& m : Elements::bloodSunDotDmg) {
 		dmg += m.GetValFromActor(*owner);
 	}
-	owner->TakeDamage(dmg);
+	owner->TakeDamage(dmg, caster, DAMAGE_TYPE::ELEMENTAL);
 }
 
 void BloodSunElement::SubscriptionAlert(ActorDeadSubContent content)

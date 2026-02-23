@@ -1,7 +1,22 @@
 #include "Actor.h"
 #include "../Elements/Element.h"
+#include "StatsCalc.h"
+#include "StatsCalc.h"
 #include <algorithm>
 #include <iostream>
+
+namespace {
+    // Just for debugging
+    const char* DmgTypeToString(DAMAGE_TYPE type) {
+        switch (type) {
+            case DAMAGE_TYPE::PHYSICAL: return "PHYSICAL";
+            case DAMAGE_TYPE::MAGICAL: return "MAGICAL";
+            case DAMAGE_TYPE::ELEMENTAL: return "ELEMENTAL";
+            case DAMAGE_TYPE::TRUE_DAMAGE: return "TRUE_DAMAGE";
+            default: return "UNKNOWN";
+        }
+    }
+}
 
 GameObject* Actor::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, Collision::LAYER _isInLayer)
 {
@@ -28,22 +43,65 @@ void Actor::Update(double dt)
     UpdateStatusEffects(dt);
 }
 
-void Actor::TakeDamage(float dmg)
+void Actor::DealDamage(Actor* target, float baseDmg, DAMAGE_TYPE dmgType, const EquipmentData* weapon)
 {
+    // Make sure we have a valid and alive target before doing anything.
+    if (!target || target->IsDead()) return;
+
+    float finalDmg = baseDmg;
+
+    // Trigger BeforeDealingDmg alert so that attacker's buffs or status effects 
+    // can modify the finalDmg before it is applied to the target.
+    for (ActorBeforeDealingDmgSub* sub : beforeDealingDmgSubs) {
+        if (!sub) continue;
+        sub->SubscriptionAlert({this, target, weapon, dmgType, baseDmg, finalDmg});
+    }
+
+    // Testing cout to verify DealDamage is correctly preparing the final damage
+    std::cout << "[Actor::DealDamage] Attacker deals " << finalDmg << " " 
+              << DmgTypeToString(dmgType) << " damage to target!" << '\n';
+
+    target->TakeDamage(finalDmg, this, dmgType);
+}
+
+void Actor::TakeDamage(float dmg, Actor* attacker, DAMAGE_TYPE dmgType)
+{
+    // Ignore non-positive damage
     if (dmg <= 0.0f) return;
-    mCurrentHP -= dmg;
+
+    // Apply target defense/status effects mitigation here if necessary
+    float actualDmg = dmg;
+    
+    // Physical and Magical damage are mitigated by defense.
+    // True Damage and Elemental (typically) ignore defense.
+    if (dmgType == DAMAGE_TYPE::PHYSICAL || dmgType == DAMAGE_TYPE::MAGICAL) {
+        // Factor in any defense buffs/debuffs from active status effects
+        float netDefense = mStats.defense + GetStatEffectValue(STAT_TYPE::DEF, mStats.defense);
+        if (netDefense < 0.0f) netDefense = 0.0f; // Prevent negative defense increasing damage
+
+        actualDmg = StatsCalc::ComputeDamage(dmg, netDefense);
+    }
+
+    // Testing cout to verify TakeDamage is receiving the attacker and damage correctly
+    std::cout << "[Actor::TakeDamage] Target taking " << actualDmg << " damage"
+              << (attacker ? " from attacker" : " (no attacker)") 
+              << " after " << mStats.defense << " defense mitigation.\n";
+
+    mCurrentHP -= actualDmg;
 
     std::cout << "DMG: " << dmg << " -> Hp: " << mCurrentHP << '\n';
     //TEMP
+    // Alert on-hit subscribers (e.g., target's defensive reactive effects, or attacker's lifesteal)
     for (ActorOnHitSub* sub : onHitSubs) {
         if (!sub) continue;
-        sub->SubscriptionAlert({ nullptr, this, nullptr, dmg });
+        sub->SubscriptionAlert({ attacker, this, nullptr, dmgType, actualDmg });
     }
 
     if (mCurrentHP <= 0.0f)
     {
         mCurrentHP = 0.0f;
-        OnDeath();
+        // Pass the attacker to OnDeath so we know who got the kill
+        OnDeath(attacker);
     }
 }
 
@@ -105,17 +163,26 @@ std::map<std::string, StatEffects::StatusEffect*> const& Actor::GetStatusEffects
     return statusEffectsDict;
 }
 
-void Actor::OnDeath()
+void Actor::OnDeath(Actor* killer)
 {    
-    // Disable immediately to prevent further collision or updates
+    // Disable immediately to prevent further collision or updates.
     isEnabled = false;
     collisionEnabled = false;
 
-    //Alert subscribers
+    // Alert subscribers that this actor has died.
     for (ActorDeadSub* s : onDeathSubs) {
         if (!s) continue;
-        //TODO: get killer
-        s->SubscriptionAlert({ nullptr, this });
+        s->SubscriptionAlert({ killer, this });
+    }
+
+    // If there is a valid killer, alert the killer's subscribers that they got a kill.
+    // E.g., for "on kill" buffs.
+    if (killer) {
+        std::cout << "[Actor::OnDeath] Actor killed by a valid attacker! Alerting killer's sub.\n";
+        for (ActorGotKillSub* s : killer->onKilledAnotherSubs) {
+            if (!s) continue;
+            s->SubscriptionAlert({killer, this});
+        }
     }
 }
 
@@ -177,4 +244,16 @@ void Actor::SubToOnHit(ActorOnHitSub* sub, bool remove)
     }
     if (remove) return;
     onHitSubs.push_back(sub);
+}
+
+void Actor::SubToBeforeDealingDmg(ActorBeforeDealingDmgSub* sub, bool remove)
+{
+    for (auto it = beforeDealingDmgSubs.begin(); it != beforeDealingDmgSubs.end(); ++it) {
+        if (*it == sub) {
+            if (remove) beforeDealingDmgSubs.erase(it);
+            return;
+        }
+    }
+    if (remove) return;
+    beforeDealingDmgSubs.push_back(sub);
 }

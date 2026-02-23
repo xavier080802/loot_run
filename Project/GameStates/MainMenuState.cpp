@@ -184,14 +184,34 @@ void MainMenuState::Draw()
 	// ----------------
 	// Draw Title
 	// ----------------
-	AEVec2 titlePos = DefaultToWorld(title.pos.x, title.pos.y);
-	AEVec2 labelSize = { title.size.x * scale,title.size.y * scale };
+	AEVec2 titlePos = DefaultToWorld(
+		title.pos.x,
+		title.pos.y
+	);
+
+	AEVec2 labelSize = {
+		title.size.x * scale,
+		title.size.y * scale
+	};
+
 	AEMtx33 mtx;
 	GetTransformMtx(mtx, titlePos, 0.0f, labelSize);
 	AEGfxSetTransform(mtx.m);
-	AEGfxSetColorToMultiply(0.75f, 0.75f, 0.75f, 1.0f);
+
+	AEGfxSetColorToMultiply(
+		0.75f,
+		0.75f,
+		0.75f,
+		1.0f
+	);
+
 	AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
-	DrawAEText(BigFont, title.label, titlePos, scale, CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
+
+	DrawAEText(
+		BigFont, title.label, titlePos, scale,
+		CreateColor(10, 10, 10, 255),
+		TEXT_MIDDLE
+	);
 
 	// ----------------
 	// Draw Buttons
