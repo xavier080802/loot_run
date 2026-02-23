@@ -16,9 +16,14 @@ namespace {
 		if (data.other.GetGOType() != GO_TYPE::ENEMY) return;
 
 		Actor& target = static_cast<Actor&>(data.other);
-		//target.TakeDamage(caster->GetStats().attack);
 		
-		Elements::ApplyElement(Elements::ELEMENT_TYPE::SUN, caster, &target); //TEMP
+		Player* p = dynamic_cast<Player*>(caster);
+		const EquipmentData* weapon = p ? p->GetHeldWeaponData() : nullptr;
+		caster->DealDamage(&target, caster->GetStats().attack, DAMAGE_TYPE::PHYSICAL, weapon);
+
+		if (weapon && weapon->element != Elements::ELEMENT_TYPE::NONE) {
+			Elements::ApplyElement(weapon->element, caster, &target); 
+		}
 	}
 
 	void OnMeleeHit(GameObject::CollisionData& data, Actor* caster)
@@ -27,8 +32,14 @@ namespace {
 		if (data.other.GetGOType() != GO_TYPE::ENEMY) return;
 
 		Actor& target = static_cast<Actor&>(data.other);
-		//target.TakeDamage(caster->GetStats().attack);
-		Elements::ApplyElement(Elements::ELEMENT_TYPE::MOON, caster, &target); //TEMP
+		
+		Player* p = dynamic_cast<Player*>(caster);
+		const EquipmentData* weapon = p ? p->GetHeldWeaponData() : nullptr;
+		caster->DealDamage(&target, caster->GetStats().attack, DAMAGE_TYPE::PHYSICAL, weapon);
+
+		if (weapon && weapon->element != Elements::ELEMENT_TYPE::NONE) {
+			Elements::ApplyElement(weapon->element, caster, &target);
+		}
 
 		//Knockback
 		AEVec2 dir = {
@@ -69,11 +80,17 @@ void Player::InitPlayerRuntime(const ActorStats& baseStats)
 
 	// Give starter loadout
 	const EquipmentData* sword = GameDB::GetEquipmentData(1);
+	const EquipmentData* sunSword = GameDB::GetEquipmentData(4);
 	const EquipmentData* bow = GameDB::GetEquipmentData(3);
 
 	if (sword) {
 		mInventory.AddEquipment(sword);
 		mInventory.EquipMainWeapon(0, sword);// Weapon1 slot
+	}
+
+	if (sunSword) {
+		mInventory.AddEquipment(sunSword);
+		mInventory.EquipMainWeapon(1, sunSword);// Weapon2 slot
 	}
 
 	if (bow) {
@@ -225,13 +242,13 @@ void Player::HandleAttackInput(double dt)
 		dropPos.x += dropDir.x * dropDist;
 		dropPos.y += dropDir.y * dropDist;
 
-		
+		// Spawn generic item drop in the world representing what player dropped
 		PickupGO::Spawn(dropPos, p);
 		std::cout << "Dropped: " << SafeName(held) << "\n";
 		std::cout << "After unequip held ptr=" << GetHeldWeaponData() << " name=" << SafeName(GetHeldWeaponData()) << "\n";
 
 
-		//Unequip
+		// Remove the weapon completely from the active loadout slot
 		switch (heldWeapon)
 		{
 		case HeldWeapon::Weapon1:
@@ -304,6 +321,7 @@ void Player::DoAttackWithWeapon(const EquipmentData* weapon)
 
 	case AttackType::SwingArc:
 	{
+		// Spawn a melee hitbox to handle the actual damage collision
 		AttackHitboxGO* hb = dynamic_cast<AttackHitboxGO*>(
 			GameObjectManager::GetInstance()->FetchGO(GO_TYPE::ATTACK_HITBOX)
 			);

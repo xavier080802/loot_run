@@ -19,7 +19,7 @@ bool PetSkills::Pet1Skill(const SkillCastData& data)
         [](GameObject::CollisionData& other, Actor* caster) {
             if (other.other.GetGOType() != GO_TYPE::ENEMY) return;
             Actor& target = dynamic_cast<Actor&>(other.other);
-            target.TakeDamage(25);
+            target.TakeDamage(25, caster, DAMAGE_TYPE::MAGICAL);
         });
 
     proj->SetPos(data.thisPet->GetPos());

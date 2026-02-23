@@ -9,13 +9,13 @@ namespace {
 	{
 		Actor* other{ dynamic_cast<Actor*>(&target.other) };
 		if (!other) return;
-		other->TakeDamage(10);
+		other->TakeDamage(10, caster, DAMAGE_TYPE::ELEMENTAL);
 	}
 }
 
 void BloodSunElement::TriggerDoT()
 {
-	owner->TakeDamage(owner->GetMaxHP() * 0.25f * stacks);
+	owner->TakeDamage(owner->GetMaxHP() * 0.25f * stacks, caster, DAMAGE_TYPE::ELEMENTAL);
 }
 
 void BloodSunElement::SubscriptionAlert(ActorDeadSubContent content)

@@ -24,9 +24,17 @@ public:
 
     void Draw() override;
 
+    // Recomputes the player's final stats by combining base stats, equipment modifiers, and upgrades.
+    // Should be called whenever inventory changes.
     void RecalculateStats();
+    
+    // Processes collision with a PickupGO payload, adding items/ammo/health to the player.
     void TryPickup(const PickupPayload& payload);
+    
+    // Retrieves the currently wielded equipment based on the 'heldWeapon' slot state.
+    const EquipmentData* GetHeldWeaponData() const;
 
+    // Returns the normalized vector representing the direction the player is trying to move.
     AEVec2 GetMoveDirNorm() const;
 
     GO_TYPE GetGOType()const override { return GO_TYPE::PLAYER; }
@@ -39,7 +47,8 @@ private:
         Bow
     };
 
-    const EquipmentData* GetHeldWeaponData() const;
+    // Helper that executes an attack using the specified weapon.
+    // Handles ammo consumption for ranged weapons and spawns appropriate hitboxes/projectiles.
     void DoAttackWithWeapon(const EquipmentData* weapon);
 
 private:

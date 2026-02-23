@@ -18,7 +18,7 @@ void BloodElement::TriggerDoT()
 
 	//Do dmg in a way that calls the actor's ActorOnHitSubs
 
-	owner->TakeDamage(1); //Temp
+	owner->TakeDamage(1, caster, DAMAGE_TYPE::ELEMENTAL); //Temp
 }
 
 void BloodElement::OnReapply(int numStacks)

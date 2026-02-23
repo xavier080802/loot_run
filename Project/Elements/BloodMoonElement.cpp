@@ -7,7 +7,7 @@ void Elements::BloodMoonEffect(GameObject::CollisionData& target, Actor* caster)
 	Actor* other{ dynamic_cast<Actor*>(&target.other) };
 	if (!other) return;
 	//Damage
-	other->TakeDamage(5);
+	other->TakeDamage(5, caster, DAMAGE_TYPE::ELEMENTAL);
 	//Apply def shred debuff
 	StatEffects::StatusEffect* debuff{ new StatEffects::StatusEffect{caster, Elements::bloodMoonDebuffDur, Elements::bloodMoonDebuffMaxStacks,
 		Elements::bloodMoonDebuffName ,1, StatEffects::DEBUFF} };

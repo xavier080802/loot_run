@@ -9,7 +9,7 @@ namespace {
 		Actor* other{ dynamic_cast<Actor*>(&target.other) };
 		if (!other) return;
 
-		other->TakeDamage(20);
+		other->TakeDamage(20, caster, DAMAGE_TYPE::ELEMENTAL);
 	}
 }
 

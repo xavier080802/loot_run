@@ -3,6 +3,13 @@
 #include "Actor.h"
 #include "EnemyDef.h"
 
+// Basic AI states for the enemy
+enum class EnemyState {
+    IDLE,
+    CHASE,
+    ATTACK
+};
+
 // Runtime enemy entity driven by an immutable EnemyDef
 class Enemy : public Actor
 {
@@ -19,9 +26,14 @@ public:
 
 protected:
     // Spawns drops and disables the enemy; actual deletion is manager-controlled
-    void OnDeath() override;
+    void OnDeath(Actor* killer = nullptr) override;
 
 private:
     // Non-owning pointer to static enemy definition data
     const EnemyDef* mDef = 0;
+
+    // AI State tracking
+    EnemyState mState = EnemyState::IDLE;
+    Actor* mTarget = nullptr; // Reference to the player
+    float mAttackCooldown = 0.0f; // Mock attack delay
 };
