@@ -29,6 +29,7 @@ public:
 	bool IsDead() const { return mCurrentHP <= 0.0f; }
 
 	const ActorStats& GetStats() const { return mStats; }
+	virtual const ActorStats& GetBaseStats() const { return mStats; }
 	float GetHP() const { return mCurrentHP; }
 	float GetMaxHP() const { return mStats.maxHP; }
 

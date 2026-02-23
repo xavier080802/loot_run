@@ -33,8 +33,8 @@ void Actor::TakeDamage(float dmg)
     if (dmg <= 0.0f) return;
     mCurrentHP -= dmg;
 
+    std::cout << "DMG: " << dmg << " -> Hp: " << mCurrentHP << '\n';
     //TEMP
-    std::cout << "DMG: " << mCurrentHP << '\n';
     for (ActorOnHitSub* sub : onHitSubs) {
         if (!sub) continue;
         sub->SubscriptionAlert({ nullptr, this, nullptr, dmg });

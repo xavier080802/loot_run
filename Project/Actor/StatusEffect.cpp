@@ -50,3 +50,40 @@ float StatEffects::StatusEffect::GetFinalModVal(STAT_TYPE stat, float baseVal) c
 	}
 	return change * stacks;
 }
+
+void StatEffects::StatusEffect::ScaleMods(float scalar)
+{
+	for (Mod m : mods) {
+		m.value *= scalar;
+	}
+}
+
+float StatEffects::Mod::GetValFromActor(Actor const& actor) const
+{
+	if (mathType == FLAT) return value;
+
+	const ActorStats& stats{ actor.GetBaseStats() };
+	float out{};
+	switch (stat)
+	{
+	case MAX_HP:
+		out = stats.maxHP;
+		break;
+	case DEF:
+		out = stats.defense;
+		break;
+	case ATT:
+		out = stats.attack;
+		break;
+	case ATT_SPD:
+		out = stats.attackSpeed;
+		break;
+	case MOVE_SPD:
+		out = stats.moveSpeed;
+		break;
+	default:
+		break;
+	}
+
+	return out * (value / 100.f);
+}

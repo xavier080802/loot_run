@@ -20,16 +20,17 @@ public:
 	Player const& GetPlayer() { return *player; }
 
 	//Sets the pet based on the type.
-	void SetPet(Pets::PET_TYPE pet, int dupes);
-
+	void SetPet(Pets::PET_TYPE pet, Pets::PET_RANK rank);
+	Pet* GetEquippedPet() { return equippedPet; }
 	Pets::PET_RANK GetPetRank(Pets::PET_TYPE pet);
 
 	bool Handle(Message* message) override;
 
 private:
+	void LoadPetData();
 	PostOffice* po{};
 	//Constant data. info for each pet, not player-specific
-	std::map<Pets::PET_TYPE, Pet::PetData> petData{};
+	std::map<Pets::PET_TYPE, Pets::PetData> petData{};
 	Pet* equippedPet{};
 	Player* player{};
 

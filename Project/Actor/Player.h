@@ -30,6 +30,7 @@ public:
     AEVec2 GetMoveDirNorm() const;
 
     GO_TYPE GetGOType()const override { return GO_TYPE::PLAYER; }
+    const ActorStats& GetBaseStats() const override { return mBaseStats; }
 
 private:
     enum class HeldWeapon : unsigned char

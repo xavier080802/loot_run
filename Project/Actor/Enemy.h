@@ -18,6 +18,7 @@ public:
     virtual void Free() override;
 
     EnemyDef const& GetDefinition() const { return *mDef; }
+    const ActorStats& GetBaseStats() const override { return mDef->baseStats; }
 
 protected:
     // Spawns drops and disables the enemy; actual deletion is manager-controlled

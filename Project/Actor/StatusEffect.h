@@ -9,8 +9,8 @@ class Actor;
 
 namespace StatEffects {
 	enum MATH_TYPE {
-		FLAT,
-		MULTIPLICATIVE,
+		FLAT, //Stat type doesnt matter, takes value as-is
+		MULTIPLICATIVE, //Based on the stat's value
 	};
 
 	struct Mod {
@@ -22,6 +22,10 @@ namespace StatEffects {
 
 		Mod(float _val, MATH_TYPE _mathType, STAT_TYPE _statToAffect) 
 			: value(_val), mathType(_mathType), stat(_statToAffect){}
+
+		//Get this Mod's true value based on actor's base stats.
+		//if mathType is MULT, returns value
+		float GetValFromActor(Actor const& actor) const;
 	};
 
 	//Note: Don't change order, >= DEBUFF is considered debuff (Elements)
@@ -74,6 +78,9 @@ namespace StatEffects {
 
 		std::string const& GetName() const { return name; };
 		EFF_TYPE GetType() const { return effType; }
+
+		//Multiply the value of each Mod by the given scalar.
+		void ScaleMods(float scalar);
 
 	protected:
 		Actor* caster{}, * owner{};
