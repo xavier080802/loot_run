@@ -109,8 +109,6 @@ void Player::Update(double dt)
 	if (attackCooldownTimer > 0.0f)
 		attackCooldownTimer -= fdt;
 
-	prevPos = pos;
-
 	HandleAttackInput(dt);
 	// Track input direction for minimap arrow (Player does the actual movement)
 	HandleMovementInput(dt);
@@ -347,6 +345,7 @@ void Player::DoAttackWithWeapon(const EquipmentData* weapon)
 		//Remove Interactable from collision layers
 		Bitmask bm{ GetCollisionLayers() };
 		ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
+		ResetFlagAtPos(&bm, Collision::LAYER::OBSTACLE);
 		hb->SetCollisionLayers(bm);
 		break;
 	}

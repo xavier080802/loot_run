@@ -76,12 +76,12 @@ void Terminate(void)
 {
 	if (gameRunningFlag)
 	{
-	gameRunningFlag = false;
-	stateManager->Destroy();
-	petManager->Destroy();
-	goManager->Destroy();
-	renderManager->Destroy();
-	// free the system
-	AESysExit();
+		gameRunningFlag = false;
+		stateManager->Destroy();
+		petManager->Destroy();
+		goManager->Destroy();
+		renderManager->Destroy();
+		// free the system
+		AESysExit();
 	}
 }
