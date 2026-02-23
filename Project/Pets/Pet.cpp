@@ -76,7 +76,7 @@ void Pet::SetData(const Pets::PetData& newData, Pets::PET_RANK rank)
 	data = newData;
 	//Scale values based on rarity
 	data.passive.ScaleMods(data.rarityScaling[rank]);
-	for (StatEffects::Mod m : data.multipliers) {
+	for (StatEffects::Mod& m : data.multipliers) {
 		m.value *= data.rarityScaling[rank];
 	}
 	//Rank too low for skill

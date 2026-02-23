@@ -53,7 +53,7 @@ float StatEffects::StatusEffect::GetFinalModVal(STAT_TYPE stat, float baseVal) c
 
 void StatEffects::StatusEffect::ScaleMods(float scalar)
 {
-	for (Mod m : mods) {
+	for (Mod& m : mods) {
 		m.value *= scalar;
 	}
 }
