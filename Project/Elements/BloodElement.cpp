@@ -19,7 +19,7 @@ void BloodElement::TriggerDoT()
 	for (StatEffects::Mod const& m : bloodDmgMods) {
 		dmg += m.GetValFromActor(*caster);
 	}
-	owner->TakeDamage({ dmg, caster, DAMAGE_TYPE::ELEMENTAL, nullptr });
+	caster->DealDamage(owner, dmg, DAMAGE_TYPE::ELEMENTAL, nullptr);
 }
 
 void BloodElement::OnReapply(int numStacks)
