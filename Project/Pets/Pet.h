@@ -25,7 +25,9 @@ public:
 	void SetData(const Pets::PetData& newData, Pets::PET_RANK rank);
 	const Pets::PetData& GetPetData();
 	//Get specific multiplier from pet data
-	StatEffects::Mod const& GetMultiplier(unsigned index);
+	StatEffects::Mod const& GetMultiplier(unsigned index = 0);
+	//Get specific skill element from pet data
+	Elements::ELEMENT_TYPE GetSkillElement(unsigned index = 0);
 
 	void ClearPath();
 	//Reset game-time variables

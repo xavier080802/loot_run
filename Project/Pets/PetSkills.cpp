@@ -5,6 +5,7 @@
 #include "../Helpers/Vec2Utils.h"
 #include "Pet.h"
 #include "PetManager.h"
+#include "../Elements/Element.h"
 #include <iostream>
 
 bool PetSkills::Pet1Skill(const SkillCastData& data)
@@ -27,6 +28,9 @@ bool PetSkills::Pet1Skill(const SkillCastData& data)
             //Get multiplier from data and calc base damage
             caster->DealDamage(&target, pet->GetMultiplier(0).GetValFromActor(*caster) + pet->GetMultiplier(1).GetValFromActor(*caster),
                 DAMAGE_TYPE::MAGICAL, nullptr);
+
+            //Apply element (if any)
+            Elements::ApplyElement(pet->GetSkillElement(), caster, &target);
         });
 
     proj->SetPos(data.thisPet->GetPos());

@@ -159,6 +159,11 @@ void PetManager::LoadPetData()
 		pd.skillCooldown = v.get("skillCooldown", 0).asFloat();
 		pd.skillDesc = v.get("skillDesc", "").asString();
 		pd.texture = v.get("texture", "").asString();
+		if (v.findArray("skillElements")) {
+			for (Json::Value const& m : v["skillElements"]) {
+				pd.skillElements.push_back(static_cast<Elements::ELEMENT_TYPE>(m.asInt()));
+			}
+		}
 
 		//Get pet skill ptr
 		pd.PetSkill = PetSkills::skills[pd.id];

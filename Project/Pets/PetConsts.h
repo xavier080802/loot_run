@@ -5,6 +5,7 @@
 #include <vector>
 #include "../Actor/StatsTypes.h"
 #include "../Actor/StatusEffect.h"
+#include "../Elements/Element.h"
 #include "PetSkills.h"
 
 namespace Pets {
@@ -35,6 +36,7 @@ namespace Pets {
 		float skillCooldown;
 		std::string skillDesc;
 		std::string texture;
+		std::vector<Elements::ELEMENT_TYPE> skillElements; //Elements the skill may inflict (implementation-based)
 
 		//Not loaded from json
 		bool (*PetSkill)(const PetSkills::SkillCastData& data);

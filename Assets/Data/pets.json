@@ -6,6 +6,8 @@
     mathType: FLAT=0, MULTIPLICATIVE=1. If flat, stat doesnt really matter.
     stat: STAT_TYPE enum in StatsType.h, start from 0
     rarityScaling: Multiplied with the base values of passive/multipliers for each rarity, starting from COMMON
+
+    Arrays can be omitted if empty, PetManager will check if the array exists
     ------------------------------------------------------------
 
     {
@@ -28,7 +30,8 @@
         "rarityScaling": [ 1, 2, 3, 4, 5, 6 ], // Must have 6 entries, 1 for each rarity. COMMON first, to LEGENDARY
         "skillCooldown": 0,
         "skillDesc": "",
-        "texture": "", // Filepath to texture
+        "skillElements": [ ], //Elements the skill may inflict. ELEMENT_TYPE
+        "texture": "" // Filepath to texture
     }
 
 */

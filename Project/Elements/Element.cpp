@@ -183,6 +183,8 @@ namespace Elements {
 	//Static function to apply an element
 	bool ApplyElement(ELEMENT_TYPE ele, Actor* applier, Actor* target)
 	{
+		if (ele == ELEMENT_TYPE::NONE) return false;
+
 		StatEffects::StatusEffect* se{ nullptr };
 		switch (ele)
 		{

@@ -95,6 +95,12 @@ StatEffects::Mod const& Pet::GetMultiplier(unsigned index)
 	return data.multipliers.at(index);
 }
 
+Elements::ELEMENT_TYPE Pet::GetSkillElement(unsigned index)
+{
+	if (data.skillElements.empty()) return Elements::ELEMENT_TYPE::NONE;
+	return data.skillElements.at(index);
+}
+
 void Pet::ClearPath()
 {
 	size_t temp{ path.size() }; //Dont put path.size() into loop.
