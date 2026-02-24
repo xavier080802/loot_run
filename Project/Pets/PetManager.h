@@ -10,6 +10,8 @@ class PetManager : public Singleton<PetManager>, public PostBox
 {
 	friend Singleton<PetManager>;
 public:
+	const unsigned MAX_PETS{ 1000 };
+
 	void Init();
 	//When game state inits, call to reset pet data
 	void InitPetForGame();
@@ -24,9 +26,14 @@ public:
 	Pet* GetEquippedPet() { return equippedPet; }
 	Pets::PET_RANK GetPetRank(Pets::PET_TYPE pet);
 
+	//Add a new pet to the inventory.
+	//Returns success. If max limit is reached, returns false
+	bool AddNewPet(Pets::PetSaveData const& newPet);
+
 	bool Handle(Message* message) override;
 
 private:
+	const std::string InvFilePath{ "Assets/Data/pet_inv.csv" };
 	void LoadPetData();
 	PostOffice* po{};
 	//Constant data. info for each pet, not player-specific
@@ -34,7 +41,8 @@ private:
 	Pet* equippedPet{};
 	Player* player{};
 
-	//TODO: pet inventory, with the dupe levels and stuff.
+	//Pet inventory
+	std::vector<Pets::PetSaveData> ownedPets{};
 
 	//TODO: databank, load from file or smthing. All the numerical values.
 };

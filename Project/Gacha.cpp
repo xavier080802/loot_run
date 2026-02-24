@@ -1,5 +1,6 @@
 #include "Gacha.h"
 #include "AEEngine.h"
+#include "Pets/PetManager.h"
 #include <cstdlib>
 #include <cmath>
 #include <vector>
@@ -99,6 +100,7 @@ void BeginGachaOverlay(GachaAnimation& anim, int count, float intro, float roll,
     anim.currentIndex = -1;
     s_particles.clear();
     s_chestOpened = false;
+    //Roll
     for (int i = 0; i < count; ++i) anim.results.push_back(RollGachaWord());
     s_highestEntry = FindHighestRarity(anim.results);
     anim.phase = GachaPhase::Intro;
@@ -119,11 +121,18 @@ void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skip, bool open) {
     }
     else s_chestBounceOffset = 0.0f;
 
+    //Check if chest is opened
     if (anim.phase == GachaPhase::Rolling && open && !s_chestOpened) {
         s_chestOpened = true;
         s_chestBounceTimer = 0.35f;
         s_chestLightTimer = s_chestLightMax;
         SpawnBurst(0, 0, s_highestEntry.r, s_highestEntry.g, s_highestEntry.b, 260);
+
+        //Save rolls to db
+        for (WordEntry const& e : anim.results) {
+            //TODO: get actual pet id and rarity
+            PetManager::GetInstance()->AddNewPet(Pets::PetSaveData{ Pets::PET_1, Pets::LEGENDARY });
+        }
     }
 
     if (s_chestOpened && anim.phase == GachaPhase::Rolling) {

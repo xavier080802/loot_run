@@ -41,6 +41,15 @@ namespace Pets {
 		//Not loaded from json
 		bool (*PetSkill)(const PetSkills::SkillCastData& data);
 	};
+
+	//Owned pets - CSV parse format
+	struct PetSaveData {
+		PET_TYPE id{};
+		PET_RANK rank{};
+
+		PetSaveData(PET_TYPE _id = PET_TYPE::NONE, PET_RANK _rank = PET_RANK::COMMON)
+			: id{ _id }, rank{ _rank } {};
+	};
 }
 #endif // !_PET_CONSTS_H_
 

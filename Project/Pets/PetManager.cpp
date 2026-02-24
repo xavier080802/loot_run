@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <json/json.h>
+#include "../File/CSV.h"
 
 /* Flow
 1. App executes, loading pet manager and game state -> LinkPlayer
@@ -78,6 +79,17 @@ Pets::PET_RANK PetManager::GetPetRank(Pets::PET_TYPE pet)
 	default:
 		return Pets::COMMON;
 	}
+}
+
+bool PetManager::AddNewPet(Pets::PetSaveData const& newPet)
+{
+	if (ownedPets.size() >= MAX_PETS) return false;
+	if (CSV::Write(InvFilePath, { std::to_string(newPet.id), std::to_string(newPet.rank) })) {
+		//Write success
+		ownedPets.push_back(newPet);
+		return true;
+	}
+	return false;
 }
 
 bool PetManager::Handle(Message* message)
@@ -169,5 +181,22 @@ void PetManager::LoadPetData()
 		pd.PetSkill = PetSkills::skills[pd.id];
 
 		petData[pd.id] = pd;
+
+		// Pet inventory
+		CSV const& inv{ CSV{InvFilePath} };
+		//Each row is a pet entry
+		for (unsigned r{}; r < min(inv.GetRows(), MAX_PETS); ++r) {
+			Pets::PetSaveData d{};
+			//Each col is the variable
+			for (unsigned c{}; c < inv.GetCols(); ++c) {
+				if (0 == c) {
+					d.id = static_cast<Pets::PET_TYPE>(stoi(inv.GetData(r, c)));
+				}
+				else if (1 == c) {
+					d.rank = static_cast<Pets::PET_RANK>(stoi(inv.GetData(r, c)));
+				}
+			}
+			ownedPets.push_back(d);
+		}
 	}
 }
