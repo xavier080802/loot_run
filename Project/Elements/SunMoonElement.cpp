@@ -13,7 +13,7 @@ namespace {
 		for (StatEffects::Mod const& m : Elements::sunMoonDmgMods) {
 			dmg += m.GetValFromActor(*caster);
 		}
-		other->TakeDamage(dmg, caster, DAMAGE_TYPE::ELEMENTAL);
+		other->TakeDamage({ dmg, caster, DAMAGE_TYPE::ELEMENTAL, nullptr });
 	}
 }
 

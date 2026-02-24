@@ -15,15 +15,11 @@ void BloodElement::Tick(double dt)
 
 void BloodElement::TriggerDoT()
 {
-	//Damage calc
-
-	//Do dmg in a way that calls the actor's ActorOnHitSubs
-
 	float dmg{};
 	for (StatEffects::Mod const& m : bloodDmgMods) {
 		dmg += m.GetValFromActor(*caster);
 	}
-	owner->TakeDamage(dmg, caster, DAMAGE_TYPE::ELEMENTAL);
+	owner->TakeDamage({ dmg, caster, DAMAGE_TYPE::ELEMENTAL, nullptr });
 }
 
 void BloodElement::OnReapply(int numStacks)

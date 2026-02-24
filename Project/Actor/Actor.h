@@ -12,6 +12,14 @@
 class Actor : public GameObject
 {
 public:
+	//Data of an attack
+	struct DamageData {
+		float dmg; //Incoming damage
+		Actor* attacker; //Ptr to the actor who is dealing the dmg (if any)
+		DAMAGE_TYPE dmgType; //Category of damage taken
+		EquipmentData const* weapon; //Weapon used to inflict dmg (if any)
+	};
+
 	virtual ~Actor() {}
 
 	GameObject* Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, Collision::LAYER _isInLayer) override;
@@ -30,10 +38,7 @@ public:
 	void DealDamage(Actor* target, float baseDmg, DAMAGE_TYPE dmgType, const EquipmentData* weapon = nullptr);
 	
 	// Called when this actor receives damage.
-	// dmg: The amount of incoming damage.
-	// attacker: A pointer to the actor who dealt the damage.
-	// dmgType: The category of damage taken.
-	void TakeDamage(float dmg, Actor* attacker, DAMAGE_TYPE dmgType);
+	void TakeDamage(DamageData const& data);
 	
 	// Restores the actor's HP by the specified amount, clamping at maxHP.
 	void Heal(float amt);

@@ -61,47 +61,46 @@ void Actor::DealDamage(Actor* target, float baseDmg, DAMAGE_TYPE dmgType, const 
     std::cout << "[Actor::DealDamage] Attacker deals " << finalDmg << " " 
               << DmgTypeToString(dmgType) << " damage to target!" << '\n';
 
-    target->TakeDamage(finalDmg, this, dmgType);
+    target->TakeDamage({ finalDmg, this, dmgType, weapon });
 }
 
-void Actor::TakeDamage(float dmg, Actor* attacker, DAMAGE_TYPE dmgType)
+void Actor::TakeDamage(DamageData const& data)
 {
     // Ignore non-positive damage
-    if (dmg <= 0.0f) return;
+    if (data.dmg <= 0.0f) return;
 
     // Apply target defense/status effects mitigation here if necessary
-    float actualDmg = dmg;
+    float actualDmg = data.dmg;
     
     // Physical and Magical damage are mitigated by defense.
     // True Damage and Elemental (typically) ignore defense.
-    if (dmgType == DAMAGE_TYPE::PHYSICAL || dmgType == DAMAGE_TYPE::MAGICAL) {
+    if (data.dmgType == DAMAGE_TYPE::PHYSICAL || data.dmgType == DAMAGE_TYPE::MAGICAL) {
         // Factor in any defense buffs/debuffs from active status effects
         float netDefense = mStats.defense + GetStatEffectValue(STAT_TYPE::DEF, mStats.defense);
         if (netDefense < 0.0f) netDefense = 0.0f; // Prevent negative defense increasing damage
 
-        actualDmg = StatsCalc::ComputeDamage(dmg, netDefense);
+        actualDmg = StatsCalc::ComputeDamage(data.dmg, netDefense);
     }
 
     // Testing cout to verify TakeDamage is receiving the attacker and damage correctly
     std::cout << "[Actor::TakeDamage] Target taking " << actualDmg << " damage"
-              << (attacker ? " from attacker" : " (no attacker)") 
+              << (data.attacker ? " from attacker" : " (no attacker)")
               << " after " << mStats.defense << " defense mitigation.\n";
 
     mCurrentHP -= actualDmg;
 
-    std::cout << "DMG: " << dmg << " -> Hp: " << mCurrentHP << '\n';
-    //TEMP
+    std::cout << "DMG: " << data.dmg << " -> Hp: " << mCurrentHP << '\n';
     // Alert on-hit subscribers (e.g., target's defensive reactive effects, or attacker's lifesteal)
     for (ActorOnHitSub* sub : onHitSubs) {
         if (!sub) continue;
-        sub->SubscriptionAlert({ attacker, this, nullptr, dmgType, actualDmg });
+        sub->SubscriptionAlert({ data.attacker, this, data.weapon, data.dmgType, actualDmg });
     }
 
     if (mCurrentHP <= 0.0f)
     {
         mCurrentHP = 0.0f;
         // Pass the attacker to OnDeath so we know who got the kill
-        OnDeath(attacker);
+        OnDeath(data.attacker);
     }
 }
 

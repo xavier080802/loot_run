@@ -25,7 +25,8 @@ bool PetSkills::Pet1Skill(const SkillCastData& data)
             Actor& target = dynamic_cast<Actor&>(other.other);
             
             //Get multiplier from data and calc base damage
-            target.TakeDamage(pet->GetMultiplier(0).GetValFromActor(*caster) + pet->GetMultiplier(1).GetValFromActor(*caster), caster, DAMAGE_TYPE::MAGICAL);
+            target.TakeDamage({ pet->GetMultiplier(0).GetValFromActor(*caster) + pet->GetMultiplier(1).GetValFromActor(*caster),
+                caster, DAMAGE_TYPE::MAGICAL, nullptr });
         });
 
     proj->SetPos(data.thisPet->GetPos());
