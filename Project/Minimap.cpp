@@ -28,7 +28,7 @@ void Minimap::Update(double dt, TileMap const& tilemap, Player const& player)
     AEVec2 p = player.GetPos();
     AEVec2 const& mapSize{ tilemap.GetFullMapSize() };
     AEVec2 fogTileSize{ (mapSize / FOG_GRID_SIZE) }; //world size
-    
+
     for (int x = 0; x < FOG_GRID_SIZE; ++x) {
         for (int y = 0; y < FOG_GRID_SIZE; ++y) {
             if (regenTimerGrid[x][y] > 0.0f) regenTimerGrid[x][y] -= dt;
@@ -36,8 +36,8 @@ void Minimap::Update(double dt, TileMap const& tilemap, Player const& player)
                 discoveryGrid[x][y] -= FOG_REGEN_RATE * dt;
                 if (discoveryGrid[x][y] < 0.0f) discoveryGrid[x][y] = 0.0f;
             }
-            float tileWorldX = (x * fogTileSize.x) - mapSize.x/2.f + (fogTileSize.x * 0.5f);
-            float tileWorldY = (y * fogTileSize.y) - mapSize.y/2.f + (fogTileSize.y * 0.5f);
+            float tileWorldX = (x * fogTileSize.x) - mapSize.x / 2.f + (fogTileSize.x * 0.5f);
+            float tileWorldY = (y * fogTileSize.y) - mapSize.y / 2.f + (fogTileSize.y * 0.5f);
 
             float dx = p.x - tileWorldX;
             float dy = p.y - tileWorldY;
@@ -54,50 +54,36 @@ void Minimap::Render(TileMap const& tilemap, Player const& player) const
 {
     AEVec2 const& mapSize{ tilemap.GetFullMapSize() };
 
-    // --- 1. CALCULATE UI COORDINATES ---
-    // scaleX/Y converts 1 unit of world distance to pixels on the minimap
-    float scaleX = size.x / mapSize.x;
-    float scaleY = size.y / mapSize.y;
-
-    // mmX/mmY is the CENTER of the minimap on your screen
+    // --- MINIMAP RENDERING LAYERS ---
+    float scaleX = size.x / mapSize.x, scaleY = size.y / mapSize.y;
     float mmX = (float)AEGfxGetWinMaxX() - size.x * 0.5f - minimapMargin;
     float mmY = (float)AEGfxGetWinMaxY() - size.y * 0.5f - minimapMargin - 50.f;
 
-    // Render the actual tile layout centered at mmX, mmY
+    //Render tile map
     tilemap.Render({ mmX, mmY }, 0, { scaleX, scaleY }, true);
 
-    // --- 2. RENDER GAME OBJECTS ---
+    //Render gameobjects
     std::vector<GameObject*> const& gos{ GameObjectManager::GetInstance()->GetGameObjects() };
-
-    // Scale the dots so they stay small even if the map gets huge
-    float dotSizeUI = gameobjectRadius * 2.0f;
-
     for (GameObject const* go : gos) {
         if (go->GetGOType() < GO_TYPE_MINIMAP_RENDERABLE || !go->IsEnabled()) continue;
-
-        // Convert world position to minimap offset
-        AEVec2 relativePos = go->GetPos() * AEVec2 { scaleX, scaleY };
-
-        DrawTintedMesh(
-            GetTransformMtx(AEVec2{ mmX, mmY } + relativePos, 0, { dotSizeUI, dotSizeUI }),
-            circleMesh,
-            nullptr,
-            gameobjectTints.count(go->GetGOType()) ? gameobjectTints.at(go->GetGOType()) : Color{ 255,255,255,255 },
-            255
-        );
+        DrawTintedMesh(GetTransformMtx(AEVec2{ mmX, mmY } + go->GetPos() * AEVec2 { scaleX, scaleY }, 0, { gameobjectRadius * 2, gameobjectRadius * 2 }),
+            circleMesh, nullptr, gameobjectTints.find(go->GetGOType()) != gameobjectTints.end() ? gameobjectTints.at(go->GetGOType()) : Color{ 255,255,255,255 }, 255);
     }
 
-    // --- 3. RENDER PLAYER & ORIENTATION ---
+    //TODO: Render dynamic stuff (from a list of conditions)
+
+    //Render player orientation arrow
     AEVec2 p = player.GetPos();
     float cx = mmX + p.x * scaleX;
     float cy = mmY + p.y * scaleY;
     AEVec2 d{ player.GetMoveDirNorm() };
 
     if (d.x || d.y) {
-        float px = -d.y, py = d.x;
-        float scaledArrowOffset = (dotSizeUI * 0.5f) + 2.0f;
+        float px = -d.y, py = d.x; // Perpendicular vector for width
+        float dotSize = gameobjectRadius * scaleX;
 
-        float ax = cx + d.x * scaledArrowOffset, ay = cy + d.y * scaledArrowOffset;
+        // Offset arrow slightly in front of the player dot: The value added to dotSize
+        float ax = cx + d.x * (dotSize + 5.0f), ay = cy + d.y * (dotSize + 5.0f);
         float tipX = ax + d.x * 8.0f, tipY = ay + d.y * 8.0f;
         float bLX = ax + px * 4.0f, bLY = ay + py * 4.0f;
         float bRX = ax - px * 4.0f, bRY = ay - py * 4.0f;
@@ -113,41 +99,31 @@ void Minimap::Render(TileMap const& tilemap, Player const& player) const
         AEGfxMeshFree(arrowMesh);
     }
 
-    // --- 4. RENDER FOG OF WAR (FIXED SCALE) ---
-    // The fog tile size must be scaled down to minimap pixels, not world pixels!
-    AEVec2 fogTileSizeUI = (mapSize / (float)FOG_GRID_SIZE) * AEVec2{ scaleX, scaleY };
-
-    AEMtx33 s;
-    AEMtx33Scale(&s, fogTileSizeUI.x, fogTileSizeUI.y);
-
+    //Render fog
+    AEVec2 fogTileSize{ (mapSize / FOG_GRID_SIZE) }; //world size
+    AEMtx33 s{};
+    AEMtx33Scale(&s, fogTileSize.x * scaleX, fogTileSize.y * scaleY);
     for (int x = 0; x < FOG_GRID_SIZE; x++) {
         for (int y = 0; y < FOG_GRID_SIZE; y++) {
             if (discoveryGrid[x][y] < 1.0f) {
                 AEMtx33 t, f;
+                //Offset pos of the fog tile.
+                float oX = x * fogTileSize.x + fogTileSize.x * 0.5f;
+                // Use y directly to match world space; the TileMap rendering handles the flip
+                float oY = y * fogTileSize.y + fogTileSize.y * 0.5f;
 
-                // Calculate corner of minimap and offset by grid index
-                float startX = mmX - (size.x * 0.5f);
-                float startY = mmY - (size.y * 0.5f);
-
-                float oX = x * fogTileSizeUI.x + (fogTileSizeUI.x * 0.5f);
-                float oY = y * fogTileSizeUI.y + (fogTileSizeUI.y * 0.5f);
-
-                AEMtx33Trans(&t, startX + oX, startY + oY);
-                AEMtx33Concat(&f, &t, &s);
-
-                AEGfxSetTransform(f.m);
-                AEGfxSetColorToMultiply(0.05f, 0.05f, 0.05f, 1.0f - discoveryGrid[x][y]);
+                //Shift to center then add offset pos
+                AEMtx33Trans(&t, mmX + (oX - mapSize.x * 0.5f) * scaleX, mmY + (oY - mapSize.y * 0.5f) * scaleY);
+                AEMtx33Concat(&f, &t, &s); AEGfxSetTransform(f.m);
+                // Use discoveryGrid value for Alpha (0.0 discovery = 1.0 alpha/darkness)
+                AEGfxSetColorToMultiply(0.1f, 0.1f, 0.1f, 1.0f - discoveryGrid[x][y]);
                 AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
             }
         }
     }
 
-    // --- 5. RENDER BORDER ---
-    AEMtx33 bS, bT, bF;
-    AEMtx33Scale(&bS, size.x + 4.f, size.y + 4.f);
-    AEMtx33Trans(&bT, mmX, mmY);
-    AEMtx33Concat(&bF, &bT, &bS);
-    AEGfxSetTransform(bF.m);
-    AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
-    AEGfxMeshDraw(borderMesh, AE_GFX_MDM_LINES_STRIP);
+    //Render frame                                 Margin around map
+    AEMtx33 bS, bT, bF; AEMtx33Scale(&bS, size.x + 10.f, size.y + 10.f); AEMtx33Trans(&bT, mmX, mmY);
+    AEMtx33Concat(&bF, &bT, &bS); AEGfxSetTransform(bF.m);
+    AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f); AEGfxMeshDraw(borderMesh, AE_GFX_MDM_LINES_STRIP);
 }
