@@ -10,51 +10,181 @@
 #include "BloodMoonElement.h"
 #include "SunMoonElement.h"
 #include "../Helpers/Vec2Utils.h"
+#include "../Helpers/ColorUtils.h"
 
 #include <iostream>
+#include <fstream>
+#include <json/json.h>
 
 namespace Elements {
 	//All element Settings
-	float elementDur{ 15.f };
+	float elementDur;
 
 	//Blood
-	const std::string bloodName{ "Bloodletting" };
+	std::string bloodName;
+	std::vector<StatEffects::Mod> bloodDmgMods;
 
 	//Sun
-	const std::string sunName{ "Sun" };
-	const std::string sunBuffName{ "Sun's Buff" };
-	unsigned maxSunStacks{ 20 };
-	float sunBuffDur{ 7.5f };
-	unsigned sunLowRange{ 3 }, sunHighRange{ 5 }; //Range for number of stacks to apply
+	std::string sunName;
+	std::string sunBuffName;
+	unsigned maxSunStacks;
+	float sunBuffDur;
+	unsigned sunLowRange, sunHighRange; //Range for number of stacks to apply
+	std::vector<StatEffects::Mod> sunBuffMods;
 
 	//Moon
-	const std::string moonName{ "Wax and Wane" };
-	unsigned maxMoonStacks{ 5 };
+	std::string moonName;
+	unsigned maxMoonStacks;
+	std::vector<StatEffects::Mod> healMods;
+	std::vector<StatEffects::Mod> moonKillHealMods;
+	float moonMeleeHealMult{};
+	std::vector<StatEffects::Mod> moonDebuffMods;
 
 	//Blood+Sun reaction
-	std::string bloodSunName{"Boiling Blood"};
+	std::string bloodSunName;
+	std::vector<StatEffects::Mod> bloodSunDotDmg;
+	std::vector<StatEffects::Mod> bloodSunDetonateDmg;
+	AEVec2 bloodSunDetoSize;
 
 	//Blood+Moon reaction
-	float bloodMoonLifetime{15.f};
-	AEVec2 bloodMoonSize{ 200,200 };
-	float bloodMoonProcTime{1.25f}; //Time between procs
-	float bloodMoonDebuffDur{2.f};
-	unsigned bloodMoonDebuffMaxStacks{3};
-	std::string bloodMoonDebuffName{"Sanguine Oppression"};
+	float bloodMoonLifetime;
+	AEVec2 bloodMoonSize;
+	float bloodMoonProcTime; //Time between procs
+	std::string bloodMoonDebuffName;
+	float bloodMoonDebuffDur;
+	unsigned bloodMoonDebuffMaxStacks;
+	std::vector<StatEffects::Mod> bloodMoonDebuffMods;
+	std::vector<StatEffects::Mod> bloodMoonDmgMods;
+	Color bloodMoonTint;
 
 	//Sun+Moon reaction
-	float sunMoonLifetime{5.f};
-	AEVec2 sunMoonSize{210, 210};
-	float sunMoonProcTime{1.f};
-	float sunMoonSlowDur{1.5f};
-	unsigned sunMoonSlowMaxStacks{1};
-	std::string sunMoonSlowName{"Eclipsing Awe"};
+	float sunMoonLifetime;
+	AEVec2 sunMoonSize;
+	float sunMoonProcTime;
+	std::string sunMoonDebuffName;
+	float sunMoonDebuffDur;
+	unsigned sunMoonDebuffMaxStacks;
+	std::vector<StatEffects::Mod> sunMoonDebuffMods;
+	std::vector<StatEffects::Mod> sunMoonDmgMods;
+	Color sunMoonTint;
 
 	//==========================================================================================================//
+
+	bool InitElementalSystem()
+	{
+		std::ifstream ifs{ "Assets/Data/elements.json", std::ios_base::binary };
+		if (!ifs.is_open()) {
+			std::cout << "FAILED TO OPEN ELEMENTS JSON\n";
+			return false;
+		}
+		Json::Value root;
+		Json::CharReaderBuilder builder;
+		std::string errs;
+
+		if (!Json::parseFromStream(builder, ifs, &root, &errs))
+		{
+			std::cout << "Elemental system data: parse failed: " << errs << "\n";
+			return false;
+		}
+
+		if (!root.isObject()) {
+			std::cout << "Elemental system data: missing/invalid root\n";
+			return false;
+		}
+
+		//Parse global values
+		Json::Value global{ root["global"] };
+		elementDur = global.get("elementDur", 1).asFloat();
+
+		//Parse blood settings
+		Json::Value blood{ root["blood"] };
+		bloodName = blood.get("name", "Blood DoT").asString();
+		for (Json::Value const& m : blood["dmgMods"]) {
+			bloodDmgMods.push_back(StatEffects::Mod::ParseFromJSON(m));
+		}
+
+		//Parse Sun
+		Json::Value sun{ root["sun"] };
+		sunName = sun.get("name", "Sun").asString();
+		sunBuffName = sun.get("buffName", "Sun's Buff").asString();
+		maxSunStacks = sun.get("maxStacks", 1).asUInt();
+		sunBuffDur = sun.get("buffDur", 0).asFloat();
+		sunLowRange = sun.get("lowRange", 0).asUInt();
+		sunHighRange = sun.get("highRange", 1).asUInt();
+		for (Json::Value const& m : sun["buffMods"]) {
+			sunBuffMods.push_back(StatEffects::Mod::ParseFromJSON(m));
+		}
+
+		//Parse Moon
+		Json::Value moon{ root["moon"] };
+		moonName = moon.get("name", "Moon").asString();
+		maxMoonStacks = moon.get("maxStacks", 1).asUInt();
+		for (Json::Value const& m : moon["healMods"]) {
+			healMods.push_back(StatEffects::Mod::ParseFromJSON(m));
+		}
+		moonMeleeHealMult = moon.get("meleeHealMult", 1).asFloat();
+		for (Json::Value const& m : moon["killHealMods"]) {
+			moonKillHealMods.push_back(StatEffects::Mod::ParseFromJSON(m));
+		}
+		for (Json::Value const& m : moon["debuffMods"]) {
+			moonDebuffMods.push_back(StatEffects::Mod::ParseFromJSON(m));
+		}
+
+		//Parse Blood+Sun reaction
+		Json::Value bloodSun{ root["blood_sun"] };
+		bloodSunName = bloodSun.get("name", "Blood-Sun").asString();
+		for (Json::Value const& m : bloodSun["dotDmgMods"]) {
+			bloodSunDotDmg.push_back(StatEffects::Mod::ParseFromJSON(m));
+		}
+		for (Json::Value const& m : bloodSun["detonateDmgMods"]) {
+			bloodSunDetonateDmg.push_back(StatEffects::Mod::ParseFromJSON(m));
+		}
+		bloodSunDetoSize.x = bloodSun.get("detonateSize_x", 0).asFloat();
+		bloodSunDetoSize.y = bloodSun.get("detonateSize_y", 0).asFloat();
+
+		//Parse Blood+Moon
+		Json::Value bloodMoon{ root["blood_moon"] };
+		bloodMoonLifetime = bloodMoon.get("lifetime", 0).asFloat();
+		bloodMoonSize.x = bloodMoon.get("size_x", 0).asFloat();
+		bloodMoonSize.y = bloodMoon.get("size_y", 0).asFloat();
+		bloodMoonProcTime = bloodMoon.get("procTime", 0).asFloat();
+		bloodMoonDebuffDur = bloodMoon.get("debuffDur", 0).asFloat();
+		bloodMoonDebuffName = bloodMoon.get("debuffName", "Blood Moon Debuff").asString();
+		for (Json::Value const& m : bloodMoon["debuffMods"]) {
+			bloodMoonDebuffMods.push_back(StatEffects::Mod::ParseFromJSON(m));
+		}
+		for (Json::Value const& m : bloodMoon["dmgMods"]) {
+			bloodMoonDmgMods.push_back(StatEffects::Mod::ParseFromJSON(m));
+		}
+		Json::Value _bloodMoonTint = bloodMoon["tint"];
+		bloodMoonTint = Color{ _bloodMoonTint[0].asFloat(), _bloodMoonTint[1].asFloat() , _bloodMoonTint[2].asFloat() , _bloodMoonTint[3].asFloat() };
+
+		//Parse Sun+Moon reaction
+		Json::Value sunMoon{ root["sun_moon"] };
+		sunMoonLifetime = sunMoon.get("lifetime", 0).asFloat();
+		sunMoonSize.x = sunMoon.get("size_x", 0).asFloat();
+		sunMoonSize.y = sunMoon.get("size_y", 0).asFloat();
+		sunMoonProcTime = sunMoon.get("procTime", 1.f).asFloat();
+		sunMoonDebuffName = sunMoon.get("debuffName", "Sun Moon Debuff").asString();
+		sunMoonDebuffDur = sunMoon.get("debuffDur", 0).asFloat();
+		sunMoonDebuffMaxStacks = sunMoon.get("debuffMaxStacks", 1).asUInt();
+		for (Json::Value const& m : sunMoon["debuffMods"]) {
+			sunMoonDebuffMods.push_back(StatEffects::Mod::ParseFromJSON(m));
+		}
+		for (Json::Value const& m : sunMoon["dmgMods"]) {
+			sunMoonDmgMods.push_back(StatEffects::Mod::ParseFromJSON(m));
+		}
+		Json::Value _sunMoonTint = sunMoon["tint"];
+		sunMoonTint = Color{ _sunMoonTint[0].asFloat(), _sunMoonTint[1].asFloat() , _sunMoonTint[2].asFloat() , _sunMoonTint[3].asFloat() };
+
+		return true;
+	}
 
 	//Static function to apply an element
 	bool ApplyElement(ELEMENT_TYPE ele, Actor* applier, Actor* target)
 	{
+		if (ele == ELEMENT_TYPE::NONE) return false;
+
 		StatEffects::StatusEffect* se{ nullptr };
 		switch (ele)
 		{
@@ -104,7 +234,7 @@ namespace Elements {
 					AttackHitboxConfig cfg{ };
 					cfg.owner = caster;
 					cfg.colliderSize = cfg.renderScale = bloodMoonSize;
-					cfg.tint = { 186, 0,0,100 };
+					cfg.tint = bloodMoonTint;
 					cfg.lifetime = bloodMoonLifetime;
 					cfg.disableOnHit = cfg.followOwner = false;
 					cfg.hitCooldown = bloodMoonProcTime;
@@ -123,7 +253,7 @@ namespace Elements {
 					cfg.owner = caster;
 					cfg.offset = actor->GetPos() - caster->GetPos(); //Place on victim, not caster
 					cfg.colliderSize = cfg.renderScale = sunMoonSize;
-					cfg.tint = { 127,46,0,130 };
+					cfg.tint = sunMoonTint; 
 					cfg.lifetime = sunMoonLifetime;
 					cfg.disableOnHit = cfg.followOwner = false;
 					cfg.hitCooldown = sunMoonProcTime;

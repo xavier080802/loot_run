@@ -185,7 +185,7 @@ void GameState::LoadState() {
     {
         std::cout << "WARNING: enemies.json failed to load.\n";
     }
-    font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 72);
+    font = AEGfxCreateFont("Assets/placeholder.ttf", 72);
     bgm.Init(); bgm.PlayNormal();
     halfMapWidth = mapWidth * 0.5f; halfMapHeight = mapHeight * 0.5f;
     circleMesh = RenderingManager::GetInstance()->GetMesh(MESH_CIRCLE);
@@ -306,7 +306,7 @@ void GameState::InitState()
     minimap->Reset();
 
     if (TUTORIAL) {
-        fairy->InitTutorial(gPlayer, &currentLevel, {enemy1, enemy2, boss});
+        fairy->InitTutorial(gPlayer, &currentLevel);
     }
 }
 

@@ -1,10 +1,9 @@
 #ifndef _ACTOR_SUBSCRIPTIONS_H_
 #define _ACTOR_SUBSCRIPTIONS_H_
 #include "../DesignPatterns/Subscriber.h"
-//Avoid circular dependency. Do the Include in cpp.
-class Actor; 
-class EquipmentData;
-
+#include "StatsTypes.h"
+class Actor; //Avoid circular dependency. Do the Include in cpp.
+struct EquipmentData;
 //Declarations for Subscribers related to Actor
 
 struct ActorGotKillSubContent {
@@ -30,10 +29,12 @@ struct ActorDeadSub : Subscriber<ActorDeadSubContent> {
 //===============================================================================
 
 struct BeforeDealingDmgContent {
-	Actor* actor;
-	EquipmentData* weapon;
-	float originalDmg;
-	float& finalDmg;
+	Actor* attacker; // The actor performing the attack
+	Actor* target; // The actor receiving the attack
+	const EquipmentData* weapon; // Weapon used, if any
+	DAMAGE_TYPE dmgType; // Type of damage being dealt
+	float originalDmg; // Original base damage before modifiers
+	float& finalDmg; // Reference to the actual dmg that will be dealt. Subs can modify this.
 };
 //Alert BEFORE actor does damage to victim
 struct ActorBeforeDealingDmgSub : Subscriber<BeforeDealingDmgContent> {
@@ -59,7 +60,8 @@ struct OnHitContent {
 	Actor* attacker, *actor;
 	//Add hit details here
 	const EquipmentData* weapon;
-	float dmgDealt;
+	DAMAGE_TYPE dmgType; // The type of damage that was taken
+	float dmgDealt; // Exact damage successfully dealt and subtracted from health
 };
 //Alert when actor is hit by something (specifically on-hit effect)
 struct ActorOnHitSub : Subscriber<OnHitContent> {

@@ -5,7 +5,7 @@
 
 //Reduces def of owner
 //When hit, attacker heals. They heal more if they are melee
-//When killed, killer heals based on a % owner's max hp
+//When killed, killer heals based on an additional % owner's max hp
 class MoonElement : public StatEffects::StatusEffect, ActorOnHitSub, ActorDeadSub
 {
 public:

@@ -71,14 +71,34 @@ void Pet::SetPath(std::initializer_list<AEVec2> const& _path, bool append)
 	}
 }
 
-void Pet::SetData(const PetData& newData)
+void Pet::SetData(const Pets::PetData& newData, Pets::PET_RANK rank)
 {
 	data = newData;
+	//Scale values based on rarity
+	data.passive.ScaleMods(data.rarityScaling[rank]);
+	for (StatEffects::Mod& m : data.multipliers) {
+		m.value *= data.rarityScaling[rank];
+	}
+	//Rank too low for skill
+	if (rank <= Pets::PET_RANK::EPIC) {
+		data.PetSkill = nullptr;
+	}
 }
 
-const Pet::PetData& Pet::GetPetData()
+const Pets::PetData& Pet::GetPetData()
 {
 	return data;
+}
+
+StatEffects::Mod const& Pet::GetMultiplier(unsigned index)
+{
+	return data.multipliers.at(index);
+}
+
+Elements::ELEMENT_TYPE Pet::GetSkillElement(unsigned index)
+{
+	if (data.skillElements.empty()) return Elements::ELEMENT_TYPE::NONE;
+	return data.skillElements.at(index);
 }
 
 void Pet::ClearPath()

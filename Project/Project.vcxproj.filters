@@ -419,5 +419,8 @@
     <ClInclude Include="Elements\SunMoonElement.h">
       <Filter>Header Files\Elements</Filter>
     </ClInclude>
+    <ClInclude Include="Actor\ActorSubscriptions.h">
+      <Filter>Header Files\Actors</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

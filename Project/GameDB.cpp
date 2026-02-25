@@ -14,7 +14,8 @@ namespace
 		AttackType attackType,
 		bool isRanged,
 		Rarity rarity,
-		const ActorStats& additiveStats)
+		const ActorStats& additiveStats,
+		Elements::ELEMENT_TYPE element = Elements::ELEMENT_TYPE::NONE)
 	{
 		EquipmentData e{};
 		e.id = id;
@@ -24,6 +25,7 @@ namespace
 		e.attackType = attackType;
 		e.isRanged = isRanged;
 		e.rarity = rarity;
+		e.element = element;
 		e.mods.additive = additiveStats;
 		e.name = name;
 		return e;
@@ -61,7 +63,8 @@ namespace
 				AttackType::SwingArc,
 				false,
 				Rarity::Common,
-				ActorStats{ 0.0f, 10.0f, 0.0f, 0.0f, 0.0f }
+				ActorStats{ 0.0f, 10.0f, 0.0f, 0.0f, 0.0f },
+				Elements::ELEMENT_TYPE::NONE // Original default element
 			),
 
 			// Demo Armor (Body): +25 HP, +5 defense
@@ -80,7 +83,19 @@ namespace
 				AttackType::Projectile,
 				true,
 				Rarity::Common,
-				ActorStats{ 0.0f, 5.0f, 0.0f, 0.0f, 0.0f }
+				ActorStats{ 0.0f, 5.0f, 0.0f, 0.0f, 0.0f },
+				Elements::ELEMENT_TYPE::BLOOD // Give the bow some blood element for fun
+			),
+			// Demo Sun Sword: +5 attack, but applies SUN DoT
+			MakeWeapon(
+				4,
+				"Demo Sun Sword",
+				WeaponType::Sword,
+				AttackType::SwingArc,
+				false,
+				Rarity::Epic,
+				ActorStats{ 0.0f, 5.0f, 0.0f, 0.0f, 0.0f },
+                Elements::ELEMENT_TYPE::SUN // Applies SUN
 			),
 		};
 
@@ -136,12 +151,14 @@ namespace GameDB
 		return nullptr;
 	}
 
+	// Parses a JSON file to load Enemy Definitions into the EnemyRegistry collection.
+	// This makes enemy variations data-driven rather than hardcoded.
 	bool LoadEnemyDefs(const char* path)
 	{
 		std::ifstream file(path, std::ios::binary);
 		if (!file.is_open()) { return false; }
 
-		//debugging
+		//debugging size of file
 		file.seekg(0, std::ios::end);
 		std::streamoff size = file.tellg();
 		std::cout << "LoadEnemyDefs: bytes=" << (long long)size << "\n";
@@ -177,11 +194,12 @@ namespace GameDB
 		{
 			EnemyDef def{};
 
+			// Extract base identity data
 			def.id = e.get("id", 0).asInt();
 			def.name = e.get("name", "").asString();
 			def.dropTableId = e.get("dropTableId", 0).asInt();
 
-			//base stats
+			// Parse base stats
 			const auto& s = e["baseStats"];
 			def.baseStats.maxHP = s.get("maxHP", 0.0f).asFloat();
 			def.baseStats.attack = s.get("attack", 0.0f).asFloat();
@@ -189,15 +207,17 @@ namespace GameDB
 			def.baseStats.moveSpeed = s.get("moveSpeed", 0.0f).asFloat();
 			def.baseStats.attackSpeed = s.get("attackSpeed", 1.0f).asFloat();
 
-			//render info
+			// Parse render info to configure the visual representation
 			const auto& r = e["render"];
 			def.render.radius = r.get("radius", def.render.radius).asFloat();
 			def.render.mesh = ParseEnemyMesh(r.get("mesh", "circle"));
+			def.render.texturePath = r.get("texturePath", "").asString();
 
 			Color tint = def.render.tint;
 			ReadTintRGBA(r["tint"], tint);// if missing or invalid keep it default
 			def.render.tint = tint;
 
+			// Add fully constructed definition to registry
 			reg.push_back(def);
 		}
 		std::cout << "LoadEnemyDefs: loaded " << (int)reg.size() << " enemies from " << path << "\n";

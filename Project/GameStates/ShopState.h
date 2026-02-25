@@ -9,7 +9,7 @@ public:
 	void InitState() override;
 	void ExitState() override;
 	void UnloadState() override;
-	void Update(double dt) override;
+	void Update(double dt) override; 
 	void Draw() override;
 
 private:

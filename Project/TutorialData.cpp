@@ -7,12 +7,12 @@
 
 namespace {
 	const float roomSize = 700.f;
-	const float dialogueDur = 0.5f;
+	const float dialogueDur = 2.f;
 	const float barrierOffset = roomSize * 0.5f + 160.f;
 }
 
 namespace Tutorial {
-	void TutorialFairy::InitTutorial(Player* _player, MapData* _map, std::initializer_list<Enemy*> enemies)
+	void TutorialFairy::InitTutorial(Player* _player, MapData* _map)
 	{
 		Init({}, { 50,50 }, 1, MESH_SQUARE, Collision::COL_CIRCLE, {}, 0, Collision::LAYER::NONE)
 			->GetRenderData().AddTexture("Assets/finn.png");
@@ -20,10 +20,6 @@ namespace Tutorial {
 		data.dialogueLines.reserve(4);
 		data.dialogueLines.clear();
 		player = _player;
-		player->SubToBeforeCast(this);
-		for (Enemy* e : enemies) {
-			e->SubToOnDeath(this);
-		}
 		map = _map;
 		SetEnabled(true);
 		ChangeStage(START);
@@ -123,8 +119,8 @@ namespace Tutorial {
 				}
 				break;
 			}
-			//Check if killed
-			if (data.checks == "KILLED") {
+			//Check melee attack input
+			if (AEInputCheckTriggered(AEVK_LBUTTON)) {
 				ChangeStage(LOOT);
 			}
 			break;
@@ -172,7 +168,8 @@ namespace Tutorial {
 				}
 				break;
 			}
-			if (data.checks == "KILLED") {
+			//Check if range weapon is used (TEMP: havent checked for what is the active weapon)
+			if (AEInputCheckTriggered(AEVK_LBUTTON)) {
 				ChangeStage(BOSS);
 			}
 			break;
@@ -273,30 +270,6 @@ namespace Tutorial {
 			return;
 		}
 		ChangeStage(RANGE);
-	}
-
-	void TutorialFairy::SubscriptionAlert(ActorBeforeCastContent content)
-	{
-		if ((data.stage == Tutorial::RANGE && !content.weapon->isRanged)
-			|| data.stage == Tutorial::MELEE && content.weapon->isRanged) {
-			content.allowCast = false;
-		}
-	}
-
-	void TutorialFairy::SubscriptionAlert(ActorDeadSubContent content)
-	{
-		Enemy* en = dynamic_cast<Enemy*>(content.victim);
-		if (!en) return;
-		if (en->GetDefinition().id == 2) {
-			//Boss
-			if (data.stage == Tutorial::MELEE) {
-				ChangeStage(Tutorial::LOOT);
-			}
-		}
-		else if (data.stage == Tutorial::RANGE || data.stage == Tutorial::MELEE) {
-			data.checks = "KILLED";
-			//ChangeStage(static_cast<Tutorial::TUT_STAGE>(static_cast<int>(data.stage) + 1));
-		}
 	}
 
 	AEVec2 TutorialFairy::GetTutBarrier()

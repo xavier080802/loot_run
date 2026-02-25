@@ -44,6 +44,7 @@ void GameObjectManager::UpdateObjects(double dt, TileMap const* tilemap)
 	isLoopingThrList = true;
 	for (GameObject* go : goList) {
 		if (!go->isEnabled) continue;
+		go->prevPos = go->pos;
 		go->Update(dt);
 	}
 	//Collision
@@ -190,17 +191,27 @@ void GameObjectManager::Helper_HandleGOTileCollision(AEVec2 tileInd, GameObject&
 {
 	//Collided with tile. Prevent clipping.
 	AEVec2 tilePos{ tilemap.GetTilePosition(tileInd.y, tileInd.x) };
+	const AEVec2 tileSize{ tilemap.GetTileSize() * 0.5f };
 	//Get pos of the edge closest to the go.
-	AEVec2 closest{ AEClamp(go.pos.x, tilePos.x - tilemap.GetTileSize().x * 0.5f, tilePos.x + tilemap.GetTileSize().x * 0.5f),
-				AEClamp(go.pos.y, tilePos.y - tilemap.GetTileSize().y * 0.5f, tilePos.y + tilemap.GetTileSize().y * 0.5f) };
+	AEVec2 closest{ AEClamp(go.pos.x, tilePos.x - tileSize.x, tilePos.x + tileSize.x),
+				AEClamp(go.pos.y, tilePos.y - tileSize.y, tilePos.y + tileSize.y) };
+
+	//Check if go is inside tile. In that case, closest edge will be a pt inside the tile and that causes clipping
+	if (closest.x == go.pos.x && closest.y == go.pos.y) {
+		closest.x = (go.prevPos.x < tilePos.x ? tilePos.x - tileSize.x : tilePos.x + tileSize.x);
+		closest.y = (go.prevPos.y > tilePos.y ? tilePos.y - tileSize.y : tilePos.y + tileSize.y);
+	}
+
 	//Distance between go and the closest edge.
-	closest = go.pos - closest;
+	AEVec2 closDir = go.pos - closest;
+	//If x is inside tile, dir tends to be wrong, so negate. No need for y... for some reason
+	if (go.pos.x > tilePos.x - tileSize.x && go.pos.x < tilePos.x + tileSize.x) closDir.x = -closDir.x;
 	//Overlap amount (how much the go is currently inside the tile): Radius - dist of go from edge
-	float lenClos = AEVec2Length(&closest); 
+	float lenClos = AEVec2Length(&closDir);
 	AEVec2 pen = { go.scale.x * 0.5f - lenClos, go.scale.y * 0.5f - lenClos };
 	//Normalize to get dir to closest edge.
 	AEVec2 closestNorm{};
-	if (closest.x || closest.y) AEVec2Normalize(&closestNorm, &closest);
+	if (closDir.x || closDir.y) closestNorm = closDir / lenClos;
 	//Push the GO away along the overlap direction.
 	go.pos += closestNorm * pen;
 }

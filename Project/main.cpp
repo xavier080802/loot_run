@@ -10,6 +10,7 @@
 #include "./Helpers/RenderUtils.h"
 #include "RenderingManager.h"
 #include "./Pets/PetManager.h"
+#include "Elements/Element.h"
 
 namespace {
 	GameStateManager* stateManager;
@@ -39,6 +40,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	petManager = PetManager::GetInstance();
 	renderManager->Init();
 	petManager->Init();
+	Elements::InitElementalSystem();
 
 	stateManager = GameStateManager::GetInstance();
 	stateManager->AddGameState("MainMenuState", new MainMenuState);
@@ -76,12 +78,12 @@ void Terminate(void)
 {
 	if (gameRunningFlag)
 	{
-	gameRunningFlag = false;
-	stateManager->Destroy();
-	petManager->Destroy();
-	goManager->Destroy();
-	renderManager->Destroy();
-	// free the system
-	AESysExit();
+		gameRunningFlag = false;
+		stateManager->Destroy();
+		petManager->Destroy();
+		goManager->Destroy();
+		renderManager->Destroy();
+		// free the system
+		AESysExit();
 	}
 }

@@ -1,0 +1,69 @@
+/* PetData Object format:
+
+    NOTES:
+    
+    value: For multiplicative, note that 1 means 1% of the stat
+    mathType: FLAT=0, MULTIPLICATIVE=1. If flat, stat doesnt really matter.
+    stat: STAT_TYPE enum in StatsType.h, start from 0
+    rarityScaling: Multiplied with the base values of passive/multipliers for each rarity, starting from COMMON
+
+    Arrays can be omitted if empty, PetManager will check if the array exists
+    ------------------------------------------------------------
+
+    {
+        "id": 0, // Corresponding to PET_TYPE
+        "name": "",
+        "passive": [ // Array, each entry is a Mod
+            {
+                "value": 0,
+                "mathType": 1,
+                "stat": 1
+            }
+        ],
+        "multipliers": [ // Array, each entry is a Mod used to calc skill multipliers. Dev handles which index is for what.
+            {
+                "value": 0,
+                "mathType": 1,
+                "stat": 1
+            }
+        ],
+        "rarityScaling": [ 1, 2, 3, 4, 5, 6 ], // Must have 6 entries, 1 for each rarity. COMMON first, to LEGENDARY
+        "skillCooldown": 0,
+        "skillDesc": "",
+        "skillElements": [ ], //Elements the skill may inflict. ELEMENT_TYPE
+        "texture": "" // Filepath to texture
+    }
+
+*/
+
+{
+    "pets": [
+        {
+            "id": 1,
+            "name": "Rock",
+            "passive": [
+                {
+                    "value": 10,
+                    "mathType": 1,
+                    "stat": 0
+                }
+            ],
+            "multipliers": [
+                { // 0 - Scale with hp
+                    "value": 7.5,
+                    "mathType": 1,
+                    "stat": 0
+                },
+                { // 1 - Flat damage value
+                    "value": 5,
+                    "mathType": 0,
+                    "stat": 0
+                }
+            ],
+            "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
+            "skillCooldown": 6,
+            "skillDesc": "Yeet the rock",
+            "texture": "Assets/finn.png"
+        }
+    ]
+}

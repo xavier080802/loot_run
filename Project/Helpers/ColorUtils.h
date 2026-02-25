@@ -3,12 +3,14 @@
 #include "AEEngine.h"
 
 //Allows us to use rgba(0-255) where AE might use u32
-typedef struct {
+struct Color {
 	/// <summary>
 	/// 0 to 255
 	/// </summary>
 	float r, g, b, a;
-} Color;
+
+	Color(float _r = 0, float _g = 0, float _b = 0, float _a = 0) : r{ _r }, g{ _g }, b{ _b }, a{ _a } {}
+};
 
 /// <summary>
 /// All values 0 to 255

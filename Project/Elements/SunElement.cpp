@@ -44,6 +44,7 @@ void SunElement::OnEnd(StatEffects::END_REASON reason)
 
 StatEffects::StatusEffect* SunElement::CreateBuff(unsigned numStacks)
 {
-	//TODO: stat mods
-	return new StatusEffect{caster, Elements::sunBuffDur, maxStacks, Elements::sunBuffName, numStacks, StatEffects::BUFF};
+	StatEffects::StatusEffect* se = new StatusEffect{caster, Elements::sunBuffDur, maxStacks, Elements::sunBuffName, numStacks, StatEffects::BUFF};
+	se->AddMod(Elements::sunBuffMods);
+	return se;
 }
