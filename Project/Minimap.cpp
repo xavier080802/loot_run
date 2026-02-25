@@ -22,12 +22,31 @@ void Minimap::Reset() {
     }
 }
 
+// Helper to clamp minimap positions so nothing bleeds outside
+inline void ClampToMinimap(float& x, float& y, float mmX, float mmY, AEVec2 const& size) {
+    float halfW = size.x * 0.5f;
+    float halfH = size.y * 0.5f;
+
+    float minX = mmX - halfW;
+    float maxX = mmX + halfW;
+    float minY = mmY - halfH;
+    float maxY = mmY + halfH;
+
+    if (x < minX) x = minX;
+    else if (x > maxX) x = maxX;
+
+    if (y < minY) y = minY;
+    else if (y > maxY) y = maxY;
+}
+
+
 void Minimap::Update(double dt, TileMap const& tilemap, Player const& player)
 {
     // Logic to calculate which fog tiles are near the player and reveal them
     AEVec2 p = player.GetPos();
     AEVec2 const& mapSize{ tilemap.GetFullMapSize() };
     AEVec2 fogTileSize{ (mapSize / FOG_GRID_SIZE) }; //world size
+    float effectiveRadius = revealRadiusWorld * 0.75f;
 
     for (int x = 0; x < FOG_GRID_SIZE; ++x) {
         for (int y = 0; y < FOG_GRID_SIZE; ++y) {
