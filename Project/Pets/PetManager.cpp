@@ -171,6 +171,7 @@ void PetManager::LoadPetData()
 		pd.skillCooldown = v.get("skillCooldown", 0).asFloat();
 		pd.skillDesc = v.get("skillDesc", "").asString();
 		pd.texture = v.get("texture", "").asString();
+		pd.passive.SetIcon(pd.texture); //Set passive icon to same tex as pet
 		if (v.findArray("skillElements")) {
 			for (Json::Value const& m : v["skillElements"]) {
 				pd.skillElements.push_back(static_cast<Elements::ELEMENT_TYPE>(m.asInt()));

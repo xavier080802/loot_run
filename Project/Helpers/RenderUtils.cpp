@@ -126,7 +126,7 @@ void DrawBox(AEVec2 center, f32 width, f32 height, f32 thickness, Color col)
 	}
 }
 
-void DrawAEText(s8& font, const char* text, AEVec2 pos, f32 size, Color col, TextOriginPos alignment, int isHUD)
+void DrawAEText(s8 const& font, const char* text, AEVec2 pos, f32 size, Color col, TextOriginPos alignment, int isHUD)
 {
 	if (!isHUD) {
 		AEVec2 scale = ToVec2(size, size);

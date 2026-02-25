@@ -34,12 +34,16 @@ public:
 	//Multiple objs using the same tex will not duplicate mem
 	//and won't break the other objs when deleting texture.
 	AEGfxTexture* LoadTexture(const char* path);
+	s8 GetFont() const { return fontId; }
+	int GetFontSize() const { return fontSize; }
 	int GetAnimFPS();
 
 private:
+	const int fontSize{ 72 };
 	AEGfxVertexList* meshList[SHAPE_NUM]{};
 	//<filepath, texture>
 	std::map<std::string, AEGfxTexture*>textureMap;
+	s8 fontId;
 	int animationFPS{ 5 };
 
 	~RenderingManager();

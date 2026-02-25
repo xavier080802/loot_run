@@ -185,7 +185,7 @@ void GameState::LoadState() {
     {
         std::cout << "WARNING: enemies.json failed to load.\n";
     }
-    font = AEGfxCreateFont("Assets/placeholder.ttf", 72);
+    font = RenderingManager::GetInstance()->GetFont();
     bgm.Init(); bgm.PlayNormal();
     halfMapWidth = mapWidth * 0.5f; halfMapHeight = mapHeight * 0.5f;
     circleMesh = RenderingManager::GetInstance()->GetMesh(MESH_CIRCLE);
@@ -380,8 +380,6 @@ void GameState::UnloadState() {
     delete map;
     delete minimap;
     bgm.Exit();
-    if (font >= 0)
-    AEGfxDestroyFont(font);
 }
 
 // Boss getters and setters

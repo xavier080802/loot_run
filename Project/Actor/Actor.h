@@ -30,6 +30,9 @@ public:
 	void Free() override;
 
 	void Update(double dt) override;
+
+	void Draw() override;
+
 	// Deals damage to another actor, triggering BeforeDealingDmg subscribers first.
 	// target: The actor being attacked.
 	// baseDmg: The base damage calculated before any status effects or modifiers.

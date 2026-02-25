@@ -4,6 +4,8 @@
 
 void RenderingManager::Init()
 {
+	//Font
+	fontId = AEGfxCreateFont("Assets/placeholder.ttf", fontSize);
 	//Create meshes
 	for (int i{}; i < MESH_SHAPE::SHAPE_NUM; i++) {
 		switch (i)
@@ -55,8 +57,10 @@ int RenderingManager::GetAnimFPS()
 RenderingManager::~RenderingManager()
 {
 	for (std::pair <std ::string, AEGfxTexture*> pair : textureMap) {
+		if (pair.second == nullptr) continue;
 		AEGfxTextureUnload(pair.second);
 		pair.second = nullptr;
 	}
 	textureMap.clear();
+	AEGfxDestroyFont(fontId);
 }

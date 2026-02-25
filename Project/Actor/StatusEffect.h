@@ -38,8 +38,8 @@ namespace StatEffects {
 	//Note: Don't change order, >= DEBUFF is considered debuff (Elements)
 	enum EFF_TYPE {
 		NONE,
-		BUFF,
 		DEBUFF,
+		BUFF,
 		BLOOD, //Main blood effect
 		SUN, //Main sun effect
 		MOON, //Main moon effect
@@ -58,9 +58,27 @@ namespace StatEffects {
 	public:
 		//Set duration to -1 for no-timeout
 		//Caster can be nullptr on construction. Will be set again when applied.
-		StatusEffect(Actor* _caster, float _duration, unsigned _maxStacks, std::string _name, unsigned startStacks=1, EFF_TYPE _effType = EFF_TYPE::NONE)
+		StatusEffect(Actor* _caster, float _duration, unsigned _maxStacks, std::string _name, unsigned startStacks=1, EFF_TYPE _effType = EFF_TYPE::NONE, std::string _icon = "auto")
 			: caster(_caster), duration(_duration), maxStacks(_maxStacks), durationTimer(0.f), name(_name),
-			isPermanent(_duration == -1), effType(_effType), stacks(startStacks){};
+			isPermanent(_duration == -1), effType(_effType), stacks(startStacks), icon{_icon} {
+
+			//Set default icon based on type.
+			if (_icon == "auto") {
+				switch (_effType)
+				{
+				case StatEffects::DEBUFF:
+					icon = "Assets/debuff.png";
+					break;
+				case StatEffects::BUFF:
+					icon = "Assets/buff.png";
+					break;
+				case StatEffects::NONE:
+				default:
+					icon = "Assets/tiny.png";
+					break;
+				}
+			}
+		};
 
 		virtual ~StatusEffect() {}
 
@@ -86,9 +104,12 @@ namespace StatEffects {
 
 		std::string const& GetName() const { return name; };
 		EFF_TYPE GetType() const { return effType; }
+		std::string const& GetIcon() const { return icon; }
 
 		//Multiply the value of each Mod by the given scalar.
 		void ScaleMods(float scalar);
+
+		void SetIcon(std::string const& path);
 
 	protected:
 		Actor* caster{}, * owner{};
@@ -102,6 +123,8 @@ namespace StatEffects {
 		float durationTimer{}; //to count down
 		EFF_TYPE effType{};
 		std::vector<Mod> mods{};
+		//Filepath to icon
+		std::string icon{};
 
 		unsigned stacks{}, maxStacks{};
 	};
