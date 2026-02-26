@@ -2,19 +2,24 @@
 #include "../Actor/Actor.h"
 #include "../GameObjects/GameObjectManager.h"
 #include "../GameObjects/AttackHitboxGO.h"
+#include "../Helpers/Vec2Utils.h"
 
 namespace {
 	//On-death AOE dmg callback. Put here cuz otherwise hitbox onHit throws error.
-	//caster is the status effect owner
-	void AoEDmg(GameObject::CollisionData& target, Actor* caster)
+	//caster is the status effect applier
+	void AoEDmg(GameObject::CollisionData& target, Actor* caster, void* extra = nullptr)
 	{
 		Actor* other{ dynamic_cast<Actor*>(&target.other) };
-		if (!other) return;
+		Actor* spawner{ static_cast<Actor*>(extra) }; //The SE owner on which this thing is detonating on.
+		if (!other || !spawner) return;
 
 		float dmg{};
-		for (StatEffects::Mod const& m : Elements::bloodSunDetonateDmg) {
-			dmg += m.GetValFromActor(*caster);
+		for (int i{}; i < Elements::bloodSunDetonateDmg.size(); ++i) {
+			//0,1 - Scaling from spawner
+			//2+ - Scaling from caster
+			dmg += Elements::bloodSunDetonateDmg[i].GetValFromActor(i < 2 ? *spawner : *caster);
 		}
+		//Caster owns the dmg, not the spawner.
 		caster->DealDamage(other, dmg, DAMAGE_TYPE::ELEMENTAL);
 	}
 }
@@ -35,9 +40,11 @@ void BloodSunElement::SubscriptionAlert(ActorDeadSubContent content)
 	if (!hb) return;
 
 	AttackHitboxConfig cfg{};
-	cfg.owner = owner;
+	cfg.owner = caster;
+	cfg.offset = owner->GetPos() - caster->GetPos();
 	cfg.colliderSize = cfg.renderScale = Elements::bloodSunDetoSize;
 	cfg.followOwner = cfg.disableOnHit = false;
+	cfg.extraData = owner;
 	cfg.onHit = AoEDmg;
 	hb->Start(cfg);
 	//Change collision layer from owner-of-SE to caster

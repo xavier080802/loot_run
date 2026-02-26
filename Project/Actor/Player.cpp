@@ -26,7 +26,7 @@ namespace {
 		}
 	}
 
-	void OnMeleeHit(GameObject::CollisionData& data, Actor* caster)
+	void OnMeleeHit(GameObject::CollisionData& data, Actor* caster, void* =nullptr)
 	{
 		if (!caster) return;
 		if (data.other.GetGOType() != GO_TYPE::ENEMY) return;

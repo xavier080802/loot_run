@@ -85,7 +85,8 @@
                 "stat": 0
             }
         ],
-        "detonateDmgMods": [ //Based on max-hp of the element-sufferer
+        "detonateDmgMods": [
+            //Based on max-hp of the element-sufferer [0,1]
             { //Flat dmg
                 "value": 20,
                 "mathType": 0,
@@ -95,6 +96,12 @@
                 "value": 5,
                 "mathType": 1,
                 "stat": 0
+            },
+            //Based on a stat of the caster (one who applied the element)
+            {
+                "value": 10,
+                "mathType": 1,
+                "stat": 2
             }
         ],
         "detonateSize_x": 150,

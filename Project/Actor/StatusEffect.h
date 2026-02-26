@@ -38,8 +38,8 @@ namespace StatEffects {
 	//Note: Don't change order, >= DEBUFF is considered debuff (Elements)
 	enum EFF_TYPE {
 		NONE,
-		DEBUFF,
 		BUFF,
+		DEBUFF,
 		BLOOD, //Main blood effect
 		SUN, //Main sun effect
 		MOON, //Main moon effect
