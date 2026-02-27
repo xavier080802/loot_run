@@ -36,6 +36,7 @@ public:
 	AEGfxTexture* LoadTexture(const char* path);
 	s8 GetFont() const { return fontId; }
 	int GetFontSize() const { return fontSize; }
+	f32 GetFontHeight() const { return fontHeight; }
 	int GetAnimFPS();
 
 private:
@@ -44,6 +45,7 @@ private:
 	//<filepath, texture>
 	std::map<std::string, AEGfxTexture*>textureMap;
 	s8 fontId;
+	f32 fontHeight;
 	int animationFPS{ 5 };
 
 	~RenderingManager();

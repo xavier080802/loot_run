@@ -7,6 +7,10 @@
 #define _RENDER_UTILS_H_
 #include "AEEngine.h"
 #include "ColorUtils.h"
+#include <string>
+
+//Reference used for word wrap algorithm
+//https://rosettacode.org/wiki/Word_wrap#C++
 
 /// <summary>
 /// Where the anchor of the text is, relative to the text.
@@ -71,15 +75,58 @@ void DrawMeshWithTexOffset(AEMtx33 transform, AEGfxVertexList* mesh, AEGfxTextur
 /// <param name="col">Color of the box (Box is hollow)</param>
 void DrawBox(AEVec2 center, f32 width, f32 height, f32 thickness, Color col);
 
+//Get normalized position of text based on text alignment
+//Pass in normalized size to skip the AEGfxGetPrintSize call.
+AEVec2 GetTextAlignPosNorm(s8 const& font, std::string const& text, AEVec2 pos, AEVec2 normSize, TextOriginPos alignment);
+
+// Get normalized position of text based on text alignment
+AEVec2 GetTextAlignPosNorm(s8 const& font, std::string const& text, AEVec2 pos, f32 fontSize, TextOriginPos alignment);
+
 /// <summary>
-/// Render text
+/// Render text.
+/// Newlines are ignored, use the other overload.
 /// </summary>
 /// <param name="text">Text to write</param>
 /// <param name="pos">Position of the text anchor</param>
 /// <param name="size">Scale of the text based on the initialization size.</param>
-/// <param name="alignment">Where the anchor is relative to the text. Anchor is at pos</param>
+/// <param name="alignment">Where the text is relative to the anchor. Anchor is at pos</param>
 /// <param name="isHUD">If false, rendered in the world, based on the camera. Text always reorients to the camera</param>
-void DrawAEText(s8 const& font, const char* text, AEVec2 pos, f32 size, Color col, TextOriginPos alignment, bool isHUD=true);
+void DrawAEText(s8 const& font, const char* text, AEVec2 pos, f32 size, Color const& col, TextOriginPos alignment, bool isHUD=true);
+
+/// <summary>
+/// Render text with newlines.
+/// Subsequent lines are drawn below the first line.
+/// Therefore, the origin(pos) of the "textbox" is at the top.
+/// </summary>
+/// <param name="text">Text to write.</param>
+/// <param name="pos">Position of the first line of text</param>
+/// <param name="fontSize">Scale of the text based on the initialization size.</param>
+/// <param name="lineSpace">Scale of extra distance between lines based on font initialization size</param>
+/// <param name="alignment">Where the text is relative to the anchor. Anchor is at pos, with the y offset for each line</param>
+/// <param name="isHUD">If false, rendered in the world, based on the camera. Text always reorients to the camera</param>
+void DrawAEText(s8 const& font, std::string const& text, AEVec2 pos, f32 fontSize, f32 lineSpace, Color const& col, TextOriginPos alignment, bool isHUD = true);
+
+/// <summary>
+/// Gets the NORMALIZED width and height of the "textbox".
+/// Note that width and height will not be reset to 0 before calculation.
+/// Assumes w and h are initialized.
+/// </summary>
+/// <param name="width">[out] The width of the text</param>
+/// <param name="height">[out] The height of the text, including newlines</param>
+/// <param name="fontSize">Scale of the text based on the initialization size.</param>
+/// <param name="lineSpace">Scale of extra distance between lines based on font initialization size</param>
+void GetAETextSize(s8 const& font, std::string const& text, f32 fontSize, f32& width, f32& height, f32 lineSpace = 0);
+
+/// <summary>
+/// Writes text like it's in a textbox, with word wrapping.
+/// Tries its best to keep the whole box on screen (prioritising the top left corner)
+/// </summary>
+/// <param name="pos">Position of the TOP anchor of the textbox</param>
+/// <param name="boxWidth">Width the box should be. Sentences that overflow will attempt to wrap</param>
+/// <param name="fontSize">Scale of the text based on initialization size. (1.f is normal size)</param>
+/// <param name="lineSpace">NORMALIZED distance between the bottom of one line and the top of the next</param>
+/// <param name="textAlignment">Alignment of text relative to the anchor of the textbox. H-alignment dictates the X-anchor.</param>
+void DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 boxWidth, f32 fontSize, f32 lineSpace, Color const& col, TextOriginPos textAlignment, bool isHUD = true);
 
 /// <summary>
 /// Basically sets the object anchor to a position in the World. <para/>
