@@ -7,6 +7,7 @@
 #include "./GameStates/GameState.h"
 #include "./GameStates/ShopState.h"
 #include "./GameObjects/GameObjectManager.h"
+#include "WorldText.h"
 #include "./Helpers/RenderUtils.h"
 #include "RenderingManager.h"
 #include "./Pets/PetManager.h"
@@ -17,6 +18,7 @@ namespace {
 	GameObjectManager* goManager;
 	RenderingManager* renderManager;
 	PetManager* petManager;
+	WorldTextManager* worldTextManager;
 
 	bool gameRunningFlag{false};
 }
@@ -38,8 +40,10 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	goManager = GameObjectManager::GetInstance();
 	renderManager = RenderingManager::GetInstance();
 	petManager = PetManager::GetInstance();
+	worldTextManager = WorldTextManager::GetInstance();
 	renderManager->Init();
 	petManager->Init();
+	worldTextManager->Init();
 	Elements::InitElementalSystem();
 
 	stateManager = GameStateManager::GetInstance();
@@ -58,6 +62,8 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
 		stateManager->UpdateCurrState(dt);
 
+		worldTextManager->Update(dt);
+
         // ------------- Game loop logic -------------
 
 		//In event of State terminating engine in Update, exit loop.
@@ -65,6 +71,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
 		//Rendering
 		stateManager->DrawCurrState();
+		worldTextManager->Draw();
         
 		//------------- Informing the system about the loop's end -------------
         AESysFrameEnd();
@@ -83,6 +90,7 @@ void Terminate(void)
 		petManager->Destroy();
 		goManager->Destroy();
 		renderManager->Destroy();
+		worldTextManager->Destroy();
 		// free the system
 		AESysExit();
 	}

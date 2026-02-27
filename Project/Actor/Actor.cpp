@@ -2,7 +2,9 @@
 #include "../Elements/Element.h"
 #include "../Helpers/RenderUtils.h"
 #include "../Helpers/MatrixUtils.h"
+#include "../Helpers/Vec2Utils.h"
 #include "../camera.h"
+#include "../DesignPatterns/PostOffice.h"
 #include "StatsCalc.h"
 #include <algorithm>
 #include <iostream>
@@ -16,6 +18,16 @@ namespace {
             case DAMAGE_TYPE::ELEMENTAL: return "ELEMENTAL";
             case DAMAGE_TYPE::TRUE_DAMAGE: return "TRUE_DAMAGE";
             default: return "UNKNOWN";
+        }
+    }
+
+    Color DmgTypeToCol(DAMAGE_TYPE type) {
+        switch (type) {
+        case DAMAGE_TYPE::PHYSICAL: return {255, 128,0,255};
+        case DAMAGE_TYPE::MAGICAL: return {0,0,255,255};
+        case DAMAGE_TYPE::ELEMENTAL: return {0,204,204,255};
+        case DAMAGE_TYPE::TRUE_DAMAGE: return {153,255,153,255};
+        default: return { 247, 231, 0, 255 };
         }
     }
 
@@ -127,12 +139,14 @@ void Actor::TakeDamage(DamageData const& data)
 
     mCurrentHP -= actualDmg;
 
-    std::cout << "DMG: " << data.dmg << " -> Hp: " << mCurrentHP << '\n';
-    // Alert on-hit subscribers (e.g., target's defensive reactive effects, or attacker's lifesteal)
+    // Alert on-hit subscribers (e.g., Effects that react when its owner gets hit)
     for (ActorOnHitSub* sub : onHitSubs) {
         if (!sub) continue;
         sub->SubscriptionAlert({ data.attacker, this, data.weapon, data.dmgType, actualDmg });
     }
+    PostOffice::GetInstance()->Send("WorldTextManager", new ShowWorldTextMsg{ std::to_string((int)actualDmg),
+        pos + AEVec2{static_cast<float>(rand() % 20 - 10), static_cast<float>(rand() % 20 - 10)},
+        DmgTypeToCol(data.dmgType)});
 
     if (mCurrentHP <= 0.0f)
     {

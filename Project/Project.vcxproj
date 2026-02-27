@@ -149,6 +149,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="Rendering\RenderData.cpp" />
     <ClCompile Include="TileMap.cpp" />
     <ClCompile Include="TutorialData.cpp" />
+    <ClCompile Include="WorldText.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor\Actor.h" />
@@ -213,6 +214,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="Rendering\RenderData.h" />
     <ClInclude Include="TileMap.h" />
     <ClInclude Include="TutorialData.h" />
+    <ClInclude Include="WorldText.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
