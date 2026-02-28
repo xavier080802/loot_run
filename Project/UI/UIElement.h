@@ -10,10 +10,11 @@ namespace Json {
 	class Value;
 }
 
-/// <summary>
-/// Encapsulates callbacks for when the object is interacted with.
-/// </summary>
-/// <typeparam name="CallbackData">Parameters of the callback function</typeparam>
+/*
+	Encapsulates callbacks for when the object is interacted with.
+
+	Automatically registers itself with UIManager when contructed.
+*/
 class UIElement {
 public:
 	//Construct an element

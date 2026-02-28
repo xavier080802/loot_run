@@ -34,13 +34,17 @@ public:
 	//Multiple objs using the same tex will not duplicate mem
 	//and won't break the other objs when deleting texture.
 	AEGfxTexture* LoadTexture(const char* path);
+	//Loads and caches a texture.
+	//Multiple objs using the same tex will not duplicate mem
+	//and won't break the other objs when deleting texture.
+	AEGfxTexture* LoadTexture(std::string path);
 	s8 GetFont() const { return fontId; }
-	int GetFontSize() const { return fontSize; }
+	int GetFontSize() const { return descFontSize; }
 	f32 GetFontHeight() const { return fontHeight; }
 	int GetAnimFPS() const { return animationFPS; };
 
 private:
-	const int fontSize{ 72 };
+	const int descFontSize{ 72 };
 	AEGfxVertexList* meshList[SHAPE_NUM]{};
 	//<filepath, texture>
 	std::map<std::string, AEGfxTexture*>textureMap;

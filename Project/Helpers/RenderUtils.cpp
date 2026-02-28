@@ -128,10 +128,10 @@ void DrawBox(AEVec2 center, f32 width, f32 height, f32 thickness, Color col)
 	}
 }
 
-AEVec2 GetTextAlignPosNorm(s8 const& font, std::string const& text, AEVec2 pos, f32 fontSize, TextOriginPos alignment)
+AEVec2 GetTextAlignPosNorm(s8 const& font, std::string const& text, AEVec2 pos, f32 descFontSize, TextOriginPos alignment)
 {
 	f32 w, h;
-	AEGfxGetPrintSize(font, text.c_str(), fontSize, &w, &h);
+	AEGfxGetPrintSize(font, text.c_str(), descFontSize, &w, &h);
 	return GetTextAlignPosNorm(font, text, pos, AEVec2{w,h}, alignment);
 }
 
@@ -193,7 +193,7 @@ void DrawAEText(s8 const& font, const char* text, AEVec2 pos, f32 size, Color co
 		col.r/255.f, col.g/255.f, col.b/255.f, col.a/255.f);
 }
 
-void DrawAEText(s8 const& font, std::string const& text, AEVec2 pos, f32 fontSize, f32 lineSpace, Color const& col, TextOriginPos alignment, bool isHUD)
+void DrawAEText(s8 const& font, std::string const& text, AEVec2 pos, f32 descFontSize, f32 lineSpace, Color const& col, TextOriginPos alignment, bool isHUD)
 {
 	//Split string based on newlines
 	size_t i{}; //End of substr
@@ -210,16 +210,16 @@ void DrawAEText(s8 const& font, std::string const& text, AEVec2 pos, f32 fontSiz
 
 		std::string sub{ text.substr(start, i - start) };
 		f32 w, h;
-		AEGfxGetPrintSize(font, sub.c_str(), fontSize, &w, &h);
+		AEGfxGetPrintSize(font, sub.c_str(), descFontSize, &w, &h);
 		//Draw line below previous line (if any)
-		DrawAEText(font, sub.c_str(), { pos.x, pos.y - ((h+lineSpace)*AEGfxGetWinMaxY()) * num }, fontSize, col, alignment, isHUD);
+		DrawAEText(font, sub.c_str(), { pos.x, pos.y - ((h+lineSpace)*AEGfxGetWinMaxY()) * num }, descFontSize, col, alignment, isHUD);
 
 		num++;
 		start = i+1;
 	} while (i != std::string::npos);
 }
 
-void GetAETextSize(s8 const& font, std::string const& text, f32 fontSize, f32& width, f32& height, f32 lineSpace)
+void GetAETextSize(s8 const& font, std::string const& text, f32 descFontSize, f32& width, f32& height, f32 lineSpace)
 {
 	//Split string based on newlines
 	size_t i{}; //End of substr
@@ -235,7 +235,7 @@ void GetAETextSize(s8 const& font, std::string const& text, f32 fontSize, f32& w
 
 		std::string sub{ text.substr(start, i - start) };
 		f32 w, h;
-		AEGfxGetPrintSize(font, sub.c_str(), fontSize, &w, &h);
+		AEGfxGetPrintSize(font, sub.c_str(), descFontSize, &w, &h);
 		width = max(w, width); //Line with longest width
 		height += h;
 
@@ -243,7 +243,7 @@ void GetAETextSize(s8 const& font, std::string const& text, f32 fontSize, f32& w
 	} while (i != std::string::npos);
 }
 
-void DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 boxWidth, f32 fontSize, f32 lineSpace, Color const& col, TextOriginPos textAlignment, bool isHUD)
+AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 boxWidth, f32 descFontSize, f32 lineSpace, Color const& col, TextOriginPos textAlignment, bool isHUD)
 {
 	//Split string based on newlines and word wrapping to fit box width
 	size_t i{}; //End of substr
@@ -266,13 +266,13 @@ void DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 boxW
 			//First word
 			wrapped << word;
 			f32 length, h;
-			AEGfxGetPrintSize(font, word.c_str(), fontSize, &length, &h);
+			AEGfxGetPrintSize(font, word.c_str(), descFontSize, &length, &h);
 			length *= AEGfxGetWinMaxX();
 			size_t space_left = boxWidth - length;
 
 			//Wrap the rest of the text
 			while (words >> word) {
-				AEGfxGetPrintSize(font, word.c_str(), fontSize, &length, &h);
+				AEGfxGetPrintSize(font, word.c_str(), descFontSize, &length, &h);
 				length *= AEGfxGetWinMaxX();
 				if (space_left < length + 1) {
 					wrapped << '\n' << word;
@@ -290,9 +290,9 @@ void DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 boxW
 	} while (i != std::string::npos);
 
 	//Offset to keep box on screen
-	static const f32 fontH{RenderingManager::GetInstance()->GetFontHeight() * fontSize};
+	static const f32 fontH{RenderingManager::GetInstance()->GetFontHeight() * descFontSize};
 	AEVec2 acBoxSize{};
-	GetAETextSize(font, wrapped.str(), fontSize, acBoxSize.x, acBoxSize.y, lineSpace);
+	GetAETextSize(font, wrapped.str(), descFontSize, acBoxSize.x, acBoxSize.y, lineSpace);
 
 	//Norm-pos of text around pos (origin of textbox) - effectively normalized amount of offset from pos
 	AEVec2 norm = GetTextAlignPosNorm(font, wrapped.str(), {}, {acBoxSize.x, fontH}, textAlignment);
@@ -320,7 +320,9 @@ void DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 boxW
 		pos.y -= edge.y - AEGfxGetWinMaxY();
 	}
 	//Write text
-	DrawAEText(font, wrapped.str(), pos, fontSize, lineSpace, col, textAlignment, isHUD);
+	DrawAEText(font, wrapped.str(), pos, descFontSize, lineSpace, col, textAlignment, isHUD);
+
+	return pos;
 }
 
 void SetObjViewFromOrigin(AEVec2* pos, f32* rot, AEVec2* _scale, AEVec2 originPos, f32 originRot, AEVec2 originScale)

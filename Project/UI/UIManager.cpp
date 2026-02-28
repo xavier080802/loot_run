@@ -86,6 +86,6 @@ void UIManager::HandleRegQueue()
 
 bool UIManager::IsOverUI(UIElement* el)
 {
-	return (el->GetShape() == Collision::COL_RECT && IsCursorOver(el->GetPos(), el->GetSize().x, el->GetSize().y))
-		|| (el->GetShape() == Collision::COL_CIRCLE && IsCursorOverOval(el->GetPos(), el->GetSize(), 0));
+	return (el->GetShape() == Collision::COL_RECT && IsCursorOverWorld(el->GetPos(), el->GetSize()))
+		|| (el->GetShape() == Collision::COL_CIRCLE && IsCursorOverOvalWorld(el->GetPos(), el->GetSize(), 0));
 }

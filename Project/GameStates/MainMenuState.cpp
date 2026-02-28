@@ -122,7 +122,7 @@ void MainMenuState::Update(double dt)
 		};
 
 		// boolean check names reserved for input/hover checks
-		bool buttonHover = IsCursorOver(worldPos, worldSize.x, worldSize.y);
+		bool buttonHover = IsCursorOverWorld(worldPos, worldSize.x, worldSize.y, true);
 		bool buttonClick = false;
 
 		// Play hover sound only when pointer enters button
@@ -225,7 +225,7 @@ void MainMenuState::Draw()
 			ToVec2(scale, scale)
 		);
 
-		bool hover = IsCursorOver(worldPos, worldSize.x, worldSize.y);
+		bool hover = IsCursorOverWorld(worldPos, worldSize.x, worldSize.y, true);
 
 		AEMtx33 mtx;
 		GetTransformMtx(mtx, worldPos, 0.0f, worldSize);

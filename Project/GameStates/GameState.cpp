@@ -362,10 +362,8 @@ void GameState::Draw() {
 
     HandleTutorialDialogueRender();
 
-    //AEVec2 pos{ 0,0};
-    ////DrawAEText(font, "nyeh\nnyoom\nquack apple bottom beans beans, boots with the floof (with the\nflooooof)", {0, 100}, 0.5f, 0.f, { 250,250,0,255 }, TEXT_LOWER_LEFT);
-    //DrawAETextbox(font, "nyeh\nnyoom\nquack apple bottom beans beans,\nboots with the floof",
-    //    pos, 250, 0.5f, 0.1f, { 250,250,0,255 }, TEXT_MIDDLE);
+    //Draw Pet UI
+    PetManager::GetInstance()->DrawUI();
 }
 
 void GameState::HandleTutorialDialogueRender()

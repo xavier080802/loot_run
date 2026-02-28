@@ -27,7 +27,6 @@ public:
 	//Callback for mouse clicks
 	void SubscriptionAlert(Input::InputKeyData data) override;
 
-
 private:
 	std::vector<UIElement*> elements{};
 	std::queue<UIElement*> regQueue{};

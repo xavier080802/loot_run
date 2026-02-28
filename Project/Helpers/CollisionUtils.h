@@ -8,11 +8,21 @@
 #include "AEEngine.h"
 
 bool IsPointOver(float posX, float posY, float width, float height, float pointX, float pointY);
-bool IsCursorOver(AEVec2 pos, float width, float height);
+//Check if cursor is over an area in world coordinate system
+//pos in world coords
+//inHUD: set to false to follow camera
+bool IsCursorOverWorld(AEVec2 pos, float width, float height, bool inHUD = true);
+bool IsCursorOverWorld(AEVec2 pos, AEVec2 size, bool inHUD = true);
+//pos in screen coords
+bool IsCursorOverScreen(AEVec2 pos, AEVec2 size);
 
 bool IsPointOverCircle(float posX, float posY, float diameter, float pointX, float pointY);
-bool IsCursorOverCircle(AEVec2 pos, float diameter);
-bool IsCursorOverOval(AEVec2 pos, AEVec2 size, f32 rotDeg);
+bool IsCursorOverCircleWorld(AEVec2 pos, float diameter, bool inHUD = true);
+//Check if cursor is over an area in world coordinate system
+//pos in world coords
+//inHUD: set to false to follow camera
+bool IsCursorOverOvalWorld(AEVec2 pos, AEVec2 size, f32 rotDeg, bool inHUD = true);
+bool IsCursorOverOvalScreen(AEVec2 pos, AEVec2 size, f32 rotDeg);
 
 /// <summary>
 /// Returns whether the point is within a ROTATED rect of the given width and height at pos.
@@ -24,7 +34,7 @@ bool IsPointOverRectRot(float posX, float posY, float width, float height, float
 /// Returns whether the cursor is within a ROTATED rect of the given width and height at pos.
 /// </summary>
 /// <returns>1 or 0</returns>
-bool IsCursorOverRectRot(AEVec2 pos, float width, float height, float degrees);
+bool IsCursorOverRectRotWorld(AEVec2 pos, float width, float height, float degrees);
 
 bool IsRectsOverlapping(
 	AEVec2 rect1Pos, float rect1Width, float rect1Height,

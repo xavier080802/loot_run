@@ -28,6 +28,8 @@ public:
 	StatEffects::Mod const& GetMultiplier(unsigned index = 0);
 	//Get specific skill element from pet data
 	Elements::ELEMENT_TYPE GetSkillElement(unsigned index = 0);
+	bool IsOnCooldown() const { return cooldownTimer > 0.f; }
+	float GetCDTimer() const { return cooldownTimer; }
 
 	void ClearPath();
 	//Reset game-time variables

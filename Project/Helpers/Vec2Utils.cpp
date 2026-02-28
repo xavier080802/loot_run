@@ -19,12 +19,11 @@ AEVec2 VecOne(void)
     return vec;
 }
 
-AEVec2 GetMouseWorldVec(void)
+AEVec2 GetMouseWorldVec(bool inHUDSpace)
 {
     s32 mouseX = 0, mouseY = 0;
     AEInputGetCursorPosition(&mouseX, &mouseY);
-    AEVec2 world = ScreenToCameraWorld(ToVec2((float)mouseX, (float)mouseY));
-    return world;
+    return !inHUDSpace ? ScreenToCameraWorld(ToVec2((float)mouseX, (float)mouseY)) : ScreenToWorld(AEVec2{ (float)mouseX, (float)mouseY });
 }
 
 AEVec2 GetMouseScreenVec()

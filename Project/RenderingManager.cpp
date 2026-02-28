@@ -5,7 +5,7 @@
 void RenderingManager::Init()
 {
 	//Font
-	fontId = AEGfxCreateFont("Assets/placeholder.ttf", fontSize);
+	fontId = AEGfxCreateFont("Assets/placeholder.ttf", descFontSize);
 	f32 tmp{};
 	AEGfxGetPrintSize(fontId, "T", 1.f, &tmp, &fontHeight);
 
@@ -50,6 +50,11 @@ AEGfxTexture* RenderingManager::LoadTexture(const char* path)
 	AEGfxTexture* tex = AEGfxTextureLoad(path);
 	textureMap.insert(std::pair < std::string, AEGfxTexture*>(path, tex));
 	return tex;
+}
+
+AEGfxTexture* RenderingManager::LoadTexture(std::string path)
+{
+	return LoadTexture(path.c_str());
 }
 
 RenderingManager::~RenderingManager()

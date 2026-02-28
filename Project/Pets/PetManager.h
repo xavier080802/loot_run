@@ -6,6 +6,9 @@
 #include "Pet.h"
 #include "../Actor/Player.h"
 
+class RenderingManager;
+class UIElement;
+
 class PetManager : public Singleton<PetManager>, public PostBox
 {
 	friend Singleton<PetManager>;
@@ -32,10 +35,13 @@ public:
 
 	bool Handle(Message* message) override;
 
+	void DrawUI();
+
 private:
 	const std::string InvFilePath{ "Assets/Data/pet_inv.csv" };
 	void LoadPetData();
 	PostOffice* po{};
+	RenderingManager* rm{};
 	//Constant data. info for each pet, not player-specific
 	std::map<Pets::PET_TYPE, Pets::PetData> petData{};
 	Pet* equippedPet{};
@@ -44,7 +50,13 @@ private:
 	//Pet inventory
 	std::vector<Pets::PetSaveData> ownedPets{};
 
-	//TODO: databank, load from file or smthing. All the numerical values.
+	//UI
+	UIElement* skillUI{};
+	f32 descFontSize{ 0.35f };
+	f32 timerFontSize{ 0.5f };
+	f32 padding{ 0.02f };
+	bool showTooltip{ false };
+	void ShowPetTooltip();
 };
 #endif // !_PET_MANAGER_H_
 

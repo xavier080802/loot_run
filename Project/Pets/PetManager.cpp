@@ -5,6 +5,10 @@
 #include <fstream>
 #include <json/json.h>
 #include "../File/CSV.h"
+#include "../UI/UIElement.h"
+#include "../Helpers/RenderUtils.h"
+#include "../Helpers/MatrixUtils.h"
+#include "../Helpers/CoordUtils.h"
 
 /* Flow
 1. App executes, loading pet manager and game state -> LinkPlayer
@@ -16,6 +20,7 @@
 void PetManager::Init() {
 	po = PostOffice::GetInstance();
 	po->Register("PetManager", this);
+	rm = RenderingManager::GetInstance();
 
 	LoadPetData();
 
@@ -28,6 +33,10 @@ void PetManager::Init() {
 	equippedPet->SetEnabled(false);
 	//TEMP
 	SetPet(Pets::PET_1, Pets::MYTHICAL);
+
+	//UI
+	skillUI = &(new UIElement{ AEVec2{AEGfxGetWinMinX() + 50, AEGfxGetWinMinY() + 50}, AEVec2{100, 100}, 1, Collision::COL_RECT})
+		->SetHoverCallback([this](bool) {showTooltip = true;});
 }
 
 void PetManager::InitPetForGame()
@@ -114,6 +123,47 @@ bool PetManager::Handle(Message* message)
 	}
 	delete message;
 	return true;
+}
+
+void PetManager::DrawUI()
+{
+	if (!equippedPet) return;
+	//TODO: Draw skill icon and cooldown timer
+	
+	DrawTintedMesh(GetTransformMtx(skillUI->GetPos(), 0, skillUI->GetSize()),
+		rm->GetMesh(MESH_SQUARE), rm->LoadTexture(equippedPet->GetPetData().texture),
+		equippedPet->IsOnCooldown() ? Color{155,155,155,255} : Color{255,255,255,255}, 255);
+	
+	//Write cooldown
+	if (equippedPet->IsOnCooldown()) {
+		DrawAEText(rm->GetFont(), std::to_string((int)equippedPet->GetCDTimer()) + "s", skillUI->GetPos(), timerFontSize,
+			0, Color{ 0,0,0, 255 }, TEXT_MIDDLE);
+	}
+
+	if (showTooltip) {
+		ShowPetTooltip();
+		showTooltip = false;
+	}
+}
+
+void PetManager::ShowPetTooltip()
+{
+	s32 mx{}, my{};
+	AEInputGetCursorPosition(&mx, &my);
+	AEVec2 mP = ScreenToWorld(AEVec2{(float)mx, (float)my});
+
+	f32 nw{}, nh{};
+	GetAETextSize(rm->GetFont(), equippedPet->GetPetData().skillDesc, descFontSize, nw, nh, 0.05f);
+	AEVec2 nOffset = GetTextAlignPosNorm(rm->GetFont(), equippedPet->GetPetData().skillDesc, mP, descFontSize, TEXT_LOWER_LEFT);
+
+	//Draw background box
+	DrawTintedMesh(GetTransformMtx(AEVec2{ (float)mP.x + nw * AEGfxGetWinMaxX() * 0.5f, (float)mP.y + nh*AEGfxGetWinMaxY()*0.5f },
+		0, AEVec2{ (nw + padding) * AEGfxGetWinMaxX(), (nh + padding) * AEGfxGetWinMaxY() }),
+		rm->GetMesh(MESH_SQUARE), nullptr, Color{ 255,255,255,255 }, 200);
+
+	//Write text
+	DrawAETextbox(rm->GetFont(), equippedPet->GetPetData().skillDesc, AEVec2{ (float)mP.x, (float)mP.y },
+		AEGfxGetWinMaxX() * 0.4f, descFontSize, 0.05f, { 0, 0, 255,255 }, TEXT_LOWER_LEFT);
 }
 
 void PetManager::LoadPetData()
