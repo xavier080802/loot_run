@@ -52,17 +52,17 @@ AEGfxTexture* RenderingManager::LoadTexture(const char* path)
 	return tex;
 }
 
-int RenderingManager::GetAnimFPS()
-{
-	return animationFPS;
-}
-
 RenderingManager::~RenderingManager()
 {
 	for (std::pair <std ::string, AEGfxTexture*> pair : textureMap) {
 		if (pair.second == nullptr) continue;
 		AEGfxTextureUnload(pair.second);
 		pair.second = nullptr;
+	}
+	for (AEGfxVertexList* v : meshList) {
+		if (!v) continue;
+		AEGfxMeshFree(v);
+		v = nullptr;
 	}
 	textureMap.clear();
 	AEGfxDestroyFont(fontId);

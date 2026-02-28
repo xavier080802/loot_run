@@ -132,11 +132,13 @@ void PetManager::LoadPetData()
 	if (!Json::parseFromStream(builder, ifs, &root, &errs))
 	{
 		std::cout << "Pet data: parse failed: " << errs << "\n";
+		ifs.close();
 		return;
 	}
 
 	if (!root.isObject() || !root.isMember("pets") || !root["pets"].isArray()) {
 		std::cout << "Pet data: missing/invalid 'pets' array\n";
+		ifs.close();
 		return;
 	}
 
@@ -183,8 +185,6 @@ void PetManager::LoadPetData()
 
 		petData[pd.id] = pd;
 
-		ifs.close();
-
 		// Pet inventory
 		CSV const& inv{ CSV{InvFilePath} };
 		//Each row is a pet entry
@@ -202,4 +202,6 @@ void PetManager::LoadPetData()
 			ownedPets.push_back(d);
 		}
 	}
+
+	ifs.close();
 }

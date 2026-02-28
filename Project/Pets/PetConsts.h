@@ -28,18 +28,19 @@ namespace Pets {
 
 	//Data of a pet species, parsed from a json
 	struct PetData {
+		~PetData() = default;
 		PET_TYPE id{};
 		std::string name{};
 		StatEffects::StatusEffect passive{nullptr, -1, 1,"Pet"}; //Load from an array of Mods
 		std::vector<StatEffects::Mod> multipliers{}; //Skill/Passive extra multipliers
 		std::array<float, 6> rarityScaling{}; //For each rarity, the mults/statEffect values * rarityScaling[rarity]
-		float skillCooldown;
-		std::string skillDesc;
-		std::string texture;
-		std::vector<Elements::ELEMENT_TYPE> skillElements; //Elements the skill may inflict (implementation-based)
+		float skillCooldown{};
+		std::string skillDesc{};
+		std::string texture{};
+		std::vector<Elements::ELEMENT_TYPE> skillElements{}; //Elements the skill may inflict (implementation-based)
 
 		//Not loaded from json
-		bool (*PetSkill)(const PetSkills::SkillCastData& data);
+		bool (*PetSkill)(const PetSkills::SkillCastData& data) = nullptr;
 	};
 
 	//Owned pets - CSV parse format

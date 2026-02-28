@@ -33,6 +33,8 @@ public:
 	//Reset game-time variables
 	void Reset();
 
+	virtual ~Pet() {};
+
 	bool isSet{ false };
 protected:
 	void MoveToTarget(double dt);
@@ -44,7 +46,7 @@ protected:
 
 	//Movement
 	AEVec2 targetPos{};
-	std::queue<AEVec2> path;
+	std::queue<AEVec2> path{};
 	bool followPlayer{ true };
 };
 #endif // !_PETS_H_

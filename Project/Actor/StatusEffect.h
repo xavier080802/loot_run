@@ -27,6 +27,8 @@ namespace StatEffects {
 		Mod(float _val, MATH_TYPE _mathType, STAT_TYPE _statToAffect) 
 			: value(_val), mathType(_mathType), stat(_statToAffect){}
 
+		Mod() : value{ 0 }, mathType{ FLAT }, stat{ STAT_TYPE::ATT } {}
+
 		//Get this Mod's true value based on actor's base stats.
 		//if mathType is MULT, returns value
 		float GetValFromActor(Actor const& actor) const;
@@ -80,7 +82,7 @@ namespace StatEffects {
 			}
 		};
 
-		virtual ~StatusEffect() {}
+		virtual ~StatusEffect() {};
 
 		//Add mod to the mods list of this SE. Can be chained.
 		virtual StatusEffect* AddMod(Mod newMod);

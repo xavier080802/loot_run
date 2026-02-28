@@ -37,7 +37,7 @@ public:
 	s8 GetFont() const { return fontId; }
 	int GetFontSize() const { return fontSize; }
 	f32 GetFontHeight() const { return fontHeight; }
-	int GetAnimFPS();
+	int GetAnimFPS() const { return animationFPS; };
 
 private:
 	const int fontSize{ 72 };

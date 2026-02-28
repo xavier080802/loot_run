@@ -12,6 +12,7 @@
 class GameObject {
 	friend class GameObjectManager; //Allow manager access to private members.
 public:
+	GameObject(bool _register = true);
 	//Making this a struct so we can extend easier
 	struct CollisionData {
 		GameObject& other;
@@ -60,6 +61,8 @@ public:
 	void Temp_DoVelocityMovement(double dt);
 
 	std::vector<unsigned> cellIndexes{}; //temp
+
+	virtual ~GameObject() {};
 
 protected:
 	/// For GameObject derivatives (derived from GameObject) to clone properly.
