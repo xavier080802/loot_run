@@ -1,9 +1,9 @@
 #include "Minimap.h"
-#include "GameObjects/GameObjectManager.h"
-#include "Helpers/RenderUtils.h"
-#include "RenderingManager.h"
-#include "Helpers/MatrixUtils.h"
-#include "Helpers/Vec2Utils.h"
+#include "../GameObjects/GameObjectManager.h"
+#include "../Helpers/RenderUtils.h"
+#include "../RenderingManager.h"
+#include "../Helpers/MatrixUtils.h"
+#include "../Helpers/Vec2Utils.h"
 
 Minimap::Minimap()
 {

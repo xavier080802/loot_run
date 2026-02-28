@@ -1,9 +1,9 @@
 #ifndef _WORLD_TEXT_H_
 #define _WORLD_TEXT_H_
-#include "DesignPatterns/singleton.h"
-#include "DesignPatterns/PostBox.h"
+#include "../DesignPatterns/singleton.h"
+#include "../DesignPatterns/PostBox.h"
 #include "AEEngine.h"
-#include "Helpers/ColorUtils.h"
+#include "../Helpers/ColorUtils.h"
 #include <vector>
 
 class RenderingManager;

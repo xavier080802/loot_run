@@ -73,6 +73,12 @@
     <Filter Include="Source Files\Elements">
       <UniqueIdentifier>{af61897d-929b-40f4-9890-7ac5ac2235ea}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\UI">
+      <UniqueIdentifier>{f6970218-bb0f-4ed0-a82a-c472376dbf2d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\UI">
+      <UniqueIdentifier>{2742a0c9-014b-4e39-b3a8-87b29394e26f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -204,9 +210,6 @@
     <ClCompile Include="TileMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Minimap.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Elements\Element.cpp">
       <Filter>Source Files\Elements</Filter>
     </ClCompile>
@@ -228,8 +231,23 @@
     <ClCompile Include="Elements\SunMoonElement.cpp">
       <Filter>Source Files\Elements</Filter>
     </ClCompile>
-    <ClCompile Include="WorldText.cpp">
+    <ClCompile Include="UIManager.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UI\Minimap.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="UI\WorldText.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="UI\UIElement.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UI\UIManager.cpp">
+      <Filter>Source Files\UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -398,9 +416,6 @@
     <ClInclude Include="CollisionConstants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Minimap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Elements\Element.h">
       <Filter>Header Files\Elements</Filter>
     </ClInclude>
@@ -425,7 +440,19 @@
     <ClInclude Include="Actor\ActorSubscriptions.h">
       <Filter>Header Files\Actors</Filter>
     </ClInclude>
-    <ClInclude Include="WorldText.h">
+    <ClInclude Include="UI\Minimap.h">
+      <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UIManager.h">
+      <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\WorldText.h">
+      <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UIElement.h">
+      <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="InputManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

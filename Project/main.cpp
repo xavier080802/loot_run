@@ -7,7 +7,7 @@
 #include "./GameStates/GameState.h"
 #include "./GameStates/ShopState.h"
 #include "./GameObjects/GameObjectManager.h"
-#include "WorldText.h"
+#include "UI/WorldText.h"
 #include "./Helpers/RenderUtils.h"
 #include "RenderingManager.h"
 #include "./Pets/PetManager.h"
