@@ -183,6 +183,8 @@ void PetManager::LoadPetData()
 
 		petData[pd.id] = pd;
 
+		ifs.close();
+
 		// Pet inventory
 		CSV const& inv{ CSV{InvFilePath} };
 		//Each row is a pet entry

@@ -19,12 +19,12 @@ bool WorldTextManager::Handle(Message* message) {
 	for (Text& t : texts) { //Finding existing inactive
 		if (t.timer > 0) continue;
 		t = Text{ *msg };
-		delete msg;
+		delete message;
 		return true;
 	}
 	//No inactive, push back new
 	texts.push_back(Text{ *msg });
-	delete msg;
+	delete message;
 	return true;
 
 }

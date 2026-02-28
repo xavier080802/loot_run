@@ -177,6 +177,7 @@ namespace Elements {
 		Json::Value _sunMoonTint = sunMoon["tint"];
 		sunMoonTint = Color{ _sunMoonTint[0].asFloat(), _sunMoonTint[1].asFloat() , _sunMoonTint[2].asFloat() , _sunMoonTint[3].asFloat() };
 
+		ifs.close();
 		return true;
 	}
 

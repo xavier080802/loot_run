@@ -46,7 +46,7 @@ void InputManager::Update() {
 	}
 }
 
-InputManager& InputManager::SubscribeKeyboard(InputSub* sub, int priority)
+InputManager& InputManager::SubscribeKeyboard(Input::InputSub* sub, int priority)
 {
 	for (Receiver const& r : receivers) {
 		if (r.sub == sub) return *this;
@@ -57,7 +57,7 @@ InputManager& InputManager::SubscribeKeyboard(InputSub* sub, int priority)
 	return *this;
 }
 
-InputManager& InputManager::SubscribeMouse(InputSub* sub, int priority)
+InputManager& InputManager::SubscribeMouse(Input::InputSub* sub, int priority)
 {
 	for (Receiver const& r : receiversMouse) {
 		if (r.sub == sub) return *this;
