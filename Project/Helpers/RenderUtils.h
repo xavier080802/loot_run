@@ -29,6 +29,9 @@ enum TextOriginPos {
 	TEXT_UPPER_MIDDLE
 };
 
+//Parse Enum name (String) to the enum value
+TextOriginPos ParseTextAlignment(std::string const& str);
+
 AEGfxVertexList* CreateSquareMesh(f32 width, f32 height, u32 color);
 
 /// <summary>
@@ -51,7 +54,7 @@ void DrawMesh(AEMtx33 transform, AEGfxVertexList* mesh, AEGfxTexture* tex, float
 /// <summary>
 /// Draws a mesh with tint
 /// </summary>
-/// <param name="tint">Ensure that alpha is > 0. Additive coloring</param>
+/// <param name="tint">Ensure that alpha is > 0. Multiplicative coloring</param>
 /// <param name="alpha">Transparency of the mesh</param>
 void DrawTintedMesh(AEMtx33 transform, AEGfxVertexList* mesh, AEGfxTexture* tex, Color tint, float alpha);
 
@@ -117,6 +120,22 @@ void DrawAEText(s8 const& font, std::string const& text, AEVec2 pos, f32 descFon
 /// <param name="lineSpace">Scale of extra distance between lines based on font initialization size</param>
 void GetAETextSize(s8 const& font, std::string const& text, f32 descFontSize, f32& width, f32& height, f32 lineSpace = 0);
 
+//Config for the background of a textbox
+struct TextboxBgCfg {
+	bool haveBg{ false };
+	AEVec2 padding{};
+	Color col{};
+	float alpha{};
+	AEGfxVertexList* mesh{};
+	AEGfxTexture* texture{};
+
+	TextboxBgCfg() : haveBg{ false } {}
+
+	TextboxBgCfg(AEVec2 _padding, Color _col, float _alpha, AEGfxVertexList* _mesh, AEGfxTexture* _tex = nullptr)
+		: haveBg{ true }, padding{ _padding }, col{ _col }, alpha{ _alpha }, mesh{ _mesh }, texture{ _tex } {
+	}
+};
+
 /// <summary>
 /// Writes text like it's in a textbox, with word wrapping.
 /// Tries its best to keep the whole box on screen (prioritising the top left corner)
@@ -126,8 +145,10 @@ void GetAETextSize(s8 const& font, std::string const& text, f32 descFontSize, f3
 /// <param name="fontSize">Scale of the text based on initialization size. (1.f is normal size)</param>
 /// <param name="lineSpace">NORMALIZED distance between the bottom of one line and the top of the next</param>
 /// <param name="textAlignment">Alignment of text relative to the anchor of the textbox. H-alignment dictates the X-anchor.</param>
+/// <param name="bgCfg">Config for the rendering of the box. Use default ctor if you dont want to render the box</param>
 /// <returns>Modified world pos of the box to follow alignment</returns>
-AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 boxWidth, f32 descFontSize, f32 lineSpace, Color const& col, TextOriginPos textAlignment, bool isHUD = true);
+AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 boxWidth, f32 descFontSize, f32 lineSpace, Color const& col, TextOriginPos textAlignment,
+	TextboxBgCfg const& bgCfg = TextboxBgCfg{}, bool isHUD = true);
 
 /// <summary>
 /// Basically sets the object anchor to a position in the World. <para/>

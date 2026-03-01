@@ -12,6 +12,19 @@
 // Thus, when using inverse rot, the value is theta instead of -theta 
 // And for the normal theta, when passing to a rendering function, should be passed as -theta.
 
+TextOriginPos ParseTextAlignment(std::string const& str)
+{
+	if (str == "TEXT_LOWER_RIGHT") return TEXT_LOWER_RIGHT;
+	if (str == "TEXT_UPPER_LEFT") return TEXT_UPPER_LEFT;
+	if (str == "TEXT_UPPER_RIGHT") return TEXT_UPPER_RIGHT;
+	if (str == "TEXT_MIDDLE") return TEXT_MIDDLE;
+	if (str == "TEXT_MIDDLE_LEFT") return TEXT_MIDDLE_LEFT;
+	if (str == "TEXT_MIDDLE_RIGHT") return TEXT_MIDDLE_RIGHT;
+	if (str == "TEXT_LOWER_MIDDLE") return TEXT_LOWER_MIDDLE;
+	if (str == "TEXT_UPPER_MIDDLE") return TEXT_UPPER_MIDDLE;
+	return TEXT_LOWER_LEFT;
+}
+
 AEGfxVertexList* CreateSquareMesh(f32 width, f32 height, u32 color)
 {
 	AEGfxMeshStart();
@@ -237,13 +250,14 @@ void GetAETextSize(s8 const& font, std::string const& text, f32 descFontSize, f3
 		f32 w, h;
 		AEGfxGetPrintSize(font, sub.c_str(), descFontSize, &w, &h);
 		width = max(w, width); //Line with longest width
-		height += h;
+		//If h is 0, might be "\n\n", add prev height. If start = 0, this is first line, dont add lineSpace
+		height += (h == 0 ? height : h) + (start ? lineSpace : 0); 
 
 		start = i + 1;
 	} while (i != std::string::npos);
 }
 
-AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 boxWidth, f32 descFontSize, f32 lineSpace, Color const& col, TextOriginPos textAlignment, bool isHUD)
+AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 boxWidth, f32 descFontSize, f32 lineSpace, Color const& col, TextOriginPos textAlignment, TextboxBgCfg const& bgCfg, bool isHUD)
 {
 	//Split string based on newlines and word wrapping to fit box width
 	size_t i{}; //End of substr
@@ -309,15 +323,21 @@ AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 bo
 	}
 	//Check left side
 	if (edge.x < AEGfxGetWinMinX()) {
-		pos.x -= AEGfxGetWinMinX() - edge.x; //Shift right
+		pos.x += abs(AEGfxGetWinMinX() - edge.x); //Shift right
 	}
 	//Check bottom side
-	if (edge.y + acBoxSize.y < AEGfxGetWinMinY()) {
-		pos.y -= AEGfxGetWinMinY() - edge.y;
+	if (edge.y - acBoxSize.y < AEGfxGetWinMinY()) {
+		pos.y += abs(AEGfxGetWinMinY() - (edge.y - acBoxSize.y));
 	}
 	//Check top side
 	if (edge.y > AEGfxGetWinMaxY()) {
 		pos.y -= edge.y - AEGfxGetWinMaxY();
+	}
+	if (bgCfg.haveBg) { //Draw background box
+		//Reset edge calc to render bg correctly
+		edge = { pos.x + norm.x * AEGfxGetWinMaxX(), pos.y - norm.y * AEGfxGetWinMaxY() };
+		DrawTintedMesh(GetTransformMtx({ edge.x + acBoxSize.x * 0.5f, edge.y - acBoxSize.y * 0.5f }, 0, acBoxSize + bgCfg.padding),
+			bgCfg.mesh, bgCfg.texture, bgCfg.col, bgCfg.alpha);
 	}
 	//Write text
 	DrawAEText(font, wrapped.str(), pos, descFontSize, lineSpace, col, textAlignment, isHUD);

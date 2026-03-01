@@ -107,6 +107,7 @@ namespace StatEffects {
 		std::string const& GetName() const { return name; };
 		EFF_TYPE GetType() const { return effType; }
 		std::string const& GetIcon() const { return icon; }
+		std::vector<Mod>const& GetMods() const { return mods; }
 
 		//Multiply the value of each Mod by the given scalar.
 		void ScaleMods(float scalar);

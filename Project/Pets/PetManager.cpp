@@ -3,12 +3,14 @@
 #include "../RenderingManager.h"
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 #include <json/json.h>
 #include "../File/CSV.h"
 #include "../UI/UIElement.h"
 #include "../Helpers/RenderUtils.h"
 #include "../Helpers/MatrixUtils.h"
 #include "../Helpers/CoordUtils.h"
+#include "../Helpers/Vec2Utils.h"
 
 /* Flow
 1. App executes, loading pet manager and game state -> LinkPlayer
@@ -16,6 +18,21 @@
 3. Game starts -> GameState.Init -> Calls InitPetForGame to apply pet's passive
 4. Game ends -> GameState.ExitState -> Clears status effects, so no need to handle that here.
 */
+
+namespace {
+	f32 descFontSize{ 0.35f };
+	f32 timerFontSize{ 0.5f };
+	AEVec2 padding{0.02f, 0.02f};
+	AEVec2 iconPos{-1,-1};
+	f32 iconSize{};
+	f32 lineSpace{};
+	Color textCol{0,0,255,255};
+	Color tooltipBgCol{ 255,255,255,255 };
+	Color timerTextCol{0,0,0,255};
+	Color onCooldownCol{155,155,155,155};
+	TextOriginPos tooltipAlignment{};
+	bool showTimerUnit{};
+}
 
 void PetManager::Init() {
 	po = PostOffice::GetInstance();
@@ -35,8 +52,9 @@ void PetManager::Init() {
 	SetPet(Pets::PET_1, Pets::MYTHICAL);
 
 	//UI
-	skillUI = &(new UIElement{ AEVec2{AEGfxGetWinMinX() + 50, AEGfxGetWinMinY() + 50}, AEVec2{100, 100}, 1, Collision::COL_RECT})
-		->SetHoverCallback([this](bool) {showTooltip = true;});
+	LoadUIJSON();
+	skillUI = &(new UIElement{ NormToWorld(iconPos) + iconSize * 0.5f, {iconSize, iconSize}, 1, Collision::COL_RECT })
+		->SetHoverCallback([this](bool) {showTooltip = true;}); //Flag this frame to show tooltip (due to order of calling, showing tooltip here will render below icon)
 }
 
 void PetManager::InitPetForGame()
@@ -128,16 +146,15 @@ bool PetManager::Handle(Message* message)
 void PetManager::DrawUI()
 {
 	if (!equippedPet) return;
-	//TODO: Draw skill icon and cooldown timer
 	
 	DrawTintedMesh(GetTransformMtx(skillUI->GetPos(), 0, skillUI->GetSize()),
 		rm->GetMesh(MESH_SQUARE), rm->LoadTexture(equippedPet->GetPetData().texture),
-		equippedPet->IsOnCooldown() ? Color{155,155,155,255} : Color{255,255,255,255}, 255);
+		equippedPet->IsOnCooldown() ? onCooldownCol : Color{255,255,255,255}, 255);
 	
 	//Write cooldown
 	if (equippedPet->IsOnCooldown()) {
-		DrawAEText(rm->GetFont(), std::to_string((int)equippedPet->GetCDTimer()) + "s", skillUI->GetPos(), timerFontSize,
-			0, Color{ 0,0,0, 255 }, TEXT_MIDDLE);
+		DrawAEText(rm->GetFont(), std::to_string((int)equippedPet->GetCDTimer()) + (showTimerUnit ? "s" : ""), skillUI->GetPos(), timerFontSize,
+			0, timerTextCol, TEXT_MIDDLE);
 	}
 
 	if (showTooltip) {
@@ -148,24 +165,84 @@ void PetManager::DrawUI()
 
 void PetManager::ShowPetTooltip()
 {
+	std::string txt{ equippedPet->GetPetData().skillDesc + extraDesc};
+
 	s32 mx{}, my{};
 	AEInputGetCursorPosition(&mx, &my);
 	AEVec2 mP = ScreenToWorld(AEVec2{(float)mx, (float)my});
 
 	f32 nw{}, nh{};
-	GetAETextSize(rm->GetFont(), equippedPet->GetPetData().skillDesc, descFontSize, nw, nh, 0.05f);
-	AEVec2 nOffset = GetTextAlignPosNorm(rm->GetFont(), equippedPet->GetPetData().skillDesc, mP, descFontSize, TEXT_LOWER_LEFT);
+	GetAETextSize(rm->GetFont(), txt, descFontSize, nw, nh, lineSpace);
+	AEVec2 nOffset = GetTextAlignPosNorm(rm->GetFont(), txt, mP, descFontSize, tooltipAlignment);
 
-	//Draw background box
-	DrawTintedMesh(GetTransformMtx(AEVec2{ (float)mP.x + nw * AEGfxGetWinMaxX() * 0.5f, (float)mP.y + nh*AEGfxGetWinMaxY()*0.5f },
-		0, AEVec2{ (nw + padding) * AEGfxGetWinMaxX(), (nh + padding) * AEGfxGetWinMaxY() }),
-		rm->GetMesh(MESH_SQUARE), nullptr, Color{ 255,255,255,255 }, 200);
-
-	//Write text
-	DrawAETextbox(rm->GetFont(), equippedPet->GetPetData().skillDesc, AEVec2{ (float)mP.x, (float)mP.y },
-		AEGfxGetWinMaxX() * 0.4f, descFontSize, 0.05f, { 0, 0, 255,255 }, TEXT_LOWER_LEFT);
+	//Draw text box
+	DrawAETextbox(rm->GetFont(), txt, AEVec2{ (float)mP.x, (float)mP.y },
+		AEGfxGetWinMaxX() * 0.4f, descFontSize, lineSpace, textCol, tooltipAlignment,
+		TextboxBgCfg{padding, tooltipBgCol, 255, rm->GetMesh(MESH_SQUARE) });
 }
 
+//Load UI stuff from JSON
+void PetManager::LoadUIJSON()
+{
+	std::ifstream ifs{ "Assets/Data/ui.json", std::ios_base::binary };
+
+	if (!ifs.is_open()) {
+		std::cout << "PET UI JSON FAILED TO OPEN\n";
+		return;
+	}
+
+	Json::Value root;
+	Json::CharReaderBuilder builder;
+	std::string errs;
+
+	if (!Json::parseFromStream(builder, ifs, &root, &errs))
+	{
+		std::cout << "Pet data: parse failed: " << errs << "\n";
+		ifs.close();
+		return;
+	}
+	if (!root.isObject() || !root.isMember("pet_ui")) {
+		std::cout << "Pet ui: missing/invalid 'pet_ui' object\n";
+		ifs.close();
+		return;
+	}
+	root = root["pet_ui"];
+	//Load ui values
+	descFontSize = root.get("descFontSize", 0.35f).asFloat();
+	timerFontSize = root.get("timerFontSize", 0.5f).asFloat();
+	if (root["padding"].isArray() && root["padding"].size() == 2) {
+		padding.x = root["padding"][0].asFloat();
+		padding.y = root["padding"][1].asFloat();
+	}
+	if (root["pos"].isArray() && root["pos"].size() == 2) {
+		iconPos.x = root["pos"][0].asFloat();
+		iconPos.y = root["pos"][1].asFloat();
+	}
+	iconSize = root.get("size", 75).asFloat();
+	lineSpace = root.get("lineSpace", 0.05f).asFloat();
+	if (root["textCol"].isArray() && root["textCol"].size() == 4) {
+		textCol = { root["textCol"][0].asFloat(), root["textCol"][1].asFloat() ,
+		root["textCol"][2].asFloat(),root["textCol"][3].asFloat() };
+	}
+	if (root["boxCol"].isArray() && root["boxCol"].size() == 4) {
+		tooltipBgCol = { root["boxCol"][0].asFloat(), root["boxCol"][1].asFloat() ,
+		root["boxCol"][2].asFloat(),root["boxCol"][3].asFloat() };
+	}
+	if (root["timerTextCol"].isArray() && root["timerTextCol"].size() == 4) {
+		timerTextCol = { root["timerTextCol"][0].asFloat(), root["timerTextCol"][1].asFloat() ,
+		root["timerTextCol"][2].asFloat(),root["timerTextCol"][3].asFloat() };
+	}
+	if (root["onCooldownCol"].isArray() && root["onCooldownCol"].size() == 4) {
+		onCooldownCol = { root["onCooldownCol"][0].asFloat(), root["onCooldownCol"][1].asFloat() ,
+		root["onCooldownCol"][2].asFloat(),root["onCooldownCol"][3].asFloat() };
+	}
+	showTimerUnit = root.get("showTimerUnit", true).asBool();
+	tooltipAlignment = ParseTextAlignment(root.get("textAlignment", "TEXT_LOWER_LEFT").asString());
+
+	ifs.close();
+}
+
+//Load Pet data from JSON
 void PetManager::LoadPetData()
 {
 	std::ifstream ifs{ "Assets/Data/pets.json", std::ios_base::binary };

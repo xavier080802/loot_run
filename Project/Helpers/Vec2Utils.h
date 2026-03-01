@@ -35,9 +35,11 @@ bool CompareVec2(AEVec2 const& a, AEVec2 const& b);
 
 AEVec2 operator-(AEVec2 lhs, AEVec2 rhs);
 AEVec2 operator-=(AEVec2& lhs, AEVec2 rhs);
+AEVec2 operator-(AEVec2 lhs, float rhs);
 
 AEVec2 operator+(AEVec2 lhs, AEVec2 rhs);
 AEVec2 operator+=(AEVec2& lhs, AEVec2 rhs);
+AEVec2 operator+(AEVec2 lhs, float rhs);
 
 AEVec2 operator*(AEVec2 lhs, float rhs);
 AEVec2 operator*(AEVec2 lhs, AEVec2 rhs);

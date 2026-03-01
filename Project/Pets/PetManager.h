@@ -46,17 +46,16 @@ private:
 	std::map<Pets::PET_TYPE, Pets::PetData> petData{};
 	Pet* equippedPet{};
 	Player* player{};
+	std::string extraDesc{}; //Pet passive/mults/etc
 
 	//Pet inventory
 	std::vector<Pets::PetSaveData> ownedPets{};
 
 	//UI
 	UIElement* skillUI{};
-	f32 descFontSize{ 0.35f };
-	f32 timerFontSize{ 0.5f };
-	f32 padding{ 0.02f };
 	bool showTooltip{ false };
 	void ShowPetTooltip();
+	void LoadUIJSON();
 };
 #endif // !_PET_MANAGER_H_
 
