@@ -8,7 +8,7 @@ namespace Elements {
 	//Places an object on the ground.
 	//Slows enemies, and reapplies all their debuffs periodically.
 	//For owner, instead reapplies all buffs periodically.
-	extern void SunMoonEffect(GameObject::CollisionData& target, Actor* caster);
+	extern void SunMoonEffect(GameObject::CollisionData& target, Actor* caster, void* extra =nullptr);
 
 	//Reaction between sun and moon.
 	//Object lifetime ends, detonate to deal damage to enemies.

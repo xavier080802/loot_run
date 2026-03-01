@@ -31,6 +31,8 @@ enum STAT_TYPE {
 	MOVE_SPD,
 };
 
+const char* StatTypeToString(STAT_TYPE stat);
+
 // Used to distinguish between different types of damage sources,
 // allowing mitigation/buffs to apply selectively (e.g. only physical).
 enum class DAMAGE_TYPE {

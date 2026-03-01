@@ -165,7 +165,7 @@ void ShopState::Update(double dt)
 			AEVec2 worldSize = { shopButtons[i].size.x * scale, shopButtons[i].size.y * scale };
 
 			// boolean check names reserved for input/hover checks
-			bool buttonHover = IsCursorOver(worldPos, worldSize.x, worldSize.y);
+			bool buttonHover = IsCursorOverWorld(worldPos, worldSize.x, worldSize.y, true);
 			bool buttonClick = false;
 
 			// Play hover sound only when pointer enters button
@@ -223,14 +223,14 @@ void ShopState::Update(double dt)
 
 					// Minus Button Check
 					AEVec2 minusPos = { worldPos.x - offset, worldPos.y };
-					if (IsCursorOver(minusPos, sideBtnSize, sideBtnSize) && AEInputCheckTriggered(AEVK_LBUTTON)) {
+					if (IsCursorOverWorld(minusPos, sideBtnSize, sideBtnSize, true) && AEInputCheckTriggered(AEVK_LBUTTON)) {
 						AEAudioPlay(clickSound, buttonGroup, 0.6f, 0.6f, 0);
 						std::cout << "Decreased " << shopButtons[i].label << std::endl;
 					}
 
 					// Plus Button Check
 					AEVec2 plusPos = { worldPos.x + offset, worldPos.y };
-					if (IsCursorOver(plusPos, sideBtnSize, sideBtnSize) && AEInputCheckTriggered(AEVK_LBUTTON)) {
+					if (IsCursorOverWorld(plusPos, sideBtnSize, sideBtnSize, true) && AEInputCheckTriggered(AEVK_LBUTTON)) {
 						AEAudioPlay(clickSound, buttonGroup, 0.6f, 0.6f, 0);
 						std::cout << "Increased " << shopButtons[i].label << std::endl;
 					}
@@ -277,7 +277,7 @@ void ShopState::Draw()
 		{
 			AEVec2 worldPos = DefaultToWorld(shopButtons[i].pos.x, shopButtons[i].pos.y);
 			AEVec2 worldSize = { shopButtons[i].size.x * scale, shopButtons[i].size.y * scale };
-			bool hover = IsCursorOver(worldPos, worldSize.x, worldSize.y);
+			bool hover = IsCursorOverWorld(worldPos, worldSize.x, worldSize.y, true);
 
 			// Main Button Rect
 			GetTransformMtx(mtx, worldPos, 0.0f, worldSize);

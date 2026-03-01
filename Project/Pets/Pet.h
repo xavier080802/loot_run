@@ -28,10 +28,14 @@ public:
 	StatEffects::Mod const& GetMultiplier(unsigned index = 0);
 	//Get specific skill element from pet data
 	Elements::ELEMENT_TYPE GetSkillElement(unsigned index = 0);
+	bool IsOnCooldown() const { return cooldownTimer > 0.f; }
+	float GetCDTimer() const { return cooldownTimer; }
 
 	void ClearPath();
 	//Reset game-time variables
 	void Reset();
+
+	virtual ~Pet() {};
 
 	bool isSet{ false };
 protected:
@@ -44,7 +48,7 @@ protected:
 
 	//Movement
 	AEVec2 targetPos{};
-	std::queue<AEVec2> path;
+	std::queue<AEVec2> path{};
 	bool followPlayer{ true };
 };
 #endif // !_PETS_H_

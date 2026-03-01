@@ -6,6 +6,9 @@
 #include "Pet.h"
 #include "../Actor/Player.h"
 
+class RenderingManager;
+class UIElement;
+
 class PetManager : public Singleton<PetManager>, public PostBox
 {
 	friend Singleton<PetManager>;
@@ -24,7 +27,7 @@ public:
 	//Sets the pet based on the type.
 	void SetPet(Pets::PET_TYPE pet, Pets::PET_RANK rank);
 	Pet* GetEquippedPet() { return equippedPet; }
-	Pets::PET_RANK GetPetRank(Pets::PET_TYPE pet);
+	bool PetHasSkill() const;
 
 	//Add a new pet to the inventory.
 	//Returns success. If max limit is reached, returns false
@@ -32,19 +35,27 @@ public:
 
 	bool Handle(Message* message) override;
 
+	void DrawUI();
+
 private:
 	const std::string InvFilePath{ "Assets/Data/pet_inv.csv" };
 	void LoadPetData();
 	PostOffice* po{};
+	RenderingManager* rm{};
 	//Constant data. info for each pet, not player-specific
 	std::map<Pets::PET_TYPE, Pets::PetData> petData{};
 	Pet* equippedPet{};
 	Player* player{};
+	std::string extraDesc{}; //Pet passive/mults/etc
 
 	//Pet inventory
 	std::vector<Pets::PetSaveData> ownedPets{};
 
-	//TODO: databank, load from file or smthing. All the numerical values.
+	//UI
+	UIElement* skillUI{};
+	bool showTooltip{ false };
+	void ShowPetTooltip();
+	void LoadUIJSON();
 };
 #endif // !_PET_MANAGER_H_
 

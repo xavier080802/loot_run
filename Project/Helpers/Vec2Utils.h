@@ -14,7 +14,8 @@ AEVec2 VecZero(void);
 AEVec2 VecOne(void);
 
 //Returns the mouse world coords
-AEVec2 GetMouseWorldVec(void);
+//inHUDSpace: World coordinate system without being based on the camera movement
+AEVec2 GetMouseWorldVec(bool inHUDSpace = false);
 
 //Returns cursor position
 AEVec2 GetMouseScreenVec();
@@ -34,9 +35,11 @@ bool CompareVec2(AEVec2 const& a, AEVec2 const& b);
 
 AEVec2 operator-(AEVec2 lhs, AEVec2 rhs);
 AEVec2 operator-=(AEVec2& lhs, AEVec2 rhs);
+AEVec2 operator-(AEVec2 lhs, float rhs);
 
 AEVec2 operator+(AEVec2 lhs, AEVec2 rhs);
 AEVec2 operator+=(AEVec2& lhs, AEVec2 rhs);
+AEVec2 operator+(AEVec2 lhs, float rhs);
 
 AEVec2 operator*(AEVec2 lhs, float rhs);
 AEVec2 operator*(AEVec2 lhs, AEVec2 rhs);

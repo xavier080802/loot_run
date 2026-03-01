@@ -1,9 +1,14 @@
 #include "Actor.h"
 #include "../Elements/Element.h"
-#include "StatsCalc.h"
+#include "../Helpers/RenderUtils.h"
+#include "../Helpers/MatrixUtils.h"
+#include "../Helpers/Vec2Utils.h"
+#include "../camera.h"
+#include "../DesignPatterns/PostOffice.h"
 #include "StatsCalc.h"
 #include <algorithm>
 #include <iostream>
+#include "../DebugTools.h"
 
 namespace {
     // Just for debugging
@@ -16,6 +21,18 @@ namespace {
             default: return "UNKNOWN";
         }
     }
+
+    Color DmgTypeToCol(DAMAGE_TYPE type) {
+        switch (type) {
+        case DAMAGE_TYPE::PHYSICAL: return {255, 128,0,255};
+        case DAMAGE_TYPE::MAGICAL: return {0,0,255,255};
+        case DAMAGE_TYPE::ELEMENTAL: return {0,204,204,255};
+        case DAMAGE_TYPE::TRUE_DAMAGE: return {153,255,153,255};
+        default: return { 247, 231, 0, 255 };
+        }
+    }
+
+    const int NUM_SE_ICONS{ 4 };
 }
 
 GameObject* Actor::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, Collision::LAYER _isInLayer)
@@ -43,6 +60,40 @@ void Actor::Update(double dt)
     UpdateStatusEffects(dt);
 }
 
+void Actor::Draw()
+{
+    GameObject::Draw();
+
+    //Draw status effects below GO.
+    int num{ min(static_cast<int>(statusEffectsDict.size()), NUM_SE_ICONS) }; //Number of SEs to show
+    float width{ scale.x / NUM_SE_ICONS }; //Width of each icon
+    AEGfxVertexList* mesh{ RenderingManager::GetInstance()->GetMesh(MESH_SHAPE::MESH_SQUARE) };
+    float pos1{ (pos.x - scale.x * 0.5f + width*0.5f) + width * (float)(NUM_SE_ICONS - num) * 0.5f }; //X-Pos of first SE. Render all icons centered
+    int i{};
+    //Render backwards, as based on EFF_TYPE, Elements appear last in the map (maps sort automatically in asc order)
+    //This will show elements before other SEs (not perfect)
+    for (auto it{ statusEffectsDict.rbegin() }; it != statusEffectsDict.rend(); ++it) {
+        StatEffects::StatusEffect const& se = *(*it).second;
+        f32 _rot = 0; 
+        AEVec2 _scale = {width, width};
+        AEVec2 _pos{ pos1 + width*i, pos.y - (scale.y + width) * 0.5f}; 
+        GetObjViewFromCamera(&_pos, &_rot, &_scale);
+        DrawMeshWithTexOffset(GetTransformMtx(_pos, _rot, _scale),
+            mesh,
+            RenderingManager::GetInstance()->LoadTexture(se.GetIcon().c_str()),
+            {255,255,255,255}, renderingData->alpha,
+            {0,0});
+
+        //At max-visible but there's still more SEs: show a '+' to indicate more exists
+        if (++i >= NUM_SE_ICONS && statusEffectsDict.size() > NUM_SE_ICONS) {
+            _pos.x += width + 2; //move to the right a bit
+            DrawAEText(RenderingManager::GetInstance()->GetFont(), "+", _pos,
+                (width*2) / RenderingManager::GetInstance()->GetFontSize(), { 255,255,255,255 }, TextOriginPos::TEXT_MIDDLE);
+            break;
+        }
+    }
+}
+
 void Actor::DealDamage(Actor* target, float baseDmg, DAMAGE_TYPE dmgType, const EquipmentData* weapon)
 {
     // Make sure we have a valid and alive target before doing anything.
@@ -58,8 +109,8 @@ void Actor::DealDamage(Actor* target, float baseDmg, DAMAGE_TYPE dmgType, const 
     }
 
     // Testing cout to verify DealDamage is correctly preparing the final damage
-    std::cout << "[Actor::DealDamage] Attacker deals " << finalDmg << " " 
-              << DmgTypeToString(dmgType) << " damage to target!" << '\n';
+    Debug::stream << "[Actor::DealDamage] Attacker deals " << finalDmg << " "
+        << DmgTypeToString(dmgType) << " damage to target!" << '\n';
 
     target->TakeDamage({ finalDmg, this, dmgType, weapon });
 }
@@ -83,18 +134,20 @@ void Actor::TakeDamage(DamageData const& data)
     }
 
     // Testing cout to verify TakeDamage is receiving the attacker and damage correctly
-    std::cout << "[Actor::TakeDamage] Target taking " << actualDmg << " damage"
+    Debug::stream << "[Actor::TakeDamage] Target taking " << actualDmg << " damage"
               << (data.attacker ? " from attacker" : " (no attacker)")
               << " after " << mStats.defense << " defense mitigation.\n";
 
     mCurrentHP -= actualDmg;
 
-    std::cout << "DMG: " << data.dmg << " -> Hp: " << mCurrentHP << '\n';
-    // Alert on-hit subscribers (e.g., target's defensive reactive effects, or attacker's lifesteal)
+    // Alert on-hit subscribers (e.g., Effects that react when its owner gets hit)
     for (ActorOnHitSub* sub : onHitSubs) {
         if (!sub) continue;
         sub->SubscriptionAlert({ data.attacker, this, data.weapon, data.dmgType, actualDmg });
     }
+    PostOffice::GetInstance()->Send("WorldTextManager", new ShowWorldTextMsg{ std::to_string((int)actualDmg),
+        pos + AEVec2{static_cast<float>(rand() % 20 - 10), static_cast<float>(rand() % 20 - 10)},
+        DmgTypeToCol(data.dmgType)});
 
     if (mCurrentHP <= 0.0f)
     {
@@ -109,7 +162,7 @@ void Actor::Heal(float amt)
     if (amt <= 0.0f) return;
     mCurrentHP = AEClamp(mCurrentHP + amt, 0.0f, mStats.maxHP);
 
-    std::cout << "HEAL: " << mCurrentHP << '\n';
+    Debug::stream << "HEAL: " << mCurrentHP << '\n';
 }
 
 void Actor::ApplyStatusEffect(StatEffects::StatusEffect* eff, Actor* caster)

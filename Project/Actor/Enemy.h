@@ -27,6 +27,8 @@ public:
     EnemyDef const& GetDefinition() const { return *mDef; }
     const ActorStats& GetBaseStats() const override { return mDef->baseStats; }
 
+    virtual ~Enemy() {};
+
 protected:
     // Spawns drops and disables the enemy; actual deletion is manager-controlled
     void OnDeath(Actor* killer = nullptr) override;

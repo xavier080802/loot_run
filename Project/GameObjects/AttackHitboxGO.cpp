@@ -12,6 +12,7 @@ AttackHitboxGO* AttackHitboxGO::Start(const AttackHitboxConfig& cfg)
     OnEnd = cfg.onEnd;
     hitCooldown = cfg.hitCooldown;
     hitTimer = 0.f;
+    extraData = cfg.extraData;
 
 	hitOnce.clear();
 	collisionEnabled = true;
@@ -87,7 +88,7 @@ void AttackHitboxGO::OnCollide(CollisionData& other)
     hitOnce.push_back(&other.other);
 
     // Trigger the custom hit logic defined in the config
-    if (OnHit) OnHit(other, owner);
+    if (OnHit) OnHit(other, owner, extraData);
 
     // If this was a single-target strike, immediately turn off the hitbox
     if (disableOnHit) {

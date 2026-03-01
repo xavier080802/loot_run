@@ -9,7 +9,7 @@
 class BloodElement : public StatEffects::StatusEffect
 {
 public:
-	BloodElement(std::string _name, StatEffects::EFF_TYPE _type = StatEffects::BLOOD) : StatEffects::StatusEffect{ nullptr, Elements::elementDur, 1, _name, 1, _type }{}
+	BloodElement(std::string _name, StatEffects::EFF_TYPE _type = StatEffects::BLOOD) : StatEffects::StatusEffect{ nullptr, Elements::elementDur, 1, _name, 1, _type, "Assets/bloodEle.png"}{}
 	virtual ~BloodElement() {}
 	void Tick(double dt) override;
 	void OnReapply(int numStacks = 1) override;

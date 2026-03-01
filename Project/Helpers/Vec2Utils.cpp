@@ -19,12 +19,11 @@ AEVec2 VecOne(void)
     return vec;
 }
 
-AEVec2 GetMouseWorldVec(void)
+AEVec2 GetMouseWorldVec(bool inHUDSpace)
 {
     s32 mouseX = 0, mouseY = 0;
     AEInputGetCursorPosition(&mouseX, &mouseY);
-    AEVec2 world = ScreenToCameraWorld(ToVec2((float)mouseX, (float)mouseY));
-    return world;
+    return !inHUDSpace ? ScreenToCameraWorld(ToVec2((float)mouseX, (float)mouseY)) : ScreenToWorld(AEVec2{ (float)mouseX, (float)mouseY });
 }
 
 AEVec2 GetMouseScreenVec()
@@ -64,6 +63,11 @@ AEVec2 operator-=(AEVec2& lhs, AEVec2 rhs)
     return lhs;
 }
 
+AEVec2 operator-(AEVec2 lhs, float rhs)
+{
+    return { lhs.x - rhs, lhs.y - rhs };
+}
+
 AEVec2 operator+(AEVec2 lhs, AEVec2 rhs)
 {
     AEVec2 out{ lhs.x + rhs.x, lhs.y + rhs.y };
@@ -75,6 +79,10 @@ AEVec2 operator+=(AEVec2& lhs, AEVec2 rhs)
     lhs.x += rhs.x;
     lhs.y += rhs.y;
     return lhs;
+}
+
+AEVec2 operator+(AEVec2 lhs, float rhs) {
+    return { lhs.x + rhs, lhs.y + rhs };
 }
 
 AEVec2 operator*(AEVec2 lhs, float rhs)

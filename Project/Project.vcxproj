@@ -105,8 +105,10 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="Actor\Enemy.cpp" />
     <ClCompile Include="Actor\Player.cpp" />
     <ClCompile Include="Actor\StatsCalc.cpp" />
+    <ClCompile Include="Actor\StatsTypes.cpp" />
     <ClCompile Include="Actor\StatusEffect.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="DebugTools.cpp" />
     <ClCompile Include="DesignPatterns\PostOffice.cpp" />
     <ClCompile Include="Drops\DropSystem.cpp" />
     <ClCompile Include="Drops\PickupGO.cpp" />
@@ -136,9 +138,9 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="helpers\MatrixUtils.cpp" />
     <ClCompile Include="helpers\RenderUtils.cpp" />
     <ClCompile Include="helpers\Vec2Utils.cpp" />
+    <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Inventory\Inventory.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Minimap.cpp" />
     <ClCompile Include="Pets\Pet.cpp" />
     <ClCompile Include="Pets\PetManager.cpp" />
     <ClCompile Include="Pets\PetSkills.cpp" />
@@ -149,6 +151,10 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="Rendering\RenderData.cpp" />
     <ClCompile Include="TileMap.cpp" />
     <ClCompile Include="TutorialData.cpp" />
+    <ClCompile Include="UI\Minimap.cpp" />
+    <ClCompile Include="UI\UIElement.cpp" />
+    <ClCompile Include="UI\UIManager.cpp" />
+    <ClCompile Include="UI\WorldText.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor\Actor.h" />
@@ -161,6 +167,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="Actor\StatusEffect.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CollisionConstants.h" />
+    <ClInclude Include="DebugTools.h" />
     <ClInclude Include="DesignPatterns\ConcreteMessages.h" />
     <ClInclude Include="DesignPatterns\Message.h" />
     <ClInclude Include="DesignPatterns\PostBox.h" />
@@ -198,10 +205,10 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="helpers\MatrixUtils.h" />
     <ClInclude Include="helpers\RenderUtils.h" />
     <ClInclude Include="helpers\Vec2Utils.h" />
+    <ClInclude Include="InputManager.h" />
     <ClInclude Include="Inventory\EquipmentTypes.h" />
     <ClInclude Include="Inventory\Inventory.h" />
     <ClInclude Include="main.h" />
-    <ClInclude Include="Minimap.h" />
     <ClInclude Include="Pets\Pet.h" />
     <ClInclude Include="Pets\PetConsts.h" />
     <ClInclude Include="Pets\PetManager.h" />
@@ -213,6 +220,10 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="Rendering\RenderData.h" />
     <ClInclude Include="TileMap.h" />
     <ClInclude Include="TutorialData.h" />
+    <ClInclude Include="UI\Minimap.h" />
+    <ClInclude Include="UI\UIElement.h" />
+    <ClInclude Include="UI\UIManager.h" />
+    <ClInclude Include="UI\WorldText.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

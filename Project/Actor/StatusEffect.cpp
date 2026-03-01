@@ -28,7 +28,7 @@ void StatEffects::StatusEffect::Tick(double dt)
 {
 	durationTimer += static_cast<float>(dt);
 
-	if (durationTimer >= duration || !stacks) {
+	if ((durationTimer >= duration && !isPermanent) || !stacks) {
 		OnEnd(stacks ? END_REASON::TIMED_OUT : END_REASON::STACKS_ZERO);
 	}
 }
@@ -66,6 +66,11 @@ void StatEffects::StatusEffect::ScaleMods(float scalar)
 	for (Mod& m : mods) {
 		m.value *= scalar;
 	}
+}
+
+void StatEffects::StatusEffect::SetIcon(std::string const& path)
+{
+	icon = path;
 }
 
 float StatEffects::Mod::GetValFromActor(Actor const& actor) const
