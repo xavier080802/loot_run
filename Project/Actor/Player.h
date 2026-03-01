@@ -47,10 +47,6 @@ private:
         Bow
     };
 
-    // Helper that executes an attack using the specified weapon.
-    // Handles ammo consumption for ranged weapons and spawns appropriate hitboxes/projectiles.
-    void DoAttackWithWeapon(const EquipmentData* weapon);
-
 private:
     ActorStats mBaseStats{};
     Inventory  mInventory{};

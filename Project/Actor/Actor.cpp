@@ -89,8 +89,9 @@ void Actor::TakeDamage(float dmg, Actor* attacker, DAMAGE_TYPE dmgType)
 
     mCurrentHP -= actualDmg;
 
-    //TEMP
-    std::cout << "DMG: " << mCurrentHP << '\n';
+    if (goType == GO_TYPE::PLAYER) {
+        std::cout << "[Player] Took " << actualDmg << " damage. Current HP: " << mCurrentHP << "/" << mStats.maxHP << '\n';
+    }
     
     // Alert on-hit subscribers (e.g., target's defensive reactive effects, or attacker's lifesteal)
     for (ActorOnHitSub* sub : onHitSubs) {

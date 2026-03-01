@@ -228,6 +228,9 @@
     <ClCompile Include="Elements\SunMoonElement.cpp">
       <Filter>Source Files\Elements</Filter>
     </ClCompile>
+    <ClCompile Include="Actor\Combat.cpp">
+      <Filter>Source Files\Actors</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -421,6 +424,9 @@
     </ClInclude>
     <ClInclude Include="Elements\SunMoonElement.h">
       <Filter>Header Files\Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor\Combat.h">
+      <Filter>Header Files\Actors</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -4,11 +4,21 @@
 #include "../Actor/StatsTypes.h"
 #include "../Elements/Element.h"
 
-// Category of equipment
 enum class EquipSlot : uint8_t
 {
     Weapon = 0,
     Armor = 1,
+};
+
+enum class EquipmentCategory : uint8_t
+{
+    None = 0,
+    Melee = 1,
+    Ranged = 2,
+    Head = 3,
+    Body = 4,
+    Hands = 5,
+    Feet = 6,
 };
 
 // Armor Slot (only used when slot == Armor)
@@ -54,6 +64,7 @@ enum class Rarity : uint8_t
 struct EquipmentData
 {
     int id = 0; // Unique identifier used for database lookups
+    EquipmentCategory category = EquipmentCategory::None; // Used with ID to uniquely identify item
 
     EquipSlot slot = EquipSlot::Weapon; // Primary type of item (Weapon vs Armor)
     ArmorSlot armorSlot = ArmorSlot::None; // Only used when slot == Armor
@@ -63,6 +74,8 @@ struct EquipmentData
     AttackType attackType = AttackType::None; // Determines the shape/hitbox logic of attacks
     bool isRanged = false; // If true, consumes ammo and fires projectiles
     Elements::ELEMENT_TYPE element = Elements::ELEMENT_TYPE::NONE; // The element applied on hit
+    float knockback = 100.0f; // Force applied to target when hit
+    float attackSize = 10.0f; // Size of the projectile or hitbox
 
     // item quality
     Rarity rarity = Rarity::Common;

@@ -1,10 +1,14 @@
-#pragma once
+Ôªø#pragma once
 #include "GameObject.h"
 #include "../Actor/Actor.h"
 #include <vector>
+#include "../Inventory/EquipmentTypes.h"
+#include "../Elements/Element.h"
 struct AttackHitboxConfig
 {
     Actor* owner = nullptr;
+    Elements::ELEMENT_TYPE element = Elements::ELEMENT_TYPE::NONE;
+    float knockback = 100.0f;
 
     // Lifetime in seconds
     float lifetime = 0.12f;
@@ -26,11 +30,11 @@ struct AttackHitboxConfig
     // If true, the hitbox follows owner each frame
     bool followOwner = true;
 
-    // If true, disable hitbox on first valid collision (simple ìone hitî swing)
+    // If true, disable hitbox on first valid collision (simple ‚Äúone hit‚Äù swing)
     bool disableOnHit = true;
 
     // Callback invoked when hitbox collides with something it can collide with
-    void (*onHit)(GameObject::CollisionData& target, Actor* caster) = nullptr;
+    void (*onHit)(GameObject::CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float knockback) = nullptr;
 
     // Callback invoked when hitbox lifetime ends.
     void (*onEnd)(Actor* caster) = nullptr;
@@ -55,6 +59,8 @@ public:
 
 private:
     Actor* owner = nullptr;
+    Elements::ELEMENT_TYPE element = Elements::ELEMENT_TYPE::NONE;
+    float knockback = 100.0f;
     float lifespan = 0.0f, hitTimer=0.0f;
     float hitCooldown{ -1 };
     int ticks{ 0 };//Number of frame ticks this has went through.
@@ -62,7 +68,8 @@ private:
     bool followOwner = true;
     bool disableOnHit = true;
 
-    void (*OnHit)(CollisionData& target, Actor* caster) = nullptr;
+    void (*OnHit)(CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float knockback) = nullptr;
     void (*OnEnd)(Actor* caster);
     std::vector<GameObject*> hitOnce; // enemies already damaged this swing
 };
+

@@ -2,7 +2,7 @@
 #include "../Actor/Actor.h"
 #include "Element.h"
 
-void Elements::BloodMoonEffect(GameObject::CollisionData& target, Actor* caster)
+void Elements::BloodMoonEffect(GameObject::CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE /*element*/, float /*knockback*/)
 {
 	Actor* other{ dynamic_cast<Actor*>(&target.other) };
 	if (!other) return;

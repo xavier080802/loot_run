@@ -2,6 +2,7 @@
 #include "StatsTypes.h"
 #include "AEEngine.h"
 #include "../Helpers/ColorUtils.h"
+#include "../Inventory/EquipmentTypes.h"
 #include <string>
 
 // Represents the shape used to render the enemy.
@@ -20,6 +21,16 @@ struct EnemyRenderDef
 	std::string texturePath = ""; // Path to sprite texture. If empty, uses colored mesh instead.
 };
 
+// Defines the attack pattern capabilities of an enemy
+struct EnemyAttackDef
+{
+	float range = 100.0f;          // Range required to begin attacking
+	float cooldown = 2.0f;         // Delay in seconds between attacks
+
+	// Mock weapon used to route through Combat::ExecuteAttack
+	EquipmentData mockWeapon{};
+};
+
 // Core data structure defining a specific type of enemy.
 // This is used as a blueprint to initialize runtime Enemy instances.
 struct EnemyDef
@@ -33,4 +44,5 @@ struct EnemyDef
 	int dropTableId = 0; // ID referencing the loot table this enemy pulls from upon death.
 
 	EnemyRenderDef render{}; // Visual configuration for the enemy.
+	EnemyAttackDef attack{}; // Attack pattern configuration.
 };

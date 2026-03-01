@@ -3,6 +3,8 @@
 AttackHitboxGO* AttackHitboxGO::Start(const AttackHitboxConfig& cfg)
 {
     owner = cfg.owner;
+    element = cfg.element;
+    knockback = cfg.knockback;
     lifespan = cfg.lifetime;
     ticks = 0;
     offset = cfg.offset;
@@ -87,7 +89,7 @@ void AttackHitboxGO::OnCollide(CollisionData& other)
     hitOnce.push_back(&other.other);
 
     // Trigger the custom hit logic defined in the config
-    if (OnHit) OnHit(other, owner);
+    if (OnHit) OnHit(other, owner, element, knockback);
 
     // If this was a single-target strike, immediately turn off the hitbox
     if (disableOnHit) {

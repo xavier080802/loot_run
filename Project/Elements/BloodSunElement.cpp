@@ -5,7 +5,7 @@
 
 namespace {
 	//On-death AOE dmg callback. Put here cuz otherwise hitbox onHit throws error.
-	void AoEDmg(GameObject::CollisionData& target, Actor* caster)
+	void AoEDmg(GameObject::CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE /*element*/, float /*knockback*/)
 	{
 		Actor* other{ dynamic_cast<Actor*>(&target.other) };
 		if (!other) return;

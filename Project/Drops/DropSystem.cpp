@@ -33,7 +33,7 @@ void DropSystem::SpawnDrops(int dropTableId, const AEVec2& worldPos)
         if (e.type == DropType::Equipment)
         {
             payload.amount = 1;
-            payload.equipment = GameDB::GetEquipmentData(e.itemId);
+            payload.equipment = GameDB::GetEquipmentData(e.equipmentCategory, e.itemId);
             if (!payload.equipment) continue;
         }
         else

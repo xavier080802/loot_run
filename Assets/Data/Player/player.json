@@ -1,0 +1,8 @@
+{
+    "baseStats": {
+        "maxHP": 100.0,
+        "attack": 10.0,
+        "attackSpeed": 1.0,
+        "moveSpeed": 350.0
+    }
+}

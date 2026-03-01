@@ -7,105 +7,20 @@
 
 namespace
 {
-	static EquipmentData MakeWeapon(
-		int id,
-		const char* name,
-		WeaponType weaponType,
-		AttackType attackType,
-		bool isRanged,
-		Rarity rarity,
-		const ActorStats& additiveStats,
-		Elements::ELEMENT_TYPE element = Elements::ELEMENT_TYPE::NONE)
-	{
-		EquipmentData e{};
-		e.id = id;
-		e.slot = EquipSlot::Weapon;
-		e.armorSlot = ArmorSlot::None;
-		e.weaponType = weaponType;
-		e.attackType = attackType;
-		e.isRanged = isRanged;
-		e.rarity = rarity;
-		e.element = element;
-		e.mods.additive = additiveStats;
-		e.name = name;
-		return e;
-	}
-
-	static EquipmentData MakeArmor(
-		int id,
-		const char* name,
-		ArmorSlot armorSlot,
-		Rarity rarity,
-		const ActorStats& additiveStats)
-	{
-		EquipmentData e{};
-		e.id = id;
-		e.slot = EquipSlot::Armor;
-		e.armorSlot = armorSlot;
-		e.weaponType = WeaponType::None;
-		e.attackType = AttackType::None;
-		e.isRanged = false;
-		e.rarity = rarity;
-		e.mods.additive = additiveStats;
-		e.name = name;
-		return e;
-	}
+    static std::vector<EnemyDef> sEnemyRegistry;
+    static std::vector<EquipmentData> sEquipmentRegistry;
+    static ActorStats sPlayerBaseStats;
+    static GameDB::PlayerInventoryDef sPlayerInventory;
+    static std::vector<int> sPlayerStarterEquipmentIds;
 
 	std::vector<EquipmentData>& EquipmentRegistry()
 	{
-		static std::vector<EquipmentData> items =
-		{
-			// Demo Sword: +10 attack
-			MakeWeapon(
-				1,
-				"Demo Sword",
-				WeaponType::Sword,
-				AttackType::SwingArc,
-				false,
-				Rarity::Common,
-				ActorStats{ 0.0f, 10.0f, 0.0f, 0.0f, 0.0f },
-				Elements::ELEMENT_TYPE::NONE // Original default element
-			),
-
-			// Demo Armor (Body): +25 HP, +5 defense
-			MakeArmor(
-				2,
-				"Demo Armor",
-				ArmorSlot::Body,
-				Rarity::Common,
-				ActorStats{ 25.0f, 0.0f, 5.0f, 0.0f, 0.0f }
-			),
-				// Demo Bow: +5 attack
-			MakeWeapon(
-				3,
-				"Demo Bow",
-				WeaponType::Bow,
-				AttackType::Projectile,
-				true,
-				Rarity::Common,
-				ActorStats{ 0.0f, 5.0f, 0.0f, 0.0f, 0.0f },
-				Elements::ELEMENT_TYPE::BLOOD // Give the bow some blood element for fun
-			),
-			// Demo Sun Sword: +5 attack, but applies SUN DoT
-			MakeWeapon(
-				4,
-				"Demo Sun Sword",
-				WeaponType::Sword,
-				AttackType::SwingArc,
-				false,
-				Rarity::Epic,
-				ActorStats{ 0.0f, 5.0f, 0.0f, 0.0f, 0.0f },
-                Elements::ELEMENT_TYPE::SUN // Applies SUN
-			),
-		};
-
-		return items;
+		return sEquipmentRegistry;
 	}
 
 	std::vector<EnemyDef>& EnemyRegistry()
 	{
-		static std::vector<EnemyDef> enemies;
-		return enemies;
+		return sEnemyRegistry;
 	}
 
 	static bool ReadTintRGBA(const Json::Value& tintArr, Color& out)
@@ -140,19 +55,10 @@ namespace
 
 namespace GameDB
 {
-	const EquipmentData* GetEquipmentData(int id)
-	{
-		auto& items = EquipmentRegistry();
-		for (auto& it : items)
-		{
-			if (it.id == id)
-				return &it;
-		}
-		return nullptr;
-	}
 
-	// Parses a JSON file to load Enemy Definitions into the EnemyRegistry collection.
-	// This makes enemy variations data-driven rather than hardcoded.
+
+	// Parses JSON file to load Enemy Definitions into the EnemyRegistry collection.
+	// Makes enemy variations data-driven rather than hardcoded.
 	bool LoadEnemyDefs(const char* path)
 	{
 		std::ifstream file(path, std::ios::binary);
@@ -169,7 +75,7 @@ namespace GameDB
 			return false;
 		}
 
-		//rewinding for json parser
+		//its rewind time
 		file.clear();
 		file.seekg(0, std::ios::beg);
 
@@ -217,11 +123,195 @@ namespace GameDB
 			ReadTintRGBA(r["tint"], tint);// if missing or invalid keep it default
 			def.render.tint = tint;
 
+			// Parse Enemy Attack pattern
+			if (e.isMember("attack")) {
+				const auto& atk = e["attack"];
+				def.attack.range = atk.get("range", def.attack.range).asFloat();
+				def.attack.cooldown = atk.get("cooldown", def.attack.cooldown).asFloat();
+
+				// Build the mock weapon for Combat::ExecuteAttack
+				std::string atkTypeStr = atk.get("attackType", "SwingArc").asString();
+				if (atkTypeStr == "Projectile") {
+					def.attack.mockWeapon.attackType = AttackType::Projectile;
+					def.attack.mockWeapon.isRanged = true;
+				} else if (atkTypeStr == "Stab") {
+					def.attack.mockWeapon.attackType = AttackType::Stab;
+					def.attack.mockWeapon.isRanged = false;
+				} else if (atkTypeStr == "CircleAOE") {
+					def.attack.mockWeapon.attackType = AttackType::CircleAOE;
+					def.attack.mockWeapon.isRanged = false;
+				} else {
+					def.attack.mockWeapon.attackType = AttackType::SwingArc;
+					def.attack.mockWeapon.isRanged = false;
+				}
+
+				std::string eleStr = atk.get("element", "NONE").asString();
+				if (eleStr == "BLOOD") def.attack.mockWeapon.element = Elements::ELEMENT_TYPE::BLOOD;
+				else if (eleStr == "SUN") def.attack.mockWeapon.element = Elements::ELEMENT_TYPE::SUN;
+				else if (eleStr == "MOON") def.attack.mockWeapon.element = Elements::ELEMENT_TYPE::MOON;
+				else def.attack.mockWeapon.element = Elements::ELEMENT_TYPE::NONE;
+
+                def.attack.mockWeapon.knockback = atk.get("knockback", 100.0f).asFloat();
+                def.attack.mockWeapon.attackSize = atk.get("attackSize", 10.0f).asFloat();
+			}
+
 			// Add fully constructed definition to registry
 			reg.push_back(def);
 		}
 		std::cout << "LoadEnemyDefs: loaded " << (int)reg.size() << " enemies from " << path << "\n";
 		return true;
+	}
+
+    bool LoadEquipmentDefs(const char* path, EquipmentCategory category)
+    {
+        auto& reg = EquipmentRegistry();
+
+        std::ifstream file(path);
+        if (!file.is_open()) {
+            std::cout << "LoadEquipmentDefs: Cannot open " << path << "\n";
+            return false;
+        }
+
+        Json::Value root;
+        Json::Reader reader;
+        if (!reader.parse(file, root, false)) {
+            std::cout << "LoadEquipmentDefs error parsing " << path << ":\n" << reader.getFormattedErrorMessages() << "\n";
+            return false;
+        }
+        
+        if (!root.isArray()) {
+            std::cout << "LoadEquipmentDefs data in " << path << " is not a JSON array.\n";
+            return false;
+        }
+
+        int totalLoaded = 0;
+        for (auto& item : root) {
+            EquipmentData e{};
+            e.id = item.get("id", 0).asInt();
+            e.category = category;
+            e.name = _strdup(item.get("name", "Unknown").asString().c_str());
+            
+            std::string slotStr = item.get("slot", "Weapon").asString();
+            e.slot = (slotStr == "Armor") ? EquipSlot::Armor : EquipSlot::Weapon;
+            
+            std::string armorSlotStr = item.get("armorSlot", "None").asString();
+            if (armorSlotStr == "Head") e.armorSlot = ArmorSlot::Head;
+            else if (armorSlotStr == "Body") e.armorSlot = ArmorSlot::Body;
+            else if (armorSlotStr == "Hands") e.armorSlot = ArmorSlot::Hands;
+            else if (armorSlotStr == "Feet") e.armorSlot = ArmorSlot::Feet;
+            else e.armorSlot = ArmorSlot::None;
+            
+            std::string wTypeStr = item.get("weaponType", "None").asString();
+            if (wTypeStr == "Sword") e.weaponType = WeaponType::Sword;
+            else if (wTypeStr == "Bow") e.weaponType = WeaponType::Bow;
+            else e.weaponType = WeaponType::None;
+
+            std::string aTypeStr = item.get("attackType", "None").asString();
+            if (aTypeStr == "SwingArc") e.attackType = AttackType::SwingArc;
+            else if (aTypeStr == "Projectile") e.attackType = AttackType::Projectile;
+            else if (aTypeStr == "CircleAOE") e.attackType = AttackType::CircleAOE;
+            else if (aTypeStr == "Stab") e.attackType = AttackType::Stab;
+            else e.attackType = AttackType::None;
+
+            e.isRanged = item.get("isRanged", false).asBool();
+
+            std::string eleStr = item.get("element", "NONE").asString();
+            if (eleStr == "BLOOD") e.element = Elements::ELEMENT_TYPE::BLOOD;
+            else if (eleStr == "SUN") e.element = Elements::ELEMENT_TYPE::SUN;
+            else if (eleStr == "MOON") e.element = Elements::ELEMENT_TYPE::MOON;
+            else e.element = Elements::ELEMENT_TYPE::NONE;
+
+            e.knockback = item.get("knockback", 100.0f).asFloat();
+            e.attackSize = item.get("attackSize", 10.0f).asFloat();
+
+            std::string rarityStr = item.get("rarity", "Common").asString();
+            if (rarityStr == "Uncommon") e.rarity = Rarity::Uncommon;
+            else if (rarityStr == "Rare") e.rarity = Rarity::Rare;
+            else if (rarityStr == "Epic") e.rarity = Rarity::Epic;
+            else if (rarityStr == "Legendary") e.rarity = Rarity::Legendary;
+            else e.rarity = Rarity::Common;
+
+            if (item.isMember("stats")) {
+                const auto& s = item["stats"];
+                e.mods.additive.maxHP       = s.get("maxHP", 0.0f).asFloat();
+                e.mods.additive.attack      = s.get("attack", 0.0f).asFloat();
+                e.mods.additive.defense     = s.get("defense", 0.0f).asFloat();
+                e.mods.additive.moveSpeed   = s.get("moveSpeed", 0.0f).asFloat();
+                e.mods.additive.attackSpeed = s.get("attackSpeed", 0.0f).asFloat();
+            }
+
+            reg.push_back(e);
+            totalLoaded++;
+        }
+        
+        std::cout << "LoadEquipmentDefs: loaded " << totalLoaded << " equipment pieces from " << path << "\n";
+        return true;
+    }
+
+    bool LoadPlayerDef(const char* path)
+    {
+        std::ifstream file(path);
+        if (!file.is_open()) {
+            std::cout << "LoadPlayerDef: Cannot open " << path << "\n";
+            return false;
+        }
+
+        Json::Value root;
+        Json::Reader reader;
+        if (!reader.parse(file, root, false)) {
+            std::cout << "LoadPlayerDef error parsing " << path << ":\n" << reader.getFormattedErrorMessages() << "\n";
+            return false;
+        }
+
+        if (root.isMember("baseStats")) {
+            const auto& s = root["baseStats"];
+            sPlayerBaseStats.maxHP = s.get("maxHP", 100.0f).asFloat();
+            sPlayerBaseStats.attack = s.get("attack", 10.0f).asFloat();
+            sPlayerBaseStats.defense = s.get("defense", 0.0f).asFloat();
+            sPlayerBaseStats.moveSpeed = s.get("moveSpeed", 300.0f).asFloat();
+            sPlayerBaseStats.attackSpeed = s.get("attackSpeed", 1.0f).asFloat();
+        }
+
+        std::cout << "LoadPlayerDef: Successfully loaded player defaults from " << path << "\n";
+        return true;
+    }
+
+    bool LoadPlayerInventory(const char* path)
+    {
+        std::ifstream file(path);
+        if (!file.is_open()) {
+            std::cout << "LoadPlayerInventory: Cannot open " << path << "\n";
+            return false;
+        }
+
+        Json::Value root;
+        Json::Reader reader;
+        if (!reader.parse(file, root, false)) {
+            std::cout << "LoadPlayerInventory error parsing " << path << ":\n" << reader.getFormattedErrorMessages() << "\n";
+            return false;
+        }
+
+        sPlayerInventory.weapon1 = root.get("weapon1", 0).asInt();
+        sPlayerInventory.weapon2 = root.get("weapon2", 0).asInt();
+        sPlayerInventory.bow = root.get("bow", 0).asInt();
+        sPlayerInventory.head = root.get("head", 0).asInt();
+        sPlayerInventory.body = root.get("body", 0).asInt();
+        sPlayerInventory.hands = root.get("hands", 0).asInt();
+        sPlayerInventory.feet = root.get("feet", 0).asInt();
+
+        std::cout << "LoadPlayerInventory: Successfully loaded player inventory from " << path << "\n";
+        return true;
+    }
+
+    const ActorStats& GetPlayerBaseStats() { return sPlayerBaseStats; }
+    const PlayerInventoryDef& GetPlayerStarterInventory() { return sPlayerInventory; }
+
+	const EquipmentData* GetEquipmentData(EquipmentCategory category, int id)
+	{
+		for (const auto& e : EquipmentRegistry())
+			if (e.id == id && e.category == category)
+				return &e;
+		return nullptr;
 	}
 
 	const EnemyDef* GetEnemyDef(int id)
