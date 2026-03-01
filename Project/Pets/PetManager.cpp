@@ -31,6 +31,7 @@ namespace {
 	Color timerTextCol{0,0,0,255};
 	Color onCooldownCol{155,155,155,155};
 	TextOriginPos tooltipAlignment{};
+	TextboxOriginPos boxAlignment{};
 	bool showTimerUnit{};
 }
 
@@ -69,6 +70,30 @@ void PetManager::InitPetForGame()
 	//Reset pet vars
 	equippedPet->Reset();
 	equippedPet->SetEnabled(true);
+
+	//Generate description for passive
+	std::stringstream s{ extraDesc };
+	Pets::PetData const& d{ equippedPet->GetPetData() };
+	//Generate description for the skills
+	if (PetHasSkill()) {
+		//Cooldown
+		s << "\n[Cooldown " << std::setprecision(1) << d.skillCooldown << "s]\n";
+		//Scalings
+		bool flag = false; //First listing
+		for (StatEffects::Mod const& m : d.multipliers) {
+			s << (flag ? " + " : "") << std::fixed << std::setprecision(1) << m.value
+				<< (m.mathType == StatEffects::MATH_TYPE::MULTIPLICATIVE ? "% " : " ")
+				<< (m.mathType == StatEffects::MATH_TYPE::MULTIPLICATIVE ? StatTypeToString(m.stat) : "");
+			flag = true;
+		}
+	}
+	s << "\nPassive: ";
+	for (StatEffects::Mod const& m : d.passive.GetMods()) {
+		s << (m.value > 0 ? "+" : "") << std::fixed << std::setprecision(1) << m.value
+			<< (m.mathType == StatEffects::MATH_TYPE::MULTIPLICATIVE ? "% " : " ")
+			<< StatTypeToString(m.stat) << " ";
+	}
+	extraDesc = s.str();
 }
 
 void PetManager::LinkPlayer(Player* playerGO)
@@ -96,16 +121,9 @@ void PetManager::SetPet(Pets::PET_TYPE pet, Pets::PET_RANK rank)
 	equippedPet->isSet = true;
 }
 
-//Deprecated. Each pet has their own rarity, need to check individual pet
-Pets::PET_RANK PetManager::GetPetRank(Pets::PET_TYPE pet)
+bool PetManager::PetHasSkill() const
 {
-	switch (pet)
-	{
-	case Pets::PET_1:
-		return Pets::MYTHICAL;
-	default:
-		return Pets::COMMON;
-	}
+	return equippedPet->isSet && equippedPet->GetPetData().PetSkill;
 }
 
 bool PetManager::AddNewPet(Pets::PetSaveData const& newPet)
@@ -177,7 +195,7 @@ void PetManager::ShowPetTooltip()
 
 	//Draw text box
 	DrawAETextbox(rm->GetFont(), txt, AEVec2{ (float)mP.x, (float)mP.y },
-		AEGfxGetWinMaxX() * 0.4f, descFontSize, lineSpace, textCol, tooltipAlignment,
+		AEGfxGetWinMaxX() * 0.4f, descFontSize, lineSpace, textCol, tooltipAlignment, TextboxOriginPos::BOTTOM,
 		TextboxBgCfg{padding, tooltipBgCol, 255, rm->GetMesh(MESH_SQUARE) });
 }
 
@@ -238,6 +256,7 @@ void PetManager::LoadUIJSON()
 	}
 	showTimerUnit = root.get("showTimerUnit", true).asBool();
 	tooltipAlignment = ParseTextAlignment(root.get("textAlignment", "TEXT_LOWER_LEFT").asString());
+	boxAlignment = ParseTextboxAlignment(root.get("boxAlignment", "BOTTOM").asString());
 
 	ifs.close();
 }

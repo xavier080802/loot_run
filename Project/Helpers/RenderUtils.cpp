@@ -257,7 +257,14 @@ void GetAETextSize(s8 const& font, std::string const& text, f32 descFontSize, f3
 	} while (i != std::string::npos);
 }
 
-AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 boxWidth, f32 descFontSize, f32 lineSpace, Color const& col, TextOriginPos textAlignment, TextboxBgCfg const& bgCfg, bool isHUD)
+TextboxOriginPos ParseTextboxAlignment(std::string const& strval)
+{
+	if (strval == "BOTTOM") return TextboxOriginPos::BOTTOM;
+	else return TextboxOriginPos::TOP;
+}
+
+AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 boxWidth, f32 descFontSize, f32 lineSpace, Color const& col,
+	TextOriginPos textAlignment, TextboxOriginPos boxAlignment, TextboxBgCfg const& bgCfg, bool isHUD)
 {
 	//Split string based on newlines and word wrapping to fit box width
 	size_t i{}; //End of substr
@@ -315,6 +322,17 @@ AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 bo
 	
 	acBoxSize.x *= AEGfxGetWinMaxX(); //Norm to world
 	acBoxSize.y *= AEGfxGetWinMaxY(); //Norm to world
+	switch (boxAlignment) //Move so that the vertical anchor is at the designated location
+	{
+	case TextboxOriginPos::BOTTOM: //Bottom of box is to be at the original pos
+		pos.y += acBoxSize.y;
+		break;
+	case TextboxOriginPos::TOP:
+		pos.y += norm.y * AEGfxGetWinMaxY();
+		break;
+	default:
+		break;
+	}
 	//Checking the edges of the box (pos + norm_to_world) after text alignment
 	AEVec2 edge{ pos.x+norm.x * AEGfxGetWinMaxX(), pos.y - norm.y * AEGfxGetWinMaxY()}; //Top-left
 	//Check right side
@@ -336,7 +354,7 @@ AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 bo
 	if (bgCfg.haveBg) { //Draw background box
 		//Reset edge calc to render bg correctly
 		edge = { pos.x + norm.x * AEGfxGetWinMaxX(), pos.y - norm.y * AEGfxGetWinMaxY() };
-		DrawTintedMesh(GetTransformMtx({ edge.x + acBoxSize.x * 0.5f, edge.y - acBoxSize.y * 0.5f }, 0, acBoxSize + bgCfg.padding),
+		DrawTintedMesh(GetTransformMtx({ edge.x + acBoxSize.x * 0.5f, edge.y - acBoxSize.y * 0.5f }, 0, acBoxSize + NormToWorld(bgCfg.padding)),
 			bgCfg.mesh, bgCfg.texture, bgCfg.col, bgCfg.alpha);
 	}
 	//Write text

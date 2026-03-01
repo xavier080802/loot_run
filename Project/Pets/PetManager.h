@@ -27,7 +27,7 @@ public:
 	//Sets the pet based on the type.
 	void SetPet(Pets::PET_TYPE pet, Pets::PET_RANK rank);
 	Pet* GetEquippedPet() { return equippedPet; }
-	Pets::PET_RANK GetPetRank(Pets::PET_TYPE pet);
+	bool PetHasSkill() const;
 
 	//Add a new pet to the inventory.
 	//Returns success. If max limit is reached, returns false

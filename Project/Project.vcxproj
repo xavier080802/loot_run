@@ -105,6 +105,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="Actor\Enemy.cpp" />
     <ClCompile Include="Actor\Player.cpp" />
     <ClCompile Include="Actor\StatsCalc.cpp" />
+    <ClCompile Include="Actor\StatsTypes.cpp" />
     <ClCompile Include="Actor\StatusEffect.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DesignPatterns\PostOffice.cpp" />

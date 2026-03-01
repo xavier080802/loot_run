@@ -136,6 +136,13 @@ struct TextboxBgCfg {
 	}
 };
 
+//Which part of the box should be at the anchor
+enum class TextboxOriginPos {
+	TOP, //Default
+	BOTTOM //Making the textbox appear above pos
+};
+TextboxOriginPos ParseTextboxAlignment(std::string const& strval);
+
 /// <summary>
 /// Writes text like it's in a textbox, with word wrapping.
 /// Tries its best to keep the whole box on screen (prioritising the top left corner)
@@ -144,10 +151,12 @@ struct TextboxBgCfg {
 /// <param name="boxWidth">Width the box should be. Sentences that overflow will attempt to wrap</param>
 /// <param name="fontSize">Scale of the text based on initialization size. (1.f is normal size)</param>
 /// <param name="lineSpace">NORMALIZED distance between the bottom of one line and the top of the next</param>
-/// <param name="textAlignment">Alignment of text relative to the anchor of the textbox. H-alignment dictates the X-anchor.</param>
+/// <param name="textAlignment">Alignment of text relative to the anchor of the textbox. H-alignment dictates the X-anchor of the box</param>
+/// <param name="boxAlignment">Location of the anchor of the textbox.</param>
 /// <param name="bgCfg">Config for the rendering of the box. Use default ctor if you dont want to render the box</param>
 /// <returns>Modified world pos of the box to follow alignment</returns>
-AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 boxWidth, f32 descFontSize, f32 lineSpace, Color const& col, TextOriginPos textAlignment,
+AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 boxWidth, f32 descFontSize, f32 lineSpace, Color const& col,
+	TextOriginPos textAlignment, TextboxOriginPos boxAlignment,
 	TextboxBgCfg const& bgCfg = TextboxBgCfg{}, bool isHUD = true);
 
 /// <summary>
