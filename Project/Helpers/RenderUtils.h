@@ -12,6 +12,16 @@
 //Reference used for word wrap algorithm
 //https://rosettacode.org/wiki/Word_wrap#C++
 
+/*
+	Note about textbox/multiline:
+
+	AEGfxGetPrintSize acts kinda weird, making some lines overlap each other due
+	to the height being different between lines.
+
+	Therefore, to maintain consistency in the textbox, multiline functions use RenderingManager's generalized
+	font height.
+*/
+
 /// <summary>
 /// Where the anchor of the text is, relative to the text.
 /// Default: origin is at lower-left
@@ -83,7 +93,7 @@ void DrawBox(AEVec2 center, f32 width, f32 height, f32 thickness, Color col);
 AEVec2 GetTextAlignPosNorm(s8 const& font, std::string const& text, AEVec2 pos, AEVec2 normSize, TextOriginPos alignment);
 
 // Get normalized position of text based on text alignment
-AEVec2 GetTextAlignPosNorm(s8 const& font, std::string const& text, AEVec2 pos, f32 descFontSize, TextOriginPos alignment);
+AEVec2 GetTextAlignPosNorm(s8 const& font, std::string const& text, AEVec2 pos, f32 fontSize, TextOriginPos alignment);
 
 /// <summary>
 /// Render text.
@@ -107,7 +117,7 @@ void DrawAEText(s8 const& font, const char* text, AEVec2 pos, f32 size, Color co
 /// <param name="lineSpace">Scale of extra distance between lines based on font initialization size</param>
 /// <param name="alignment">Where the text is relative to the anchor. Anchor is at pos, with the y offset for each line</param>
 /// <param name="isHUD">If false, rendered in the world, based on the camera. Text always reorients to the camera</param>
-void DrawAEText(s8 const& font, std::string const& text, AEVec2 pos, f32 descFontSize, f32 lineSpace, Color const& col, TextOriginPos alignment, bool isHUD = true);
+void DrawAEText(s8 const& font, std::string const& text, AEVec2 pos, f32 fontSize, f32 lineSpace, Color const& col, TextOriginPos alignment, bool isHUD = true);
 
 /// <summary>
 /// Gets the NORMALIZED width and height of the "textbox".
@@ -118,7 +128,7 @@ void DrawAEText(s8 const& font, std::string const& text, AEVec2 pos, f32 descFon
 /// <param name="height">[out] The height of the text, including newlines</param>
 /// <param name="fontSize">Scale of the text based on the initialization size.</param>
 /// <param name="lineSpace">Scale of extra distance between lines based on font initialization size</param>
-void GetAETextSize(s8 const& font, std::string const& text, f32 descFontSize, f32& width, f32& height, f32 lineSpace = 0);
+void GetAEMultilineTextSize(s8 const& font, std::string const& text, f32 fontSize, f32& width, f32& height, f32 lineSpace = 0);
 
 //Config for the background of a textbox
 struct TextboxBgCfg {
@@ -155,7 +165,7 @@ TextboxOriginPos ParseTextboxAlignment(std::string const& strval);
 /// <param name="boxAlignment">Location of the anchor of the textbox.</param>
 /// <param name="bgCfg">Config for the rendering of the box. Use default ctor if you dont want to render the box</param>
 /// <returns>Modified world pos of the box to follow alignment</returns>
-AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 boxWidth, f32 descFontSize, f32 lineSpace, Color const& col,
+AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 boxWidth, f32 fontSize, f32 lineSpace, Color const& col,
 	TextOriginPos textAlignment, TextboxOriginPos boxAlignment,
 	TextboxBgCfg const& bgCfg = TextboxBgCfg{}, bool isHUD = true);
 

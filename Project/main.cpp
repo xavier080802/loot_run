@@ -14,6 +14,7 @@
 #include "Elements/Element.h"
 #include "UI/UIManager.h"
 #include "InputManager.h"
+#include "DebugTools.h"
 #if defined(DEBUG) | defined(_DEBUG)
 	#include <memory>
 #endif
@@ -91,7 +92,13 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 		//Rendering
 		stateManager->DrawCurrState();
 		worldTextManager->Draw();
-        
+
+		//TEMP: toggle debug log
+		if (AEInputCheckTriggered(AEVK_D) && AEInputCheckCurr(AEVK_LCTRL)) {
+			Debug::EnableLogs(!Debug::IsLogsEnabled());
+		}
+		Debug::PrintLogs();
+
 		//------------- Informing the system about the loop's end -------------
         AESysFrameEnd();
     }

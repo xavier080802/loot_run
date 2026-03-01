@@ -39,12 +39,12 @@ public:
 	//and won't break the other objs when deleting texture.
 	AEGfxTexture* LoadTexture(std::string path);
 	s8 GetFont() const { return fontId; }
-	int GetFontSize() const { return descFontSize; }
+	int GetFontSize() const { return fontSize; }
 	f32 GetFontHeight() const { return fontHeight; }
 	int GetAnimFPS() const { return animationFPS; };
 
 private:
-	const int descFontSize{ 72 };
+	const int fontSize{ 72 };
 	AEGfxVertexList* meshList[SHAPE_NUM]{};
 	//<filepath, texture>
 	std::map<std::string, AEGfxTexture*>textureMap;

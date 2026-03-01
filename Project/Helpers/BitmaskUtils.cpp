@@ -1,5 +1,5 @@
 #include "BitmaskUtils.h"
-#include <stdarg.h>
+#include <cstdarg>
 
 Bitmask CreateBitmask(int numOfArgs, ...)
 {

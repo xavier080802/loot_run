@@ -8,6 +8,7 @@
 #include "StatsCalc.h"
 #include <algorithm>
 #include <iostream>
+#include "../DebugTools.h"
 
 namespace {
     // Just for debugging
@@ -108,8 +109,8 @@ void Actor::DealDamage(Actor* target, float baseDmg, DAMAGE_TYPE dmgType, const 
     }
 
     // Testing cout to verify DealDamage is correctly preparing the final damage
-    std::cout << "[Actor::DealDamage] Attacker deals " << finalDmg << " " 
-              << DmgTypeToString(dmgType) << " damage to target!" << '\n';
+    Debug::stream << "[Actor::DealDamage] Attacker deals " << finalDmg << " "
+        << DmgTypeToString(dmgType) << " damage to target!" << '\n';
 
     target->TakeDamage({ finalDmg, this, dmgType, weapon });
 }
@@ -133,7 +134,7 @@ void Actor::TakeDamage(DamageData const& data)
     }
 
     // Testing cout to verify TakeDamage is receiving the attacker and damage correctly
-    std::cout << "[Actor::TakeDamage] Target taking " << actualDmg << " damage"
+    Debug::stream << "[Actor::TakeDamage] Target taking " << actualDmg << " damage"
               << (data.attacker ? " from attacker" : " (no attacker)")
               << " after " << mStats.defense << " defense mitigation.\n";
 
@@ -161,7 +162,7 @@ void Actor::Heal(float amt)
     if (amt <= 0.0f) return;
     mCurrentHP = AEClamp(mCurrentHP + amt, 0.0f, mStats.maxHP);
 
-    std::cout << "HEAL: " << mCurrentHP << '\n';
+    Debug::stream << "HEAL: " << mCurrentHP << '\n';
 }
 
 void Actor::ApplyStatusEffect(StatEffects::StatusEffect* eff, Actor* caster)

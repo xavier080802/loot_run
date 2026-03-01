@@ -5,9 +5,9 @@
 void RenderingManager::Init()
 {
 	//Font
-	fontId = AEGfxCreateFont("Assets/placeholder.ttf", descFontSize);
+	fontId = AEGfxCreateFont("Assets/placeholder.ttf", fontSize);
 	f32 tmp{};
-	AEGfxGetPrintSize(fontId, "T", 1.f, &tmp, &fontHeight);
+	AEGfxGetPrintSize(fontId, "P", 1.f, &tmp, &fontHeight); //Get height of some char
 
 	//Create meshes
 	for (int i{}; i < MESH_SHAPE::SHAPE_NUM; i++) {

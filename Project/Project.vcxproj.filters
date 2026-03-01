@@ -249,6 +249,9 @@
     <ClCompile Include="Actor\StatsTypes.cpp">
       <Filter>Source Files\Actors</Filter>
     </ClCompile>
+    <ClCompile Include="DebugTools.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -453,6 +456,9 @@
       <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="InputManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -190,7 +190,7 @@ void PetManager::ShowPetTooltip()
 	AEVec2 mP = ScreenToWorld(AEVec2{(float)mx, (float)my});
 
 	f32 nw{}, nh{};
-	GetAETextSize(rm->GetFont(), txt, descFontSize, nw, nh, lineSpace);
+	GetAEMultilineTextSize(rm->GetFont(), txt, descFontSize, nw, nh, lineSpace);
 	AEVec2 nOffset = GetTextAlignPosNorm(rm->GetFont(), txt, mP, descFontSize, tooltipAlignment);
 
 	//Draw text box

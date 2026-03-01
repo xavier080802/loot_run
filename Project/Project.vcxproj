@@ -108,6 +108,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="Actor\StatsTypes.cpp" />
     <ClCompile Include="Actor\StatusEffect.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="DebugTools.cpp" />
     <ClCompile Include="DesignPatterns\PostOffice.cpp" />
     <ClCompile Include="Drops\DropSystem.cpp" />
     <ClCompile Include="Drops\PickupGO.cpp" />
@@ -166,6 +167,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="Actor\StatusEffect.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CollisionConstants.h" />
+    <ClInclude Include="DebugTools.h" />
     <ClInclude Include="DesignPatterns\ConcreteMessages.h" />
     <ClInclude Include="DesignPatterns\Message.h" />
     <ClInclude Include="DesignPatterns\PostBox.h" />
