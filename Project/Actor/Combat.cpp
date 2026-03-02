@@ -32,7 +32,7 @@ namespace Combat
 	}
 
 	// Used by AttackHitboxGO collisions
-	void OnMeleeHit(GameObject::CollisionData& data, Actor* caster, Elements::ELEMENT_TYPE element, float knockback)
+	void OnMeleeHit(GameObject::CollisionData& data, Actor* caster, Elements::ELEMENT_TYPE element, float knockback, void*)
 	{
 		if (!caster) return;
         

@@ -34,7 +34,7 @@ struct AttackHitboxConfig
     bool disableOnHit = true;
 
     // Callback invoked when hitbox collides with something it can collide with
-    void (*onHit)(GameObject::CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float knockback) = nullptr;
+    void (*onHit)(GameObject::CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float knockback, void* extra) = nullptr;
 
     // Callback invoked when hitbox lifetime ends.
     void (*onEnd)(Actor* caster) = nullptr;
@@ -72,7 +72,7 @@ private:
     bool disableOnHit = true;
     void* extraData;
 
-    void (*OnHit)(CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float knockback) = nullptr;
+    void (*OnHit)(CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float knockback, void* extra) = nullptr;
     void (*OnEnd)(Actor* caster);
     std::vector<GameObject*> hitOnce; // enemies already damaged this swing
 };

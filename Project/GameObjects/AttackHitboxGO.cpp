@@ -90,7 +90,7 @@ void AttackHitboxGO::OnCollide(CollisionData& other)
     hitOnce.push_back(&other.other);
 
     // Trigger the custom hit logic defined in the config
-    if (OnHit) OnHit(other, owner, element, knockback);
+    if (OnHit) OnHit(other, owner, element, knockback, extraData);
 
     // If this was a single-target strike, immediately turn off the hitbox
     if (disableOnHit) {

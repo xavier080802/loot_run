@@ -14,5 +14,5 @@ namespace Combat
 
 	void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::ELEMENT_TYPE element, float knockback);
 
-	void OnMeleeHit(GameObject::CollisionData& data, Actor* caster, Elements::ELEMENT_TYPE element, float knockback);
+	void OnMeleeHit(GameObject::CollisionData& data, Actor* caster, Elements::ELEMENT_TYPE element, float knockback, void* ex =nullptr);
 }

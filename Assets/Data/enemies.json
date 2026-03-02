@@ -5,7 +5,7 @@
       "name": "Slime",
       "dropTableId": 0,
       "baseStats": {
-        "maxHP": 30,
+        "maxHP": 300,
         "attack": 5,
         "defense": 5,
         "moveSpeed": 120,
@@ -19,10 +19,10 @@
       "attack": {
         "range": 5.0,
         "cooldown": 1.5,
-        "attackType": "Stab",
+        "attackType": "CircleAOE",
         "element": "NONE",
         "knockback": 10.0,
-        "attackSize": 5.0
+        "attackSize": 15.0
       }
     },
     {
