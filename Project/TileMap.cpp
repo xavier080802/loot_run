@@ -6,6 +6,7 @@
 #include "Helpers/CoordUtils.h"
 #include "Helpers/Vec2Utils.h"
 #include "camera.h"
+#include <cstdlib> // For srand and rand
 
 //Init static map
 std::map<TileMap::TILE_TYPE, AEGfxTexture*> TileMap::textureMap{};
@@ -17,7 +18,7 @@ using TileTex = std::pair<TileMap::TILE_TYPE, AEGfxTexture*>;
 using TilePair = std::pair<TileMap::TILE_TYPE, TileMap::Tile>;
 
 TileMap::TileMap(std::string filename, AEVec2 offset, float tileX, float tileY)
-	: tileSize{AEVec2{tileX, tileY}}, posOffset(offset)
+	: tileSize{ AEVec2{tileX, tileY} }, posOffset(offset)
 {
 	//If static map isnt loaded, load it.
 	if (!textureMap.size()) {
@@ -59,42 +60,57 @@ TileMap::TileMap(AEVec2 offset, float tileX, float tileY)
 	}
 }
 
-// Logic for proccedural
-void TileMap::GenerateProcedural(unsigned int r, unsigned int c, int maxFloorTiles)
+// Logic for proccedural - REPLACED Random Walker with Seed-based Grid
+void TileMap::GenerateProcedural(unsigned int r, unsigned int c, int seed)
 {
 	rows = r;
 	cols = c;
 	mapSize = { cols * tileSize.x, rows * tileSize.y };
 
-	// Fill with walls
+	// Initialize random with the seed
+	srand(seed);
+
+	// Fill with walls initially (The solid '1's in your image)
 	tiles.clear();
 	tiles.resize(rows, std::vector<Tile>(cols, tileMap[TILE_WALL]));
 
-	// Random Walker
-	// CHANGED: Start at (1, 1) for top-left spawning
-	int curR = 1;
-	int curC = 1;
-	int floorCreated = 0;
+	// Seed-based generation
+	// Starting from index 1 (second line) to keep the outer perimeter solid
+	for (unsigned int i = 1; i < rows - 1; ++i) {
+		for (unsigned int j = 1; j < cols - 1; ++j) {
 
-	while (floorCreated < maxFloorTiles) {
-		if (tiles[curR][curC].type == TILE_WALL) {
-			tiles[curR][curC] = tileMap[TILE_NONE];
-			floorCreated++;
+			// 40% chance to be floor (TILE_NONE)
+			if ((rand() % 100) < 40) {
+				tiles[i][j] = tileMap[TILE_NONE];
+			}
 		}
-
-		int dir = rand() % 4;
-		if (dir == 0 && curR > 1) curR--;
-		else if (dir == 1 && curR < (int)rows - 2) curR++;
-		else if (dir == 2 && curC > 1) curC--;
-		else if (dir == 3 && curC < (int)cols - 2) curC++;
 	}
+
+	// FORCE THE ENTRANCE/EXIT CONNECTORS
+	// This opens the middle of the walls so the player can move between chunks
+	int midR = rows / 2;
+	int midC = cols / 2;
+
+	// LEFT ENTRANCE (Column 0 and Column 1/Second Line)
+	tiles[midR][0] = tileMap[TILE_NONE];
+	tiles[midR][1] = tileMap[TILE_NONE];
+
+	// RIGHT EXIT (Column cols-1 and Column cols-2)
+	tiles[midR][cols - 1] = tileMap[TILE_NONE];
+	tiles[midR][cols - 2] = tileMap[TILE_NONE];
+
+	// TOP/BOTTOM CONNECTORS (Middle Columns)
+	tiles[0][midC] = tileMap[TILE_NONE];
+	tiles[1][midC] = tileMap[TILE_NONE];
+	tiles[rows - 1][midC] = tileMap[TILE_NONE];
+	tiles[rows - 2][midC] = tileMap[TILE_NONE];
 
 	// Decoration Pass
 	for (unsigned int i = 1; i < rows - 1; ++i) {
 		for (unsigned int j = 1; j < cols - 1; ++j) {
 			if (tiles[i][j].type == TILE_NONE) {
-				// Don't spawn things on the top-left start area (row 1, col 1)
-				if (i < 3 && j < 3) continue;
+				// Don't spawn objects directly in the main connecting hallways
+				if (i == midR || j == midC) continue;
 
 				int chance = rand() % 100;
 				if (chance < 2) tiles[i][j] = tileMap[TILE_ENEMY];
@@ -103,6 +119,7 @@ void TileMap::GenerateProcedural(unsigned int r, unsigned int c, int maxFloorTil
 		}
 	}
 }
+
 void TileMap::Render() const
 {
 	for (unsigned int r = 0; r < rows; r++) {
@@ -115,7 +132,7 @@ void TileMap::Render() const
 			GetObjViewFromCamera(&pos, &rot, &scale);
 			DrawTintedMesh(GetTransformMtx(pos, rot, scale),
 				pMesh, textureMap.at(tiles[r][c].type),
-				{255,255,255,255}, 255);
+				{ 255,255,255,255 }, 255);
 		}
 	}
 }
@@ -155,8 +172,8 @@ AEVec2 TileMap::GetTileIndFromPos(AEVec2 pos) const
 {
 	AEVec2 p{ pos + mapSize * 0.5f - posOffset };
 	AEVec2 out{
-		(int)(p.x / tileSize.x),
-		(int)(-(p.y - tileSize.y * 0.5f) / tileSize.y + (rows-1))
+		(f32)((int)(p.x / tileSize.x)),
+		(f32)((int)(-(p.y - tileSize.y * 0.5f) / tileSize.y + (rows - 1)))
 	};
 	return out;
 }
@@ -165,7 +182,7 @@ TileMap::Tile const* TileMap::QueryTile(AEVec2 pos) const
 {
 	AEVec2 inds{ GetTileIndFromPos(pos) };
 	if (inds.x < 0 || inds.x >= cols || inds.y < 0 || inds.y >= rows) return nullptr;
-	return &tiles[inds.y][inds.x];
+	return &tiles[(unsigned)inds.y][(unsigned)inds.x];
 }
 
 TileMap::Tile const* TileMap::QueryTile(unsigned rowInd, unsigned colInd) const
@@ -178,7 +195,7 @@ std::pair<TileMap::Tile const*, AEVec2> TileMap::QueryTileAndInd(AEVec2 pos) con
 {
 	AEVec2 inds{ GetTileIndFromPos(pos) };
 	//If Index out of bounds, tile should be nullptr
-	return std::make_pair((inds.x < 0 || inds.x >= cols || inds.y < 0 || inds.y >= rows) ? nullptr : &tiles[inds.y][inds.x], inds);
+	return std::make_pair((inds.x < 0 || inds.x >= cols || inds.y < 0 || inds.y >= rows) ? nullptr : &tiles[(unsigned)inds.y][(unsigned)inds.x], inds);
 }
 
 TileMap::Tile const* TileMap::ChangeTile(unsigned row, unsigned col, TILE_TYPE newType)
@@ -188,8 +205,10 @@ TileMap::Tile const* TileMap::ChangeTile(unsigned row, unsigned col, TILE_TYPE n
 	return &tiles[row][col];
 }
 
-AEVec2 TileMap::GetSpawnPoint() const {
-	return GetTilePosition(1, 1);
+bool TileMap::IsWall(AEVec2 worldPos) const {
+	AEVec2 inds = GetTileIndFromPos(worldPos);
+	if (inds.x < 0 || inds.x >= cols || inds.y < 0 || inds.y >= rows) return true;
+	return tiles[(unsigned)inds.y][(unsigned)inds.x].type == TILE_WALL;
 }
 
 void TileMap::LoadStatics()
@@ -205,7 +224,7 @@ void TileMap::LoadStatics()
 	tileMap[TILE_NONE].layer = Collision::NONE;
 	tileMap[TILE_NONE].isSolid = false;
 
-	tileMap[TILE_ENEMY].layer = Collision::NONE; 
+	tileMap[TILE_ENEMY].layer = Collision::NONE;
 	tileMap[TILE_ENEMY].isSolid = false;
 
 	tileMap[TILE_CHEST].layer = Collision::NONE;

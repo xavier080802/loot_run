@@ -44,6 +44,8 @@ void Minimap::Update(double dt, TileMap const& tilemap, Player const& player)
 {
     // Logic to calculate which fog tiles are near the player and reveal them
     AEVec2 p = player.GetPos();
+    // CRITICAL: Calculate size based on the combined maps if needed, 
+    // but for now we use the mapWidth/Height passed from GameState via tilemap.GetFullMapSize()
     AEVec2 const& mapSize{ tilemap.GetFullMapSize() };
     AEVec2 fogTileSize{ (mapSize / FOG_GRID_SIZE) }; //world size
     float effectiveRadius = revealRadiusWorld * 0.75f;
@@ -55,8 +57,10 @@ void Minimap::Update(double dt, TileMap const& tilemap, Player const& player)
                 discoveryGrid[x][y] -= FOG_REGEN_RATE * dt;
                 if (discoveryGrid[x][y] < 0.0f) discoveryGrid[x][y] = 0.0f;
             }
-            float tileWorldX = (x * fogTileSize.x) - mapSize.x / 2.f + (fogTileSize.x * 0.5f);
-            float tileWorldY = (y * fogTileSize.y) - mapSize.y / 2.f + (fogTileSize.y * 0.5f);
+
+            // Offset calculations to center the fog grid over the entire world space
+            float tileWorldX = (x * fogTileSize.x) - mapSize.x * 0.5f + (fogTileSize.x * 0.5f);
+            float tileWorldY = (y * fogTileSize.y) - mapSize.y * 0.5f + (fogTileSize.y * 0.5f);
 
             float dx = p.x - tileWorldX;
             float dy = p.y - tileWorldY;
@@ -71,6 +75,7 @@ void Minimap::Update(double dt, TileMap const& tilemap, Player const& player)
 
 void Minimap::Render(TileMap const& tilemap, Player const& player) const
 {
+    // mapSize here should represent the full width of map + nextMap
     AEVec2 const& mapSize{ tilemap.GetFullMapSize() };
 
     // --- MINIMAP RENDERING LAYERS ---
@@ -78,13 +83,15 @@ void Minimap::Render(TileMap const& tilemap, Player const& player) const
     float mmX = (float)AEGfxGetWinMaxX() - size.x * 0.5f - minimapMargin;
     float mmY = (float)AEGfxGetWinMaxY() - size.y * 0.5f - minimapMargin - 50.f;
 
-    //Render tile map
+    // Render tile map (TileMap::Render already uses its internal posOffset)
     tilemap.Render({ mmX, mmY }, 0, { scaleX, scaleY }, true);
 
-    //Render gameobjects
+    // Render gameobjects
     std::vector<GameObject*> const& gos{ GameObjectManager::GetInstance()->GetGameObjects() };
     for (GameObject const* go : gos) {
         if (go->GetGOType() < GO_TYPE_MINIMAP_RENDERABLE || !go->IsEnabled()) continue;
+
+        // Correctly position objects on the scaled minimap relative to world origin
         DrawTintedMesh(GetTransformMtx(AEVec2{ mmX, mmY } + go->GetPos() * AEVec2 { scaleX, scaleY }, 0, { gameobjectRadius * 2, gameobjectRadius * 2 }),
             circleMesh, nullptr, gameobjectTints.find(go->GetGOType()) != gameobjectTints.end() ? gameobjectTints.at(go->GetGOType()) : Color{ 255,255,255,255 }, 255);
     }
@@ -141,7 +148,7 @@ void Minimap::Render(TileMap const& tilemap, Player const& player) const
         }
     }
 
-    //Render frame                                 Margin around map
+    //Render frame                                Margin around map
     AEMtx33 bS, bT, bF; AEMtx33Scale(&bS, size.x + 10.f, size.y + 10.f); AEMtx33Trans(&bT, mmX, mmY);
     AEMtx33Concat(&bF, &bT, &bS); AEGfxSetTransform(bF.m);
     AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f); AEGfxMeshDraw(borderMesh, AE_GFX_MDM_LINES_STRIP);
