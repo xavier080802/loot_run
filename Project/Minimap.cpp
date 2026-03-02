@@ -57,7 +57,7 @@ void Minimap::Render(TileMap const& tilemap, Player const& player) const
     // --- MINIMAP RENDERING LAYERS ---
     float scaleX = size.x / mapSize.x, scaleY = size.y / mapSize.y;
     float mmX = (float)AEGfxGetWinMaxX() - size.x * 0.5f - minimapMargin;
-    float mmY = (float)AEGfxGetWinMaxY() - size.y * 0.5f - minimapMargin - 50.f;
+    float mmY = (float)AEGfxGetWinMaxY() - size.y * 0.5f - minimapMargin - 10.0f;
 
     //Render tile map
     tilemap.Render({ mmX, mmY }, 0, { scaleX, scaleY }, true);
