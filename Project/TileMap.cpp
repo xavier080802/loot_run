@@ -51,7 +51,7 @@ TileMap::TileMap(std::string filename, AEVec2 offset, float tileX, float tileY)
 }
 
 //Proccedural constructor 
-TileMap::TileMap(AEVec2 offset, float tileX, float tileY)
+/*TileMap::TileMap(AEVec2 offset, float tileX, float tileY)
 	: tileSize{ AEVec2{tileX, tileY} }, posOffset(offset), rows{ 0 }, cols{ 0 }
 {
 	if (!textureMap.size()) {
@@ -102,7 +102,7 @@ void TileMap::GenerateProcedural(unsigned int r, unsigned int c, int maxFloorTil
 			}
 		}
 	}
-}
+}*/
 void TileMap::Render() const
 {
 	for (unsigned int r = 0; r < rows; r++) {
@@ -188,9 +188,9 @@ TileMap::Tile const* TileMap::ChangeTile(unsigned row, unsigned col, TILE_TYPE n
 	return &tiles[row][col];
 }
 
-AEVec2 TileMap::GetSpawnPoint() const {
-	return GetTilePosition(1, 1);
-}
+//AEVec2 TileMap::GetSpawnPoint() const {
+	//return GetTilePosition(1, 1);
+//}
 
 void TileMap::LoadStatics()
 {

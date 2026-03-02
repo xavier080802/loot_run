@@ -192,10 +192,10 @@ void GameState::LoadState() {
     squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
 
     // 1. Create the map first with your preferred tile scale
-    map = new TileMap({ 0,0 }, 115.f, 115.f);
+    map = new TileMap("Assets/Openworld.csv", { 0,0 }, 115.f, 115.f);
     // Parameters: (Rows, Cols, Total Floor Tiles)
-    map->GenerateProcedural(50, 50, 600);
-    playerPos = map->GetSpawnPoint();
+   // map->GenerateProcedural(50, 50, 600);
+    //playerPos = map->GetSpawnPoint();
     // Keep your minimap as it is
     minimap = new Minimap{};
     // 2. CRITICAL FIX: Update global map dimensions from the actual CSV data

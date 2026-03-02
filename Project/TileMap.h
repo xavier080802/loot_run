@@ -36,8 +36,8 @@ public:
 
 	// Tilemap for procedural generated map
 	TileMap(AEVec2 offset = { 0,0 }, float tileX = 25.f, float tileY = 25.f);
-	void GenerateProcedural(unsigned int r, unsigned int c, int maxFloorTiles);
-	AEVec2 GetSpawnPoint() const;
+	//void GenerateProcedural(unsigned int r, unsigned int c, int maxFloorTiles);
+	//AEVec2 GetSpawnPoint() const;
 
 	void Render() const;
 	void Render(AEVec2 offsetPos, float rotOffset, AEVec2 scale, bool isHud) const;
