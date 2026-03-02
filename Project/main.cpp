@@ -15,6 +15,7 @@
 #include "UI/UIManager.h"
 #include "InputManager.h"
 #include "DebugTools.h"
+#include "Drops/DropSystem.h"
 #if defined(DEBUG) | defined(_DEBUG)
 	#include <memory>
 #endif
@@ -62,6 +63,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	petManager->Init();
 	worldTextManager->Init();
 	Elements::InitElementalSystem();
+	DropSystem::InitDropSystemSettings();
 
 	stateManager = GameStateManager::GetInstance();
 	stateManager->AddGameState("MainMenuState", new MainMenuState);

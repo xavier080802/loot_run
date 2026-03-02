@@ -23,6 +23,7 @@
 #include "../GameDB.h"
 #include "../TileMap.h"
 #include "../UI/Minimap.h"
+#include "../Drops/DropSystem.h"
 #define TUTORIAL 0
 
 namespace {
@@ -365,6 +366,7 @@ void GameState::Update(double dt)
     UpdateWorldMap((float)dt);
 
     GameObjectManager::GetInstance()->UpdateObjects(dt, map);
+    DropSystem::PrintPickupDisplay(static_cast<float>(dt));
 }
 
 void GameState::Draw() { 

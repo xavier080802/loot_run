@@ -5,6 +5,7 @@
 #include "../GameDB.h"
 #include "../Elements/Element.h"
 #include "../Actor/Combat.h"
+#include "../Drops/DropSystem.h"
 #include "../DebugTools.h"
 #include <iostream>
 
@@ -65,7 +66,6 @@ void Player::RecalculateStats()
 {
 	EquipmentModifiers eq = mInventory.GetEquipmentModifiers();
 	UpgradeMultipliers up = mInventory.GetUpgradeMultipliers();
-	//TODO: status effect calculations
 	mStats = StatsCalc::ComputeFinalStats(mBaseStats, eq, up);
 
 	// Keep HP valid after stat changes
@@ -280,6 +280,8 @@ void Player::TryPickup(const PickupPayload& payload)
 		// hook currency later
 		break;
 	}
+
+	DropSystem::AddToPickupDisplay(payload);
 }
 
 AEVec2 Player::GetMoveDirNorm() const
