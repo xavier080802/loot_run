@@ -9,7 +9,7 @@
 class MoonElement : public StatEffects::StatusEffect, ActorOnHitSub, ActorDeadSub
 {
 public:
-	MoonElement() : StatEffects::StatusEffect{ nullptr, Elements::elementDur, Elements::maxMoonStacks, Elements::moonName, 1, StatEffects::MOON, "Assets/moonEle.png"}{}
+	MoonElement() : StatEffects::StatusEffect{ nullptr, Elements::elementDur, Elements::maxMoonStacks, Elements::moonName, 1, StatEffects::MOON, Elements::moonIcon}{}
 	//Remove subs from owner (if OnApply is called, owner should be non-null)
 	~MoonElement();
 

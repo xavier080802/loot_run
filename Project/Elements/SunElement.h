@@ -9,7 +9,7 @@ class SunElement : public StatEffects::StatusEffect, ActorOnHitSub, ActorDeadSub
 {
 public:
 	SunElement(unsigned _stacks) 
-		: StatusEffect{ nullptr, Elements::elementDur, Elements::maxSunStacks, Elements::sunName, _stacks, StatEffects::SUN, "Assets/sunEle.png"} { };
+		: StatusEffect{ nullptr, Elements::elementDur, Elements::maxSunStacks, Elements::sunName, _stacks, StatEffects::SUN, Elements::sunIcon} { };
 	//Remove subs from owner (if OnApply is called, owner should be non-null)
 	~SunElement();
 

@@ -23,6 +23,7 @@ namespace Elements {
 	//Blood
 	std::string bloodName;
 	std::vector<StatEffects::Mod> bloodDmgMods;
+	std::string bloodIcon;
 
 	//Sun
 	std::string sunName;
@@ -31,6 +32,7 @@ namespace Elements {
 	float sunBuffDur;
 	unsigned sunLowRange, sunHighRange; //Range for number of stacks to apply
 	std::vector<StatEffects::Mod> sunBuffMods;
+	std::string sunIcon;
 
 	//Moon
 	std::string moonName;
@@ -39,12 +41,14 @@ namespace Elements {
 	std::vector<StatEffects::Mod> moonKillHealMods;
 	float moonMeleeHealMult{};
 	std::vector<StatEffects::Mod> moonDebuffMods;
+	std::string moonIcon;
 
 	//Blood+Sun reaction
 	std::string bloodSunName;
 	std::vector<StatEffects::Mod> bloodSunDotDmg;
 	std::vector<StatEffects::Mod> bloodSunDetonateDmg;
 	AEVec2 bloodSunDetoSize;
+	std::string bloodSunIcon;
 
 	//Blood+Moon reaction
 	float bloodMoonLifetime;
@@ -102,6 +106,7 @@ namespace Elements {
 		for (Json::Value const& m : blood["dmgMods"]) {
 			bloodDmgMods.push_back(StatEffects::Mod::ParseFromJSON(m));
 		}
+		bloodIcon = blood.get("icon", "").asString();
 
 		//Parse Sun
 		Json::Value sun{ root["sun"] };
@@ -114,6 +119,7 @@ namespace Elements {
 		for (Json::Value const& m : sun["buffMods"]) {
 			sunBuffMods.push_back(StatEffects::Mod::ParseFromJSON(m));
 		}
+		sunIcon = sun.get("icon", "").asString();
 
 		//Parse Moon
 		Json::Value moon{ root["moon"] };
@@ -129,6 +135,7 @@ namespace Elements {
 		for (Json::Value const& m : moon["debuffMods"]) {
 			moonDebuffMods.push_back(StatEffects::Mod::ParseFromJSON(m));
 		}
+		moonIcon = moon.get("icon", "").asString();
 
 		//Parse Blood+Sun reaction
 		Json::Value bloodSun{ root["blood_sun"] };
@@ -141,6 +148,7 @@ namespace Elements {
 		}
 		bloodSunDetoSize.x = bloodSun.get("detonateSize_x", 0).asFloat();
 		bloodSunDetoSize.y = bloodSun.get("detonateSize_y", 0).asFloat();
+		bloodSunIcon = bloodSun.get("icon", "").asString();
 
 		//Parse Blood+Moon
 		Json::Value bloodMoon{ root["blood_moon"] };
@@ -219,7 +227,7 @@ namespace Elements {
 			StatEffects::EFF_TYPE second{ pair.second->GetType() };
 			//Skip non-reaction element and same type
 			if (second <= StatEffects::EFF_TYPE::DEBUFF
-				|| second == eff->GetType()) continue;
+				|| second == first) continue;
 			//Found. Find reaction type.
 			if ((first == StatEffects::EFF_TYPE::BLOOD) && (second == StatEffects::EFF_TYPE::SUN)
 				|| (first == StatEffects::EFF_TYPE::SUN) && (second == StatEffects::EFF_TYPE::BLOOD)) {

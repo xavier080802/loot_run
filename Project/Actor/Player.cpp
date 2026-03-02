@@ -5,6 +5,7 @@
 #include "../GameDB.h"
 #include "../Elements/Element.h"
 #include "../Actor/Combat.h"
+#include "../DebugTools.h"
 #include <iostream>
 
 namespace {
@@ -38,21 +39,21 @@ void Player::InitPlayerRuntime(const ActorStats& baseStats)
             if (item) {
                 mInventory.AddEquipment(item);
                 equipFunc(item);
-                std::cout << "Player equipped: " << SafeName(item) << "\n";
-            }
-        }
-    };
+				Debug::stream << "Player equipped: " << SafeName(item) << "\n";
+			}
+		}
+	};
 
-    EquipItem(invDef.weapon1, EquipmentCategory::Melee, [&](const EquipmentData* d) { mInventory.EquipMainWeapon(0, d); });
-    EquipItem(invDef.weapon2, EquipmentCategory::Melee, [&](const EquipmentData* d) { mInventory.EquipMainWeapon(1, d); });
-    EquipItem(invDef.bow, EquipmentCategory::Ranged, [&](const EquipmentData* d) { mInventory.EquipBow(d); });
-    EquipItem(invDef.head, EquipmentCategory::Head, [&](const EquipmentData* d) { mInventory.EquipArmor(d); });
-    EquipItem(invDef.body, EquipmentCategory::Body, [&](const EquipmentData* d) { mInventory.EquipArmor(d); });
-    EquipItem(invDef.hands, EquipmentCategory::Hands, [&](const EquipmentData* d) { mInventory.EquipArmor(d); });
-    EquipItem(invDef.feet, EquipmentCategory::Feet, [&](const EquipmentData* d) { mInventory.EquipArmor(d); });
+	EquipItem(invDef.weapon1, EquipmentCategory::Melee, [&](const EquipmentData* d) { mInventory.EquipMainWeapon(0, d); });
+	EquipItem(invDef.weapon2, EquipmentCategory::Melee, [&](const EquipmentData* d) { mInventory.EquipMainWeapon(1, d); });
+	EquipItem(invDef.bow, EquipmentCategory::Ranged, [&](const EquipmentData* d) { mInventory.EquipBow(d); });
+	EquipItem(invDef.head, EquipmentCategory::Head, [&](const EquipmentData* d) { mInventory.EquipArmor(d); });
+	EquipItem(invDef.body, EquipmentCategory::Body, [&](const EquipmentData* d) { mInventory.EquipArmor(d); });
+	EquipItem(invDef.hands, EquipmentCategory::Hands, [&](const EquipmentData* d) { mInventory.EquipArmor(d); });
+	EquipItem(invDef.feet, EquipmentCategory::Feet, [&](const EquipmentData* d) { mInventory.EquipArmor(d); });
 
-    // Give some starter ammo so bow can shoot
-    mInventory.AddAmmo(50);
+	// Give some starter ammo so bow can shoot
+	mInventory.AddAmmo(50);
 
 
 	RecalculateStats();
@@ -126,22 +127,20 @@ const EquipmentData* Player::GetHeldWeaponData() const
 	}
 }
 
-void Player::HandleAttackInput(double dt)
+void Player::HandleAttackInput(double)
 {
-	(void)dt;
-
 	// Weapon selection ps: im tired of writing AEVK_*
 	if (AEInputCheckTriggered('Z')) {
 		heldWeapon = HeldWeapon::Weapon1;
-		std::cout << "Held: " << SafeName(GetHeldWeaponData()) << "\n";
+		Debug::stream << "Held: " << SafeName(GetHeldWeaponData()) << "\n";
 	}
 	if (AEInputCheckTriggered('X')) {
 		heldWeapon = HeldWeapon::Weapon2;
-		std::cout << "Held: " << SafeName(GetHeldWeaponData()) << "\n";
+		Debug::stream << "Held: " << SafeName(GetHeldWeaponData()) << "\n";
 	}
 	if (AEInputCheckTriggered('Q')) {
 		heldWeapon = HeldWeapon::Bow;
-		std::cout << "Held: " << SafeName(GetHeldWeaponData()) << "\n";
+		Debug::stream << "Held: " << SafeName(GetHeldWeaponData()) << "\n";
 	}
 
 	// Weapon swap = Right Mouse (swap weapon1 <-> weapon2)
@@ -151,7 +150,7 @@ void Player::HandleAttackInput(double dt)
 		if (heldWeapon == HeldWeapon::Weapon1) heldWeapon = HeldWeapon::Weapon2;
 		else if (heldWeapon == HeldWeapon::Weapon2) heldWeapon = HeldWeapon::Weapon1;
 
-		std::cout << "Swapped. Held: " << SafeName(GetHeldWeaponData()) << "\n";
+		Debug::stream << "Swapped. Held: " << SafeName(GetHeldWeaponData()) << "\n";
 	}
 
 	// temp location for dropping held weapon
@@ -183,7 +182,7 @@ void Player::HandleAttackInput(double dt)
 			AEVec2Normalize(&dropDir, &dropDir);
 		}
 
-		
+
 		float dropDist = 40.0f;
 
 		AEVec2 dropPos = GetPos();
@@ -192,8 +191,8 @@ void Player::HandleAttackInput(double dt)
 
 		// Spawn generic item drop in the world representing what player dropped
 		PickupGO::Spawn(dropPos, p);
-		std::cout << "Dropped: " << SafeName(held) << "\n";
-		std::cout << "After unequip held ptr=" << GetHeldWeaponData() << " name=" << SafeName(GetHeldWeaponData()) << "\n";
+		Debug::stream << "Dropped: " << SafeName(held) << "\n";
+		Debug::stream << "After unequip held ptr=" << GetHeldWeaponData() << " name=" << SafeName(GetHeldWeaponData()) << "\n";
 
 
 		// Remove the weapon completely from the active loadout slot
@@ -218,23 +217,23 @@ void Player::HandleAttackInput(double dt)
 	// Attack = Left Mouse
 	if (!AEInputCheckTriggered(AEVK_LBUTTON)) { return; }
 	if (attackCooldownTimer > 0.0f) return;
-	std::cout << "LMB triggered. cooldown=" << attackCooldownTimer << "\n";
+	Debug::stream << "LMB triggered. cooldown=" << attackCooldownTimer << "\n";
 	if (attackCooldownTimer > 0.0f) {
-		std::cout << "Attack pressed. Held=" << (int)heldWeapon << " weaponPtr=" << GetHeldWeaponData() << "\n";
+		Debug::stream << "Attack pressed. Held=" << (int)heldWeapon << " weaponPtr=" << GetHeldWeaponData() << "\n";
 	}
 	if (!GetHeldWeaponData()) {
-		std::cout << "No weapon equipped in held slot!\n";
+		Debug::stream << "No weapon equipped in held slot!\n";
 		return;
 	}
 	if (GetHeldWeaponData()->isRanged) {
-		std::cout << "Remaining ammo: " << mInventory.GetAmmo() - 1 << "\n";
+		Debug::stream << "Remaining ammo: " << mInventory.GetAmmo() - 1 << "\n";
 	}
 
 	// Ammo gate for bow/projectile weapons
 	if (GetHeldWeaponData()->isRanged) {
 		if (!mInventory.ConsumeAmmo(1)) {
 			attackCooldownTimer = 0.0f;
-			std::cout << "No ammo to fire!\n";
+			Debug::stream << "No ammo to fire!\n";
 			return;
 		}
 	}
@@ -253,19 +252,19 @@ void Player::TryPickup(const PickupPayload& payload)
 	switch (payload.type)
 	{
 	case DropType::Ammo:
-		std::cout << "Picked up ammo " << payload.amount << '\n';
+		Debug::stream << "Picked up ammo " << payload.amount << '\n';
 		mInventory.AddAmmo(payload.amount);
 		break;
 
 	case DropType::Heal:
-		std::cout << "Picked up healing " << payload.amount << '\n';
+		Debug::stream << "Picked up healing " << payload.amount << '\n';
 		Heal((float)payload.amount);
 		break;
 
 	case DropType::Equipment:
 		if (payload.equipment)
 		{
-			std::cout << "Picked up equipment " << payload.equipment->name << '\n';
+			Debug::stream << "Picked up equipment " << payload.equipment->name << '\n';
 			mInventory.AddEquipment(payload.equipment);
 
 			// Auto-equip so the held slot can actually attack
@@ -276,7 +275,7 @@ void Player::TryPickup(const PickupPayload& payload)
 		break;
 
 	case DropType::Coin:
-		std::cout << "Picked up coin(s) " << payload.amount << '\n';
+		Debug::stream << "Picked up coin(s) " << payload.amount << '\n';
 	default:
 		// hook currency later
 		break;

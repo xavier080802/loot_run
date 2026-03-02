@@ -28,7 +28,8 @@
                 "mathType": 0,
                 "stat": 0
             }
-        ]
+        ],
+        "icon": "Assets/bloodEle.png"
     },
     "sun": {
         "name": "Under The Sun",
@@ -43,7 +44,8 @@
                 "mathType": 1, // 0=FLAT, 1=MULTIPLICATIVE -- How value will be applied to the stat
                 "stat": 2 // Stat to scale with. Check STAT_TYPE enum.
             }
-        ]
+        ],
+        "icon": "Assets/sunEle.png"
     },
     "moon": {
         "name": "Wax and Wane",
@@ -69,7 +71,8 @@
                 "stat": 1
             }
         ],
-        "meleeHealMult": 1.25
+        "meleeHealMult": 1.25,
+        "icon": "Assets/moonEle.png"
     },
     "blood_sun": { //Note: 1 tick per second, over elementDur
         "name": "Boiling Blood",
@@ -105,7 +108,8 @@
             }
         ],
         "detonateSize_x": 150,
-        "detonateSize_y": 150
+        "detonateSize_y": 150,
+        "icon": "Assets/bloodSunEle.png"
     },
     "blood_moon": {
         "lifetime": 15,
