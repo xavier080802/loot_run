@@ -2,13 +2,15 @@
 #include "../TileMap.h"
 #include <iostream>
 
-Projectile* Projectile::Fire(Actor* const caster, AEVec2 fireDir, float radius, float spd, float lifetime, void (*onHitCallback)(CollisionData& target, Actor* caster))
+Projectile* Projectile::Fire(Actor* const caster, AEVec2 fireDir, float radius, float spd, float lifetime, void (*onHitCallback)(CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float knockback), Elements::ELEMENT_TYPE elem, float kb)
 {
 	Init(caster->GetPos(), { radius * 2.f, radius * 2.f }, caster->GetZ(),
 		MESH_CIRCLE, Collision::COL_CIRCLE, { radius * 2.f, radius * 2.f },
 		caster->GetCollisionLayers(), caster->GetColliderLayer());
 
 	owner = caster;
+    element = elem;
+    knockback = kb;
 	AEVec2Normalize(&dir, &fireDir);
 	speed = spd;
 	lifespan = lifetime;
@@ -34,7 +36,7 @@ void Projectile::Update(double dt)
 void Projectile::OnCollide(CollisionData& other)
 {
 	//Send callback
-	if (OnHit) OnHit(other, owner);
+	if (OnHit) OnHit(other, owner, element, knockback);
 	//Disable self
 	isEnabled = false;
 }

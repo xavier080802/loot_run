@@ -1,0 +1,32 @@
+[
+    {
+        "id": 1,
+        "name": "Demo Sword",
+        "slot": "Weapon",
+        "weaponType": "Sword",
+        "attackType": "SwingArc",
+        "isRanged": false,
+        "element": "NONE",
+        "knockback": 100.0,
+        "attackSize": 10.0,
+        "rarity": "Common",
+        "stats": {
+            "attack": 10.0
+        }
+    },
+    {
+        "id": 2,
+        "name": "Demo Sun Sword",
+        "slot": "Weapon",
+        "weaponType": "Sword",
+        "attackType": "SwingArc",
+        "isRanged": false,
+        "element": "SUN",
+        "knockback": 100.0,
+        "attackSize": 10.0,
+        "rarity": "Epic",
+        "stats": {
+            "attack": 5.0
+        }
+    }
+]

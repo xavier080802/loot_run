@@ -15,6 +15,14 @@
         "radius": 15,
         "mesh": "circle",
         "texturePath": "Assets/Enemies/slime.png"
+      },
+      "attack": {
+        "range": 5.0,
+        "cooldown": 1.5,
+        "attackType": "Stab",
+        "element": "NONE",
+        "knockback": 10.0,
+        "attackSize": 5.0
       }
     },
     {
@@ -32,6 +40,14 @@
         "radius": 60,
         "mesh": "circle",
         "texturePath": "Assets/Enemies/slime.png"
+      },
+      "attack": {
+        "range": 100.0,
+        "cooldown": 2.0,
+        "attackType": "Projectile",
+        "element": "BLOOD",
+        "knockback": 100.0,
+        "attackSize": 25.0
       }
     }
   ]

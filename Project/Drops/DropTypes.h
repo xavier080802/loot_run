@@ -5,7 +5,8 @@
 struct DropEntry
 {
 	DropType type = DropType::Coin;
-	int itemId = 0;// equipmentId if Equipment, else 0
+	EquipmentCategory equipmentCategory = EquipmentCategory::None; // Used if Equipment
+	int itemId = 0; // equipmentId if Equipment, else 0
 	float chance = 0.0f; // Probability this item will drop (0.0 to 1.0)
 	int minAmount = 0; // Minimum quantity dropped if successful
 	int maxAmount = 0; // Maximum quantity dropped if successful

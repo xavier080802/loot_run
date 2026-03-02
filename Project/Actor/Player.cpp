@@ -4,59 +4,11 @@
 #include "../GameObjects/AttackHitboxGO.h"
 #include "../GameDB.h"
 #include "../Elements/Element.h"
+#include "../Actor/Combat.h"
 #include <iostream>
 
 namespace {
 	const float dodgeCooldown{ 0.5f };
-
-	// Fire() requires a plain function pointer, so this must NOT be a capturing lambda.
-	void OnProjectileHit(GameObject::CollisionData& data, Actor* caster)
-	{
-		if (!caster) return;
-		if (data.other.GetGOType() != GO_TYPE::ENEMY) return;
-
-		Actor& target = static_cast<Actor&>(data.other);
-		
-		Player* p = dynamic_cast<Player*>(caster);
-		const EquipmentData* weapon = p ? p->GetHeldWeaponData() : nullptr;
-		caster->DealDamage(&target, caster->GetStats().attack, DAMAGE_TYPE::PHYSICAL, weapon);
-
-		if (weapon && weapon->element != Elements::ELEMENT_TYPE::NONE) {
-			Elements::ApplyElement(weapon->element, caster, &target); 
-		}
-	}
-
-	void OnMeleeHit(GameObject::CollisionData& data, Actor* caster, void* =nullptr)
-	{
-		if (!caster) return;
-		if (data.other.GetGOType() != GO_TYPE::ENEMY) return;
-
-		Actor& target = static_cast<Actor&>(data.other);
-		
-		Player* p = dynamic_cast<Player*>(caster);
-		const EquipmentData* weapon = p ? p->GetHeldWeaponData() : nullptr;
-		caster->DealDamage(&target, caster->GetStats().attack, DAMAGE_TYPE::PHYSICAL, weapon);
-
-		if (weapon && weapon->element != Elements::ELEMENT_TYPE::NONE) {
-			Elements::ApplyElement(weapon->element, caster, &target);
-		}
-
-		//Knockback
-		AEVec2 dir = {
-		target.GetPos().x - caster->GetPos().x,
-		target.GetPos().y - caster->GetPos().y
-		};
-
-		if (dir.x != 0.0f || dir.y != 0.0f)
-			AEVec2Normalize(&dir, &dir);
-
-		float knockbackForce = 100.0f;
-		if (target.GetMaxHP() > 200.0f) {
-			knockbackForce *= 0.4f;
-		}
-
-		target.ApplyForce({ dir.x * knockbackForce, dir.y * knockbackForce });
-	}
 
 	// Safe way to print weapon name (incase null pointer)
 	static const char* SafeName(const EquipmentData* w)
@@ -78,31 +30,29 @@ void Player::InitPlayerRuntime(const ActorStats& baseStats)
 	mBaseStats = baseStats;
 	mInventory.Clear();
 
-	// Give starter loadout
-	const EquipmentData* sword = GameDB::GetEquipmentData(1);
-	const EquipmentData* sunSword = GameDB::GetEquipmentData(4);
-	const EquipmentData* bow = GameDB::GetEquipmentData(3);
+    const GameDB::PlayerInventoryDef& invDef = GameDB::GetPlayerStarterInventory();
 
-	if (sword) {
-		mInventory.AddEquipment(sword);
-		mInventory.EquipMainWeapon(0, sword);// Weapon1 slot
-	}
+    auto EquipItem = [&](int eqId, EquipmentCategory cat, auto equipFunc) {
+        if (eqId > 0) {
+            const EquipmentData* item = GameDB::GetEquipmentData(cat, eqId);
+            if (item) {
+                mInventory.AddEquipment(item);
+                equipFunc(item);
+                std::cout << "Player equipped: " << SafeName(item) << "\n";
+            }
+        }
+    };
 
-	if (sunSword) {
-		mInventory.AddEquipment(sunSword);
-		mInventory.EquipMainWeapon(1, sunSword);// Weapon2 slot
-	}
+    EquipItem(invDef.weapon1, EquipmentCategory::Melee, [&](const EquipmentData* d) { mInventory.EquipMainWeapon(0, d); });
+    EquipItem(invDef.weapon2, EquipmentCategory::Melee, [&](const EquipmentData* d) { mInventory.EquipMainWeapon(1, d); });
+    EquipItem(invDef.bow, EquipmentCategory::Ranged, [&](const EquipmentData* d) { mInventory.EquipBow(d); });
+    EquipItem(invDef.head, EquipmentCategory::Head, [&](const EquipmentData* d) { mInventory.EquipArmor(d); });
+    EquipItem(invDef.body, EquipmentCategory::Body, [&](const EquipmentData* d) { mInventory.EquipArmor(d); });
+    EquipItem(invDef.hands, EquipmentCategory::Hands, [&](const EquipmentData* d) { mInventory.EquipArmor(d); });
+    EquipItem(invDef.feet, EquipmentCategory::Feet, [&](const EquipmentData* d) { mInventory.EquipArmor(d); });
 
-	if (bow) {
-		mInventory.AddEquipment(bow);
-		mInventory.EquipBow(bow);// Bow slot
-		//checking if bow equip worked
-		std::cout << "bow ptr=" << bow << " name=" << SafeName(bow) << "\n";
-
-	}
-
-	// Give some starter ammo so bow can shoot
-	mInventory.AddAmmo(50);
+    // Give some starter ammo so bow can shoot
+    mInventory.AddAmmo(50);
 
 
 	RecalculateStats();
@@ -280,103 +230,23 @@ void Player::HandleAttackInput(double dt)
 		std::cout << "Remaining ammo: " << mInventory.GetAmmo() - 1 << "\n";
 	}
 
-	DoAttackWithWeapon(GetHeldWeaponData());
-
-}
-
-void Player::DoAttackWithWeapon(const EquipmentData* weapon)
-{
-	if (!weapon) return;
+	// Ammo gate for bow/projectile weapons
+	if (GetHeldWeaponData()->isRanged) {
+		if (!mInventory.ConsumeAmmo(1)) {
+			attackCooldownTimer = 0.0f;
+			std::cout << "No ammo to fire!\n";
+			return;
+		}
+	}
 
 	// Convert attackSpeed into seconds-per-attack cooldown
 	float atkSpd = mStats.attackSpeed;
 	if (atkSpd <= 0.01f) atkSpd = 0.01f;
 	attackCooldownTimer = 1.0f / atkSpd;
 
-	switch (weapon->attackType)
-	{
-	case AttackType::Projectile:
-	{
-		// Ammo gate for bow/projectile weapons
-		if (!mInventory.ConsumeAmmo(1)) {
-			attackCooldownTimer = 0.0f;
-			return;
-		}
-
-		Projectile* proj = dynamic_cast<Projectile*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PROJECTILE));
-		if (!proj) return;
-
-		AEVec2 m = GetMouseWorldVec();
-		AEVec2 fireDir = { m.x - pos.x, m.y - pos.y };
-
-		// Fire(caster, direction, radius, speed, lifetime, callback)
-		proj->Fire(this, fireDir, 10.0f, 200.0f, 3.0f, &OnProjectileHit);
-		Bitmask bm{ proj->GetCollisionLayers() };
-		ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
-		proj->SetCollisionLayers(bm); //Proj will scan for interactables otherwise
-		break;
-	}
-
-	case AttackType::SwingArc:
-	{
-		// Spawn a melee hitbox to handle the actual damage collision
-		AttackHitboxGO* hb = dynamic_cast<AttackHitboxGO*>(
-			GameObjectManager::GetInstance()->FetchGO(GO_TYPE::ATTACK_HITBOX)
-			);
-		if (!hb) { return; }
-
-		AEVec2 m = GetMouseWorldVec();
-		AEVec2 dir = { m.x - pos.x, m.y - pos.y };
-
-		// If mouse is exactly on player, fall back to movement dir or default right
-		if (dir.x == 0.0f && dir.y == 0.0f) {
-			dir = moveDirNorm;
-			if (dir.x == 0.0f && dir.y == 0.0f) dir = { 1.0f, 0.0f };
-		}
-		else {
-			AEVec2Normalize(&dir, &dir);
-		}
-
-
-		AttackHitboxConfig cfg{};
-		cfg.owner = this;
-		cfg.lifetime = 0.30f;
-		cfg.zIndex = GetZ();
-
-		// Tentative version: circle hitbox that follows player for demo ig
-		cfg.colliderShape = Collision::COL_CIRCLE;
-		cfg.colliderSize = { 50.0f, 50.0f };   // diameter
-		cfg.renderScale = { 50.0f, 50.0f };
-
-		// Offset slightly in front of the player so it feels directional
-		cfg.offset = { dir.x * 22.0f, dir.y * 22.0f };
-
-		cfg.followOwner = true;
-		cfg.disableOnHit = false;
-		cfg.onHit = &OnMeleeHit;
-
-		hb->Start(cfg);
-		//Remove Interactable from collision layers
-		Bitmask bm{ GetCollisionLayers() };
-		ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
-		ResetFlagAtPos(&bm, Collision::LAYER::OBSTACLE);
-		hb->SetCollisionLayers(bm);
-		break;
-	}
-
-	case AttackType::Stab:
-		// TODO: spawn forward stab hitbox GO based on moveDirNorm or mouse direction
-		break;
-
-	case AttackType::CircleAOE:
-		// TODO: spawn AoE hitbox GO or do radial query for enemies
-		break;
-
-	default:
-		attackCooldownTimer = 0.0f;
-		break;
-	}
+	Combat::ExecuteAttack(this, GetHeldWeaponData(), GetMouseWorldVec());
 }
+
 
 void Player::TryPickup(const PickupPayload& payload)
 {

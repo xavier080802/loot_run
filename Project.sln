@@ -5,6 +5,55 @@ VisualStudioVersion = 17.14.36603.0 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Project", "Project\Project.vcxproj", "{10573B2A-BCB3-4A1F-B379-46CDD3B51588}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Assets", "Assets", "{546F9509-99C3-4CA8-A593-C269F23AB693}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{50DAE8ED-303F-4A26-9BB5-D9B821BC47A9}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\Data\enemies.json = Assets\Data\enemies.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Player", "Player", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\Data\Player\inventory.json = Assets\Data\Player\inventory.json
+		Assets\Data\Player\player.json = Assets\Data\Player\player.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Equipment", "Equipment", "{D8C64831-3394-4A8F-BCEC-975FF2E1BDA7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Armor", "Armor", "{4953D54B-DDBA-4A10-9DE4-393E125ECFDB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Melee", "Melee", "{F56F8F3C-BF63-48A9-B36E-2B9C73F66A61}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\Data\Equipment\Melee\melee.json = Assets\Data\Equipment\Melee\melee.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Range", "Range", "{C0107036-E4AC-44A1-945F-E030B209A5EA}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\Data\Equipment\Range\ranged.json = Assets\Data\Equipment\Range\ranged.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Head", "Head", "{2E1F9EF9-1D7E-4B9C-9E14-2523B545993A}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\Data\Equipment\Armor\Head\head.json = Assets\Data\Equipment\Armor\Head\head.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Body", "Body", "{B8E30CED-3307-4C49-A58F-4FBC97C32E89}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\Data\Equipment\Armor\Body\body.json = Assets\Data\Equipment\Armor\Body\body.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Feet", "Feet", "{EFA32377-66F0-4936-B335-EE6C90183EE5}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\Data\Equipment\Armor\Feet\feet.json = Assets\Data\Equipment\Armor\Feet\feet.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hands", "Hands", "{50FE26BB-E75B-44F7-A529-0A60D8F130C0}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\Data\Equipment\Armor\Hands\hands.json = Assets\Data\Equipment\Armor\Hands\hands.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -18,6 +67,19 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{546F9509-99C3-4CA8-A593-C269F23AB693} = {8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}
+		{50DAE8ED-303F-4A26-9BB5-D9B821BC47A9} = {546F9509-99C3-4CA8-A593-C269F23AB693}
+		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {50DAE8ED-303F-4A26-9BB5-D9B821BC47A9}
+		{D8C64831-3394-4A8F-BCEC-975FF2E1BDA7} = {50DAE8ED-303F-4A26-9BB5-D9B821BC47A9}
+		{4953D54B-DDBA-4A10-9DE4-393E125ECFDB} = {D8C64831-3394-4A8F-BCEC-975FF2E1BDA7}
+		{F56F8F3C-BF63-48A9-B36E-2B9C73F66A61} = {D8C64831-3394-4A8F-BCEC-975FF2E1BDA7}
+		{C0107036-E4AC-44A1-945F-E030B209A5EA} = {D8C64831-3394-4A8F-BCEC-975FF2E1BDA7}
+		{2E1F9EF9-1D7E-4B9C-9E14-2523B545993A} = {4953D54B-DDBA-4A10-9DE4-393E125ECFDB}
+		{B8E30CED-3307-4C49-A58F-4FBC97C32E89} = {4953D54B-DDBA-4A10-9DE4-393E125ECFDB}
+		{EFA32377-66F0-4936-B335-EE6C90183EE5} = {4953D54B-DDBA-4A10-9DE4-393E125ECFDB}
+		{50FE26BB-E75B-44F7-A529-0A60D8F130C0} = {4953D54B-DDBA-4A10-9DE4-393E125ECFDB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8A7AC014-124D-424B-A1E0-683668266AAB}

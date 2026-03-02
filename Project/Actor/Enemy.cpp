@@ -1,6 +1,7 @@
 #include "Enemy.h"
 #include "../Drops/DropSystem.h"
 #include "../GameObjects/GameObjectManager.h"
+#include "../Actor/Combat.h"
 
 GameObject* Enemy::Init(AEVec2 _pos, AEVec2 _scale, int _z,
     MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize,
@@ -44,8 +45,30 @@ void Enemy::Update(double dt)
         AEVec2 myPos = GetPos();
         AEVec2 dir = { tPos.x - myPos.x, tPos.y - myPos.y };
         float distSq = dir.x * dir.x + dir.y * dir.y;
-        
-        float attackRange = 50.0f; // Range at which enemy stops to attack
+        float attackRange = mDef ? mDef->attack.range : 50.0f; // Range at which enemy stops to attack
+
+        // Prevent enemy from walking into the player if the range is too small
+        float minNonOverlapDist = (GetColSize().x * 0.5f) + (mTarget->GetColSize().x * 0.5f);
+        if (attackRange < minNonOverlapDist) {
+            if (mDef && mDef->attack.mockWeapon.attackType == AttackType::SwingArc) {
+                // Auto calculate optimal stopping distance based on melee reach
+                attackRange = mDef->attack.mockWeapon.attackSize * 5.0f;
+            } else if (mDef && mDef->attack.mockWeapon.attackType == AttackType::Projectile) {
+                // Auto calculate optimal shooting distance
+                attackRange = mDef->attack.mockWeapon.attackSize * 15.0f;
+            } else if (mDef && mDef->attack.mockWeapon.attackType == AttackType::Stab) {
+                // Stab offset is 4.0x size, with a 1.5x physical radius.
+                attackRange = (mDef->attack.mockWeapon.attackSize * 4.0f) + (mDef->attack.mockWeapon.attackSize * 1.5f);
+            } else if (mDef && mDef->attack.mockWeapon.attackType == AttackType::CircleAOE) {
+                // Circle AOE is centered, simply based on its radius (half of its 8.0 size multiplier).
+                attackRange = mDef->attack.mockWeapon.attackSize * 4.0f;
+            }
+            
+            // Final check to ensure they never overlap
+            if (attackRange < minNonOverlapDist) {
+                attackRange = minNonOverlapDist;
+            }
+        }
 
         if (mState == EnemyState::IDLE) {
             // Constant aggro for now (can add checks based on distance later)
@@ -55,7 +78,10 @@ void Enemy::Update(double dt)
             // Move towards player
             if (distSq <= attackRange * attackRange) {
                 mState = EnemyState::ATTACK;
-                mAttackCooldown = 1.0f; // 1 second mock attack duration
+                if (mDef) {
+                    mAttackCooldown = mDef->attack.cooldown;
+                    Combat::ExecuteAttack(this, &mDef->attack.mockWeapon, mTarget->GetPos());
+                }
             } else {
                 if (dir.x != 0 || dir.y != 0) {
                     AEVec2Normalize(&dir, &dir);
@@ -65,12 +91,11 @@ void Enemy::Update(double dt)
                 }
             }
         } 
-        // TODO: Implement actual attack logic
         else if (mState == EnemyState::ATTACK) {
             // "Attack pattern" delay mock
             mAttackCooldown -= (float)dt;
             if (mAttackCooldown <= 0.0f) {
-                // Re-evaluate state after mock attack is done
+                // Re-evaluate state after attack is done
                 mState = EnemyState::CHASE;
             }
         }

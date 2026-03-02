@@ -186,6 +186,23 @@ void GameState::LoadState() {
         std::cout << "WARNING: enemies.json failed to load.\n";
     }
     font = RenderingManager::GetInstance()->GetFont();
+    
+    // Explicitly load all separated equipment definition categories
+    GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Melee/melee.json", EquipmentCategory::Melee);
+    GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Range/ranged.json", EquipmentCategory::Ranged);
+    GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Head/head.json", EquipmentCategory::Head);
+    GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Body/body.json", EquipmentCategory::Body);
+    GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Hands/hands.json", EquipmentCategory::Hands);
+    GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Feet/feet.json", EquipmentCategory::Feet);
+    
+    if (!GameDB::LoadPlayerDef("Assets/Data/Player/player.json"))
+    {
+        std::cout << "WARNING: player.json failed to load.\n";
+    }
+    if (!GameDB::LoadPlayerInventory("Assets/Data/Player/inventory.json"))
+    {
+        std::cout << "WARNING: inventory.json failed to load.\n";
+    }
     bgm.Init(); bgm.PlayNormal();
     halfMapWidth = mapWidth * 0.5f; halfMapHeight = mapHeight * 0.5f;
     circleMesh = RenderingManager::GetInstance()->GetMesh(MESH_CIRCLE);
@@ -242,11 +259,7 @@ void GameState::InitState()
     PetManager::GetInstance()->PlacePet(GetPlayerPos());
     PetManager::GetInstance()->InitPetForGame();
 
-    ActorStats base{};
-    base.maxHP = 100.0f;
-	base.attack = 10.0f;
-	base.attackSpeed = 1.0f;
-    base.moveSpeed = playerSpeed;
+    ActorStats base{ GameDB::GetPlayerBaseStats() };
     gPlayer->InitPlayerRuntime(base);
 
     //Init other gameobjects
