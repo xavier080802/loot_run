@@ -50,6 +50,59 @@ TileMap::TileMap(std::string filename, AEVec2 offset, float tileX, float tileY)
 	}
 }
 
+//Proccedural constructor 
+TileMap::TileMap(AEVec2 offset, float tileX, float tileY)
+	: tileSize{ AEVec2{tileX, tileY} }, posOffset(offset), rows{ 0 }, cols{ 0 }
+{
+	if (!textureMap.size()) {
+		LoadStatics();
+	}
+}
+
+// Logic for proccedural
+void TileMap::GenerateProcedural(unsigned int r, unsigned int c, int maxFloorTiles)
+{
+	rows = r;
+	cols = c;
+	mapSize = { cols * tileSize.x, rows * tileSize.y };
+
+	// Fill with walls
+	tiles.clear();
+	tiles.resize(rows, std::vector<Tile>(cols, tileMap[TILE_WALL]));
+
+	// Random Walker
+	// CHANGED: Start at (1, 1) for top-left spawning
+	int curR = 1;
+	int curC = 1;
+	int floorCreated = 0;
+
+	while (floorCreated < maxFloorTiles) {
+		if (tiles[curR][curC].type == TILE_WALL) {
+			tiles[curR][curC] = tileMap[TILE_NONE];
+			floorCreated++;
+		}
+
+		int dir = rand() % 4;
+		if (dir == 0 && curR > 1) curR--;
+		else if (dir == 1 && curR < (int)rows - 2) curR++;
+		else if (dir == 2 && curC > 1) curC--;
+		else if (dir == 3 && curC < (int)cols - 2) curC++;
+	}
+
+	// Decoration Pass
+	for (unsigned int i = 1; i < rows - 1; ++i) {
+		for (unsigned int j = 1; j < cols - 1; ++j) {
+			if (tiles[i][j].type == TILE_NONE) {
+				// Don't spawn things on the top-left start area (row 1, col 1)
+				if (i < 3 && j < 3) continue;
+
+				int chance = rand() % 100;
+				if (chance < 2) tiles[i][j] = tileMap[TILE_ENEMY];
+				else if (chance < 3) tiles[i][j] = tileMap[TILE_CHEST];
+			}
+		}
+	}
+}
 void TileMap::Render() const
 {
 	for (unsigned int r = 0; r < rows; r++) {
@@ -60,7 +113,6 @@ void TileMap::Render() const
 			AEVec2 pos{ GetTilePosition(r,c) };
 			AEVec2 scale = tileSize;
 			GetObjViewFromCamera(&pos, &rot, &scale);
-			//NOTE: Rotation renders ACW
 			DrawTintedMesh(GetTransformMtx(pos, rot, scale),
 				pMesh, textureMap.at(tiles[r][c].type),
 				{255,255,255,255}, 255);
@@ -73,11 +125,7 @@ void TileMap::Render(AEVec2 offsetPos, float rotOffset, AEVec2 scale, bool isHud
 	for (unsigned int r = 0; r < rows; r++) {
 		for (unsigned int c = 0; c < cols; c++) {
 			if (tiles[r][c].type == TILE_NONE) continue;
-
-			// --- THE CRASH FIX: SAFE LOOKUP ---
 			auto it = textureMap.find(tiles[r][c].type);
-
-			// If the ID (like 3 or 4) isn't in the map, skip it instead of crashing
 			if (it == textureMap.end() || it->second == nullptr) {
 				continue;
 			}
@@ -87,8 +135,6 @@ void TileMap::Render(AEVec2 offsetPos, float rotOffset, AEVec2 scale, bool isHud
 			AEVec2 tileScale = tileSize;
 
 			if (!isHud) GetObjViewFromCamera(&pos, &rot, &tileScale);
-
-			// Use it->second to access the safe texture pointer
 			DrawTintedMesh(GetTransformMtx(pos + offsetPos, rot, tileScale * scale),
 				pMesh, it->second,
 				{ 255,255,255,255 }, 255);
@@ -98,12 +144,10 @@ void TileMap::Render(AEVec2 offsetPos, float rotOffset, AEVec2 scale, bool isHud
 
 AEVec2 TileMap::GetTilePosition(unsigned rowInd, unsigned colInd) const
 {
-	//Normally, Bottom left of map is at origin.
 	AEVec2 out{
 		colInd * tileSize.x + tileSize.x * 0.5f,
 		(rows - 1 - rowInd) * tileSize.y
 	};
-	//Offset by -map_half_size to center map on origin. Then add posOffset
 	return out - mapSize * 0.5f + posOffset;
 }
 
@@ -144,14 +188,15 @@ TileMap::Tile const* TileMap::ChangeTile(unsigned row, unsigned col, TILE_TYPE n
 	return &tiles[row][col];
 }
 
+AEVec2 TileMap::GetSpawnPoint() const {
+	return GetTilePosition(1, 1);
+}
+
 void TileMap::LoadStatics()
 {
-	//Load textures (once each per tile type)
+	//Load textures 
 	RenderingManager* rm = RenderingManager::GetInstance(); //Use to load texture
 	pMesh = rm->GetMesh(MESH_SQUARE);
-
-	//=======================Tile map========================
-
 	//By default, all tiles are obstacles.
 	for (int i{}; i < TILE_NUM; ++i) {
 		tileMap.insert(TilePair(static_cast<TILE_TYPE>(i), { static_cast<TILE_TYPE>(i), Collision::OBSTACLE }));
@@ -165,8 +210,6 @@ void TileMap::LoadStatics()
 
 	tileMap[TILE_CHEST].layer = Collision::NONE;
 	tileMap[TILE_CHEST].isSolid = false;
-
-	//======================Texture map======================
 
 	textureMap.insert(TileTex(TILE_NONE, nullptr));
 	textureMap.insert(TileTex(TILE_WALL, rm->LoadTexture("Assets/finn.png")));
