@@ -1,0 +1,17 @@
+[
+    {
+        "id": 1,
+        "name": "Demo Bow",
+        "slot": "Weapon",
+        "weaponType": "Bow",
+        "attackType": "Projectile",
+        "isRanged": true,
+        "element": "BLOOD",
+        "knockback": 100.0,
+        "attackSize": 10.0,
+        "rarity": "Common",
+        "stats": {
+            "attack": 5.0
+        }
+    }
+]

@@ -1,0 +1,13 @@
+[
+    {
+        "id": 1,
+        "name": "Leather Gloves",
+        "slot": "Armor",
+        "armorSlot": "Hands",
+        "rarity": "Common",
+        "stats": {
+            "attack": 1.0,
+            "attackSpeed": 0.05
+        }
+    }
+]

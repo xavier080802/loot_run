@@ -1,0 +1,13 @@
+[
+    {
+        "id": 1,
+        "name": "Leather Helmet",
+        "slot": "Armor",
+        "armorSlot": "Head",
+        "rarity": "Common",
+        "stats": {
+            "maxHP": 5.0,
+            "defense": 2.0
+        }
+    }
+]

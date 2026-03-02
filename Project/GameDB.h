@@ -17,8 +17,25 @@ namespace GameDB
     const EnemyDef* GetEnemyDef(int id);
 
     // Equipment
+    bool LoadEquipmentDefs(const char* path, EquipmentCategory category);
     // Retrieves immutable stats and definitions for a specific piece of equipment
-    const EquipmentData* GetEquipmentData(int id);
+    const EquipmentData* GetEquipmentData(EquipmentCategory category, int id);
+
+    struct PlayerInventoryDef {
+        int weapon1 = 0;
+        int weapon2 = 0;
+        int bow = 0;
+        int head = 0;
+        int body = 0;
+        int hands = 0;
+        int feet = 0;
+    };
+
+    // Player Configuration
+    bool LoadPlayerDef(const char* path);
+    bool LoadPlayerInventory(const char* path);
+    const ActorStats& GetPlayerBaseStats();
+    const PlayerInventoryDef& GetPlayerStarterInventory();
 
     // runtime owned flags not used yet ignore
     void InitEquipmentRuntime();

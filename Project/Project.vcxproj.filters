@@ -252,6 +252,9 @@
     <ClCompile Include="DebugTools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Actor\Combat.cpp">
+      <Filter>Source Files\Actors</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -460,6 +463,9 @@
     </ClInclude>
     <ClInclude Include="DebugTools.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor\Combat.h">
+      <Filter>Header Files\Actors</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,0 +1,13 @@
+[
+    {
+        "id": 1,
+        "name": "Leather Armor",
+        "slot": "Armor",
+        "armorSlot": "Body",
+        "rarity": "Common",
+        "stats": {
+            "maxHP": 25.0,
+            "defense": 5.0
+        }
+    }
+]

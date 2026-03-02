@@ -18,7 +18,7 @@ bool PetSkills::Pet1Skill(const SkillCastData& data)
     proj->Fire(data.player, {mouse.x - data.thisPet->GetPos().x, mouse.y - data.thisPet->GetPos().y},
         10, 200, 10, 
         //On collide callback: Damage enemy
-        [](GameObject::CollisionData& other, Actor* caster) {
+        [](GameObject::CollisionData& other, Actor* caster, Elements::ELEMENT_TYPE /*element*/, float /*knockback*/) {
             if (other.other.GetGOType() != GO_TYPE::ENEMY) return;
             Pet* pet{ PetManager::GetInstance()->GetEquippedPet() };
             if (!pet) return;

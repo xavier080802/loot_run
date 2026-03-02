@@ -1,0 +1,13 @@
+[
+    {
+        "id": 1,
+        "name": "Leather Boots",
+        "slot": "Armor",
+        "armorSlot": "Feet",
+        "rarity": "Common",
+        "stats": {
+            "moveSpeed": 20.0,
+            "defense": 1.0
+        }
+    }
+]
