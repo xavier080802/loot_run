@@ -14,10 +14,21 @@ bool IsPointOver(float posX, float posY, float width, float height, float pointX
 	return (pointX >= posX - width / 2 && pointX <= posX + width / 2 && pointY >= posY - height / 2 && pointY <= posY + height / 2) ? 1 : 0;
 }
 
-bool IsCursorOver(AEVec2 pos, float width, float height)
+bool IsCursorOverWorld(AEVec2 pos, float width, float height, bool inHUD)
 {
-	AEVec2 mouse = GetMouseWorldVec();
+	AEVec2 mouse = GetMouseWorldVec(inHUD);
 	return IsPointOver(pos.x, pos.y, width, height, mouse.x, mouse.y);
+}
+
+bool IsCursorOverWorld(AEVec2 pos, AEVec2 size, bool inHUD)
+{
+	return IsCursorOverWorld(pos, size.x, size.y, inHUD);
+}
+
+bool IsCursorOverScreen(AEVec2 pos, AEVec2 size)
+{
+	AEVec2 mouse = GetMouseScreenVec();
+	return IsPointOver(pos.x, pos.y, size.x, size.y, mouse.x, mouse.y);
 }
 
 bool IsPointOverCircle(float posX, float posY, float diameter, float pointX, float pointY)
@@ -26,14 +37,14 @@ bool IsPointOverCircle(float posX, float posY, float diameter, float pointX, flo
 	return (pointX - posX) * (pointX - posX) + (pointY - posY) * (pointY - posY) <= (diameter / 2.f) * (diameter / 2.f);
 }
 
-bool IsCursorOverCircle(AEVec2 pos, float diameter)
+bool IsCursorOverCircleWorld(AEVec2 pos, float diameter, bool inHUD)
 {
-	AEVec2 world = GetMouseWorldVec();
+	AEVec2 world = GetMouseWorldVec(inHUD);
 	return (fabs(world.x - pos.x) <= diameter / 2.f && fabs(world.y - pos.y) <= diameter / 2.f) ? 1 : 0;
 }
 
-bool IsCursorOverOval(AEVec2 pos, AEVec2 size, f32 rotDeg) {
-	AEVec2 world = GetMouseWorldVec();
+bool IsCursorOverOvalWorld(AEVec2 pos, AEVec2 size, f32 rotDeg, bool inHUD) {
+	AEVec2 world = GetMouseWorldVec(inHUD);
 
 	AEVec2 v = { 0,0 }, r = { 0,0 };
 	AEMtx33 A = { 0 };
@@ -46,6 +57,24 @@ bool IsCursorOverOval(AEVec2 pos, AEVec2 size, f32 rotDeg) {
 	AEMtx33Concat(&T, &A, &Ar); //Combine. Normally it's TRS, now its SR (T is 0 here)
 	AEVec2Set(&r, T.m[0][0] * v.x + T.m[0][1] * v.y, T.m[1][0] * v.x + T.m[1][1] * v.y); //Image of v
 	//AEVec2Set(&r, A.m[0][0] * v.x, A.m[1][1] * v.y); //Image of v
+	AEVec2 zero = { 0 };
+	return IsPointOverCircle(zero.x, zero.y, 1, r.x, r.y); //Inversing the scaling of size (A*size) gives normal circle of d=1
+}
+
+bool IsCursorOverOvalScreen(AEVec2 pos, AEVec2 size, f32 rotDeg)
+{
+	AEVec2 screen = GetMouseScreenVec();
+
+	AEVec2 v = { 0,0 }, r = { 0,0 };
+	AEMtx33 A = { 0 };
+	AEVec2Set(&v, screen.x - pos.x, screen.y - pos.y); // point x (mouse), shifted to Origin
+	AEMtx33Scale(&A, 1 / (size.x), 1 / (size.y)); //Inverse scaling matrix
+
+	AEMtx33 Ar = { 0 };
+	AEMtx33RotDeg(&Ar, rotDeg); //Inverse rot (Rendering is ACW, so using +ve rot here)
+	AEMtx33 T = { 0 };
+	AEMtx33Concat(&T, &A, &Ar); //Combine. Normally it's TRS, now its SR (T is 0 here)
+	AEVec2Set(&r, T.m[0][0] * v.x + T.m[0][1] * v.y, T.m[1][0] * v.x + T.m[1][1] * v.y); //Image of v
 	AEVec2 zero = { 0 };
 	return IsPointOverCircle(zero.x, zero.y, 1, r.x, r.y); //Inversing the scaling of size (A*size) gives normal circle of d=1
 }
@@ -68,7 +97,7 @@ bool IsPointOverRectRot(float posX, float posY, float width, float height, float
 	return IsPointOver(zero.x, zero.y, width, height, r.x, r.y);
 }
 
-bool IsCursorOverRectRot(AEVec2 pos, float width, float height, float degrees)
+bool IsCursorOverRectRotWorld(AEVec2 pos, float width, float height, float degrees)
 {
 	AEVec2 world = GetMouseWorldVec();
 	return IsPointOverRectRot(pos.x, pos.y, width, height, degrees, world.x, world.y);

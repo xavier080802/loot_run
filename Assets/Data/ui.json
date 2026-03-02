@@ -1,0 +1,17 @@
+{
+    "pet_ui": {
+        "descFontSize": 0.3,
+        "timerFontSize": 0.05,
+        "padding": [ 0.02, 0.02 ], //Normalized box padding
+        "pos": [ -1, -1 ], //Normalized icon position
+        "size": 75, //Size of icon (width = height)
+        "lineSpace": 0.02, //Normalized distance between lines
+        "textCol": [ 0, 0, 0, 255 ],
+        "boxCol": [ 200, 200, 200, 220 ],
+        "timerTextCol": [ 0, 0, 0, 255 ],
+        "onCooldownCol": [ 0, 0, 0, 155 ],
+        "showTimerUnit": true,
+        "textAlignment": "TEXT_LOWER_LEFT", //X alignment affects the box
+        "boxAlignment": "BOTTOM" //What part of the box is at the cursor
+    }
+}

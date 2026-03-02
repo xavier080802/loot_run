@@ -11,6 +11,8 @@
 AEVec2 ScreenToNorm(AEVec2 screenCoords);
 //World to normalized coords
 AEVec2 WorldToNorm(AEVec2 worldCoords);
+//Norm to world
+AEVec2 NormToWorld(AEVec2 normCoords);
 //Screen to world coords
 AEVec2 ScreenToWorld(AEVec2 screenCoords);
 //World to screen coords

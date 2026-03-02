@@ -54,9 +54,13 @@ bool Inventory::Equip(const EquipmentData* data)
     if (data->weaponType == WeaponType::Bow)
         return EquipBow(data);
 
+    // If it's a weapon (but not a bow), we first try to auto-equip it if slots are empty
     AutoEquipIfEmpty(data);
+
+    // If it successfully auto-equipped into weapon1 or weapon2, we're done
     if (mWeapon1 == data || mWeapon2 == data) return true;
 
+    // Otherwise, force it into slot 0 (replacing current weapon1)
     return EquipMainWeapon(0, data);
 }
 
@@ -155,12 +159,13 @@ EquipmentModifiers Inventory::GetEquipmentModifiers() const
 {
     EquipmentModifiers out;
 
-    // Equipped weapons
-    if (mWeapon1) AddMods(out.additive, mWeapon1->mods.additive);
-    if (mWeapon2) AddMods(out.additive, mWeapon2->mods.additive);
-    if (mBow)     AddMods(out.additive, mBow->mods.additive);
+    // Tally up stats from equipped weapons
+    // Only get stats from the actively held melee weapon and the bow.
+    const EquipmentData* activeMelee = GetActiveMainWeapon();
+    if (activeMelee) AddMods(out.additive, activeMelee->mods.additive);
+    if (mBow)        AddMods(out.additive, mBow->mods.additive);
 
-    // Equipped armor slots
+    // Tally up stats from equipped armor slots
     if (mHead)  AddMods(out.additive, mHead->mods.additive);
     if (mBody)  AddMods(out.additive, mBody->mods.additive);
     if (mHands) AddMods(out.additive, mHands->mods.additive);

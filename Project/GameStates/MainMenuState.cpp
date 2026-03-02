@@ -70,14 +70,12 @@ void MainMenuState::LoadState()
 	buttonGroup = AEAudioCreateGroup();
 	hoverSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17767.wav");
 	clickSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17766.wav");
+	Font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 38);
+	BigFont = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 75);
 }
 
 void MainMenuState::InitState()
 {
-	std::cout << "Main menu state enter\n";
-	AEGfxFontSystemStart();
-	Font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 38);
-	BigFont = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 75);
 	winW = static_cast<float>(AEGfxGetWinMaxX());
 	winH = static_cast<float>(AEGfxGetWinMaxY());
 	scale = (winW * 2 / DEFAULT_W) < (winH * 2 / DEFAULT_H) ? (winW * 2 / DEFAULT_W) : (winH * 2 / DEFAULT_H); //scale of window compared to default
@@ -88,7 +86,6 @@ void MainMenuState::InitState()
 
 void MainMenuState::ExitState()
 {
-	std::cout << "Exit main menu state\n";
 }
 
 void MainMenuState::UnloadState()
@@ -125,7 +122,7 @@ void MainMenuState::Update(double dt)
 		};
 
 		// boolean check names reserved for input/hover checks
-		bool buttonHover = IsCursorOver(worldPos, worldSize.x, worldSize.y);
+		bool buttonHover = IsCursorOverWorld(worldPos, worldSize.x, worldSize.y, true);
 		bool buttonClick = false;
 
 		// Play hover sound only when pointer enters button
@@ -177,21 +174,40 @@ void MainMenuState::Update(double dt)
 void MainMenuState::Draw()
 {
 	AEGfxSetBackgroundColor(0.2f, 0.2f, 0.2f);
-	AEGfxStart();
 	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
 	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
 	// ----------------
 	// Draw Title
 	// ----------------
-	AEVec2 titlePos = DefaultToWorld(title.pos.x, title.pos.y);
-	AEVec2 labelSize = { title.size.x * scale,title.size.y * scale };
+	AEVec2 titlePos = DefaultToWorld(
+		title.pos.x,
+		title.pos.y
+	);
+
+	AEVec2 labelSize = {
+		title.size.x * scale,
+		title.size.y * scale
+	};
+
 	AEMtx33 mtx;
 	GetTransformMtx(mtx, titlePos, 0.0f, labelSize);
 	AEGfxSetTransform(mtx.m);
-	AEGfxSetColorToMultiply(0.75f, 0.75f, 0.75f, 1.0f);
+
+	AEGfxSetColorToMultiply(
+		0.75f,
+		0.75f,
+		0.75f,
+		1.0f
+	);
+
 	AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
-	DrawAEText(BigFont, title.label, titlePos, scale, CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
+
+	DrawAEText(
+		BigFont, title.label, titlePos, scale,
+		CreateColor(10, 10, 10, 255),
+		TEXT_MIDDLE
+	);
 
 	// ----------------
 	// Draw Buttons
@@ -209,7 +225,7 @@ void MainMenuState::Draw()
 			ToVec2(scale, scale)
 		);
 
-		bool hover = IsCursorOver(worldPos, worldSize.x, worldSize.y);
+		bool hover = IsCursorOverWorld(worldPos, worldSize.x, worldSize.y, true);
 
 		AEMtx33 mtx;
 		GetTransformMtx(mtx, worldPos, 0.0f, worldSize);

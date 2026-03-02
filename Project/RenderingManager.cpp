@@ -4,6 +4,11 @@
 
 void RenderingManager::Init()
 {
+	//Font
+	fontId = AEGfxCreateFont("Assets/placeholder.ttf", fontSize);
+	f32 tmp{};
+	AEGfxGetPrintSize(fontId, "P", 1.f, &tmp, &fontHeight); //Get height of some char
+
 	//Create meshes
 	for (int i{}; i < MESH_SHAPE::SHAPE_NUM; i++) {
 		switch (i)
@@ -47,16 +52,23 @@ AEGfxTexture* RenderingManager::LoadTexture(const char* path)
 	return tex;
 }
 
-int RenderingManager::GetAnimFPS()
+AEGfxTexture* RenderingManager::LoadTexture(std::string path)
 {
-	return animationFPS;
+	return LoadTexture(path.c_str());
 }
 
 RenderingManager::~RenderingManager()
 {
 	for (std::pair <std ::string, AEGfxTexture*> pair : textureMap) {
+		if (pair.second == nullptr) continue;
 		AEGfxTextureUnload(pair.second);
 		pair.second = nullptr;
 	}
+	for (AEGfxVertexList* v : meshList) {
+		if (!v) continue;
+		AEGfxMeshFree(v);
+		v = nullptr;
+	}
 	textureMap.clear();
+	AEGfxDestroyFont(fontId);
 }

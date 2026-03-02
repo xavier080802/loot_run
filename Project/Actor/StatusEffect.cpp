@@ -2,9 +2,19 @@
 #include "StatusEffect.h"
 #include "Actor.h"
 
+#include <json/json.h>
+
 StatEffects::StatusEffect* StatEffects::StatusEffect::AddMod(Mod newMod)
 {
 	mods.push_back(newMod);
+	return this;
+}
+
+StatEffects::StatusEffect* StatEffects::StatusEffect::AddMod(std::vector<Mod> mods)
+{
+	for (Mod const& m : mods) {
+		AddMod(m);
+	}
 	return this;
 }
 
@@ -18,7 +28,7 @@ void StatEffects::StatusEffect::Tick(double dt)
 {
 	durationTimer += static_cast<float>(dt);
 
-	if (durationTimer >= duration || !stacks) {
+	if ((durationTimer >= duration && !isPermanent) || !stacks) {
 		OnEnd(stacks ? END_REASON::TIMED_OUT : END_REASON::STACKS_ZERO);
 	}
 }
@@ -49,4 +59,53 @@ float StatEffects::StatusEffect::GetFinalModVal(STAT_TYPE stat, float baseVal) c
 		change += (m.mathType == FLAT ? m.value : baseVal * (m.value / 100.f));
 	}
 	return change * stacks;
+}
+
+void StatEffects::StatusEffect::ScaleMods(float scalar)
+{
+	for (Mod& m : mods) {
+		m.value *= scalar;
+	}
+}
+
+void StatEffects::StatusEffect::SetIcon(std::string const& path)
+{
+	icon = path;
+}
+
+float StatEffects::Mod::GetValFromActor(Actor const& actor) const
+{
+	if (mathType == FLAT) return value;
+
+	const ActorStats& stats{ actor.GetBaseStats() };
+	float out{};
+	switch (stat)
+	{
+	case MAX_HP:
+		out = stats.maxHP;
+		break;
+	case DEF:
+		out = stats.defense;
+		break;
+	case ATT:
+		out = stats.attack;
+		break;
+	case ATT_SPD:
+		out = stats.attackSpeed;
+		break;
+	case MOVE_SPD:
+		out = stats.moveSpeed;
+		break;
+	default:
+		break;
+	}
+
+	return out * (value / 100.f);
+}
+
+StatEffects::Mod StatEffects::Mod::ParseFromJSON(Json::Value const& v)
+{
+	return Mod{ v.get("value", 0).asFloat(),
+			static_cast<StatEffects::MATH_TYPE>(v.get("mathType", StatEffects::MATH_TYPE::MULTIPLICATIVE).asInt()),
+			static_cast<STAT_TYPE>(v.get("stat", STAT_TYPE::ATT).asInt()) };
 }

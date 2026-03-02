@@ -26,11 +26,14 @@ struct AttackHitboxConfig
     // If true, the hitbox follows owner each frame
     bool followOwner = true;
 
-    // If true, disable hitbox on first valid collision (simple “one hit” swing)
+    // If true, disable hitbox on first valid collision (simple ï¿½one hitï¿½ swing)
     bool disableOnHit = true;
 
     // Callback invoked when hitbox collides with something it can collide with
-    void (*onHit)(GameObject::CollisionData& target, Actor* caster) = nullptr;
+    void (*onHit)(GameObject::CollisionData& target, Actor* caster, void*) = nullptr;
+
+    // Callback invoked when hitbox lifetime ends.
+    void (*onEnd)(Actor* caster) = nullptr;
 
     // Callback invoked when hitbox lifetime ends.
     void (*onEnd)(Actor* caster) = nullptr;
@@ -42,6 +45,9 @@ struct AttackHitboxConfig
     Color tint{ 160,160,160,180 };
 
     int zIndex{ 0 };
+
+    // Ptr to whatever extra data
+    void* extraData{nullptr};
 };
 
 class AttackHitboxGO : public GameObject
@@ -61,8 +67,9 @@ private:
     AEVec2 offset = { 0.0f, 0.0f };
     bool followOwner = true;
     bool disableOnHit = true;
+    void* extraData;
 
-    void (*OnHit)(CollisionData& target, Actor* caster) = nullptr;
+    void (*OnHit)(CollisionData& target, Actor* caster, void* extraData) = nullptr;
     void (*OnEnd)(Actor* caster);
     std::vector<GameObject*> hitOnce; // enemies already damaged this swing
 };

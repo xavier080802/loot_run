@@ -7,14 +7,14 @@
       "baseStats": {
         "maxHP": 30,
         "attack": 5,
-        "defense": 0,
+        "defense": 5,
         "moveSpeed": 120,
         "attackSpeed": 1.0
       },
       "render": {
         "radius": 15,
         "mesh": "circle",
-        "tint": [255, 0, 0, 255]
+        "texturePath": "Assets/Enemies/slime.png"
       }
     },
     {
@@ -31,7 +31,7 @@
       "render": {
         "radius": 60,
         "mesh": "circle",
-        "tint": [255, 0, 0, 255]
+        "texturePath": "Assets/Enemies/slime.png"
       }
     }
   ]

@@ -5,16 +5,20 @@
 #include <map>
 
 namespace {
-	void DetonateDoDmg(GameObject::CollisionData& target, Actor* caster) {
+	void DetonateDoDmg(GameObject::CollisionData& target, Actor* caster, void* = nullptr) {
 		Actor* other{ dynamic_cast<Actor*>(&target.other) };
-		if (!other) return;
+		if (!other || !caster) return;
 
-		other->TakeDamage(20);
+		float dmg{};
+		for (StatEffects::Mod const& m : Elements::sunMoonDmgMods) {
+			dmg += m.GetValFromActor(*caster);
+		}
+		caster->DealDamage(other, dmg, DAMAGE_TYPE::ELEMENTAL);
 	}
 }
 
 namespace Elements {
-	void SunMoonEffect(GameObject::CollisionData& target, Actor* caster)
+	void SunMoonEffect(GameObject::CollisionData& target, Actor* caster, void*)
 	{
 		Actor* other{ dynamic_cast<Actor*>(&target.other) };
 		if (!other) return;
@@ -40,8 +44,8 @@ namespace Elements {
 		}
 
 		//Apply Slow
-		StatEffects::StatusEffect* slow{ new StatEffects::StatusEffect{caster, sunMoonSlowDur, sunMoonSlowMaxStacks, sunMoonSlowName, 1, StatEffects::DEBUFF } };
-		slow->AddMod({ 25, StatEffects::MATH_TYPE::MULTIPLICATIVE, STAT_TYPE::MOVE_SPD });
+		StatEffects::StatusEffect* slow{ new StatEffects::StatusEffect{caster, sunMoonDebuffDur, sunMoonDebuffMaxStacks, sunMoonDebuffName, 1, StatEffects::DEBUFF } };
+		slow->AddMod(sunMoonDebuffMods);
 		other->ApplyStatusEffect(slow, caster);
 	}
 

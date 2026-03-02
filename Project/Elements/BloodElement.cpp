@@ -1,5 +1,6 @@
 #include "BloodElement.h"
 #include "../Actor/Actor.h"
+using namespace Elements;
 
 void BloodElement::Tick(double dt)
 {
@@ -14,11 +15,11 @@ void BloodElement::Tick(double dt)
 
 void BloodElement::TriggerDoT()
 {
-	//Damage calc
-
-	//Do dmg in a way that calls the actor's ActorOnHitSubs
-
-	owner->TakeDamage(1); //Temp
+	float dmg{};
+	for (StatEffects::Mod const& m : bloodDmgMods) {
+		dmg += m.GetValFromActor(*caster);
+	}
+	caster->DealDamage(owner, dmg, DAMAGE_TYPE::ELEMENTAL, nullptr);
 }
 
 void BloodElement::OnReapply(int numStacks)

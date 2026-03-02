@@ -6,6 +6,12 @@
 #include "../Camera.h"
 #include <iostream>
 
+GameObject::GameObject(bool _register)
+{
+	if (_register)
+		GameObjectManager::GetInstance()->RegisterGO(this);
+}
+
 GameObject* GameObject::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, Collision::LAYER _isInLayer) {
 	isEnabled = true;
 	pos = _pos;

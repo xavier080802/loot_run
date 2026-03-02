@@ -1,0 +1,162 @@
+/*
+    Mod:
+
+    {
+        "value": 0, 
+        "mathType": 1, // 0=FLAT, 1=MULTIPLICATIVE -- How value will be applied to the stat
+        "stat": 0 // Stat to scale with. Check STAT_TYPE enum.
+    }
+
+    Clean copy-paste:
+    {
+        "value": 0,
+        "mathType": 1,
+        "stat": 0
+    }
+
+*/
+
+{
+    "global": {
+        "elementDur": 15 // Duration that each base element lasts on the actor
+    },
+    "blood": {
+        "name": "Bloodletting",
+        "dmgMods": [ //DoT
+            { //Flat dmg
+                "value": 10,
+                "mathType": 0,
+                "stat": 0
+            }
+        ]
+    },
+    "sun": {
+        "name": "Under The Sun",
+        "buffName": "Glow",
+        "maxStacks": 20,
+        "buffDur": 7.5,
+        "lowRange": 3, // Lower limit for stacks to apply
+        "highRange": 5, // Upper limit for stacks to apply
+        "buffMods": [
+            { // Att buff
+                "value": 1,
+                "mathType": 1, // 0=FLAT, 1=MULTIPLICATIVE -- How value will be applied to the stat
+                "stat": 2 // Stat to scale with. Check STAT_TYPE enum.
+            }
+        ]
+    },
+    "moon": {
+        "name": "Wax and Wane",
+        "maxStacks": 5,
+        "healMods": [ // Heal on-hit
+            { // 5% max hp
+                "value": 5,
+                "mathType": 1,
+                "stat": 0
+            }
+        ],
+        "killHealMods": [ // Healing on-kill
+            { //5% of target's max-hp
+                "value": 5,
+                "mathType": 1,
+                "stat": 0
+            }
+        ],
+        "debuffMods": [
+            { //% of def to reduce
+                "value": -2.5,
+                "mathType": 1,
+                "stat": 1
+            }
+        ],
+        "meleeHealMult": 1.25
+    },
+    "blood_sun": { //Note: 1 tick per second, over elementDur
+        "name": "Boiling Blood",
+        "dotDmgMods": [ //Based on max-hp of the element-sufferer
+            { //Flat dmg
+                "value": 10,
+                "mathType": 0,
+                "stat": 0
+            },
+            { //% hp dmg
+                "value": 5,
+                "mathType": 1,
+                "stat": 0
+            }
+        ],
+        "detonateDmgMods": [
+            //Based on max-hp of the element-sufferer [0,1]
+            { //Flat dmg
+                "value": 20,
+                "mathType": 0,
+                "stat": 0
+            },
+            { //% hp dmg
+                "value": 5,
+                "mathType": 1,
+                "stat": 0
+            },
+            //Based on a stat of the caster (one who applied the element)
+            {
+                "value": 10,
+                "mathType": 1,
+                "stat": 2
+            }
+        ],
+        "detonateSize_x": 150,
+        "detonateSize_y": 150
+    },
+    "blood_moon": {
+        "lifetime": 15,
+        "size_x": 200,
+        "size_y": 200,
+        "procTime": 1.25, //Time between procs
+        "debuffDur": 2,
+        "debuffName": "Sanguine Oppression",
+        "debuffMods": [
+            { //Def shred
+                "value": -15,
+                "mathType": 1,
+                "stat": 1
+            }
+        ],
+        "dmgMods": [ //Damage per proc
+            { //Flat
+                "value": 5,
+                "mathType": 0,
+                "stat": 2
+            },
+            { //% of att
+                "value": 15,
+                "mathType": 1,
+                "stat": 2
+            }
+        ],
+        "tint": [ 180, 0, 0, 100 ]
+    },
+    "sun_moon": {
+        "lifetime": 5,
+        "size_x": 200,
+        "size_y": 200,
+        "procTime": 1.25, //Time between procs
+        "debuffName":  "Eclipsing Awe",
+        "debuffDur": 2,
+        "debuffMaxStacks": 1,
+        "debuffMods": [
+            { //Slow
+                "value": -25,
+                "mathType": 1,
+                "stat": 4
+            }
+        ],
+        "dmgMods": [ //Detonation damage
+            { //x% of att
+                "value": 150,
+                "mathType": 1,
+                "stat": 2
+            }
+        ],
+        "tint": [ 127, 46, 0, 130 ]
+    }
+}

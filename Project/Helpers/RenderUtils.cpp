@@ -3,12 +3,27 @@
 #include "Vec2Utils.h"
 #include "CoordUtils.h"
 #include "../Camera.h"
+#include "../RenderingManager.h"
+#include <sstream>
 
 // ------NOTE ABOUT ROTATION-------
 // Normally, CW is +ve. So in matrices and calculations, we use +ve for CW.
 // But rendering an object with a +ve angle shows it ACW
 // Thus, when using inverse rot, the value is theta instead of -theta 
 // And for the normal theta, when passing to a rendering function, should be passed as -theta.
+
+TextOriginPos ParseTextAlignment(std::string const& str)
+{
+	if (str == "TEXT_LOWER_RIGHT") return TEXT_LOWER_RIGHT;
+	if (str == "TEXT_UPPER_LEFT") return TEXT_UPPER_LEFT;
+	if (str == "TEXT_UPPER_RIGHT") return TEXT_UPPER_RIGHT;
+	if (str == "TEXT_MIDDLE") return TEXT_MIDDLE;
+	if (str == "TEXT_MIDDLE_LEFT") return TEXT_MIDDLE_LEFT;
+	if (str == "TEXT_MIDDLE_RIGHT") return TEXT_MIDDLE_RIGHT;
+	if (str == "TEXT_LOWER_MIDDLE") return TEXT_LOWER_MIDDLE;
+	if (str == "TEXT_UPPER_MIDDLE") return TEXT_UPPER_MIDDLE;
+	return TEXT_LOWER_LEFT;
+}
 
 AEGfxVertexList* CreateSquareMesh(f32 width, f32 height, u32 color)
 {
@@ -126,7 +141,56 @@ void DrawBox(AEVec2 center, f32 width, f32 height, f32 thickness, Color col)
 	}
 }
 
-void DrawAEText(s8& font, const char* text, AEVec2 pos, f32 size, Color col, TextOriginPos alignment, int isHUD)
+AEVec2 GetTextAlignPosNorm(s8 const& font, std::string const& text, AEVec2 pos, f32 fontSize, TextOriginPos alignment)
+{
+	f32 w, h;
+	AEGfxGetPrintSize(font, text.c_str(), fontSize, &w, &h);
+	return GetTextAlignPosNorm(font, text, pos, AEVec2{w,h }, alignment);
+}
+
+AEVec2 GetTextAlignPosNorm(s8 const& font, std::string const& text, AEVec2 pos, AEVec2 size, TextOriginPos alignment)
+{
+	AEVec2 normPos = WorldToNorm(pos);
+
+	//Offset text based on chosen anchor
+	switch (alignment)
+	{
+	case TEXT_MIDDLE:
+		normPos.x -= size.x *0.5f;
+		normPos.y -= size.y *0.5f;
+		break;
+	case TEXT_MIDDLE_LEFT:
+		normPos.y -= size.y *0.5f;
+		break;
+	case TEXT_MIDDLE_RIGHT:
+		normPos.x -= size.x;
+		normPos.y -= size.y *0.5f;
+		break;
+	case TEXT_LOWER_MIDDLE:
+		normPos.x -= size.x *0.5f;
+		break;
+	case TEXT_UPPER_MIDDLE:
+		normPos.x -= size.x *0.5f;
+		normPos.y -= size.y;
+		break;
+	case TEXT_UPPER_LEFT:
+		normPos.y -= size.y;
+		break;
+	case TEXT_UPPER_RIGHT:
+		normPos.x -= size.x;
+		normPos.y -= size.y;
+		break;
+	case TEXT_LOWER_RIGHT:
+		normPos.x -= size.x;
+		break;
+	case TEXT_LOWER_LEFT:
+	default:
+		break;
+	}
+	return normPos;
+}
+
+void DrawAEText(s8 const& font, const char* text, AEVec2 pos, f32 size, Color const& col, TextOriginPos alignment, bool isHUD)
 {
 	if (!isHUD) {
 		AEVec2 scale = ToVec2(size, size);
@@ -134,50 +198,172 @@ void DrawAEText(s8& font, const char* text, AEVec2 pos, f32 size, Color col, Tex
 		GetObjViewFromCamera(&pos, &rot, &scale);
 		size = scale.x;
 	}
-	f32 w, h;
-	AEGfxGetPrintSize(font, text, size, &w, &h);
-	AEVec2 normPos = WorldToNorm(pos);
-	
-	//Offset text based on chosen anchor
-	switch (alignment)
-	{
-	case TEXT_MIDDLE:
-		normPos.x -= w / 2.f;
-		normPos.y -= h / 2.f;
-		break;
-	case TEXT_MIDDLE_LEFT:
-		normPos.y -= h / 2.f;
-		break;
-	case TEXT_MIDDLE_RIGHT:
-		normPos.x -= w;
-		normPos.y -= h / 2.f;
-		break;
-	case TEXT_LOWER_MIDDLE:
-		normPos.x -= w / 2.f;
-		break;
-	case TEXT_UPPER_MIDDLE:
-		normPos.x -= w / 2.f;
-		normPos.y -= h;
-		break;
-	case TEXT_UPPER_LEFT:
-		normPos.y -= h;
-		break;
-	case TEXT_UPPER_RIGHT:
-		normPos.x -= w;
-		normPos.y -= h;
-		break;
-	case TEXT_LOWER_RIGHT:
-		normPos.x -= w;
-		break;
-	case TEXT_LOWER_LEFT:
-	default:
-		break;
-	}
+	AEVec2 normPos = GetTextAlignPosNorm(font, text, pos, size, alignment);
 
 	AEGfxPrint(font, text,
 		normPos.x, normPos.y,
 		size,
 		col.r/255.f, col.g/255.f, col.b/255.f, col.a/255.f);
+}
+
+//Textbox version (multi-line)
+void DrawAEText(s8 const& font, std::string const& text, AEVec2 pos, f32 fontSize, f32 lineSpace, Color const& col, TextOriginPos alignment, bool isHUD)
+{
+	//Split string based on newlines
+	size_t i{}; //End of substr
+	size_t start{}; //Start of substr
+	size_t num{}; //Num of newlines
+	static const f32 fontH{ RenderingManager::GetInstance()->GetFontHeight() * fontSize };
+	do {
+		i = text.find_first_of('\n', start);
+		//No newline, or last line might not have a newline char, check if theres more chars
+		if (i == std::string::npos) {
+			if (start < text.size())
+				i = text.size();
+			else break; //Is at end of str, exit
+		}
+
+		std::string sub{ text.substr(start, i - start) };
+		f32 w, h;
+		AEGfxGetPrintSize(font, sub.c_str(), fontSize, &w, &h);
+		//Draw line below previous line (if any)
+		DrawAEText(font, sub.c_str(), { pos.x, pos.y - ((fontH +lineSpace)*AEGfxGetWinMaxY()) * num }, fontSize, col, alignment, isHUD);
+
+		num++;
+		start = i+1;
+	} while (i != std::string::npos);
+}
+
+void GetAEMultilineTextSize(s8 const& font, std::string const& text, f32 fontSize, f32& width, f32& height, f32 lineSpace)
+{
+	//Split string based on newlines
+	size_t i{}; //End of substr
+	size_t start{}; //Start of substr
+	static const f32 fontH{ RenderingManager::GetInstance()->GetFontHeight() * fontSize };
+	do {
+		i = text.find_first_of('\n', start);
+		//No newline, or last line might not have a newline char, check if theres more chars
+		if (i == std::string::npos) {
+			if (start < text.size())
+				i = text.size();
+			else break; //Is at end of str, exit
+		}
+
+		std::string sub{ text.substr(start, i - start) };
+		f32 w, h;
+		AEGfxGetPrintSize(font, sub.c_str(), fontSize, &w, &h);
+		width = max(w, width); //Line with longest width
+		//If h is 0, might be "\n\n", add prev height. If start = 0, this is first line, dont add lineSpace
+		height += fontH + (start ? lineSpace : 0);
+
+		start = i + 1;
+	} while (i != std::string::npos);
+}
+
+TextboxOriginPos ParseTextboxAlignment(std::string const& strval)
+{
+	if (strval == "BOTTOM") return TextboxOriginPos::BOTTOM;
+	else return TextboxOriginPos::TOP;
+}
+
+AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 boxWidth, f32 fontSize, f32 lineSpace, Color const& col,
+	TextOriginPos textAlignment, TextboxOriginPos boxAlignment, TextboxBgCfg const& bgCfg, bool isHUD)
+{
+	//Split string based on newlines and word wrapping to fit box width
+	size_t i{}; //End of substr
+	size_t start{}; //Start of substr
+	std::ostringstream wrapped;
+	do {
+		i = text.find_first_of('\n', start);
+		//No newline, or last line might not have a newline char, check if theres more chars
+		if (i == std::string::npos) {
+			if (start < text.size())
+				i = text.size();
+			else break; //Is at end of str, exit
+		}
+		std::string sub{ text.substr(start, i - start) };
+
+		//Wordwrap this line
+		std::istringstream words{ sub };
+		std::string word;
+		if (words >> word) {
+			//First word
+			wrapped << word;
+			f32 length, h;
+			AEGfxGetPrintSize(font, word.c_str(), fontSize, &length, &h);
+			length *= AEGfxGetWinMaxX();
+			size_t space_left = boxWidth - length;
+
+			//Wrap the rest of the text
+			while (words >> word) {
+				AEGfxGetPrintSize(font, word.c_str(), fontSize, &length, &h);
+				length *= AEGfxGetWinMaxX();
+				if (space_left < length + 1) {
+					wrapped << '\n' << word;
+					space_left = boxWidth - length;
+				}
+				else {
+					wrapped << ' ' << word;
+					space_left -= length + 1;
+				}
+			}
+		}
+		wrapped << '\n'; //Add back original new line
+
+		start = i + 1;
+	} while (i != std::string::npos);
+
+	//Offset to keep box on screen
+	static const f32 fontH{RenderingManager::GetInstance()->GetFontHeight() * fontSize};
+	AEVec2 acBoxSize{};
+	GetAEMultilineTextSize(font, wrapped.str(), fontSize, acBoxSize.x, acBoxSize.y, lineSpace);
+
+	//Norm-pos of text around pos (origin of textbox) - effectively normalized amount of offset from pos
+	AEVec2 norm = GetTextAlignPosNorm(font, wrapped.str(), {}, {acBoxSize.x, fontH}, textAlignment);
+	if (norm.y == 0) norm.y -= fontH; //Og anchor was bottom of first line (default so y=0), move textbox down so top of text is at anchor.
+	else if (norm.y == -fontH) norm.y = 0; //Og anchor is top, which is textbox anchor, so cancel the change
+	
+	acBoxSize.x *= AEGfxGetWinMaxX(); //Norm to world
+	acBoxSize.y *= AEGfxGetWinMaxY(); //Norm to world
+	switch (boxAlignment) //Move so that the vertical anchor is at the designated location
+	{
+	case TextboxOriginPos::BOTTOM: //Bottom of box is to be at the original pos
+		pos.y += acBoxSize.y;
+		break;
+	case TextboxOriginPos::TOP:
+		pos.y += norm.y * AEGfxGetWinMaxY();
+		break;
+	default:
+		break;
+	}
+	//Checking the edges of the box (pos + norm_to_world) after text alignment
+	AEVec2 edge{ pos.x+norm.x * AEGfxGetWinMaxX(), pos.y - norm.y * AEGfxGetWinMaxY()}; //Top-left
+	//Check right side
+	if (edge.x + acBoxSize.x > AEGfxGetWinMaxX()) { //right side is cut off on the right
+		pos.x -= (edge.x + acBoxSize.x) - AEGfxGetWinMaxX(); //Shift till right-side is at the right border
+	}
+	//Check left side
+	if (edge.x < AEGfxGetWinMinX()) {
+		pos.x += abs(AEGfxGetWinMinX() - edge.x); //Shift right
+	}
+	//Check bottom side
+	if (edge.y - acBoxSize.y < AEGfxGetWinMinY()) {
+		pos.y += abs(AEGfxGetWinMinY() - (edge.y - acBoxSize.y));
+	}
+	//Check top side
+	if (edge.y > AEGfxGetWinMaxY()) {
+		pos.y -= edge.y - AEGfxGetWinMaxY();
+	}
+	if (bgCfg.haveBg) { //Draw background box
+		//Reset edge calc to render bg correctly
+		edge = { pos.x + norm.x * AEGfxGetWinMaxX(), pos.y - norm.y * AEGfxGetWinMaxY() };
+		DrawTintedMesh(GetTransformMtx({ edge.x + acBoxSize.x * 0.5f, edge.y - acBoxSize.y * 0.5f }, 0, acBoxSize + NormToWorld(bgCfg.padding)),
+			bgCfg.mesh, bgCfg.texture, bgCfg.col, bgCfg.alpha);
+	}
+	//Write text
+	DrawAEText(font, wrapped.str(), pos, fontSize, lineSpace, col, textAlignment, isHUD);
+
+	return pos;
 }
 
 void SetObjViewFromOrigin(AEVec2* pos, f32* rot, AEVec2* _scale, AEVec2 originPos, f32 originRot, AEVec2 originScale)

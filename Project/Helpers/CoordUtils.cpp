@@ -19,6 +19,14 @@ AEVec2 WorldToNorm(AEVec2 worldCoords)
     return out;
 }
 
+AEVec2 NormToWorld(AEVec2 normCoords)
+{
+    return AEVec2{
+        normCoords.x * AEGfxGetWinMaxX(),
+        normCoords.y * AEGfxGetWinMaxY()
+    };
+}
+
 AEVec2 ScreenToWorld(AEVec2 screenCoords)
 {
     AEVec2 out = {

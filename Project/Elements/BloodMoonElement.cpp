@@ -2,16 +2,19 @@
 #include "../Actor/Actor.h"
 #include "Element.h"
 
-void Elements::BloodMoonEffect(GameObject::CollisionData& target, Actor* caster)
+void Elements::BloodMoonEffect(GameObject::CollisionData& target, Actor* caster, void*)
 {
 	Actor* other{ dynamic_cast<Actor*>(&target.other) };
-	if (!other) return;
+	if (!other || !caster) return;
 	//Damage
-	other->TakeDamage(5);
+	float dmg{};
+	for (StatEffects::Mod const& m : Elements::bloodMoonDmgMods) {
+		dmg += m.GetValFromActor(*caster);
+	}
+	caster->DealDamage(other, dmg, DAMAGE_TYPE::ELEMENTAL);
 	//Apply def shred debuff
 	StatEffects::StatusEffect* debuff{ new StatEffects::StatusEffect{caster, Elements::bloodMoonDebuffDur, Elements::bloodMoonDebuffMaxStacks,
 		Elements::bloodMoonDebuffName ,1, StatEffects::DEBUFF} };
-
-	debuff->AddMod({ -5, StatEffects::MATH_TYPE::MULTIPLICATIVE, STAT_TYPE::DEF });
+	debuff->AddMod(Elements::bloodMoonDebuffMods);
 	other->ApplyStatusEffect(debuff, caster);
 }
