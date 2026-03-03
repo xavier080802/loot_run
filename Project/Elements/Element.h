@@ -61,6 +61,7 @@ namespace Elements {
 	extern std::vector<StatEffects::Mod> bloodSunDetonateDmg;
 	extern AEVec2 bloodSunDetoSize;
 	extern std::string bloodSunIcon;
+	extern Color bloodSunDetoColor;
 
 	//Blood+Moon reaction
 	extern float bloodMoonLifetime;

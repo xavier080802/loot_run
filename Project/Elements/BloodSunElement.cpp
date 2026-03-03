@@ -45,6 +45,7 @@ void BloodSunElement::SubscriptionAlert(ActorDeadSubContent content)
 	cfg.followOwner = cfg.disableOnHit = false;
 	cfg.extraData = owner;
 	cfg.onHit = AoEDmg;
+	cfg.tint = Elements::bloodSunDetoColor;
 	hb->Start(cfg);
 	//Change collision layer from owner-of-SE to caster
 	hb->SetCollisionLayers(caster->GetCollisionLayers());

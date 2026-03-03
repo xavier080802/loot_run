@@ -109,6 +109,7 @@
         ],
         "detonateSize_x": 150,
         "detonateSize_y": 150,
+        "detonationCol": [181,26,26, 155],
         "icon": "Assets/bloodSunEle.png"
     },
     "blood_moon": {

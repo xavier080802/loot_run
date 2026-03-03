@@ -49,6 +49,7 @@ namespace Elements {
 	std::vector<StatEffects::Mod> bloodSunDetonateDmg;
 	AEVec2 bloodSunDetoSize;
 	std::string bloodSunIcon;
+	Color bloodSunDetoColor;
 
 	//Blood+Moon reaction
 	float bloodMoonLifetime;
@@ -149,6 +150,13 @@ namespace Elements {
 		bloodSunDetoSize.x = bloodSun.get("detonateSize_x", 0).asFloat();
 		bloodSunDetoSize.y = bloodSun.get("detonateSize_y", 0).asFloat();
 		bloodSunIcon = bloodSun.get("icon", "").asString();
+		Json::Value _bloodSunTint = bloodSun["detonationCol"];
+		if (_bloodSunTint.isArray() && _bloodSunTint.size() == 4) {
+			bloodSunDetoColor = Color{
+				_bloodSunTint[0].asFloat(), _bloodSunTint[1].asFloat(),
+				_bloodSunTint[2].asFloat(),_bloodSunTint[3].asFloat()
+			};
+		}
 
 		//Parse Blood+Moon
 		Json::Value bloodMoon{ root["blood_moon"] };
