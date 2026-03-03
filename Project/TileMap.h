@@ -15,6 +15,7 @@ public:
 		TILE_DOOR,        // 2: The Exit Door (Room 6)
 		TILE_ENEMY,       // 3: Enemy Spawn Point
 		TILE_CHEST,       // 4: Loot Chest
+		TILE_CONNECTOR,	 //  5: Passege 
 
 		TILE_NUM, // Total: 5
 	};
@@ -37,10 +38,8 @@ public:
 
 	// Tilemap for procedural generated map
 	TileMap(AEVec2 offset = { 0,0 }, float tileX = 25.f, float tileY = 25.f);
-
-	// UPDATED: Now uses a seed for generation
+	// seed for generation
 	void GenerateProcedural(unsigned int r, unsigned int c, int seed);
-
 	AEVec2 GetSpawnPoint() const;
 
 	void Render() const;
@@ -65,11 +64,11 @@ public:
 
 	//Change tile type. Returns the tile
 	Tile const* ChangeTile(unsigned row, unsigned col, TILE_TYPE newType);
-
-	// NEW: Logic for moving map chunks and collision
 	AEVec2 GetOffset() const { return posOffset; }
 	void SetOffset(AEVec2 newOffset) { posOffset = newOffset; }
 	bool IsWall(AEVec2 worldPos) const;
+	bool IsConnector(AEVec2 worldPos) const;
+	AEVec2 GetSecondRowSpawn() const;
 	std::vector<std::vector<Tile>>& GetMutableTileData() { return tiles; } // For GameState modification
 	std::vector<std::vector<Tile>> const& GetTileData() const { return tiles; }
 

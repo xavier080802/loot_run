@@ -154,14 +154,8 @@ void GameState::LoadState() {
     squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
 
     // 1. Create the map first with your preferred tile scale
-    map = new TileMap("Assets/map.csv", { 0,0 }, 115.f, 115.f);
+    map = new TileMap("Assets/Dungeon.csv", { 0,0 }, 115.f, 115.f);
 
-    // Bridge logic: Open the last column of the CSV map to connect to nextMap
-    unsigned csvRows = map->GetMapSize().second;
-    unsigned csvCols = map->GetMapSize().first;
-    map->GetMutableTileData()[csvRows / 2][csvCols - 1] = TileMap::TILE_NONE;
-
-    // 2. Initialize nextMap at the offset of the first map's width
     AEVec2 proceduralOffset = { map->GetFullMapSize().x, 0 };
     nextMap = new TileMap(proceduralOffset, 115.f, 115.f);
     nextMap->GenerateProcedural(50, 50, 1234);
@@ -169,7 +163,6 @@ void GameState::LoadState() {
     // Keep your minimap as it is
     minimap = new Minimap{};
 
-    // 3. Update global map dimensions to encompass BOTH maps
     mapWidth = map->GetFullMapSize().x + nextMap->GetFullMapSize().x;
     mapHeight = map->GetFullMapSize().y;
     halfMapWidth = mapWidth * 0.5f;
@@ -304,18 +297,9 @@ void GameState::Update(double dt)
 #pragma endregion
 
     if (!gPlayer) return;
-
-    if (nextMap && gPlayer->GetPos().x > nextMap->GetFullMapSize().x * 0.5f + nextMap->GetOffset().x - (map->GetFullMapSize().x * 0.5f)) {
-
-        AEVec2 newOffset = { nextMap->GetOffset().x + nextMap->GetFullMapSize().x, 0 };
-        map->SetOffset(newOffset);
-        map->GenerateProcedural(50, 50, rand());
-
-        TileMap* temp = map;
-        map = nextMap;
-        nextMap = temp;
-        mapWidth = map->GetFullMapSize().x + nextMap->GetFullMapSize().x;
-        halfMapWidth = mapWidth * 0.5f;
+    TileMap* currentMap = map;
+    if (nextMap && gPlayer->GetPos().x > nextMap->GetOffset().x - (map->GetFullMapSize().x * 0.5f)) {
+        currentMap = nextMap;
     }
 
     AEVec2 move = gPlayer->GetMoveDirNorm();
@@ -341,6 +325,11 @@ void GameState::Update(double dt)
 
     // Pass the current active map to the GameObjectManager for collision checks
     GameObjectManager::GetInstance()->UpdateObjects(dt, currentMap);
+    if (nextMap && gPlayer->GetPos().x > nextMap->GetFullMapSize().x + nextMap->GetOffset().x - (map->GetFullMapSize().x * 0.5f)) {
+        AEVec2 newOffset = { nextMap->GetOffset().x + nextMap->GetFullMapSize().x, 0 };
+        nextMap->SetOffset(newOffset);
+        nextMap->GenerateProcedural(50, 50, rand());
+    }
 }
 
 void GameState::Draw() {

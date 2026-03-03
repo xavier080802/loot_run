@@ -194,7 +194,6 @@ TileMap::Tile const* TileMap::QueryTile(unsigned rowInd, unsigned colInd) const
 std::pair<TileMap::Tile const*, AEVec2> TileMap::QueryTileAndInd(AEVec2 pos) const
 {
 	AEVec2 inds{ GetTileIndFromPos(pos) };
-	//If Index out of bounds, tile should be nullptr
 	return std::make_pair((inds.x < 0 || inds.x >= cols || inds.y < 0 || inds.y >= rows) ? nullptr : &tiles[(unsigned)inds.y][(unsigned)inds.x], inds);
 }
 
@@ -209,6 +208,27 @@ bool TileMap::IsWall(AEVec2 worldPos) const {
 	AEVec2 inds = GetTileIndFromPos(worldPos);
 	if (inds.x < 0 || inds.x >= cols || inds.y < 0 || inds.y >= rows) return true;
 	return tiles[(unsigned)inds.y][(unsigned)inds.x].type == TILE_WALL;
+}
+
+
+bool TileMap::IsConnector(AEVec2 worldPos) const
+{
+	AEVec2 inds = GetTileIndFromPos(worldPos);
+	if (inds.x < 0 || inds.x >= cols || inds.y < 0 || inds.y >= rows) return false;
+	return tiles[(unsigned)inds.y][(unsigned)inds.x].type == TILE_CONNECTOR;
+}
+
+AEVec2 TileMap::GetSecondRowSpawn() const
+{
+	if (rows < 2) return { 0,0 };
+
+	for (unsigned col = 0; col < cols; ++col)
+	{
+		if (tiles[1][col].type == TILE_NONE)
+			return GetTilePosition(1, col);
+	}
+
+	return GetTilePosition(1, 0);
 }
 
 void TileMap::LoadStatics()
