@@ -288,7 +288,7 @@ void GameState::InitState()
     minimap->Reset();
 
     if (TUTORIAL) {
-        fairy->InitTutorial(gPlayer, &currentLevel, { enemy1, enemy2, boss });
+        fairy->InitTutorial(gPlayer, &currentLevel);
     }
 }
 
@@ -331,9 +331,6 @@ void GameState::Update(double dt)
     if (TUTORIAL && fairy->data.stage == Tutorial::BOSS && !bossAlive) {
         fairy->ChangeStage(Tutorial::END);
     }
-
-    // Determine which map the player is currently inside for accurate collisions
-    TileMap* currentMap = (gPlayer->GetPos().x > nextMap->GetOffset().x) ? nextMap : map;
 
     // Systems now read from gPlayer via GetPlayerPos()
     minimap->Update(dt, *currentMap, *gPlayer);

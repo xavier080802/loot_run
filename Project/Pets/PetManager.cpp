@@ -1,5 +1,6 @@
 #include "PetManager.h"
 #include "PetSkills.h"
+#include "PetInventory.h" 
 #include "../RenderingManager.h"
 #include <iostream>
 #include <fstream>
@@ -22,14 +23,14 @@
 namespace {
 	f32 descFontSize{ 0.35f };
 	f32 timerFontSize{ 0.5f };
-	AEVec2 padding{0.02f, 0.02f};
-	AEVec2 iconPos{-1,-1};
+	AEVec2 padding{ 0.02f, 0.02f };
+	AEVec2 iconPos{ -1,-1 };
 	f32 iconSize{};
 	f32 lineSpace{};
-	Color textCol{0,0,255,255};
+	Color textCol{ 0,0,255,255 };
 	Color tooltipBgCol{ 255,255,255,255 };
-	Color timerTextCol{0,0,0,255};
-	Color onCooldownCol{155,155,155,155};
+	Color timerTextCol{ 0,0,0,255 };
+	Color onCooldownCol{ 155,155,155,155 };
 	TextOriginPos tooltipAlignment{};
 	TextboxOriginPos boxAlignment{};
 	bool showTimerUnit{};
@@ -55,7 +56,7 @@ void PetManager::Init() {
 	//UI
 	LoadUIJSON();
 	skillUI = &(new UIElement{ NormToWorld(iconPos) + iconSize * 0.5f, {iconSize, iconSize}, 1, Collision::COL_RECT })
-		->SetHoverCallback([this](bool) {showTooltip = true;}); //Flag this frame to show tooltip (due to order of calling, showing tooltip here will render below icon)
+		->SetHoverCallback([this](bool) {showTooltip = true; }); //Flag this frame to show tooltip (due to order of calling, showing tooltip here will render below icon)
 }
 
 void PetManager::InitPetForGame()
@@ -126,12 +127,15 @@ bool PetManager::PetHasSkill() const
 	return equippedPet->isSet && equippedPet->GetPetData().PetSkill;
 }
 
+// Updated AddNewPet to use JSON inventory logic
 bool PetManager::AddNewPet(Pets::PetSaveData const& newPet)
 {
-	if (ownedPets.size() >= MAX_PETS) return false;
-	if (CSV::Write(InvFilePath, { std::to_string(newPet.id), std::to_string(newPet.rank) })) {
-		//Write success
-		ownedPets.push_back(newPet);
+	if (ownedPetsMap.size() >= MAX_PETS) return false;
+
+	// We now use IncrementCount which handles the JSON file automatically
+	if (IncrementCount(newPet.id, newPet.rank, 1)) {
+		// Refresh local cache map
+		LoadInventoryCounts(ownedPetsMap);
 		return true;
 	}
 	return false;
@@ -149,7 +153,7 @@ bool PetManager::Handle(Message* message)
 	{
 	case PetSkillMsg::CAST_SKILL:
 		if (equippedPet && equippedPet->IsEnabled()) {
-			equippedPet->CastSkill({player, equippedPet});
+			equippedPet->CastSkill({ player, equippedPet });
 		}
 		break;
 	case PetSkillMsg::SKILL_READY:
@@ -164,11 +168,11 @@ bool PetManager::Handle(Message* message)
 void PetManager::DrawUI()
 {
 	if (!equippedPet) return;
-	
+
 	DrawTintedMesh(GetTransformMtx(skillUI->GetPos(), 0, skillUI->GetSize()),
 		rm->GetMesh(MESH_SQUARE), rm->LoadTexture(equippedPet->GetPetData().texture),
-		equippedPet->IsOnCooldown() ? onCooldownCol : Color{255,255,255,255}, 255);
-	
+		equippedPet->IsOnCooldown() ? onCooldownCol : Color{ 255,255,255,255 }, 255);
+
 	//Write cooldown
 	if (equippedPet->IsOnCooldown()) {
 		DrawAEText(rm->GetFont(), std::to_string((int)equippedPet->GetCDTimer()) + (showTimerUnit ? "s" : ""), skillUI->GetPos(), timerFontSize,
@@ -183,11 +187,11 @@ void PetManager::DrawUI()
 
 void PetManager::ShowPetTooltip()
 {
-	std::string txt{ equippedPet->GetPetData().skillDesc + extraDesc};
+	std::string txt{ equippedPet->GetPetData().skillDesc + extraDesc };
 
 	s32 mx{}, my{};
 	AEInputGetCursorPosition(&mx, &my);
-	AEVec2 mP = ScreenToWorld(AEVec2{(float)mx, (float)my});
+	AEVec2 mP = ScreenToWorld(AEVec2{ (float)mx, (float)my });
 
 	f32 nw{}, nh{};
 	GetAEMultilineTextSize(rm->GetFont(), txt, descFontSize, nw, nh, lineSpace);
@@ -196,7 +200,7 @@ void PetManager::ShowPetTooltip()
 	//Draw text box
 	DrawAETextbox(rm->GetFont(), txt, AEVec2{ (float)mP.x, (float)mP.y },
 		AEGfxGetWinMaxX() * 0.4f, descFontSize, lineSpace, textCol, tooltipAlignment, TextboxOriginPos::BOTTOM,
-		TextboxBgCfg{padding, tooltipBgCol, 255, rm->GetMesh(MESH_SQUARE) });
+		TextboxBgCfg{ padding, tooltipBgCol, 255, rm->GetMesh(MESH_SQUARE) });
 }
 
 //Load UI stuff from JSON
@@ -330,24 +334,11 @@ void PetManager::LoadPetData()
 		pd.PetSkill = PetSkills::skills[pd.id];
 
 		petData[pd.id] = pd;
-
-		// Pet inventory
-		CSV const& inv{ CSV{InvFilePath} };
-		//Each row is a pet entry
-		for (unsigned r{}; r < min(inv.GetRows(), MAX_PETS); ++r) {
-			Pets::PetSaveData d{};
-			//Each col is the variable
-			for (unsigned c{}; c < inv.GetCols(); ++c) {
-				if (0 == c) {
-					d.id = static_cast<Pets::PET_TYPE>(stoi(inv.GetData(r, c)));
-				}
-				else if (1 == c) {
-					d.rank = static_cast<Pets::PET_RANK>(stoi(inv.GetData(r, c)));
-				}
-			}
-			ownedPets.push_back(d);
-		}
 	}
+
+	// Pet inventory
+	// Updated: Loading via JSON instead of manual CSV loop
+	LoadInventoryCounts(ownedPetsMap);
 
 	ifs.close();
 }

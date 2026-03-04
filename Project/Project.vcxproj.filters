@@ -255,6 +255,9 @@
     <ClCompile Include="Actor\Combat.cpp">
       <Filter>Source Files\Actors</Filter>
     </ClCompile>
+    <ClCompile Include="PetInventory.cpp">
+      <Filter>Source Files\Pets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -466,6 +469,9 @@
     </ClInclude>
     <ClInclude Include="Actor\Combat.h">
       <Filter>Header Files\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="PetInventory.h">
+      <Filter>Header Files\Pets</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

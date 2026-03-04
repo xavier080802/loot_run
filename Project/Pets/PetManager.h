@@ -31,14 +31,17 @@ public:
 
 	//Add a new pet to the inventory.
 	//Returns success. If max limit is reached, returns false
-	bool AddNewPet(Pets::PetSaveData const& newPet);
+	bool AddNewPet(Pets::PET_TYPE type, Pets::PET_RANK rank);
 
 	bool Handle(Message* message) override;
 
 	void DrawUI();
 
+	// Get the internal map for the UI loop
+	std::map<int, std::map<int, int>> const& GetInventory() const { return ownedPets; }
+	std::map<Pets::PET_TYPE, Pets::PetData> const& GetPetDataMap() const { return petData; }
+
 private:
-	const std::string InvFilePath{ "Assets/Data/pet_inv.csv" };
 	void LoadPetData();
 	PostOffice* po{};
 	RenderingManager* rm{};
@@ -48,8 +51,8 @@ private:
 	Player* player{};
 	std::string extraDesc{}; //Pet passive/mults/etc
 
-	//Pet inventory
-	std::vector<Pets::PetSaveData> ownedPets{};
+	//Pet inventory (Updated to nested map for JSON compatibility)
+	std::map<int, std::map<int, int>> ownedPets{};
 
 	//UI
 	UIElement* skillUI{};
@@ -58,5 +61,3 @@ private:
 	void LoadUIJSON();
 };
 #endif // !_PET_MANAGER_H_
-
-

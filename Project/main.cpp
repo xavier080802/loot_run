@@ -69,6 +69,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	stateManager->AddGameState("MainMenuState", new MainMenuState);
 	stateManager->AddGameState("GameState", new GameState);
 	stateManager->AddGameState("ShopState", new ShopState);
+	stateManager->AddGameState("PetInventoryState", new PetInventoryState);
 
 	//Enter first game state
 	stateManager->SetNextGameState("MainMenuState", true, true);

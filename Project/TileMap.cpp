@@ -36,23 +36,20 @@ TileMap::TileMap(std::string filename, AEVec2 offset, float tileX, float tileY)
 		tiles.push_back({});
 		tiles[r].reserve(cols);
 
-		//For each column (AKA a value)
 		for (unsigned c{}; c < cols; ++c) {
 			std::string data{ file.GetData(r, c) };
-			if (data == "") { //Empty/invalid
+			if (data == "") { 
 				tiles[r].push_back(tileMap[TILE_NONE]);
 				continue;
 			}
-			//Parse to int. Crashes if value if invalid.
 			int v = std::stoi(data);
-			//If v is invalid, default to NONE
 			tiles[r].push_back(tileMap[(v >= TILE_NUM ? TILE_NONE : static_cast<TILE_TYPE>(v))]); //Add column
 		}
 	}
 }
 
 //Proccedural constructor 
-/*TileMap::TileMap(AEVec2 offset, float tileX, float tileY)
+TileMap::TileMap(AEVec2 offset, float tileX, float tileY)
 	: tileSize{ AEVec2{tileX, tileY} }, posOffset(offset), rows{ 0 }, cols{ 0 }
 {
 	if (!textureMap.size()) {
@@ -60,7 +57,7 @@ TileMap::TileMap(std::string filename, AEVec2 offset, float tileX, float tileY)
 	}
 }
 
-// Logic for proccedural - REPLACED Random Walker with Seed-based Grid
+// Logic for proccedural
 void TileMap::GenerateProcedural(unsigned int r, unsigned int c, int seed)
 {
 	rows = r;
@@ -74,20 +71,15 @@ void TileMap::GenerateProcedural(unsigned int r, unsigned int c, int seed)
 	tiles.clear();
 	tiles.resize(rows, std::vector<Tile>(cols, tileMap[TILE_WALL]));
 
-	// Seed-based generation
-	// Starting from index 1 (second line) to keep the outer perimeter solid
 	for (unsigned int i = 1; i < rows - 1; ++i) {
 		for (unsigned int j = 1; j < cols - 1; ++j) {
 
-			// 40% chance to be floor (TILE_NONE)
 			if ((rand() % 100) < 40) {
 				tiles[i][j] = tileMap[TILE_NONE];
 			}
 		}
 	}
 
-	// FORCE THE ENTRANCE/EXIT CONNECTORS
-	// This opens the middle of the walls so the player can move between chunks
 	int midR = rows / 2;
 	int midC = cols / 2;
 
@@ -109,7 +101,6 @@ void TileMap::GenerateProcedural(unsigned int r, unsigned int c, int seed)
 	for (unsigned int i = 1; i < rows - 1; ++i) {
 		for (unsigned int j = 1; j < cols - 1; ++j) {
 			if (tiles[i][j].type == TILE_NONE) {
-				// Don't spawn objects directly in the main connecting hallways
 				if (i == midR || j == midC) continue;
 
 				int chance = rand() % 100;
@@ -118,7 +109,8 @@ void TileMap::GenerateProcedural(unsigned int r, unsigned int c, int seed)
 			}
 		}
 	}
-}*/
+}
+
 void TileMap::Render() const
 {
 	for (unsigned int r = 0; r < rows; r++) {
@@ -233,7 +225,7 @@ AEVec2 TileMap::GetSecondRowSpawn() const
 void TileMap::LoadStatics()
 {
 	//Load textures 
-	RenderingManager* rm = RenderingManager::GetInstance(); //Use to load texture
+	RenderingManager* rm = RenderingManager::GetInstance(); 
 	pMesh = rm->GetMesh(MESH_SQUARE);
 	//By default, all tiles are obstacles.
 	for (int i{}; i < TILE_NUM; ++i) {

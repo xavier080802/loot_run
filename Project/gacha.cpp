@@ -1,6 +1,7 @@
 #include "Gacha.h"
 #include "AEEngine.h"
 #include "Pets/PetManager.h"
+#include "Pets/PetInventory.h" // Added for JSON Inventory functions
 #include <cstdlib>
 #include <cmath>
 #include <vector>
@@ -22,6 +23,17 @@ struct GachaParticle {
     float floorY;
 };
 static std::vector<GachaParticle> s_particles;
+
+// Helper to map Gacha pool words to actual Pet Enum IDs
+static Pets::PET_TYPE GetPetTypeFromWord(const std::string& word) {
+    if (word == "Rock")   return Pets::PET_1;
+    if (word == "Slime")  return Pets::PET_2;
+    if (word == "Wolf")   return Pets::PET_3;
+    if (word == "Whale")  return Pets::PET_4;
+    if (word == "Garuda") return Pets::PET_5;
+    if (word == "Dragon") return Pets::PET_6;
+    return Pets::PET_TYPE::NONE;
+}
 
 static void SpawnBurst(float x, float y, float r, float g, float b, int count) {
     for (int i = 0; i < count; ++i) {
@@ -128,11 +140,17 @@ void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skip, bool open) {
         s_chestLightTimer = s_chestLightMax;
         SpawnBurst(0, 0, s_highestEntry.r, s_highestEntry.g, s_highestEntry.b, 260);
 
-        //Save rolls to db
+        //Save rolls to db (Updated to JSON)
         for (WordEntry const& e : anim.results) {
-            //TODO: get actual pet id and rarity
-            PetManager::GetInstance()->AddNewPet(Pets::PetSaveData{ Pets::PET_1, Pets::LEGENDARY });
+            Pets::PET_TYPE type = GetPetTypeFromWord(e.word);
+            Pets::PET_RANK rank = static_cast<Pets::PET_RANK>(RarityRank(e.rarity));
+
+            // Increment the count in the JSON file directly
+            IncrementCount(type, rank, 1);
         }
+
+        // Refresh PetManager's internal cache after rolling
+        PetManager::GetInstance()->Init();
     }
 
     if (s_chestOpened && anim.phase == GachaPhase::Rolling) {
