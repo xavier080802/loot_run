@@ -59,8 +59,12 @@ void Player::InitPlayerRuntime(const ActorStats& baseStats)
 
 	RecalculateStats();
 	InitActorRuntime(mStats);
-}
 
+	InputManager::GetInstance()->SubscribeMouse(this, 1)
+		.SubscribeKeyboard(this, 1)
+		.Key(AEVK_Q).Key(AEVK_Z).Key(AEVK_X)
+		.Key(AEVK_G);
+}
 
 void Player::RecalculateStats()
 {
@@ -79,7 +83,7 @@ void Player::Update(double dt)
 	if (attackCooldownTimer > 0.0f)
 		attackCooldownTimer -= fdt;
 
-	HandleAttackInput(dt);
+	//HandleAttackInput(dt);
 	// Track input direction for minimap arrow (Player does the actual movement)
 	HandleMovementInput(dt);
 	Temp_DoVelocityMovement(dt);
@@ -129,20 +133,6 @@ const EquipmentData* Player::GetHeldWeaponData() const
 
 void Player::HandleAttackInput(double)
 {
-	// Weapon selection ps: im tired of writing AEVK_*
-	if (AEInputCheckTriggered('Z')) {
-		heldWeapon = HeldWeapon::Weapon1;
-		Debug::stream << "Held: " << SafeName(GetHeldWeaponData()) << "\n";
-	}
-	if (AEInputCheckTriggered('X')) {
-		heldWeapon = HeldWeapon::Weapon2;
-		Debug::stream << "Held: " << SafeName(GetHeldWeaponData()) << "\n";
-	}
-	if (AEInputCheckTriggered('Q')) {
-		heldWeapon = HeldWeapon::Bow;
-		Debug::stream << "Held: " << SafeName(GetHeldWeaponData()) << "\n";
-	}
-
 	// Weapon swap = Right Mouse (swap weapon1 <-> weapon2)
 	if (AEInputCheckTriggered(AEVK_RBUTTON)) {
 		mInventory.SwapMainWeapon();
@@ -152,100 +142,7 @@ void Player::HandleAttackInput(double)
 
 		Debug::stream << "Swapped. Held: " << SafeName(GetHeldWeaponData()) << "\n";
 	}
-
-	// temp location for dropping held weapon
-	if (AEInputCheckTriggered('G'))
-	{
-		const EquipmentData* held = GetHeldWeaponData();
-		if (!held) return;
-
-		PickupPayload p{};
-		p.type = DropType::Equipment;
-		p.amount = 1;
-		p.equipment = held;
-
-		AEVec2 dropDir = moveDirNorm;
-
-		// fallback if not moving
-		if (dropDir.x == 0.0f && dropDir.y == 0.0f)
-		{
-			AEVec2 m = GetMouseWorldVec();
-			dropDir = { m.x - pos.x, m.y - pos.y };
-
-			if (dropDir.x == 0.0f && dropDir.y == 0.0f)
-				dropDir = { 1.0f, 0.0f };
-			else
-				AEVec2Normalize(&dropDir, &dropDir);
-		}
-		else
-		{
-			AEVec2Normalize(&dropDir, &dropDir);
-		}
-
-
-		float dropDist = 40.0f;
-
-		AEVec2 dropPos = GetPos();
-		dropPos.x += dropDir.x * dropDist;
-		dropPos.y += dropDir.y * dropDist;
-
-		// Spawn generic item drop in the world representing what player dropped
-		PickupGO::Spawn(dropPos, p);
-		Debug::stream << "Dropped: " << SafeName(held) << "\n";
-		Debug::stream << "After unequip held ptr=" << GetHeldWeaponData() << " name=" << SafeName(GetHeldWeaponData()) << "\n";
-
-
-		// Remove the weapon completely from the active loadout slot
-		switch (heldWeapon)
-		{
-		case HeldWeapon::Weapon1:
-			mInventory.UnequipMainWeapon(0);
-			break;
-
-		case HeldWeapon::Weapon2:
-			mInventory.UnequipMainWeapon(1);
-			break;
-
-		case HeldWeapon::Bow:
-			mInventory.UnequipBow();
-			break;
-		}
-
-		RecalculateStats();
-	}
-
-	// Attack = Left Mouse
-	if (!AEInputCheckCurr(AEVK_LBUTTON)) { return; }
-	if (attackCooldownTimer > 0.0f) return;
-	Debug::stream << "LMB triggered. cooldown=" << attackCooldownTimer << "\n";
-	if (attackCooldownTimer > 0.0f) {
-		Debug::stream << "Attack pressed. Held=" << (int)heldWeapon << " weaponPtr=" << GetHeldWeaponData() << "\n";
-	}
-	if (!GetHeldWeaponData()) {
-		Debug::stream << "No weapon equipped in held slot!\n";
-		return;
-	}
-	if (GetHeldWeaponData()->isRanged) {
-		Debug::stream << "Remaining ammo: " << mInventory.GetAmmo() - 1 << "\n";
-	}
-
-	// Ammo gate for bow/projectile weapons
-	if (GetHeldWeaponData()->isRanged) {
-		if (!mInventory.ConsumeAmmo(1)) {
-			attackCooldownTimer = 0.0f;
-			Debug::stream << "No ammo to fire!\n";
-			return;
-		}
-	}
-
-	// Convert attackSpeed into seconds-per-attack cooldown
-	float atkSpd = mStats.attackSpeed;
-	if (atkSpd <= 0.01f) atkSpd = 0.01f;
-	attackCooldownTimer = 1.0f / atkSpd;
-
-	Combat::ExecuteAttack(this, GetHeldWeaponData(), GetMouseWorldVec());
 }
-
 
 void Player::TryPickup(const PickupPayload& payload)
 {
@@ -287,6 +184,135 @@ void Player::TryPickup(const PickupPayload& payload)
 AEVec2 Player::GetMoveDirNorm() const
 {
 	return moveDirNorm;
+}
+
+void Player::SubscriptionAlert(Input::InputKeyData content)
+{
+	switch (content.key)
+	{
+	case AEVK_LBUTTON: // Attack
+		if (content.type == Input::INPUT_TYPE::CURR) {
+			if (attackCooldownTimer > 0.0f) return;
+			Debug::stream << "LMB triggered. cooldown=" << attackCooldownTimer << "\n";
+			if (attackCooldownTimer > 0.0f) {
+				Debug::stream << "Attack pressed. Held=" << (int)heldWeapon << " weaponPtr=" << GetHeldWeaponData() << "\n";
+			}
+			if (!GetHeldWeaponData()) {
+				Debug::stream << "No weapon equipped in held slot!\n";
+				return;
+			}
+			if (GetHeldWeaponData()->isRanged) {
+				Debug::stream << "Remaining ammo: " << mInventory.GetAmmo() - 1 << "\n";
+			}
+
+			// Ammo gate for bow/projectile weapons
+			if (GetHeldWeaponData()->isRanged) {
+				if (!mInventory.ConsumeAmmo(1)) {
+					attackCooldownTimer = 0.0f;
+					Debug::stream << "No ammo to fire!\n";
+					return;
+				}
+			}
+
+			// Convert attackSpeed into seconds-per-attack cooldown
+			float atkSpd = mStats.attackSpeed;
+			if (atkSpd <= 0.01f) atkSpd = 0.01f;
+			attackCooldownTimer = 1.0f / atkSpd;
+
+			Combat::ExecuteAttack(this, GetHeldWeaponData(), GetMouseWorldVec());
+		}
+		break;
+	case AEVK_RBUTTON: // Weapon swap = Right Mouse (swap weapon1 <-> weapon2)
+		if (content.type == Input::INPUT_TYPE::TRIGGERED) {
+			mInventory.SwapMainWeapon();
+
+			if (heldWeapon == HeldWeapon::Weapon1) heldWeapon = HeldWeapon::Weapon2;
+			else if (heldWeapon == HeldWeapon::Weapon2) heldWeapon = HeldWeapon::Weapon1;
+
+			Debug::stream << "Swapped. Held: " << SafeName(GetHeldWeaponData()) << "\n";
+		}
+		break;
+	case AEVK_G: // Drop
+		if (content.type == Input::INPUT_TYPE::TRIGGERED) {
+			const EquipmentData* held = GetHeldWeaponData();
+			if (!held) return;
+
+			PickupPayload p{};
+			p.type = DropType::Equipment;
+			p.amount = 1;
+			p.equipment = held;
+
+			AEVec2 dropDir = moveDirNorm;
+
+			// fallback if not moving
+			if (dropDir.x == 0.0f && dropDir.y == 0.0f)
+			{
+				AEVec2 m = GetMouseWorldVec();
+				dropDir = { m.x - pos.x, m.y - pos.y };
+
+				if (dropDir.x == 0.0f && dropDir.y == 0.0f)
+					dropDir = { 1.0f, 0.0f };
+				else
+					AEVec2Normalize(&dropDir, &dropDir);
+			}
+			else
+			{
+				AEVec2Normalize(&dropDir, &dropDir);
+			}
+
+
+			float dropDist = 40.0f;
+
+			AEVec2 dropPos = GetPos();
+			dropPos.x += dropDir.x * dropDist;
+			dropPos.y += dropDir.y * dropDist;
+
+			// Spawn generic item drop in the world representing what player dropped
+			PickupGO::Spawn(dropPos, p);
+			Debug::stream << "Dropped: " << SafeName(held) << "\n";
+			Debug::stream << "After unequip held ptr=" << GetHeldWeaponData() << " name=" << SafeName(GetHeldWeaponData()) << "\n";
+
+
+			// Remove the weapon completely from the active loadout slot
+			switch (heldWeapon)
+			{
+			case HeldWeapon::Weapon1:
+				mInventory.UnequipMainWeapon(0);
+				break;
+
+			case HeldWeapon::Weapon2:
+				mInventory.UnequipMainWeapon(1);
+				break;
+
+			case HeldWeapon::Bow:
+				mInventory.UnequipBow();
+				break;
+			}
+
+			RecalculateStats();
+		}
+		break;
+	case AEVK_Q:
+		if (content.type == Input::INPUT_TYPE::CURR) {
+			heldWeapon = HeldWeapon::Bow;
+			Debug::stream << "Held: " << SafeName(GetHeldWeaponData()) << "\n";
+		}
+		break;
+	case AEVK_Z:
+		if (content.type == Input::INPUT_TYPE::CURR) {
+			heldWeapon = HeldWeapon::Weapon1;
+			Debug::stream << "Held: " << SafeName(GetHeldWeaponData()) << "\n";
+		}
+		break;
+	case AEVK_X:
+		if (content.type == Input::INPUT_TYPE::CURR) {
+			heldWeapon = HeldWeapon::Weapon2;
+			Debug::stream << "Held: " << SafeName(GetHeldWeaponData()) << "\n";
+		}
+		break;
+	default:
+		break;
+	}
 }
 
 void Player::OnCollide(CollisionData& other)

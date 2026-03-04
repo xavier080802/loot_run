@@ -6,8 +6,9 @@
 #include "../Drops/PickupGO.h"
 #include "../Helpers/BitmaskUtils.h"
 #include "../Inventory/EquipmentTypes.h"
+#include "../InputManager.h"
 
-class Player : public Actor
+class Player : public Actor, Input::InputSub
 {
 public:
     // This performs GameObject::Init + runtime init
@@ -39,6 +40,8 @@ public:
 
     GO_TYPE GetGOType()const override { return GO_TYPE::PLAYER; }
     const ActorStats& GetBaseStats() const override { return mBaseStats; }
+
+    void SubscriptionAlert(Input::InputKeyData content) override;
 
     ~Player() {};
 
