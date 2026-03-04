@@ -23,6 +23,7 @@
 #include "../GameDB.h"
 #include "../TileMap.h"
 #include "../UI/Minimap.h"
+#include "../Drops/DropSystem.h"
 #define TUTORIAL 0
 
 namespace {
@@ -345,6 +346,7 @@ void GameState::Update(double dt)
         nextMap->SetOffset(newOffset);
         nextMap->GenerateProcedural(50, 50, rand());
     }
+    DropSystem::PrintPickupDisplay(static_cast<float>(dt));
 }
 
 void GameState::Draw() {

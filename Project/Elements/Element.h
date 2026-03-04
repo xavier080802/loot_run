@@ -35,6 +35,7 @@ namespace Elements {
 	//Blood
 	extern std::string bloodName;
 	extern std::vector<StatEffects::Mod> bloodDmgMods;
+	extern std::string bloodIcon;
 
 	//Sun
 	extern std::string sunName;
@@ -43,6 +44,7 @@ namespace Elements {
 	extern float sunBuffDur;
 	extern unsigned sunLowRange, sunHighRange;
 	extern std::vector<StatEffects::Mod> sunBuffMods;
+	extern std::string sunIcon;
 
 	//Moon
 	extern std::string moonName;
@@ -51,12 +53,15 @@ namespace Elements {
 	extern std::vector<StatEffects::Mod> moonKillHealMods;
 	extern float moonMeleeHealMult;
 	extern std::vector<StatEffects::Mod> moonDebuffMods;
+	extern std::string moonIcon;
 
 	//Blood+Sun reaction
 	extern std::string bloodSunName;
 	extern std::vector<StatEffects::Mod> bloodSunDotDmg;
 	extern std::vector<StatEffects::Mod> bloodSunDetonateDmg;
 	extern AEVec2 bloodSunDetoSize;
+	extern std::string bloodSunIcon;
+	extern Color bloodSunDetoColor;
 
 	//Blood+Moon reaction
 	extern float bloodMoonLifetime;

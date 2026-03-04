@@ -6,7 +6,7 @@
 class BloodSunElement : public BloodElement, ActorDeadSub
 {
 public:
-	BloodSunElement(std::string _name) : BloodElement{_name, StatEffects::DEBUFF} {};
+	BloodSunElement(std::string _name) : BloodElement{_name, StatEffects::DEBUFF, Elements::bloodSunIcon} {};
 	//Remove subs from owner (if OnApply is called, owner should be non-null)
 	~BloodSunElement();
 

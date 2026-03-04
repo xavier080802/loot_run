@@ -13,5 +13,13 @@
         "showTimerUnit": true,
         "textAlignment": "TEXT_LOWER_LEFT", //X alignment affects the box
         "boxAlignment": "BOTTOM" //What part of the box is at the cursor
+    },
+    "pickupDisplay": {
+        "duration": 3,
+        "fontSize": 0.3,
+        "col": [ 0, 200, 60, 255 ],
+        "pos": [ 0.975, -0.975 ], //Normalized [-1,1]
+        "textAlignment": "TEXT_LOWER_RIGHT",
+        "max": 5 //Max to display
     }
 }
