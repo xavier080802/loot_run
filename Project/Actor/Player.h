@@ -20,7 +20,6 @@ public:
 
     void Update(double dt) override;
     void HandleMovementInput(double dt);
-    void HandleAttackInput(double dt);
     void OnCollide(CollisionData& other) override;
 
     void Draw() override;

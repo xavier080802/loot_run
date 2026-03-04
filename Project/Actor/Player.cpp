@@ -83,7 +83,6 @@ void Player::Update(double dt)
 	if (attackCooldownTimer > 0.0f)
 		attackCooldownTimer -= fdt;
 
-	//HandleAttackInput(dt);
 	// Track input direction for minimap arrow (Player does the actual movement)
 	HandleMovementInput(dt);
 	Temp_DoVelocityMovement(dt);
@@ -128,19 +127,6 @@ const EquipmentData* Player::GetHeldWeaponData() const
 	case HeldWeapon::Weapon2: return mInventory.GetMainWeapon(1);
 	case HeldWeapon::Bow:     return mInventory.GetBow();
 	default: return nullptr;
-	}
-}
-
-void Player::HandleAttackInput(double)
-{
-	// Weapon swap = Right Mouse (swap weapon1 <-> weapon2)
-	if (AEInputCheckTriggered(AEVK_RBUTTON)) {
-		mInventory.SwapMainWeapon();
-
-		if (heldWeapon == HeldWeapon::Weapon1) heldWeapon = HeldWeapon::Weapon2;
-		else if (heldWeapon == HeldWeapon::Weapon2) heldWeapon = HeldWeapon::Weapon1;
-
-		Debug::stream << "Swapped. Held: " << SafeName(GetHeldWeaponData()) << "\n";
 	}
 }
 
