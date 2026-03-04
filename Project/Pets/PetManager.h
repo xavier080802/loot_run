@@ -4,6 +4,7 @@
 #include "../DesignPatterns/PostOffice.h"
 #include "PetConsts.h"
 #include "Pet.h"
+#include "PetInventory.h" 
 #include "../Actor/Player.h"
 
 class RenderingManager;
@@ -31,11 +32,12 @@ public:
 
 	//Add a new pet to the inventory.
 	//Returns success. If max limit is reached, returns false
-	bool AddNewPet(Pets::PET_TYPE type, Pets::PET_RANK rank);
+	bool AddNewPet(Pets::PetSaveData const& newPet);
 
 	bool Handle(Message* message) override;
 
 	void DrawUI();
+	void SaveInventoryToJSON();
 
 	// Get the internal map for the UI loop
 	std::map<int, std::map<int, int>> const& GetInventory() const { return ownedPets; }
@@ -51,7 +53,7 @@ private:
 	Player* player{};
 	std::string extraDesc{}; //Pet passive/mults/etc
 
-	//Pet inventory (Updated to nested map for JSON compatibility)
+	//Pet inventory 
 	std::map<int, std::map<int, int>> ownedPets{};
 
 	//UI
@@ -59,5 +61,6 @@ private:
 	bool showTooltip{ false };
 	void ShowPetTooltip();
 	void LoadUIJSON();
+	void LoadInventoryCounts(std::map<int, std::map<int, int>>& outMap);
 };
 #endif // !_PET_MANAGER_H_

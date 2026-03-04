@@ -1,7 +1,7 @@
 #include "Gacha.h"
 #include "AEEngine.h"
 #include "Pets/PetManager.h"
-#include "Pets/PetInventory.h" // Added for JSON Inventory functions
+#include "Pets/PetInventory.h" 
 #include <cstdlib>
 #include <cmath>
 #include <vector>
@@ -47,10 +47,10 @@ static void SpawnBurst(float x, float y, float r, float g, float b, int count) {
 }
 
 static std::vector<WordEntry> gachaPool = {
-    {"Rock",      "Common",     63,        1.0f, 1.0f, 1.0f},
-    {"Slime",    "Uncommon",   20,        0.0f, 1.0f, 0.0f},
-    {"Wolf",     "Rare",       10,        0.0f, 0.5f, 1.0f},
-    {"Whale",    "Epic",        5,        0.6f, 0.1f, 0.9f},
+    {"Rock",      "Common",      63,         1.0f, 1.0f, 1.0f},
+    {"Slime",    "Uncommon",   20,         0.0f, 1.0f, 0.0f},
+    {"Wolf",     "Rare",       10,         0.0f, 0.5f, 1.0f},
+    {"Whale",    "Epic",        5,         0.6f, 0.1f, 0.9f},
     {"Garuda",     "Legendary",   1.999999f,1.0f, 0.5f, 0.0f},
     {"Dragon",  "Mythical",    0.000001f,1.0f, 0.84f,0.0f}
 };
@@ -140,17 +140,14 @@ void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skip, bool open) {
         s_chestLightTimer = s_chestLightMax;
         SpawnBurst(0, 0, s_highestEntry.r, s_highestEntry.g, s_highestEntry.b, 260);
 
-        //Save rolls to db (Updated to JSON)
+        // 1. Add the results to the PetManager's memory
         for (WordEntry const& e : anim.results) {
             Pets::PET_TYPE type = GetPetTypeFromWord(e.word);
             Pets::PET_RANK rank = static_cast<Pets::PET_RANK>(RarityRank(e.rarity));
-
-            // Increment the count in the JSON file directly
-            IncrementCount(type, rank, 1);
+            PetManager::GetInstance()->AddNewPet(Pets::PetSaveData{ type, rank });
         }
 
-        // Refresh PetManager's internal cache after rolling
-        PetManager::GetInstance()->Init();
+        PetManager::GetInstance()->SaveInventoryToJSON();
     }
 
     if (s_chestOpened && anim.phase == GachaPhase::Rolling) {
@@ -241,7 +238,7 @@ void DrawGachaOverlay(GachaAnimation& anim, s8 fontId) {
         float glow = 0.25f + 0.15f * sinf(s_idleGlowTimer * 2.0f);
         DrawSolidRect(I, 0.0f, -110.0f + s_chestBounceOffset, 400.0f, 300.0f, 1.0f, 1.0f, 0.0f, s_chestOpened ? 1.0f : glow);
         if (!s_chestOpened) {
-            AEGfxPrint(fontId, "[O]: Open Chest          [ESC]: Quit", -0.20f, -0.75f, 0.85f, 1, 1, 1, 1);
+            AEGfxPrint(fontId, "[O]: Open Chest           [ESC]: Quit", -0.20f, -0.75f, 0.85f, 1, 1, 1, 1);
         }
     }
 }

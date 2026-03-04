@@ -169,28 +169,28 @@ void GameState::LoadState() {
     circleMesh = RenderingManager::GetInstance()->GetMesh(MESH_CIRCLE);
     squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
 
-    // 1. Create the map first with your preferred tile scale
+    // 1. Keep your map creation as is
     map = new TileMap("Assets/Dungeon.csv", { 0,0 }, 115.f, 115.f);
 
+    // 2. Adjust procedural map offset so it starts exactly where the CSV map ends
     AEVec2 proceduralOffset = { map->GetFullMapSize().x, 0 };
     nextMap = new TileMap(proceduralOffset, 115.f, 115.f);
     nextMap->GenerateProcedural(50, 50, 1234);
 
-    // Keep your minimap as it is
+    // 3. FIX PLAYER SPAWN: Start in the CSV map instead of at {0,0}
+    // This pulls the player position from the actual tile data in the CSV
+    playerPos = map->GetSpawnPoint();
+
+    // 4. FIX CAMERA: Center the camera on the player immediately
+    camPos = playerPos;
+
     minimap = new Minimap{};
 
+    // 5. GRID SIZE: Ensure the collision grid is large enough for both maps
     mapWidth = map->GetFullMapSize().x + nextMap->GetFullMapSize().x;
-    mapHeight = map->GetFullMapSize().y;
-    halfMapWidth = mapWidth * 0.5f;
-    halfMapHeight = mapHeight * 0.5f;
+    mapHeight = (map->GetFullMapSize().y > nextMap->GetFullMapSize().y) ?
+        map->GetFullMapSize().y : nextMap->GetFullMapSize().y;
 
-    AEVec2Zero(&playerPos);
-    playerDir = { 1.0f, 0.0f };
-
-    AEVec2Zero(&camPos);
-    AEVec2Zero(&camVel);
-
-    // 4. Update the collision grid with the CORRECT combined dimensions
     GameObjectManager::GetInstance()->InitCollisionGrid(
         static_cast<unsigned>(mapWidth),
         static_cast<unsigned>(mapHeight)

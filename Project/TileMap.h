@@ -17,7 +17,7 @@ public:
 		TILE_CHEST,       // 4: Loot Chest
 		TILE_CONNECTOR,	 //  5: Passege 
 
-		TILE_NUM, // Total: 5
+		TILE_NUM, // Total: 6
 	};
 
 	//A tile on the map

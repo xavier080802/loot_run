@@ -38,7 +38,7 @@ TileMap::TileMap(std::string filename, AEVec2 offset, float tileX, float tileY)
 
 		for (unsigned c{}; c < cols; ++c) {
 			std::string data{ file.GetData(r, c) };
-			if (data == "") { 
+			if (data == "") {
 				tiles[r].push_back(tileMap[TILE_NONE]);
 				continue;
 			}
@@ -83,19 +83,19 @@ void TileMap::GenerateProcedural(unsigned int r, unsigned int c, int seed)
 	int midR = rows / 2;
 	int midC = cols / 2;
 
-	// LEFT ENTRANCE (Column 0 and Column 1/Second Line)
-	tiles[midR][0] = tileMap[TILE_NONE];
-	tiles[midR][1] = tileMap[TILE_NONE];
+	// LEFT ENTRANCE (Use Connector instead of None)
+	tiles[midR][0] = tileMap[TILE_CONNECTOR]; // Changed from TILE_NONE
+	tiles[midR][1] = tileMap[TILE_CONNECTOR]; // Changed from TILE_NONE
 
-	// RIGHT EXIT (Column cols-1 and Column cols-2)
-	tiles[midR][cols - 1] = tileMap[TILE_NONE];
-	tiles[midR][cols - 2] = tileMap[TILE_NONE];
+	// RIGHT EXIT
+	tiles[midR][cols - 1] = tileMap[TILE_CONNECTOR]; // Changed from TILE_NONE
+	tiles[midR][cols - 2] = tileMap[TILE_CONNECTOR]; // Changed from TILE_NONE
 
-	// TOP/BOTTOM CONNECTORS (Middle Columns)
-	tiles[0][midC] = tileMap[TILE_NONE];
-	tiles[1][midC] = tileMap[TILE_NONE];
-	tiles[rows - 1][midC] = tileMap[TILE_NONE];
-	tiles[rows - 2][midC] = tileMap[TILE_NONE];
+	// TOP/BOTTOM CONNECTORS
+	tiles[0][midC] = tileMap[TILE_CONNECTOR]; // Changed from TILE_NONE
+	tiles[1][midC] = tileMap[TILE_CONNECTOR]; // Changed from TILE_NONE
+	tiles[rows - 1][midC] = tileMap[TILE_CONNECTOR]; // Changed from TILE_NONE
+	tiles[rows - 2][midC] = tileMap[TILE_CONNECTOR]; // Changed from TILE_NONE
 
 	// Decoration Pass
 	for (unsigned int i = 1; i < rows - 1; ++i) {
@@ -222,10 +222,23 @@ AEVec2 TileMap::GetSecondRowSpawn() const
 	return GetTilePosition(1, 0);
 }
 
+// Added implementation to fix LNK2019 unresolved external symbol error
+AEVec2 TileMap::GetSpawnPoint() const
+{
+	for (unsigned int r = 0; r < rows; ++r) {
+		for (unsigned int c = 0; c < cols; ++c) {
+			if (tiles[r][c].type == TILE_NONE || tiles[r][c].type == TILE_CONNECTOR) {
+				return GetTilePosition(r, c);
+			}
+		}
+	}
+	return posOffset;
+}
+
 void TileMap::LoadStatics()
 {
 	//Load textures 
-	RenderingManager* rm = RenderingManager::GetInstance(); 
+	RenderingManager* rm = RenderingManager::GetInstance();
 	pMesh = rm->GetMesh(MESH_SQUARE);
 	//By default, all tiles are obstacles.
 	for (int i{}; i < TILE_NUM; ++i) {
@@ -241,9 +254,13 @@ void TileMap::LoadStatics()
 	tileMap[TILE_CHEST].layer = Collision::NONE;
 	tileMap[TILE_CHEST].isSolid = false;
 
+	tileMap[TILE_CONNECTOR].layer = Collision::NONE;
+	tileMap[TILE_CONNECTOR].isSolid = false;
+
 	textureMap.insert(TileTex(TILE_NONE, nullptr));
 	textureMap.insert(TileTex(TILE_WALL, rm->LoadTexture("Assets/finn.png")));
 	textureMap.insert(TileTex(TILE_DOOR, rm->LoadTexture("Assets/tiny.png")));
 	textureMap.insert(TileTex(TILE_ENEMY, rm->LoadTexture("Assets/enemyplaceholder.png")));
 	textureMap.insert(TileTex(TILE_CHEST, rm->LoadTexture("Assets/chestplaceholder.png")));
+	textureMap.insert(TileTex(TILE_CONNECTOR, rm->LoadTexture("Assets/connector.png")));
 }
