@@ -207,7 +207,7 @@ void GameState::LoadState() {
     squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
 
     // 1. Create the map first with your preferred tile scale
-    map = new TileMap("Assets/Openworld.csv", { 0,0 }, 115.f, 115.f);
+    map = new TileMap("Assets/Dungeon.csv", { 0,0 }, 115.f, 115.f);
     // Parameters: (Rows, Cols, Total Floor Tiles)
    // map->GenerateProcedural(50, 50, 600);
     //playerPos = map->GetSpawnPoint();
