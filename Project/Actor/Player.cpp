@@ -215,7 +215,7 @@ void Player::HandleAttackInput(double)
 	}
 
 	// Attack = Left Mouse
-	if (!AEInputCheckTriggered(AEVK_LBUTTON)) { return; }
+	if (!AEInputCheckCurr(AEVK_LBUTTON)) { return; }
 	if (attackCooldownTimer > 0.0f) return;
 	Debug::stream << "LMB triggered. cooldown=" << attackCooldownTimer << "\n";
 	if (attackCooldownTimer > 0.0f) {
