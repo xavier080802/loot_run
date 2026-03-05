@@ -64,44 +64,57 @@ void TileMap::GenerateProcedural(unsigned int r, unsigned int c, int seed)
 	cols = c;
 	mapSize = { cols * tileSize.x, rows * tileSize.y };
 
-	// Initialize random with the seed
 	srand(seed);
 
-	// Fill with walls initially (The solid '1's in your image)
 	tiles.clear();
 	tiles.resize(rows, std::vector<Tile>(cols, tileMap[TILE_WALL]));
 
 	for (unsigned int i = 1; i < rows - 1; ++i) {
 		for (unsigned int j = 1; j < cols - 1; ++j) {
-
-			if ((rand() % 100) < 40) {
+			if ((rand() % 100) < 45) {
 				tiles[i][j] = tileMap[TILE_NONE];
 			}
 		}
 	}
 
+	// Guarantee a clear 5x5 open area at the center so player never spawns in a wall
 	int midR = rows / 2;
 	int midC = cols / 2;
+	for (int dr = -2; dr <= 2; ++dr) {
+		for (int dc = -2; dc <= 2; ++dc) {
+			int rr = midR + dr;
+			int cc = midC + dc;
+			if (rr > 0 && rr < (int)rows - 1 && cc > 0 && cc < (int)cols - 1)
+				tiles[rr][cc] = tileMap[TILE_NONE];
+		}
+	}
 
-	// LEFT ENTRANCE (Use Connector instead of None)
-	tiles[midR][0] = tileMap[TILE_CONNECTOR]; // Changed from TILE_NONE
-	tiles[midR][1] = tileMap[TILE_CONNECTOR]; // Changed from TILE_NONE
+	// LEFT ENTRANCE
+	tiles[midR][0] = tileMap[TILE_CONNECTOR];
+	tiles[midR][1] = tileMap[TILE_CONNECTOR];
+	tiles[midR][2] = tileMap[TILE_NONE];
 
 	// RIGHT EXIT
-	tiles[midR][cols - 1] = tileMap[TILE_CONNECTOR]; // Changed from TILE_NONE
-	tiles[midR][cols - 2] = tileMap[TILE_CONNECTOR]; // Changed from TILE_NONE
+	tiles[midR][cols - 1] = tileMap[TILE_CONNECTOR];
+	tiles[midR][cols - 2] = tileMap[TILE_CONNECTOR];
+	tiles[midR][cols - 3] = tileMap[TILE_NONE];
 
-	// TOP/BOTTOM CONNECTORS
-	tiles[0][midC] = tileMap[TILE_CONNECTOR]; // Changed from TILE_NONE
-	tiles[1][midC] = tileMap[TILE_CONNECTOR]; // Changed from TILE_NONE
-	tiles[rows - 1][midC] = tileMap[TILE_CONNECTOR]; // Changed from TILE_NONE
-	tiles[rows - 2][midC] = tileMap[TILE_CONNECTOR]; // Changed from TILE_NONE
+	// TOP CONNECTOR
+	tiles[0][midC] = tileMap[TILE_CONNECTOR];
+	tiles[1][midC] = tileMap[TILE_CONNECTOR];
+	tiles[2][midC] = tileMap[TILE_NONE];
+
+	// BOTTOM CONNECTOR
+	tiles[rows - 1][midC] = tileMap[TILE_CONNECTOR];
+	tiles[rows - 2][midC] = tileMap[TILE_CONNECTOR];
+	tiles[rows - 3][midC] = tileMap[TILE_NONE];
 
 	// Decoration Pass
 	for (unsigned int i = 1; i < rows - 1; ++i) {
 		for (unsigned int j = 1; j < cols - 1; ++j) {
 			if (tiles[i][j].type == TILE_NONE) {
-				if (i == midR || j == midC) continue;
+				int dr = (int)i - midR, dc = (int)j - midC;
+				if (dr >= -2 && dr <= 2 && dc >= -2 && dc <= 2) continue;
 
 				int chance = rand() % 100;
 				if (chance < 2) tiles[i][j] = tileMap[TILE_ENEMY];
@@ -225,10 +238,25 @@ AEVec2 TileMap::GetSecondRowSpawn() const
 // Added implementation to fix LNK2019 unresolved external symbol error
 AEVec2 TileMap::GetSpawnPoint() const
 {
-	for (unsigned int r = 0; r < rows; ++r) {
-		for (unsigned int c = 0; c < cols; ++c) {
-			if (tiles[r][c].type == TILE_NONE || tiles[r][c].type == TILE_CONNECTOR) {
-				return GetTilePosition(r, c);
+	int midR = (int)rows / 2;
+	int midC = (int)cols / 2;
+
+	// Spiral outward from center to find a TILE_NONE with at least one open neighbor
+	for (int radius = 0; radius < (int)rows; ++radius) {
+		for (int dr = -radius; dr <= radius; ++dr) {
+			for (int dc = -radius; dc <= radius; ++dc) {
+				if (abs(dr) != radius && abs(dc) != radius) continue;
+				int r = midR + dr;
+				int c = midC + dc;
+				if (r < 1 || r >= (int)rows - 1 || c < 1 || c >= (int)cols - 1) continue;
+				if (tiles[r][c].type != TILE_NONE) continue;
+				// Check it has open space around it
+				int openNeighbors = 0;
+				if (tiles[r - 1][c].type == TILE_NONE) ++openNeighbors;
+				if (tiles[r + 1][c].type == TILE_NONE) ++openNeighbors;
+				if (tiles[r][c - 1].type == TILE_NONE) ++openNeighbors;
+				if (tiles[r][c + 1].type == TILE_NONE) ++openNeighbors;
+				if (openNeighbors >= 2) return GetTilePosition((unsigned)r, (unsigned)c);
 			}
 		}
 	}
