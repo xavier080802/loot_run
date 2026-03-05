@@ -48,7 +48,8 @@ namespace {
     // --- BOSS PLACEHOLDER ---
     bool bossAlive = true;
     float bossRadius = 60.0f;
-    Enemy* boss, * enemy1, * enemy2;
+    Enemy* boss;
+    std::vector<Enemy*> csvEnemies;
 
     // --- CAMERA DATA ---
     AEVec2 camPos, camVel;
@@ -212,8 +213,6 @@ void GameState::LoadState() {
     PetManager::GetInstance()->LinkPlayer(gPlayer);
 
     boss = new Enemy();
-    enemy1 = new Enemy();
-    enemy2 = new Enemy();
 
     if (TUTORIAL) {
         fairy = new Tutorial::TutorialFairy();
@@ -255,8 +254,6 @@ void GameState::InitState()
         }
     }
 
-    AEVec2 enemy1Pos = enemyTilePositions.size() > 0 ? enemyTilePositions[0] : currentLevel.enemy1Pos;
-    AEVec2 enemy2Pos = enemyTilePositions.size() > 1 ? enemyTilePositions[1] : currentLevel.enemy2Pos;
     AEVec2 bossPos = enemyTilePositions.size() > 2 ? enemyTilePositions[2] : currentLevel.doorPos;
     Bitmask collideMask = CreateBitmask(3,
         Collision::LAYER::ENEMIES,
@@ -312,14 +309,24 @@ void GameState::InitState()
                 CreateBitmask(2, Collision::PLAYER, Collision::OBSTACLE),
                 Collision::ENEMIES
             );
+            enemy->InitEnemyRuntime(def);
 
+            // Set texture after InitEnemyRuntime so it doesn't get overwritten
+            enemy->GetRenderData().AddTexture("Assets/enemyplaceholder.png");
+            enemy->GetRenderData().SetActiveTexture(0);
             enemy->GetRenderData().tint = CreateColor(255, 255, 255, 255);
             enemy->GetRenderData().alpha = 255;
-            enemy->InitEnemyRuntime(def);
         };
 
-    SpawnEnemyFromDef(enemy1, slimeDef, enemy1Pos);
-    SpawnEnemyFromDef(enemy2, slimeDef, enemy2Pos);
+    // Spawn one enemy per TILE_ENEMY found in CSV
+    csvEnemies.clear();
+    for (size_t i = 0; i < enemyTilePositions.size(); ++i) {
+        Enemy* e = new Enemy();
+        SpawnEnemyFromDef(e, slimeDef, enemyTilePositions[i]);
+        csvEnemies.push_back(e);
+    }
+
+    // Spawn boss at first enemy tile if available, else fallback
     SpawnEnemyFromDef(boss, bossDef, bossPos);
 
     camPos = safeSpawnPos;

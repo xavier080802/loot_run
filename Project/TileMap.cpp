@@ -69,57 +69,76 @@ void TileMap::GenerateProcedural(unsigned int r, unsigned int c, int seed)
 	tiles.clear();
 	tiles.resize(rows, std::vector<Tile>(cols, tileMap[TILE_WALL]));
 
+	// Step 1: Random fill (55% open)
 	for (unsigned int i = 1; i < rows - 1; ++i) {
 		for (unsigned int j = 1; j < cols - 1; ++j) {
-			if ((rand() % 100) < 45) {
-				tiles[i][j] = tileMap[TILE_NONE];
-			}
+			tiles[i][j] = (rand() % 100 < 55) ? tileMap[TILE_NONE] : tileMap[TILE_WALL];
 		}
 	}
 
-	// Guarantee a clear 5x5 open area at the center so player never spawns in a wall
+	// Step 2: Cellular automata smoothing (3 passes)
+	for (int pass = 0; pass < 3; ++pass) {
+		std::vector<std::vector<Tile>> next = tiles;
+		for (unsigned int i = 1; i < rows - 1; ++i) {
+			for (unsigned int j = 1; j < cols - 1; ++j) {
+				int wallCount = 0;
+				for (int di = -1; di <= 1; ++di)
+					for (int dj = -1; dj <= 1; ++dj)
+						if (tiles[i + di][j + dj].type == TILE_WALL) ++wallCount;
+				next[i][j] = (wallCount >= 5) ? tileMap[TILE_WALL] : tileMap[TILE_NONE];
+			}
+		}
+		tiles = next;
+	}
+
 	int midR = rows / 2;
 	int midC = cols / 2;
-	for (int dr = -2; dr <= 2; ++dr) {
+
+	// Step 3: Guarantee 5x5 open center so player always spawns safely
+	for (int dr = -2; dr <= 2; ++dr)
 		for (int dc = -2; dc <= 2; ++dc) {
-			int rr = midR + dr;
-			int cc = midC + dc;
+			int rr = midR + dr, cc = midC + dc;
 			if (rr > 0 && rr < (int)rows - 1 && cc > 0 && cc < (int)cols - 1)
 				tiles[rr][cc] = tileMap[TILE_NONE];
 		}
-	}
 
-	// LEFT ENTRANCE
+	// Step 4: Carve corridors from center to each edge connector so map is always reachable
+	// Horizontal corridor through middle row
+	for (unsigned int j = 1; j < cols - 1; ++j)
+		if (tiles[midR][j].type == TILE_WALL)
+			tiles[midR][j] = tileMap[TILE_NONE];
+	// Vertical corridor through middle col
+	for (unsigned int i = 1; i < rows - 1; ++i)
+		if (tiles[i][midC].type == TILE_WALL)
+			tiles[i][midC] = tileMap[TILE_NONE];
+
+	// Step 5: Connectors with buffer tiles
 	tiles[midR][0] = tileMap[TILE_CONNECTOR];
 	tiles[midR][1] = tileMap[TILE_CONNECTOR];
 	tiles[midR][2] = tileMap[TILE_NONE];
-
-	// RIGHT EXIT
 	tiles[midR][cols - 1] = tileMap[TILE_CONNECTOR];
 	tiles[midR][cols - 2] = tileMap[TILE_CONNECTOR];
 	tiles[midR][cols - 3] = tileMap[TILE_NONE];
-
-	// TOP CONNECTOR
 	tiles[0][midC] = tileMap[TILE_CONNECTOR];
 	tiles[1][midC] = tileMap[TILE_CONNECTOR];
 	tiles[2][midC] = tileMap[TILE_NONE];
-
-	// BOTTOM CONNECTOR
 	tiles[rows - 1][midC] = tileMap[TILE_CONNECTOR];
 	tiles[rows - 2][midC] = tileMap[TILE_CONNECTOR];
 	tiles[rows - 3][midC] = tileMap[TILE_NONE];
 
-	// Decoration Pass
+	// Step 6: Scatter enemies and chests only in open non-corridor tiles
 	for (unsigned int i = 1; i < rows - 1; ++i) {
 		for (unsigned int j = 1; j < cols - 1; ++j) {
-			if (tiles[i][j].type == TILE_NONE) {
-				int dr = (int)i - midR, dc = (int)j - midC;
-				if (dr >= -2 && dr <= 2 && dc >= -2 && dc <= 2) continue;
+			if (tiles[i][j].type != TILE_NONE) continue;
+			// Skip corridor tiles and safe center
+			bool onCorridor = ((int)i == midR || (int)j == midC);
+			int dr = (int)i - midR, dc = (int)j - midC;
+			bool inCenter = (dr >= -2 && dr <= 2 && dc >= -2 && dc <= 2);
+			if (onCorridor || inCenter) continue;
 
-				int chance = rand() % 100;
-				if (chance < 2) tiles[i][j] = tileMap[TILE_ENEMY];
-				else if (chance < 3) tiles[i][j] = tileMap[TILE_CHEST];
-			}
+			int chance = rand() % 100;
+			if (chance < 4)  tiles[i][j] = tileMap[TILE_ENEMY];
+			else if (chance < 7)  tiles[i][j] = tileMap[TILE_CHEST];
 		}
 	}
 }
@@ -129,13 +148,15 @@ void TileMap::Render() const
 	for (unsigned int r = 0; r < rows; r++) {
 		for (unsigned int c = 0; c < cols; c++) {
 			if (tiles[r][c].type == TILE_NONE) continue;
+			auto it = textureMap.find(tiles[r][c].type);
+			if (it == textureMap.end() || it->second == nullptr) continue;
 
 			f32 rot = 0;
 			AEVec2 pos{ GetTilePosition(r,c) };
 			AEVec2 scale = tileSize;
 			GetObjViewFromCamera(&pos, &rot, &scale);
 			DrawTintedMesh(GetTransformMtx(pos, rot, scale),
-				pMesh, textureMap.at(tiles[r][c].type),
+				pMesh, it->second,
 				{ 255,255,255,255 }, 255);
 		}
 	}
@@ -288,7 +309,7 @@ void TileMap::LoadStatics()
 	textureMap.insert(TileTex(TILE_NONE, nullptr));
 	textureMap.insert(TileTex(TILE_WALL, rm->LoadTexture("Assets/finn.png")));
 	textureMap.insert(TileTex(TILE_DOOR, rm->LoadTexture("Assets/tiny.png")));
-	textureMap.insert(TileTex(TILE_ENEMY, rm->LoadTexture("Assets/enemyplaceholder.png")));
-	textureMap.insert(TileTex(TILE_CHEST, rm->LoadTexture("Assets/chestplaceholder.png")));
+	textureMap.insert(TileTex(TILE_ENEMY, nullptr));
+	textureMap.insert(TileTex(TILE_CHEST, nullptr));
 	textureMap.insert(TileTex(TILE_CONNECTOR, rm->LoadTexture("Assets/connector.png")));
 }
