@@ -6,6 +6,16 @@
 #include <vector>
 #include <queue>
 
+/*  GameObjectManager
+
+	When a gameobject is created, it registers to the manager, which will handle its memory and lifecycle.
+
+	Manager calls the GO's Key lifecycle functions like rendering, updating, and collision.
+
+	A spatial grid is used to attempt to optimize collision between GOs.
+	GOs collide with a tilemap too.
+*/
+
 class GameObject; //Avoid circular dependency
 class TileMap;
 
@@ -22,7 +32,6 @@ namespace GOCollision {
 
 	//Place objects into grid cells based on their position.
 	//Check collision only between objects in the same cell
-	//Note: no idea what im doing, might be terribly optimized.
 	struct SpatialGrid {
 		//Init a grid of _numDimensions x _numDimensions to cover the world
 		void Init(unsigned _worldWidth, unsigned _worldHeight, unsigned _numDimensions);
@@ -39,7 +48,6 @@ namespace GOCollision {
 //Singleton to manage game objects.
 //Manages Update, Drawing, and collision.
 //Currently needs the State to manually call Update/Draw to control the order.
-//NOTE: 13/1: Assuming only 1 state has game objects, otherwise need to implement something to prevent updating objs in other scenes.
 //NOTE: 16/2: In GameStateManager, all GOs are disabled before the next state's Init.
 //GOs should be Init in InitState which enabled them, hopefully preventing some weird behavior if there are multiple game states that need GOs.
 class GameObjectManager : public Singleton<GameObjectManager>{
@@ -74,6 +82,7 @@ private:
 
 	bool isLoopingThrList{ false };
 
+	//Response when GO collides with a tile - Prevent GO from moving into the tile.
 	void Helper_HandleGOTileCollision(AEVec2 tileInd, GameObject& go, TileMap const& tilemap);
 
 	~GameObjectManager();

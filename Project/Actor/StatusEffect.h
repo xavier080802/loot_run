@@ -4,6 +4,15 @@
 #include <vector>
 #include "../Actor/StatsTypes.h"
 
+/*	Status Effects
+
+	Applied to an actor (referred to as Owner) to do something,
+	like buff/debuf stats or other custom behavior.
+	
+	Actor::ApplyStatusEffect is called, and the effect is expected to be new'd.
+	This memory is managed by the actor.
+*/
+
 //Circular dependency
 class Actor;
 class UIElement;
@@ -15,12 +24,14 @@ namespace Json {
 namespace StatEffects {
 	enum MATH_TYPE {
 		FLAT, //Stat type doesnt matter, takes value as-is
-		MULTIPLICATIVE, //Based on the stat's value
+		MULTIPLICATIVE, //Based on the stat's value - %
 	};
 
+	//A Stat Modifier
 	struct Mod {
 		//If multiplicative, 1=1%
 		float value;
+		//How the value should be calculated
 		MATH_TYPE mathType;
 		//Stat to affect
 		STAT_TYPE stat;
