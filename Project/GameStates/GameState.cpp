@@ -437,13 +437,28 @@ void GameState::HandleTutorialDialogueRender()
 
 void GameState::ExitState() {
     gPlayer->ClearStatusEffects();
+    inProceduralMap = false;
+    teleportCooldown = 0.f;
 }
 
 void GameState::UnloadState() {
     if (wallMesh) AEGfxMeshFree(wallMesh);
-    delete map;
-    delete nextMap;
-    delete minimap;
+
+    delete map;       map = nullptr;
+    delete nextMap;   nextMap = nullptr;
+    delete minimap;   minimap = nullptr;
+
+    delete gPlayer;   gPlayer = nullptr;
+    delete boss;      boss = nullptr;
+
+    for (Enemy* e : csvEnemies) delete e;
+    csvEnemies.clear();
+
+    if (doTutorial && fairy) {
+        delete fairy;
+        fairy = nullptr;
+    }
+    bossAlive = true;
     bgm.Exit();
     if (font >= 0)
         AEGfxDestroyFont(font);
