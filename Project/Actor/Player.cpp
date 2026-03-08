@@ -7,11 +7,17 @@
 #include "../Actor/Combat.h"
 #include "../Drops/DropSystem.h"
 #include "../DebugTools.h"
+#include "../Helpers/RenderUtils.h"
+#include "../Helpers/MatrixUtils.h"
 #include <iostream>
 
 namespace {
-	const float dodgeCooldown{ 0.65f };
-	const float dodgeIframeDur{ 0.2f };
+	const float DodgeCooldown{ 0.65f };
+	const float DodgeIframeDur{ 0.2f };
+	const AEVec2 HpBarSize{300,30};
+	AEMtx33 hpBarTrans{};
+	AEVec2 hpBarPos{};
+	Color HpContainerCol{ 104, 11, 11, 255 };
 
 	// Safe way to print weapon name (incase null pointer)
 	static const char* SafeName(const EquipmentData* w)
@@ -26,6 +32,11 @@ GameObject* Player::Init(AEVec2 _pos, AEVec2 _scale, int _z,
 {
 	goType = GO_TYPE::PLAYER;
 	dodgeCDTimer = dodgeIFrameTimer = 0.f;
+	if (!squareMesh) {
+		squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
+	}
+	hpBarPos = { 0, AEGfxGetWinMinY() + HpBarSize.y * 0.5f + 5 };
+	hpBarTrans = GetTransformMtx(hpBarPos, 0, HpBarSize);
 	return GameObject::Init(_pos, _scale, _z, _meshShape, _colShape, _colSize, _collideWithLayers, _isInLayers);
 }
 
@@ -110,8 +121,8 @@ void Player::HandleMovementInput(double dt)
 	if (AEInputCheckCurr('D')) dir.x += 1.0f;
 	if (dodgeCDTimer <= 0.f && AEInputCheckTriggered(AEVK_SPACE)) {
 		ApplyForce(dir * 500.f);
-		dodgeCDTimer = dodgeCooldown;
-		dodgeIFrameTimer = dodgeIframeDur;
+		dodgeCDTimer = DodgeCooldown;
+		dodgeIFrameTimer = DodgeIframeDur;
 	}
 
 	if (dir.x || dir.y) {
@@ -334,6 +345,22 @@ void Player::OnCollide(CollisionData& other)
 void Player::Draw()
 {
 	Actor::Draw();
+}
+
+void Player::DrawUI() {
+	//Healthbar Container
+	
+	DrawTintedMesh(hpBarTrans, squareMesh, nullptr, HpContainerCol, 255);
+	//Health indicator fill
+	AEVec2 hpBarFillSize{ HpBarSize.x * (mCurrentHP / mStats.maxHP), HpBarSize.y };
+	AEVec2 hpBarFillPos = hpBarPos;
+	hpBarFillPos.x -= (HpBarSize.x - hpBarFillSize.x) / 2.f;
+	DrawTintedMesh(GetTransformMtx(hpBarFillPos, 0, hpBarFillSize),
+		squareMesh, nullptr, {240, 20, 20, 255}, 255);
+	//Hp Text: "curr / max"
+	DrawAEText(RenderingManager::GetInstance()->GetFont(),
+		std::string{ std::to_string((int)mCurrentHP) + " / " + std::to_string((int)mStats.maxHP) }.c_str(),
+		hpBarPos, HpBarSize.y / RenderingManager::GetInstance()->GetFontSize(), Color{ 0,0,0,255 }, TEXT_MIDDLE);
 }
 
 bool Player::IsInvulnerable()

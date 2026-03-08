@@ -375,6 +375,10 @@ void GameState::Draw() {
     DrawBossHPProgressBar();
     minimap->Render(*map, *gPlayer);
 
+    if (gPlayer) {
+        gPlayer->DrawUI();
+    }
+
     HandleTutorialDialogueRender();
 
     //Draw Pet UI

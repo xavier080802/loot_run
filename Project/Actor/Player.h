@@ -23,6 +23,7 @@ public:
     void OnCollide(CollisionData& other) override;
 
     void Draw() override;
+    void DrawUI();
 
     bool IsInvulnerable() override;
 
@@ -69,4 +70,7 @@ private:
     float attackCooldownTimer = 0.0f;
 
     float playerSpeed = 300.f;
+
+    //UI stuff
+    AEGfxVertexList* squareMesh{};
 };
