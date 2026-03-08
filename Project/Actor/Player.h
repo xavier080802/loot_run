@@ -24,6 +24,8 @@ public:
 
     void Draw() override;
 
+    bool IsInvulnerable() override;
+
     // Recomputes the player's final stats by combining base stats, equipment modifiers, and upgrades.
     // Should be called whenever inventory changes.
     void RecalculateStats();
@@ -58,6 +60,7 @@ private:
     AEVec2 moveDirNorm{};
 
     float dodgeCDTimer{};
+    float dodgeIFrameTimer{};
 
     // Which slot the player is currently "holding" for Left Mouse attack
     HeldWeapon heldWeapon = HeldWeapon::Weapon1;

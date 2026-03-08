@@ -97,7 +97,7 @@ void Actor::Draw()
 void Actor::DealDamage(Actor* target, float baseDmg, DAMAGE_TYPE dmgType, const EquipmentData* weapon)
 {
     // Make sure we have a valid and alive target before doing anything.
-    if (!target || target->IsDead()) return;
+    if (!target || target->IsDead() || target->IsInvulnerable()) return;
 
     float finalDmg = baseDmg;
 

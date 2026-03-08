@@ -10,7 +10,8 @@
 #include <iostream>
 
 namespace {
-	const float dodgeCooldown{ 0.5f };
+	const float dodgeCooldown{ 0.65f };
+	const float dodgeIframeDur{ 0.2f };
 
 	// Safe way to print weapon name (incase null pointer)
 	static const char* SafeName(const EquipmentData* w)
@@ -24,6 +25,7 @@ GameObject* Player::Init(AEVec2 _pos, AEVec2 _scale, int _z,
 	Bitmask _collideWithLayers, Collision::LAYER _isInLayers)
 {
 	goType = GO_TYPE::PLAYER;
+	dodgeCDTimer = dodgeIFrameTimer = 0.f;
 	return GameObject::Init(_pos, _scale, _z, _meshShape, _colShape, _colSize, _collideWithLayers, _isInLayers);
 }
 
@@ -82,6 +84,13 @@ void Player::Update(double dt)
 	float fdt = (float)dt;
 	if (attackCooldownTimer > 0.0f)
 		attackCooldownTimer -= fdt;
+	if (dodgeCDTimer > 0.f) {
+		dodgeCDTimer -= fdt;
+	}
+	if (dodgeIFrameTimer > 0.f) {
+		dodgeIFrameTimer -= fdt;
+		Debug::stream << "dodging\n";
+	}
 
 	// Track input direction for minimap arrow (Player does the actual movement)
 	HandleMovementInput(dt);
@@ -94,10 +103,6 @@ void Player::HandleMovementInput(double dt)
 {
 	float fdt = (float)dt;
 
-	if (dodgeCDTimer > 0.f) {
-		dodgeCDTimer -= fdt;
-	}
-
 	AEVec2 dir{ 0.0f, 0.0f };
 	if (AEInputCheckCurr('W')) dir.y += 1.0f;
 	if (AEInputCheckCurr('S')) dir.y -= 1.0f;
@@ -106,6 +111,7 @@ void Player::HandleMovementInput(double dt)
 	if (dodgeCDTimer <= 0.f && AEInputCheckTriggered(AEVK_SPACE)) {
 		ApplyForce(dir * 500.f);
 		dodgeCDTimer = dodgeCooldown;
+		dodgeIFrameTimer = dodgeIframeDur;
 	}
 
 	if (dir.x || dir.y) {
@@ -328,4 +334,9 @@ void Player::OnCollide(CollisionData& other)
 void Player::Draw()
 {
 	Actor::Draw();
+}
+
+bool Player::IsInvulnerable()
+{
+	return dodgeIFrameTimer > 0.f;
 }

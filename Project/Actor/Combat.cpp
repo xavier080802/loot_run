@@ -22,6 +22,8 @@ namespace Combat
 
 		Actor& target = static_cast<Actor&>(data.other);
 
+		if (target.IsInvulnerable()) return;
+
 		// Calculate base damage from stats
 		caster->DealDamage(&target, caster->GetStats().attack, DAMAGE_TYPE::PHYSICAL, nullptr);
 
@@ -43,6 +45,8 @@ namespace Combat
 		if (casterType == GO_TYPE::ENEMY && targetType != GO_TYPE::PLAYER) return;
 
 		Actor& target = static_cast<Actor&>(data.other);
+
+		if (target.IsInvulnerable()) return;
 
 		caster->DealDamage(&target, caster->GetStats().attack, DAMAGE_TYPE::PHYSICAL, nullptr);
 

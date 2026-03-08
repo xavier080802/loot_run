@@ -38,10 +38,12 @@ public:
 	// baseDmg: The base damage calculated before any status effects or modifiers.
 	// dmgType: The category of damage (e.g. Physical, Elemental) used for resistance checks.
 	// weapon: The weapon equipped by the attacker used to deal the damage.
-	void DealDamage(Actor* target, float baseDmg, DAMAGE_TYPE dmgType, const EquipmentData* weapon = nullptr);
+	virtual void DealDamage(Actor* target, float baseDmg, DAMAGE_TYPE dmgType, const EquipmentData* weapon = nullptr);
 	
 	// Called when this actor receives damage.
-	void TakeDamage(DamageData const& data);
+	virtual void TakeDamage(DamageData const& data);
+
+	virtual bool IsInvulnerable() { return false; }
 	
 	// Restores the actor's HP by the specified amount, clamping at maxHP.
 	void Heal(float amt);
