@@ -92,7 +92,16 @@ void Player::RecalculateStats()
 	if (mCurrentHP <= 0.0f) mCurrentHP = mStats.maxHP;
 }
 
-
+/**
+ * @brief Reads the ShopFunctions singleton's current upgrade levels and
+ * applies them to the player's UpgradeMultipliers, then recalculates all stats.
+ *
+ * Each shop upgrade level contributes +10% per level to the corresponding stat multiplier.
+ * Example: 3 levels of Attack Speed upgrade → attackSpeedMult = 1.30 (30% faster attacks).
+ *
+ * @note Called by:
+ *   - ShopState - after any buyShopUpgrade() or sellShopUpgrade() succeeds.
+ */
 void Player::ApplyShopUpgrades()
 {
 	ShopFunctions* shop = ShopFunctions::GetInstance();
