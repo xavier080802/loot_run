@@ -480,9 +480,4 @@
       <Filter>Header Files\GameStates</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Pet.json">
-      <Filter>Source Files\Pets</Filter>
-    </None>
-  </ItemGroup>
 </Project>

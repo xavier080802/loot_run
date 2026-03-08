@@ -136,7 +136,7 @@ bool PetManager::AddNewPet(Pets::PetSaveData const& newPet)
 {
 	// Increments the count for the specific Pet ID and Rank
 	ownedPets[static_cast<int>(newPet.id)][static_cast<int>(newPet.rank)]++;
-	SaveInventoryToJSON();
+	//SaveInventoryToJSON();
 
 	return true;
 }
