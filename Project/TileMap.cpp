@@ -271,12 +271,9 @@ TileMap::Tile const* TileMap::QueryTile(unsigned rowInd, unsigned colInd) const
 // so the caller doesn't need to calculate it separately.
 std::pair<TileMap::Tile const*, AEVec2> TileMap::QueryTileAndInd(AEVec2 pos) const
 {
-    AEVec2 inds{ GetTileIndFromPos(pos) };
-    bool outOfBounds = (inds.x < 0 || inds.x >= cols || inds.y < 0 || inds.y >= rows);
-    return std::make_pair(
-        outOfBounds ? nullptr : &tiles[(unsigned)inds.y][(unsigned)inds.x],
-        inds
-    );
+	AEVec2 inds{ GetTileIndFromPos(pos) };
+	//If Index out of bounds, tile should be nullptr
+	return std::make_pair((inds.x < 0 || inds.x >= cols || inds.y < 0 || inds.y >= rows) ? nullptr : &tiles[(unsigned)inds.y][(unsigned)inds.x], inds);
 }
 
 // Swaps the tile at (row, col) to a new type.

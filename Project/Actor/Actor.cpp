@@ -167,6 +167,7 @@ void Actor::UpdateStatusEffects(double dt)
     for (std::map<std::string, StatEffects::StatusEffect*>::reverse_iterator rit = statusEffectsDict.rbegin(); rit != statusEffectsDict.rend(); ++rit) {
         //Update effect
         rit->second->Tick(dt);
+        if (statusEffectsDict.empty()) break; //This can happen if SE causes death
         
         //Remove effect if it has ended
         if (!rit->second->IsEnded()) continue;

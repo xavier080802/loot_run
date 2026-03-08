@@ -406,6 +406,10 @@ void GameState::Update(double dt)
     if (doTutorial && fairy->data.stage == Tutorial::BOSS && !bossAlive) {
         fairy->ChangeStage(Tutorial::END);
     }
+    if (!doTutorial && !bossAlive) {
+        GameStateManager::GetInstance()->SetNextGameState("MainMenuState");
+        std::cout << "BOSS SLAYED\n";
+    }
 
     minimap->Update(dt, *currentMap, *gPlayer);
     UpdateWorldMap((float)dt);
@@ -419,7 +423,9 @@ void GameState::Draw() {
     RenderWorldMap();
     GameObjectManager::GetInstance()->DrawObjects();
     DrawBossHPProgressBar();
-    minimap->Render(*map, *gPlayer);
+
+    TileMap* currentMap = inProceduralMap ? nextMap : map;
+    minimap->Render(*currentMap, *gPlayer);
 
     if (gPlayer) {
         gPlayer->DrawUI();
