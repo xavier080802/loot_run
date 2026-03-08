@@ -45,9 +45,9 @@ public:
    * that this is bytes, not codepoints.
    */
   struct StructuredError {
-    ptrdiff_t offset_start;
-    ptrdiff_t offset_limit;
-    String message;
+      ptrdiff_t offset_start{};
+      ptrdiff_t offset_limit{};
+      String message{};
   };
 
   /** \brief Constructs a Reader allowing all features for parsing.
@@ -175,16 +175,16 @@ private:
 
   class Token {
   public:
-    TokenType type_;
-    Location start_;
-    Location end_;
+    TokenType type_{};
+    Location start_{};
+    Location end_{};
   };
 
   class ErrorInfo {
   public:
-    Token token_;
-    String message_;
-    Location extra_;
+    Token token_{};
+    String message_{};
+    Location extra_{};
   };
 
   using Errors = std::deque<ErrorInfo>;
@@ -245,9 +245,9 @@ private:
 class JSON_API CharReader {
 public:
   struct JSON_API StructuredError {
-    ptrdiff_t offset_start;
-    ptrdiff_t offset_limit;
-    String message;
+      ptrdiff_t offset_start{};
+      ptrdiff_t offset_limit{};
+      String message{};
   };
 
   virtual ~CharReader() = default;

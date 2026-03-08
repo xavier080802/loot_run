@@ -880,8 +880,8 @@ public:
   std::vector<CharReader::StructuredError> getStructuredErrors() const;
 
 private:
-  OurReader(OurReader const&);      // no impl
-  void operator=(OurReader const&); // no impl
+  OurReader(OurReader const&) = delete;      // no impl
+  void operator=(OurReader const&) = delete; // no impl
 
   enum TokenType {
     tokenEndOfStream = 0,
@@ -912,9 +912,9 @@ private:
 
   class ErrorInfo {
   public:
-    Token token_;
-    String message_;
-    Location extra_;
+      Token token_{};
+      String message_{};
+      Location extra_{};
   };
 
   using Errors = std::deque<ErrorInfo>;
@@ -947,7 +947,7 @@ private:
   bool recoverFromError(TokenType skipUntilToken);
   bool addErrorAndRecover(const String& message, Token& token,
                           TokenType skipUntilToken);
-  void skipUntilSpace();
+  //void skipUntilSpace();
   Value& currentValue();
   Char getNextChar();
   void getLocationLineAndColumn(Location location, int& line,
