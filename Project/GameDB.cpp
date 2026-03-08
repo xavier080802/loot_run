@@ -9,6 +9,7 @@ namespace
 {
     static std::vector<EnemyDef> sEnemyRegistry;
     static std::vector<EquipmentData> sEquipmentRegistry;
+    static std::vector<DropTable> sDropTables;
     static ActorStats sPlayerBaseStats;
     static GameDB::PlayerInventoryDef sPlayerInventory;
     static std::vector<int> sPlayerStarterEquipmentIds;
@@ -55,6 +56,105 @@ namespace
 
 namespace GameDB
 {
+    const DropTable* GetDropTable(int id)
+    {
+        for (const auto& t : sDropTables)
+        {
+            if (t.id == id) return &t;
+        }
+        return nullptr;
+    }
+
+    bool LoadDropTables(const char* path)
+    {
+        std::ifstream file(path);
+        if (!file.is_open()) {
+            std::cout << "LoadDropTables: Cannot open " << path << "\n";
+            return false;
+        }
+
+        Json::Value root;
+        Json::Reader reader;
+        if (!reader.parse(file, root, false)) {
+            std::cout << "LoadDropTables error parsing " << path << ":\n" << reader.getFormattedErrorMessages() << "\n";
+            return false;
+        }
+
+        if (!root.isMember("dropTables") || !root["dropTables"].isArray()) {
+            std::cout << "LoadDropTables: Missing 'dropTables' array.\n";
+            return false;
+        }
+
+        // Expected JSON structure:
+        /*
+        "dropTables": [
+            {
+              "id": 0,
+              "entries": [
+                {
+                  "type": "Coin",
+                  "chance": 0.5,
+                  "minAmount": 5,
+                  "maxAmount": 10
+                }
+              ]
+            }
+        ]
+        */
+        sDropTables.clear();
+        for (const auto& dtJson : root["dropTables"])
+        {
+            DropTable dt{};
+            dt.id = dtJson.get("id", 0).asInt(); // Register the unique ID for this specific drop table
+            dt.entryCount = 0;
+
+            if (dtJson.isMember("entries") && dtJson["entries"].isArray())
+            {
+                // Loop through all potential items in this table and parse their drop logic
+                for (const auto& entryJson : dtJson["entries"])
+                {
+                    if (dt.entryCount >= DropTable::MAX_ENTRIES) break;
+
+                    DropEntry e{};
+                    std::string typeStr = entryJson.get("type", "Coin").asString();
+                    
+                    // Map the string from JSON to our C++ DropType enum
+                    if (typeStr == "Coin") e.type = DropType::Coin;
+                    else if (typeStr == "Ammo") e.type = DropType::Ammo;
+                    else if (typeStr == "Equipment") e.type = DropType::Equipment;
+                    else if (typeStr == "Heal") e.type = DropType::Heal;
+                    else if (typeStr == "Buff") e.type = DropType::Buff;
+                    else if (typeStr == "None") e.type = DropType::None;
+                    
+                    // Only fully parse Equipment specifics if this drop guarantees equipment
+                    if (e.type == DropType::Equipment) {
+                        std::string catStr = entryJson.get("category", "Melee").asString();
+                        if (catStr == "Melee") e.equipmentCategory = EquipmentCategory::Melee;
+                        else if (catStr == "Ranged") e.equipmentCategory = EquipmentCategory::Ranged;
+                        else if (catStr == "Head") e.equipmentCategory = EquipmentCategory::Head;
+                        else if (catStr == "Body") e.equipmentCategory = EquipmentCategory::Body;
+                        else if (catStr == "Hands") e.equipmentCategory = EquipmentCategory::Hands;
+                        else if (catStr == "Feet") e.equipmentCategory = EquipmentCategory::Feet;
+                        else e.equipmentCategory = EquipmentCategory::None; // Parses "Any" or unrecognized categories as a wildcard
+                        
+                        e.itemId = entryJson.get("itemId", 0).asInt();
+                    }
+
+                    // Store the probabilities and quantities
+                    e.chance = entryJson.get("chance", 1.0f).asFloat();
+                    e.minAmount = entryJson.get("minAmount", 1).asInt();
+                    e.maxAmount = entryJson.get("maxAmount", 1).asInt();
+                    
+                    dt.entries[dt.entryCount++] = e; // Push the constructed entry into the array
+                }
+            }
+            sDropTables.push_back(dt); // Register the fully parsed table
+        }
+
+        std::cout << "LoadDropTables: loaded " << sDropTables.size() << " drop tables from " << path << "\n";
+        file.close();
+        return true;
+    }
 
 
 	// Parses JSON file to load Enemy Definitions into the EnemyRegistry collection.
@@ -191,6 +291,7 @@ namespace GameDB
             e.id = item.get("id", 0).asInt();
             e.category = category;
             e.name = _strdup(item.get("name", "Unknown").asString().c_str());
+            e.texturePath = _strdup(item.get("texturePath", "").asString().c_str());
             
             std::string slotStr = item.get("slot", "Weapon").asString();
             e.slot = (slotStr == "Armor") ? EquipSlot::Armor : EquipSlot::Weapon;
@@ -230,7 +331,10 @@ namespace GameDB
             else if (rarityStr == "Rare") e.rarity = Rarity::Rare;
             else if (rarityStr == "Epic") e.rarity = Rarity::Epic;
             else if (rarityStr == "Legendary") e.rarity = Rarity::Legendary;
+            else if (rarityStr == "Mythical") e.rarity = Rarity::Mythical;
             else e.rarity = Rarity::Common;
+
+            e.sellPrice = item.get("sellPrice", 10).asInt();
 
             if (item.isMember("stats")) {
                 const auto& s = item["stats"];
@@ -301,6 +405,7 @@ namespace GameDB
         sPlayerInventory.body = root.get("body", 0).asInt();
         sPlayerInventory.hands = root.get("hands", 0).asInt();
         sPlayerInventory.feet = root.get("feet", 0).asInt();
+        sPlayerInventory.ammo = root.get("ammo", 0).asInt();
 
         std::cout << "LoadPlayerInventory: Successfully loaded player inventory from " << path << "\n";
         file.close();
@@ -318,18 +423,55 @@ namespace GameDB
 		return nullptr;
 	}
 
+	int GetRarityWeight(Rarity r)
+	{
+		switch (r)
+		{
+		case Rarity::Common: return 100;
+		case Rarity::Uncommon: return 50;
+		case Rarity::Rare: return 20;
+		case Rarity::Epic: return 10;
+		case Rarity::Legendary: return 4;
+		case Rarity::Mythical: return 1;
+		default: return 100;
+		}
+	}
+
+    const EquipmentData* GetRandomEquipment()
+    {
+        auto& reg = EquipmentRegistry();
+        if (reg.empty()) return nullptr;
+
+		int totalWeight = 0;
+		for (const auto& item : reg)
+			totalWeight += GetRarityWeight(item.rarity);
+
+		if (totalWeight <= 0) return &reg[0];
+
+		int randVal = rand() % totalWeight;
+		for (const auto& item : reg)
+		{
+			randVal -= GetRarityWeight(item.rarity);
+			if (randVal < 0)
+				return &item;
+		}
+
+        return &reg.back();
+    }
+
     void UnloadEquipmentReg()
     {
         for (EquipmentData& d : sEquipmentRegistry) {
             free((void*)d.name);
+            free((void*)d.texturePath);
         }
     }
 
-	const EnemyDef* GetEnemyDef(int id)
-	{
-		for (const auto& e : EnemyRegistry())
-			if (e.id == id)
-				return &e;
+    const EnemyDef* GetEnemyDef(int id)
+    {
+        for (const auto& e : EnemyRegistry()){
+            if (e.id == id) { return &e; }
 		return nullptr;
+        }
 	}
 }

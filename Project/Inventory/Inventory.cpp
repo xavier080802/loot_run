@@ -43,6 +43,24 @@ bool Inventory::AddEquipment(const EquipmentData* data)
     return true;
 }
 
+void Inventory::ReplaceEquipment(const EquipmentData* oldItem, const EquipmentData* newItem)
+{
+    if (!oldItem || !newItem) return;
+
+    // Find the old item in the physical inventory and swap it
+    for (int i = 0; i < mEquipCount; ++i)
+    {
+        if (mEquip[i] == oldItem)
+        {
+            mEquip[i] = newItem;
+            break;
+        }
+    }
+
+    // Pass it to the standard equip router so it binds to the weapon1/head/body slot correctly
+    Equip(newItem); 
+}
+
 bool Inventory::Equip(const EquipmentData* data)
 {
     if (!data) return false;
@@ -192,3 +210,14 @@ bool Inventory::ConsumeAmmo(int amount)
 }
 
 int Inventory::GetAmmo() const { return mAmmo; }
+
+void Inventory::AddCoins(int amount)
+{
+    if (amount <= 0) return;
+    mCoins += amount;
+}
+
+int Inventory::GetCoins() const
+{
+    return mCoins;
+}

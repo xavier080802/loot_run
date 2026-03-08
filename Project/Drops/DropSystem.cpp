@@ -22,6 +22,7 @@ namespace {
 
     //-----Display stuff-----
 
+    // Trying Deque
     std::deque<std::string> pickupLogQueue{};
     float timer{}; //Timer for clearing queue
 
@@ -82,44 +83,78 @@ bool DropSystem::InitDropSystemSettings()
 
 void DropSystem::SpawnDrops(int dropTableId, const AEVec2& worldPos)
 {
-    /* GameDB not done yet
+    // Retrieve the specific set of potential drops from the DB
     const DropTable* table = GameDB::GetDropTable(dropTableId);
     if (!table) return;
 
+    // Check every single entry inside the loot table dynamically. 
+    // (This means multiple items can drop at once if multiple entries succeed their chance roll)
     for (int i = 0; i < table->entryCount; ++i)
     {
         const DropEntry& e = table->entries[i];
+        
+        // Skip right away if it has a 0% chance
         if (e.chance <= 0.0f) continue;
+        
+        // Rand01() generates a decimal between 0.0 and 1.0. 
+        // Example: If chance is 0.40 (40%), and Rand01() rolls 0.35 the item will spawn.
+        // If it rolls 0.50 it fails and continues to the next item loop.
         if (Rand01() > e.chance) continue;
 
         PickupPayload payload;
         payload.type = e.type;
 
-        if (e.type == DropType::Equipment)
+        if (e.type == DropType::None) {
+			// Unlucky hit so we signal no drop by skipping the spawn
+            continue; 
+        }
+        else if (e.type == DropType::Equipment)
         {
+            // Equipment always drops individually, so amount is clamped to 1.
             payload.amount = 1;
-            payload.equipment = GameDB::GetEquipmentData(e.equipmentCategory, e.itemId);
-            if (!payload.equipment) continue;
+            
+            // If the category is None (e.g. "Any" mapped in JSON), pick a completely random item from the entire database pool
+            if (e.equipmentCategory == EquipmentCategory::None)
+            {
+                payload.equipment = GameDB::GetRandomEquipment();
+            }
+            else
+            {
+                // Otherwise, get the exact specific item defined by the ID and category
+                /* Example JSON for specific item (if we want to add them for bosses):
+                {
+                    "type": "Equipment",
+                    "category": "Melee",     // <--- The EXACT category
+                    "itemId": 1,             // <--- The EXACT item ID in that category
+                    "chance": 0.4 
+                }
+                */
+                payload.equipment = GameDB::GetEquipmentData(e.equipmentCategory, e.itemId);
+            }
+            if (!payload.equipment) {
+                std::cout << "DEBUG DROP: Equipment drop rolled successfully, but failed to find data! Category: " << (int)e.equipmentCategory << " ID: " << e.itemId << "\n";
+                continue;
+            }
+            std::cout << "DEBUG DROP: Successfully spawned equipment: " << payload.equipment->name << "\n";
+        }
+        else if (e.type == DropType::Heal) 
+        {
+            float playerMaxHp = GameDB::GetPlayerBaseStats().maxHP;
+            payload.amount = static_cast<int>(playerMaxHp * 0.10f); // 10% max hp
+            payload.equipment = nullptr;
+            if (payload.amount <= 0) payload.amount = 1; // minimum 1
         }
         else
         {
+            // For general consumables (Ammo, Coin), we pick a random volume inside the range setup in JSON
             payload.amount = RandRangeInt(e.minAmount, e.maxAmount);
-            payload.equipment = 0;
+            payload.equipment = nullptr;
             if (payload.amount <= 0) continue;
         }
 
         // Spawn pickup GO (uses manager registration via GameObject::Init)
         PickupGO::Spawn(worldPos, payload);
     }
-    */
-    
-	//Temporary placeholder drop logic
-    // TEMP DEMO: always drop 5 coins
-    PickupPayload payload{};
-    payload.type = DropType::Coin;
-    payload.amount = 5;
-
-    PickupGO::Spawn(worldPos, payload);
 }
 
 void DropSystem::AddToPickupDisplay(const PickupPayload& payload)
@@ -133,9 +168,16 @@ void DropSystem::AddToPickupDisplay(const PickupPayload& payload)
     case DropType::Ammo:
         str += "Ammo";
         break;
+    case DropType::Heal:
+        str += "HP";
+        break;
+    case DropType::Buff:
+		str = "+Buff"; // Placeholder for specific buff display (no buffs implemented yet for drops)
+        break;
     case DropType::Equipment:
         str += payload.equipment->name;
         break;
+    case DropType::None:
     default:
         return;
     }

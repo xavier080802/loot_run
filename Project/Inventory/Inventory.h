@@ -14,9 +14,11 @@ public:
     // Attempts to add an item to the inventory. Returns true if successful (space available).
     bool AddEquipment(const EquipmentData* data);
 
-    // --- Equipping ---
     // Attempts to automatically equip the given item based on its slot type.
     bool Equip(const EquipmentData* data);
+    
+    // Finds oldItem in the inventory and replaces its pointer with newItem, then equips newItem.
+    void ReplaceEquipment(const EquipmentData* oldItem, const EquipmentData* newItem);
     
     // Forces the equipment into a specific main weapon slot (0 or 1).
     bool EquipMainWeapon(int slotIndex, const EquipmentData* data);
@@ -56,6 +58,9 @@ public:
     bool ConsumeAmmo(int amount);
     int GetAmmo() const;
 
+    void AddCoins(int amount);
+    int GetCoins() const;
+
 private:
     const EquipmentData* mEquip[MAX_EQUIP]{};
     int mEquipCount = 0;
@@ -73,4 +78,5 @@ private:
 
     UpgradeMultipliers mUpgrades{};
     int mAmmo = 0;
+    int mCoins = 0;
 };

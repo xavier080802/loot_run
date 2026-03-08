@@ -32,7 +32,7 @@ public:
     void RecalculateStats();
     
     // Processes collision with a PickupGO payload, adding items/ammo/health to the player.
-    void TryPickup(const PickupPayload& payload);
+    bool TryPickup(const PickupPayload& payload);
     
     // Retrieves the currently wielded equipment based on the 'heldWeapon' slot state.
     const EquipmentData* GetHeldWeaponData() const;
@@ -60,6 +60,8 @@ private:
     Inventory  mInventory{};
     AEVec2 moveDirNorm{};
 
+    PickupGO* mInteractablePickup = nullptr; // Track the nearest un-picked item
+
     float dodgeCDTimer{};
     float dodgeIFrameTimer{};
 
@@ -72,5 +74,6 @@ private:
     float playerSpeed = 300.f;
 
     //UI stuff
+    bool mShowStatsUI = true;
     AEGfxVertexList* squareMesh{};
 };

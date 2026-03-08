@@ -57,6 +57,7 @@ enum class Rarity : uint8_t
     Rare = 2,
     Epic = 3,
     Legendary = 4,
+    Mythical = 5,
 };
 
 // Represents the static properties of an equippable item.
@@ -83,5 +84,8 @@ struct EquipmentData
     // Stat modifiers (additive bonuses granted while equipped)
     EquipmentModifiers mods{};
 
+    int sellPrice = 10; // Amount of coins gained when selling
+
     const char* name = ""; // Display name
+    const char* texturePath = ""; // Path to the image file (defaults to empty/current)
 };

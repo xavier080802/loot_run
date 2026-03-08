@@ -6,7 +6,9 @@ enum class DropType : unsigned
 	Coin = 0,
 	Ammo = 1,
 	Equipment = 2,
-	Heal = 3
+	Heal = 3,
+	Buff = 4,
+	None = 5
 };
 
 struct PickupPayload

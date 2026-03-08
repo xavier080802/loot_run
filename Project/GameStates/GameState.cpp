@@ -160,6 +160,11 @@ void GameState::LoadState() {
     GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Body/body.json", EquipmentCategory::Body);
     GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Hands/hands.json", EquipmentCategory::Hands);
     GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Feet/feet.json", EquipmentCategory::Feet);
+    
+    if (!GameDB::LoadDropTables("Assets/Data/Drops/drops.json"))
+    {
+        std::cout << "WARNING: drops.json failed to load.\n";
+    }
 
     if (!GameDB::LoadPlayerDef("Assets/Data/Player/player.json"))
     {

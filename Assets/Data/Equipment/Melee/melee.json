@@ -1,7 +1,9 @@
 [
     {
         "id": 1,
-        "name": "Demo Sword",
+        "name": "Common Copper Sword",
+        "sellPrice": 15,
+        "texturePath": "",
         "slot": "Weapon",
         "weaponType": "Sword",
         "attackType": "SwingArc",
@@ -16,17 +18,87 @@
     },
     {
         "id": 2,
-        "name": "Demo Sun Sword",
+        "name": "Uncommon Bronze Sword",
+        "sellPrice": 40,
+        "texturePath": "",
+        "slot": "Weapon",
+        "weaponType": "Sword",
+        "attackType": "SwingArc",
+        "isRanged": false,
+        "element": "NONE",
+        "knockback": 120.0,
+        "attackSize": 12.0,
+        "rarity": "Uncommon",
+        "stats": {
+            "attack": 15.0
+        }
+    },
+    {
+        "id": 3,
+        "name": "Rare Iron Sword",
+        "sellPrice": 100,
+        "texturePath": "",
+        "slot": "Weapon",
+        "weaponType": "Sword",
+        "attackType": "SwingArc",
+        "isRanged": false,
+        "element": "NONE",
+        "knockback": 140.0,
+        "attackSize": 14.0,
+        "rarity": "Rare",
+        "stats": {
+            "attack": 25.0
+        }
+    },
+    {
+        "id": 4,
+        "name": "Epic Steel Sword",
+        "sellPrice": 250,
+        "texturePath": "",
+        "slot": "Weapon",
+        "weaponType": "Sword",
+        "attackType": "SwingArc",
+        "isRanged": false,
+        "element": "NONE",
+        "knockback": 160.0,
+        "attackSize": 16.0,
+        "rarity": "Epic",
+        "stats": {
+            "attack": 45.0
+        }
+    },
+    {
+        "id": 5,
+        "name": "Legendary Mithril Sword",
+        "sellPrice": 800,
+        "texturePath": "",
+        "slot": "Weapon",
+        "weaponType": "Sword",
+        "attackType": "SwingArc",
+        "isRanged": false,
+        "element": "NONE",
+        "knockback": 180.0,
+        "attackSize": 18.0,
+        "rarity": "Legendary",
+        "stats": {
+            "attack": 80.0
+        }
+    },
+    {
+        "id": 6,
+        "name": "Mythical Excalibur",
+        "sellPrice": 2500,
+        "texturePath": "",
         "slot": "Weapon",
         "weaponType": "Sword",
         "attackType": "SwingArc",
         "isRanged": false,
         "element": "SUN",
-        "knockback": 100.0,
-        "attackSize": 10.0,
-        "rarity": "Epic",
+        "knockback": 250.0,
+        "attackSize": 25.0,
+        "rarity": "Mythical",
         "stats": {
-            "attack": 5.0
+            "attack": 150.0
         }
     }
 ]
