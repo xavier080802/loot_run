@@ -56,6 +56,8 @@ private:
     };
 
 private:
+    void OnDeath(Actor* killer = nullptr) override;
+
     ActorStats mBaseStats{};
     Inventory  mInventory{};
     AEVec2 moveDirNorm{};

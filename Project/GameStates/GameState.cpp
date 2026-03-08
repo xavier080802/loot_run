@@ -401,6 +401,10 @@ void GameState::Update(double dt)
     if (doTutorial && fairy->data.stage == Tutorial::BOSS && !bossAlive) {
         fairy->ChangeStage(Tutorial::END);
     }
+    if (!doTutorial && !bossAlive) {
+        GameStateManager::GetInstance()->SetNextGameState("MainMenuState");
+        std::cout << "BOSS SLAYED\n";
+    }
 
     minimap->Update(dt, *currentMap, *gPlayer);
     UpdateWorldMap((float)dt);

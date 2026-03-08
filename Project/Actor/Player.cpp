@@ -9,6 +9,7 @@
 #include "../DebugTools.h"
 #include "../Helpers/RenderUtils.h"
 #include "../Helpers/MatrixUtils.h"
+#include "../GameStateManager.h"
 #include <iostream>
 
 namespace {
@@ -100,7 +101,6 @@ void Player::Update(double dt)
 	}
 	if (dodgeIFrameTimer > 0.f) {
 		dodgeIFrameTimer -= fdt;
-		Debug::stream << "dodging\n";
 	}
 
 	// Track input direction for minimap arrow (Player does the actual movement)
@@ -316,6 +316,13 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 	default:
 		break;
 	}
+}
+
+void Player::OnDeath(Actor* killer)
+{
+	Actor::OnDeath(killer);
+	GameStateManager::GetInstance()->SetNextGameState("MainMenuState");
+	Debug::stream << "PLAYER DIED\n";
 }
 
 void Player::OnCollide(CollisionData& other)
