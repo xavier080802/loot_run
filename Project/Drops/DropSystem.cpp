@@ -39,6 +39,18 @@ namespace {
     }
 }
 
+/**
+ * @brief Loads pickup display settings (duration, color, position, etc) from ui.json.
+ *
+ * This is called once at game startup. It reads the "pickupDisplay" section
+ * of the UI config file and applies settings like how long each message shows,
+ * what color it is, where to draw it (bottom right of screen), and how many can show at once.
+ *
+ * @return true if the JSON was successfully loaded and parsed, false on failure.
+ *
+ * @note Called by:
+ *   - The game initialization system at startup, once, before gameplay begins.
+ */
 bool DropSystem::InitDropSystemSettings()
 {
     std::ifstream ifs{ "Assets/Data/ui.json", std::ios_base::binary };
@@ -81,6 +93,27 @@ bool DropSystem::InitDropSystemSettings()
     return true;
 }
 
+/**
+ * @brief Spawns all the items an enemy can drop at a given position when they die.
+ *
+ * This is the full loot-drop pipeline:
+ * 1. Looks up the enemy's DropTable in GameDB using their dropTableId.
+ * 2. For each entry in the table, rolls a random number.
+ * 3. If the roll succeeds (e.g. 0.35 rolls under a 0.40 chance), it builds a PickupPayload.
+ * 4. The payload is handed to PickupGO::Spawn() which places the physical item on the ground.
+ *
+ * Multiple items can drop at once if multiple entries succeed their rolls.
+ * Some entries are of type "None" this is intentional! It's a way to make
+ * certain drops rarer by occupying a slot that always fails silently.
+ *
+ * @param dropTableId  The ID for this enemy's loot table (the same ID stored in EnemyDef).
+ *                     Passed by VALUE (int).
+ * @param worldPos     The position in the game world to spawn the drops at (usually the enemy's death position).
+ *                     Passed by CONST REFERENCE.
+ *
+ * @note Called by:
+ *   - Enemy::OnDeath() when an enemy dies. The enemy passes its own world position and dropTableId.
+ */
 void DropSystem::SpawnDrops(int dropTableId, const AEVec2& worldPos)
 {
     // Retrieve the specific set of potential drops from the DB
@@ -157,6 +190,20 @@ void DropSystem::SpawnDrops(int dropTableId, const AEVec2& worldPos)
     }
 }
 
+/**
+ * @brief Adds a pickup notification message to the scrolling screen log.
+ *
+ * When the player picks up an item, a brief message appears on the HUD showing what they got
+ * (e.g. "+5 Coins", "+10 Ammo", "+Iron Sword"). This function formats that message
+ * from the pickup payload and pushes it into a queue.
+ * If the queue is already full (max entries reached), the oldest message is dropped to make room.
+ *
+ * @param payload  What was just picked up. Passed by CONST REFERENCE. Only read
+ *                 the type and amount to format the display string, we never change the payload.
+ *
+ * @note Called by:
+ *   - Player::TryPickup() - right after a successful pickup, to notify the HUD.
+ */
 void DropSystem::AddToPickupDisplay(const PickupPayload& payload)
 {
     std::string str{"+" + std::to_string(payload.amount) + " "};
@@ -188,6 +235,23 @@ void DropSystem::AddToPickupDisplay(const PickupPayload& payload)
     pickupLogQueue.push_back(str);
 }
 
+/**
+ * @brief Draws the scrolling pickup log messages on the screen every frame.
+ *
+ * This renders the list of recent pickup messages ("+ 5 Coins", "+ Iron Sword") in the corner
+ * of the screen. Each message stays on screen for `timeTillPop` seconds before
+ * the oldest one is removed from the front of the queue.
+ *
+ * Uses the deque (double-ended queue) structure so we can:
+ *  - add new messages to the BACK quickly (push_back)
+ *  - remove old messages from the FRONT cheaply (pop_front)
+ *  Unlike a vector, a deque doesn't need to shift all elements when removing from the front.
+ *
+ * @param dt  Time since the last frame in seconds. Passed by VALUE.
+ *
+ * @note Called by:
+ *   - Player::DrawUI() or the main game draw each frame while the log has messages to show.
+ */
 void DropSystem::PrintPickupDisplay(float dt)
 {
     if (pickupLogQueue.empty()) return;

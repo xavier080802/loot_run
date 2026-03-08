@@ -42,6 +42,19 @@ GameObject* Actor::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShap
     return GameObject::Init(_pos, _scale, _z, _meshShape, _colShape, _colSize, _collideWithLayers, _isInLayer);
 }
 
+/**
+ * @brief Sets up the actor's stats and gives it full health to start the game.
+ *
+ * Called as the last step of initializing either a Player or Enemy before they appear in the world.
+ * After this runs, the actor's HP is full and their stats are locked in.
+ *
+ * @param finalStats  The ready-to-use stat block (after gear, upgrades, etc are already applied).
+ *                    Passed by CONST REFERENCE. Copy the values in, doesn't store the reference.
+ *
+ * @note Called by:
+ *   - Player::InitPlayerRuntime() - after RecalculateStats() is done.
+ *   - Enemy::InitEnemyRuntime() - right after the EnemyDef's baseStats are loaded.
+ */
 void Actor::InitActorRuntime(const ActorStats& finalStats)
 {
     mStats = finalStats;
@@ -69,6 +82,27 @@ void Actor::Draw()
     DrawStatusEffectIcons(width, { pos.x, pos.y - (scale.y + width) * 0.5f }, NUM_SE_ICONS);
 }
 
+/**
+ * @brief Makes this actor deal damage to another actor.
+ *
+ * This is the standard way to kick off an attack. Before the damage hits,
+ * any "before dealing damage" effects (like a sword enchantment or a buff) 
+ * get a chance to modify the final number. Then it calls TakeDamage on the target.
+ *
+ * Friendly fire is NOT handled here. That's up to the caller (usually Combat::ExecuteAttack)
+ * to filter out invalid targets before calling this.
+ *
+ * @param target    The actor getting hit. Passed as a RAW POINTER because we need to call
+ *                  methods on it, but we don't transfer ownership.
+ * @param baseDmg   The initial damage number before any modifiers. Passed by VALUE (float).
+ * @param dmgType   What kind of damage this is (Physical, Elemental, etc). Passed by VALUE (enum).
+ * @param weapon    The weapon being used, if any (can be nullptr for unarmed or special attacks).
+ *                  Passed as CONST POINTER because we only read it for callback notifications.
+ *
+ * @note Called by:
+ *   - Combat::OnProjectileHit() - when a fired projectile connects with a target.
+ *   - Combat::OnMeleeHit() - when a melee hitbox overlaps a target.
+ */
 void Actor::DealDamage(Actor* target, float baseDmg, DAMAGE_TYPE dmgType, const EquipmentData* weapon)
 {
     // Make sure we have a valid and alive target before doing anything.
@@ -90,6 +124,25 @@ void Actor::DealDamage(Actor* target, float baseDmg, DAMAGE_TYPE dmgType, const 
     target->TakeDamage({ finalDmg, this, dmgType, weapon });
 }
 
+/**
+ * @brief Applies incoming damage to this actor's HP.
+ *
+ * This is the "receiving end" of an attack. It:
+ * 1. Skips if damage is zero or negative (can't heal by hitting).
+ * 2. Reduces physical/magical damage based on the actor's defense stat.
+ *    (True Damage and Elemental damage skip defense entirely.)
+ * 3. Subtracts the final amount from HP.
+ * 4. Notifies any on-hit subscribers (for lifesteal, reactive effects etc).
+ * 5. Shows a floating damage number above the actor.
+ * 6. Calls OnDeath() if HP drops to zero.
+ *
+ * @param data  A bundle of info about the attack (amount, attacker, damage type, weapon).
+ *              Passed by CONST REFERENCE. Only read from it, never modify it,
+ *              and it could be a bit expensive to copy every hit.
+ *
+ * @note Called by:
+ *   - Actor::DealDamage() - always. The attacker calls this on the target.
+ */
 void Actor::TakeDamage(DamageData const& data)
 {
     // Ignore non-positive damage
@@ -136,6 +189,18 @@ void Actor::TakeDamage(DamageData const& data)
     }
 }
 
+/**
+ * @brief Restores a chunk of the actor's HP without going over their maximum.
+ *
+ * Simple healing function. The amount is capped so that healing can never
+ * push HP above the actor's max. Does nothing if given zero or negative heal.
+ *
+ * @param amt  How many HP points to restore. Passed by VALUE (float).
+ *
+ * @note Called by:
+ *   - Player::TryPickup() - when the item type is Heal.
+ *   - Any status effect or ability that heals in the future.
+ */
 void Actor::Heal(float amt)
 {
     if (amt <= 0.0f) return;
@@ -183,7 +248,7 @@ void Actor::UpdateStatusEffects(double dt)
 
 float Actor::GetStatEffectValue(STAT_TYPE stat, float baseStat)
 {
-    float final{ 0 };
+    float final{};
     for (auto& pair : statusEffectsDict) {
         final += pair.second->GetFinalModVal(stat, baseStat);
     }
@@ -195,6 +260,21 @@ std::map<std::string, StatEffects::StatusEffect*> const& Actor::GetStatusEffects
     return statusEffectsDict;
 }
 
+/**
+ * @brief Handles the actor's death. Turns them off and broadcasts the event.
+ *
+ * The base version just disables the actor immediately.
+ * Both Player and Enemy override this with their own extra logic:
+ * - Enemy::OnDeath() also spawns drops via DropSystem.
+ * - Player::OnDeath() would handle respawning or game over logic (WIP).
+ *
+ * @param killer  Who killed this actor, if anyone. Can be nullptr if they died from
+ *                a non-attacker source. Passed as a normal POINTER.
+ *
+ * @note Overridden by:
+ *   - Enemy::OnDeath() - enemy-specific death (dropping loot, etc).
+ *   - Player::OnDeath() - player-specific death (WIP).
+ */
 void Actor::OnDeath(Actor* killer)
 {    
     // Disable immediately to prevent further collision or updates.
