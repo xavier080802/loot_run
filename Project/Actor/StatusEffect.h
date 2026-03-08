@@ -118,6 +118,7 @@ namespace StatEffects {
 		void ScaleMods(float scalar);
 
 		void SetIcon(std::string const& path);
+		void SetName(std::string const& newName);
 
 	protected:
 		virtual void DrawTooltip() const;

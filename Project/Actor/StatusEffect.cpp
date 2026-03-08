@@ -69,7 +69,7 @@ void StatEffects::StatusEffect::DrawTooltip() const
 	ss << std::fixed;
 	ss << name;
 	if (maxStacks <= 1) {
-		ss << " [Unstackable]";
+		ss << "\n[Unstackable]";
 	}
 	else {
 		ss << "\nStacks: " << stacks << " [Max " + std::to_string(maxStacks) + "]";
@@ -130,6 +130,11 @@ void StatEffects::StatusEffect::ScaleMods(float scalar)
 void StatEffects::StatusEffect::SetIcon(std::string const& path)
 {
 	icon = path;
+}
+
+void StatEffects::StatusEffect::SetName(std::string const& newName)
+{
+	name = newName;
 }
 
 float StatEffects::Mod::GetValFromActor(Actor const& actor) const

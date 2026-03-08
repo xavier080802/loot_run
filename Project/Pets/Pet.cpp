@@ -74,6 +74,7 @@ void Pet::SetPath(std::initializer_list<AEVec2> const& _path, bool append)
 void Pet::SetData(const Pets::PetData& newData, Pets::PET_RANK rank)
 {
 	data = newData;
+	data.passive.SetName(data.name + "'s Call of Awakening");
 	//Scale values based on rarity
 	data.passive.ScaleMods(data.rarityScaling[rank]);
 	for (StatEffects::Mod& m : data.multipliers) {
