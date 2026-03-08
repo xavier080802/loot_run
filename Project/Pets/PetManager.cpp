@@ -58,6 +58,8 @@ void PetManager::Init() {
 	LoadUIJSON();
 	skillUI = new UIElement{ NormToWorld(iconPos) + iconSize * 0.5f, {iconSize, iconSize}, 1, Collision::COL_RECT };
 	skillUI->SetHoverCallback([this](bool) {showTooltip = true; });
+
+	SetPet(Pets::PET_1, Pets::MYTHICAL);
 }
 
 void PetManager::InitPetForGame()
@@ -237,7 +239,10 @@ void PetManager::LoadPetData()
 	Json::CharReaderBuilder builder;
 	std::string errs;
 
-	if (Json::parseFromStream(builder, ifs, &root, &errs) && root["pets"].isArray()) {}
+	if (!Json::parseFromStream(builder, ifs, &root, &errs) || !root["pets"].isArray()) {
+		std::cout << "LoadEnemyDefs: parse failed: " << errs << "\n";
+		return;
+	}
 
 	if (!root.isObject() || !root.isMember("pets") || !root["pets"].isArray()) {
 		std::cout << "Pet data: missing/invalid 'pets' array\n";
@@ -284,15 +289,6 @@ void PetManager::LoadPetData()
 		}
 
 		//Get pet skill ptr
-		pd.PetSkill = PetSkills::skills[pd.id];
-
-		petData[pd.id] = pd;
-
-		pd.skillCooldown = v.get("skillCooldown", 0).asFloat();
-		pd.skillDesc = v.get("skillDesc", "").asString();
-		pd.texture = v.get("texture", "").asString();
-		pd.passive.SetIcon(pd.texture);
-
 		if (static_cast<size_t>(pd.id) < PetSkills::skills.size()) {
 			pd.PetSkill = PetSkills::skills[pd.id];
 		}
