@@ -18,9 +18,11 @@ struct EquipmentModifiers
 
 struct UpgradeMultipliers
 {
-	float hpMult = 1.0f;
-	float attackMult = 1.0f;
-	float defenseMult = 1.0f;
+	float hpMult = 1.0f;          // Multiplier for max HP. 1.0 = no change, 2.0 = double HP.
+	float attackMult = 1.0f;      // Multiplier for attack damage.
+	float defenseMult = 1.0f;     // Multiplier for defense.
+	float moveSpeedMult = 1.0f;   // Multiplier for movement speed from the shop.
+	float attackSpeedMult = 1.0f; // Multiplier for how fast the character attacks.
 };
 
 enum STAT_TYPE {
