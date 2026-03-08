@@ -30,6 +30,10 @@ public:
     // Recomputes the player's final stats by combining base stats, equipment modifiers, and upgrades.
     // Should be called whenever inventory changes.
     void RecalculateStats();
+
+    // Reads the current ShopFunctions upgrade levels and applies them as UpgradeMultipliers,
+    // then recalculates stats. Call this after any shop purchase or refund.
+    void ApplyShopUpgrades();
     
     // Processes collision with a PickupGO payload, adding items/ammo/health to the player.
     bool TryPickup(const PickupPayload& payload);

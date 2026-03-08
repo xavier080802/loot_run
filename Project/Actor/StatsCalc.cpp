@@ -6,13 +6,14 @@ ActorStats StatsCalc::ComputeFinalStats(const ActorStats& base,
 {
     ActorStats out;
 
-    out.maxHP = (base.maxHP + equip.additive.maxHP) * upgrades.hpMult;
-    out.attack = (base.attack + equip.additive.attack) * upgrades.attackMult;
-    out.defense = (base.defense + equip.additive.defense) * upgrades.defenseMult;
-
-    // movement/attack speed currently additive
-    out.moveSpeed = base.moveSpeed + equip.additive.moveSpeed;
-    out.attackSpeed = base.attackSpeed + equip.additive.attackSpeed;
+    // Upgrade multipliers scale BASE stats only. Equipment flat bonuses are added on top.
+    // Formula: (base * upgradeMultiplier) + equipmentBonus
+    // Example: base HP 100, x1.3 upgrade, +50 gear => (100*1.3)+50 = 180
+    out.maxHP = (base.maxHP * upgrades.hpMult) + equip.additive.maxHP;
+    out.attack = (base.attack * upgrades.attackMult) + equip.additive.attack;
+    out.defense = (base.defense * upgrades.defenseMult) + equip.additive.defense;
+    out.moveSpeed = (base.moveSpeed * upgrades.moveSpeedMult) + equip.additive.moveSpeed;
+    out.attackSpeed = (base.attackSpeed * upgrades.attackSpeedMult) + equip.additive.attackSpeed;
 
     return out;
 }

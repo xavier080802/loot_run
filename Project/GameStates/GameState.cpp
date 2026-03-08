@@ -285,6 +285,8 @@ void GameState::InitState()
     base.attackSpeed = 1.0f;
     base.moveSpeed = playerSpeed;
     gPlayer->InitPlayerRuntime(base);
+    gPlayer->ApplyShopUpgrades();
+    gPlayer->Heal(gPlayer->GetMaxHP()); // fill to the actual maxHP after upgrades are applied
 
     LootChest* chest = dynamic_cast<LootChest*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
     chest->Init(chestTilePos, { 35,35 }, 0, MESH_SQUARE, Collision::COL_RECT, { 35,35 }, CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE)

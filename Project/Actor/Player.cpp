@@ -10,6 +10,7 @@
 #include "../Helpers/RenderUtils.h"
 #include "../Helpers/MatrixUtils.h"
 #include "../GameStateManager.h"
+#include "../ShopFunctions.h"
 #include <iostream>
 
 namespace {
@@ -89,6 +90,23 @@ void Player::RecalculateStats()
 	// Keep HP valid after stat changes
 	if (mCurrentHP > mStats.maxHP) mCurrentHP = mStats.maxHP;
 	if (mCurrentHP <= 0.0f) mCurrentHP = mStats.maxHP;
+}
+
+
+void Player::ApplyShopUpgrades()
+{
+	ShopFunctions* shop = ShopFunctions::GetInstance();
+
+	UpgradeMultipliers up;
+	up.hpMult          = 1.0f + shop->getStatBonus(STAT_TYPE::MAX_HP);
+	up.attackMult      = 1.0f + shop->getStatBonus(STAT_TYPE::ATT);
+	up.defenseMult     = 1.0f + shop->getStatBonus(STAT_TYPE::DEF);
+	up.moveSpeedMult   = 1.0f + shop->getStatBonus(STAT_TYPE::MOVE_SPD);
+	up.attackSpeedMult = 1.0f + shop->getStatBonus(STAT_TYPE::ATT_SPD);
+
+	// Store the multipliers in the inventory so RecalculateStats can pick them up
+	mInventory.SetUpgradeMultipliers(up);
+	RecalculateStats();
 }
 
 void Player::Update(double dt)
