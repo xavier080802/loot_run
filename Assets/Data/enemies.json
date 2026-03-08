@@ -12,9 +12,9 @@
         "attackSpeed": 1.0
       },
       "render": {
-        "radius": 15,
+        "radius": 30,
         "mesh": "circle",
-        "texturePath": "Assets/Enemies/slime.png"
+        "texturePath": "Assets/enemyplaceholder.png"
       },
       "attack": {
         "range": 5.0,
@@ -39,7 +39,7 @@
       "render": {
         "radius": 60,
         "mesh": "circle",
-        "texturePath": "Assets/Enemies/slime.png"
+        "texturePath": "Assets/enemyplaceholder.png"
       },
       "attack": {
         "range": 100.0,

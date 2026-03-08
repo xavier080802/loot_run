@@ -10,6 +10,7 @@
 #include <iostream>
 #include "../gacha.h"
 #include "../Music.h"
+#include "../Pets/PetManager.h"
 
 //helpers
 namespace {
@@ -150,6 +151,7 @@ void ShopState::Update(double dt)
 
 		// Main Button Logic
 		if (gStateAnim.phase == GachaPhase::Done) {
+			PetManager::GetInstance()->SaveInventoryToJSON();
 			if (pull10) BeginGachaOverlay(gStateAnim, 10, 0.1f, 0.8f, 0.3f);
 			else if (pull100) BeginGachaOverlay(gStateAnim, 100, 0.1f, 1.2f, 0.2f);
 		}

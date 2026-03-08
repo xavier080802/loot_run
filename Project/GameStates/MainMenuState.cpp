@@ -147,9 +147,8 @@ void MainMenuState::Update(double dt)
 						->SetNextGameState("GameState", true, true);
 					
 					break;
-				case 1: // pet
-					/*GameStateManager::GetInstance()
-						->SetNextGameState("PetMenuState", true, true);*/
+				case 1: // pet button
+					GameStateManager::GetInstance()->SetNextGameState("PetState", true, true);
 					break;
 				case 2: // shop
 					GameStateManager::GetInstance()

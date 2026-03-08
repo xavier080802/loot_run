@@ -14,19 +14,22 @@ namespace Pets {
 		UNCOMMON,
 		RARE,
 		EPIC,
-		MYTHICAL,
-		LEGENDARY
+		LEGENDARY, 
+		MYTHICAL   
 	};
 
-	//ID for all the pets
+	// ID for all the pets
 	enum PET_TYPE {
 		NONE,
-		PET_1,
-
-		NUM_PETS //Last
+		PET_1, // Rock
+		PET_2, // Slime
+		PET_3, // Wolf
+		PET_4, // Whale
+		PET_5, // Garuda
+		PET_6, // Dragon
+		NUM_PETS // Last
 	};
 
-	//Data of a pet species, parsed from a json
 	struct PetData {
 		~PetData() = default;
 		PET_TYPE id{};
@@ -37,20 +40,18 @@ namespace Pets {
 		float skillCooldown{};
 		std::string skillDesc{};
 		std::string texture{};
-		std::vector<Elements::ELEMENT_TYPE> skillElements{}; //Elements the skill may inflict (implementation-based)
+		std::vector<Elements::ELEMENT_TYPE> skillElements{};
 
-		//Not loaded from json
 		bool (*PetSkill)(const PetSkills::SkillCastData& data) = nullptr;
 	};
 
-	//Owned pets - CSV parse format
 	struct PetSaveData {
 		PET_TYPE id{};
 		PET_RANK rank{};
 
 		PetSaveData(PET_TYPE _id = PET_TYPE::NONE, PET_RANK _rank = PET_RANK::COMMON)
-			: id{ _id }, rank{ _rank } {};
+			: id{ _id }, rank{ _rank } {
+		};
 	};
 }
 #endif // !_PET_CONSTS_H_
-

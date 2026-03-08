@@ -255,6 +255,12 @@
     <ClCompile Include="Actor\Combat.cpp">
       <Filter>Source Files\Actors</Filter>
     </ClCompile>
+    <ClCompile Include="Pets\PetInventory.cpp">
+      <Filter>Source Files\Pets</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStates\PetState.cpp">
+      <Filter>Source Files\GameStates</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -467,5 +473,16 @@
     <ClInclude Include="Actor\Combat.h">
       <Filter>Header Files\Actors</Filter>
     </ClInclude>
+    <ClInclude Include="Pets\PetInventory.h">
+      <Filter>Header Files\Pets</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStates\PetState.h">
+      <Filter>Header Files\GameStates</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Pet.json">
+      <Filter>Source Files\Pets</Filter>
+    </None>
   </ItemGroup>
 </Project>

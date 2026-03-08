@@ -77,9 +77,9 @@ void InitTutorial(MapData& map)
     map.walls.push_back({ { -400, r5.y - tHalf }, hDist, WALL_THICK });
 
     // --- Entity Placement ---
-    map.startPos = {}; //r1
-    map.enemy1Pos = {75,-35}; //r3
-    map.chestPos = r4;
-    map.enemy2Pos = {110,-35}; //r5
-    map.doorPos = r6;
+    map.startPos = { 0, 0 };
+    map.enemy1Pos = { 0, 0 };
+    map.enemy2Pos = { 0, 0 };
+    map.chestPos = { 0, 0 };
+    map.doorPos = { 0, 0 };
 }

@@ -47,7 +47,8 @@ namespace {
     // --- BOSS PLACEHOLDER ---
     bool bossAlive = true;
     float bossRadius = 60.0f;
-    Enemy* boss, *enemy1, *enemy2;
+    Enemy* boss;
+    std::vector<Enemy*> csvEnemies;
 
     // --- CAMERA DATA ---
     AEVec2 camPos, camVel;
@@ -60,7 +61,10 @@ namespace {
     float halfMapWidth, halfMapHeight;
     MapData currentLevel;
     TileMap* map{};
+    TileMap* nextMap{};
     Minimap* minimap{};
+    float teleportCooldown = 0.f;
+    bool inProceduralMap = false;
 
     // --- TUTORIAL ---
     bool doTutorial{ false };
@@ -68,8 +72,8 @@ namespace {
     s8 font{};
 
     //Boss HP & BossProgress bar
-	float bossHPProgressBarWidth = 0.f;
-	float bossHPProgressBarHeight = 0.f;
+    float bossHPProgressBarWidth = 0.f;
+    float bossHPProgressBarHeight = 0.f;
     float bossHPProgressBar = 100.f;
     float bossMaxHPProgressBar = 100.f;
 
@@ -97,56 +101,20 @@ namespace {
     }
 
     void RenderWorldMap() {
-        //AEGfxStart();
-        //AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-        //AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-
-        //// Camera matrix math
-        //AEMtx33 viewMtx, zoomMtx, camMatrix;
-        //AEMtx33Trans(&viewMtx, -camPos.x, -camPos.y);
-        //AEMtx33Scale(&zoomMtx, camZoom, camZoom);
-        //AEMtx33Concat(&camMatrix, &zoomMtx, &viewMtx);
-
-        //// --- WORLD OBJECTS RENDERING ---
-        //AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
-        //for (const auto& wall : currentLevel.walls) {
-        //    AEMtx33 s, t, final;
-        //    AEMtx33Scale(&s, wall.width + 4.0f, wall.height + 4.0f);
-        //    AEMtx33Trans(&t, std::floor(wall.position.x), std::floor(wall.position.y));
-        //    AEMtx33Concat(&final, &camMatrix, &t);
-        //    AEMtx33Concat(&final, &final, &s);
-        //    AEGfxSetTransform(final.m);
-        //    AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);
-        //}
-
-        // To be replace boss logic
         if (!bossAlive) {
-            //placeholder boss
-            /*AEMtx33 bS, bT, bF; AEMtx33Scale(&bS, bossRadius * 2, bossRadius * 2); AEMtx33Trans(&bT, currentLevel.doorPos.x, currentLevel.doorPos.y);
-            AEMtx33Concat(&bF, &camMatrix, &bT); AEMtx33Concat(&bF, &bF, &bS); AEGfxSetTransform(bF.m);
-            AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);*/
-
-            // World Door Rect 
-            /*AEMtx33 dS, dT, dF; AEMtx33Scale(&dS, 45.0f, 125.0f); AEMtx33Trans(&dT, currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y);
-            AEMtx33Concat(&dF, &camMatrix, &dT); AEMtx33Concat(&dF, &dF, &dS); AEGfxSetTransform(dF.m);
-            AEGfxSetColorToMultiply(0.0f, 0.8f, 0.0f, 1.0f); AEGfxMeshDraw(wallMesh, AE_GFX_MDM_TRIANGLES);*/
-
             DrawTintedMesh(GetTransformMtx({ currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y }, 0, { 45,125 }),
                 wallMesh, nullptr, { 0, 0.8f * 255, 0, 255 }, 255);
         }
 
-        // Placeholder enemies
-        /*AEVec2 enemies[] = { currentLevel.enemy1Pos, currentLevel.enemy2Pos };
-        for (auto& e : enemies) {
-            AEMtx33 eS, eT, eF; AEMtx33Scale(&eS, 30, 30); AEMtx33Trans(&eT, e.x, e.y);
-            AEMtx33Concat(&eF, &camMatrix, &eT); AEMtx33Concat(&eF, &eF, &eS); AEGfxSetTransform(eF.m);
-            AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); AEGfxMeshDraw(circleMesh, AE_GFX_MDM_TRIANGLES);
-        }*/
-
-        map->Render();
+        if (inProceduralMap) {
+            if (nextMap) nextMap->Render();
+        }
+        else {
+            map->Render();
+        }
     }
 
-	// Draws the boss HP BossProgress bar at the top of the screen
+    // Draws the boss HP BossProgress bar at the top of the screen
     void DrawBossHPProgressBar()
     {
         if (doTutorial && fairy->data.stage != Tutorial::BOSS) return; //Only show hp bar at tut boss stage.
@@ -163,14 +131,14 @@ namespace {
         AEVec2 bgSize = ToVec2(bossHPProgressBarWidth, bossHPProgressBarHeight);
         AEVec2 bhpbSize = ToVec2((bossHPProgressBarWidth - bhpbMargin) * hpRatio, bossHPProgressBarHeight - bhpbMargin);
         AEVec2 bgPos = ToVec2(barX + bossHPProgressBarWidth * 0.5f, barY);
-        AEVec2 bhpbPos = ToVec2(AEGfxGetWinMinX()+bhpbSize.x / 2 + bhpbMargin / 2, barY);
-        
+        AEVec2 bhpbPos = ToVec2(AEGfxGetWinMinX() + bhpbSize.x / 2 + bhpbMargin / 2, barY);
+
         AEMtx33 bhpbMatrix;
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
         AEGfxTextureSet(nullptr, 0, 0);
         GetTransformMtx(bhpbMatrix, bgPos, 0, bgSize);
         AEGfxSetTransform(bhpbMatrix.m);
-        AEGfxSetColorToMultiply(0.3f,0.3f,0.3f,1.f);
+        AEGfxSetColorToMultiply(0.3f, 0.3f, 0.3f, 1.f);
         AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 
         GetTransformMtx(bhpbMatrix, bhpbPos, 0, bhpbSize);
@@ -181,21 +149,18 @@ namespace {
 }
 
 void GameState::LoadState() {
-    
-    if (!GameDB::LoadEnemyDefs("Assets/Data/enemies.json"))
-    {
+    if (!GameDB::LoadEnemyDefs("Assets/Data/enemies.json")) {
         std::cout << "WARNING: enemies.json failed to load.\n";
     }
     font = RenderingManager::GetInstance()->GetFont();
-    
-    // Explicitly load all separated equipment definition categories
+
     GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Melee/melee.json", EquipmentCategory::Melee);
     GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Range/ranged.json", EquipmentCategory::Ranged);
     GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Head/head.json", EquipmentCategory::Head);
     GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Body/body.json", EquipmentCategory::Body);
     GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Hands/hands.json", EquipmentCategory::Hands);
     GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Feet/feet.json", EquipmentCategory::Feet);
-    
+
     if (!GameDB::LoadPlayerDef("Assets/Data/Player/player.json"))
     {
         std::cout << "WARNING: player.json failed to load.\n";
@@ -209,27 +174,45 @@ void GameState::LoadState() {
     circleMesh = RenderingManager::GetInstance()->GetMesh(MESH_CIRCLE);
     squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
 
-    map = new TileMap("Assets/test_csv.csv");
+    map = new TileMap("Assets/Dungeon.csv", { 0,0 }, 115.f, 115.f);
+
+    float procTileSize = 115.f;
+    unsigned procRows = 50, procCols = 50;
+    nextMap = new TileMap({ 0.f, 0.f }, procTileSize, procTileSize);
+    srand(1234);
+    nextMap->GenerateProcedural(procRows, procCols, 1234);
+
+    unsigned csvCols = map->GetMapSize().first;
+    unsigned csvRows = map->GetMapSize().second;
+    playerPos = map->GetTilePosition(1, 1);
+    bool foundSpawn = false;
+    for (unsigned r = 1; r < csvRows - 1 && !foundSpawn; ++r) {
+        for (unsigned c = 1; c < csvCols - 1 && !foundSpawn; ++c) {
+            const TileMap::Tile* t = map->QueryTile(r, c);
+            if (t && !t->isSolid && t->type == TileMap::TILE_NONE) {
+                playerPos = map->GetTilePosition(r, c);
+                foundSpawn = true;
+            }
+        }
+    }
+
+    camPos = playerPos;
+
     minimap = new Minimap{};
 
-    AEVec2Zero(&playerPos);
-    playerDir = { 1.0f, 0.0f };
+    mapWidth = map->GetFullMapSize().x + nextMap->GetFullMapSize().x;
+    mapHeight = (map->GetFullMapSize().y > nextMap->GetFullMapSize().y) ?
+        map->GetFullMapSize().y : nextMap->GetFullMapSize().y;
 
-    AEVec2Zero(&camPos);
-    AEVec2Zero(&camVel);
+    GameObjectManager::GetInstance()->InitCollisionGrid(
+        static_cast<unsigned>(mapWidth),
+        static_cast<unsigned>(mapHeight)
+    );
 
-    GameObjectManager::GetInstance()->InitCollisionGrid(static_cast<unsigned>(mapWidth), static_cast<unsigned>(mapHeight));
-
-    playerDir = { 1.0f, 0.0f };
-
-    // --- Spawn player GO once ---
     if (!gPlayer) gPlayer = new Player();
     PetManager::GetInstance()->LinkPlayer(gPlayer);
-    
-    // Load Enemies
+
     boss = new Enemy();
-    enemy1 = new Enemy();
-    enemy2 = new Enemy();
 
     if (doTutorial) {
         fairy = new Tutorial::TutorialFairy();
@@ -240,7 +223,38 @@ void GameState::InitState()
 {
     InitTutorial(currentLevel);
 
-    // Player collides with pickups + enemies
+    unsigned csvCols = map->GetMapSize().first;
+    unsigned csvRows = map->GetMapSize().second;
+    AEVec2 safeSpawnPos = map->GetTilePosition(1, 1);
+    bool found = false;
+    for (unsigned r = 1; r < csvRows - 1 && !found; ++r) {
+        for (unsigned c = 1; c < csvCols - 1 && !found; ++c) {
+            const TileMap::Tile* t = map->QueryTile(r, c);
+            if (t && !t->isSolid && t->type == TileMap::TILE_NONE) {
+                safeSpawnPos = map->GetTilePosition(r, c);
+                found = true;
+            }
+        }
+    }
+
+    // Scan CSV map for enemy, boss and chest tile positions
+    std::vector<AEVec2> enemyTilePositions;
+    AEVec2 chestTilePos = currentLevel.chestPos;
+    bool foundChest = false;
+    for (unsigned r = 0; r < csvRows; ++r) {
+        for (unsigned c = 0; c < csvCols; ++c) {
+            const TileMap::Tile* t = map->QueryTile(r, c);
+            if (!t) continue;
+            if (t->type == TileMap::TILE_ENEMY)
+                enemyTilePositions.push_back(map->GetTilePosition(r, c));
+            else if (t->type == TileMap::TILE_CHEST && !foundChest) {
+                chestTilePos = map->GetTilePosition(r, c);
+                foundChest = true;
+            }
+        }
+    }
+
+    AEVec2 bossPos = enemyTilePositions.size() > 2 ? enemyTilePositions[2] : currentLevel.doorPos;
     Bitmask collideMask = CreateBitmask(3,
         Collision::LAYER::ENEMIES,
         Collision::LAYER::INTERACTABLE,
@@ -248,8 +262,8 @@ void GameState::InitState()
     );
 
     gPlayer->Init(
-        currentLevel.startPos,
-        AEVec2{ playerRadius*2.f, playerRadius*2.f },
+        safeSpawnPos,
+        AEVec2{ playerRadius * 2.f, playerRadius * 2.f },
         0,
         MESH_CIRCLE,
         Collision::SHAPE::COL_CIRCLE,
@@ -260,37 +274,28 @@ void GameState::InitState()
     PetManager::GetInstance()->PlacePet(GetPlayerPos());
     PetManager::GetInstance()->InitPetForGame();
 
-    ActorStats base{ GameDB::GetPlayerBaseStats() };
+    ActorStats base{};
+    base.maxHP = 100.0f;
+    base.attack = 10.0f;
+    base.attackSpeed = 1.0f;
+    base.moveSpeed = playerSpeed;
     gPlayer->InitPlayerRuntime(base);
 
-    //Init other gameobjects
     LootChest* chest = dynamic_cast<LootChest*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
-    chest->Init(currentLevel.chestPos, { 35,35 }, 0, MESH_SQUARE, Collision::COL_RECT, { 35,35 }, CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE)
-         ->GetRenderData().tint = CreateColor(255, 0.84f * 255.f, 0, 255);
-
-    //Color red = CreateColor(255, 0, 0, 255);
-    //boss->Init(currentLevel.doorPos, { bossRadius * 2.f, bossRadius * 2.f }, 0, MESH_CIRCLE, COL_CIRCLE, { bossRadius * 2.f, bossRadius * 2.f }, CreateBitmask(1, GameObject::PLAYER), GameObject::ENEMIES)
-    //    ->GetRenderData().tint = red;
-    //boss->InitEnemyRuntime(new EnemyDef{ 0, {100}, 0 });
-    //enemy1->Init(currentLevel.enemy1Pos, { 30,30 }, 0, MESH_CIRCLE, COL_CIRCLE, { 30,30 }, CreateBitmask(1, GameObject::PLAYER), GameObject::ENEMIES)
-    //    ->GetRenderData().tint = red;
-    //enemy1->InitEnemyRuntime(new EnemyDef{ 0, {30}, 0 });
-    //enemy2->Init(currentLevel.enemy2Pos, { 30,30 }, 0, MESH_CIRCLE, COL_CIRCLE, { 30,30 }, CreateBitmask(1, GameObject::PLAYER), GameObject::ENEMIES)
-    //    ->GetRenderData().tint = red;
-    //enemy2->InitEnemyRuntime(new EnemyDef{ 0, {30}, 0 });
+    chest->Init(chestTilePos, { 35,35 }, 0, MESH_SQUARE, Collision::COL_RECT, { 35,35 }, CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE)
+        ->GetRenderData().tint = CreateColor(255, 0.84f * 255.f, 0, 255);
 
     const EnemyDef* bossDef = GameDB::GetEnemyDef(2);
     const EnemyDef* slimeDef = GameDB::GetEnemyDef(1);
 
     std::cout << "bossDef=" << (bossDef ? "OK" : "NULL")
-              << " slimeDef=" << (slimeDef ? "OK" : "NULL") << "\n";
+        << " slimeDef=" << (slimeDef ? "OK" : "NULL") << "\n";
 
     auto SpawnEnemyFromDef = [&](Enemy* enemy, const EnemyDef* def, AEVec2 pos)
         {
             if (!enemy || !def) return;
 
             float r = def->render.radius;
-
             MESH_SHAPE meshShape = (def->render.mesh == EnemyMesh::Square) ? MESH_SQUARE : MESH_CIRCLE;
             Collision::SHAPE colShape = (meshShape == MESH_SQUARE) ? Collision::COL_RECT : Collision::COL_CIRCLE;
 
@@ -303,18 +308,28 @@ void GameState::InitState()
                 { r * 2.0f, r * 2.0f },
                 CreateBitmask(2, Collision::PLAYER, Collision::OBSTACLE),
                 Collision::ENEMIES
-            )->GetRenderData().tint = def->render.tint;
-
+            );
             enemy->InitEnemyRuntime(def);
+
+            // Set texture after InitEnemyRuntime so it doesn't get overwritten
+            enemy->GetRenderData().AddTexture("Assets/enemyplaceholder.png");
+            enemy->GetRenderData().SetActiveTexture(0);
+            enemy->GetRenderData().tint = CreateColor(255, 255, 255, 255);
+            enemy->GetRenderData().alpha = 255;
         };
 
-    SpawnEnemyFromDef(enemy1, slimeDef, currentLevel.enemy1Pos);
-    SpawnEnemyFromDef(enemy2, slimeDef, currentLevel.enemy2Pos);
-    SpawnEnemyFromDef(boss, bossDef, currentLevel.doorPos);
+    // Spawn one enemy per TILE_ENEMY found in CSV
+    csvEnemies.clear();
+    for (size_t i = 0; i < enemyTilePositions.size(); ++i) {
+        Enemy* e = new Enemy();
+        SpawnEnemyFromDef(e, slimeDef, enemyTilePositions[i]);
+        csvEnemies.push_back(e);
+    }
 
+    // Spawn boss at first enemy tile if available, else fallback
+    SpawnEnemyFromDef(boss, bossDef, bossPos);
 
-    // Camera starts on player
-    camPos = currentLevel.startPos;
+    camPos = safeSpawnPos;
     camVel = { 0,0 };
 
     minimap->Reset();
@@ -325,26 +340,54 @@ void GameState::InitState()
 }
 
 void GameState::Update(double dt)
-{       
+{
     if (AEInputCheckTriggered(AEVK_M)) {
         GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
-        return; // Exit the update early since we are switching states
+        return;
     }
-    #pragma region inputs_for_testing
-        //Press L to spawn test chest at the mouse location
-        if (AEInputCheckTriggered(AEVK_L)) {
-            LootChest* chest = dynamic_cast<LootChest*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
-            AEVec2 m = GetMouseWorldVec();
-            chest->Init(m, { 75,75 }, 1, MESH_SQUARE, Collision::COL_RECT, { 75,75 }, CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE);
-        }
+#pragma region inputs_for_testing
+    if (AEInputCheckTriggered(AEVK_L)) {
+        LootChest* chest = dynamic_cast<LootChest*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
+        AEVec2 m = GetMouseWorldVec();
+        chest->Init(m, { 75,75 }, 1, MESH_SQUARE, Collision::COL_RECT, { 75,75 }, CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE);
+    }
 
-        //Pet skill test. check cout
-        if (AEInputCheckTriggered(AEVK_R)) {
-            PostOffice::GetInstance()->Send("PetManager", new PetSkillMsg(PetSkillMsg::CAST_SKILL));
-        }
-    #pragma endregion
+    if (AEInputCheckTriggered(AEVK_R)) {
+        PostOffice::GetInstance()->Send("PetManager", new PetSkillMsg(PetSkillMsg::CAST_SKILL));
+    }
+#pragma endregion
 
     if (!gPlayer) return;
+
+    if (teleportCooldown > 0.f) teleportCooldown -= (float)dt;
+
+    if (teleportCooldown <= 0.f && nextMap) {
+        if (!inProceduralMap && map->IsConnector(gPlayer->GetPos())) {
+            nextMap->GenerateProcedural(50, 50, rand());
+            AEVec2 procSpawn = nextMap->GetSpawnPoint();
+            gPlayer->SetPos(procSpawn);
+            gPlayer->Move({ 0,0 });
+            camPos = procSpawn;
+            camVel = { 0, 0 };
+            halfMapWidth = nextMap->GetFullMapSize().x * 0.5f;
+            halfMapHeight = nextMap->GetFullMapSize().y * 0.5f;
+            SetCameraPos(camPos);
+            inProceduralMap = true;
+            teleportCooldown = 2.f;
+        }
+        else if (inProceduralMap && nextMap->IsConnector(gPlayer->GetPos())) {
+            nextMap->GenerateProcedural(50, 50, rand());
+            AEVec2 procSpawn = nextMap->GetSpawnPoint();
+            gPlayer->SetPos(procSpawn);
+            gPlayer->Move({ 0,0 });
+            camPos = procSpawn;
+            camVel = { 0, 0 };
+            SetCameraPos(camPos);
+            teleportCooldown = 2.f;
+        }
+    }
+
+    TileMap* currentMap = inProceduralMap ? nextMap : map;
 
     AEVec2 move = gPlayer->GetMoveDirNorm();
     f32 len = AEVec2Length(&move);
@@ -352,25 +395,23 @@ void GameState::Update(double dt)
         playerDir = gPlayer->GetMoveDirNorm();
     }
 
-    //Set hp bar to follow boss hp
     bossHPProgressBar = (boss->GetHP() / boss->GetMaxHP()) * bossMaxHPProgressBar;
-    
+
     bossAlive = !boss->IsDead();
     if (doTutorial && fairy->data.stage == Tutorial::BOSS && !bossAlive) {
         fairy->ChangeStage(Tutorial::END);
-        //TODO: change a tile to type DOOR
     }
-    
-    // Systems now read from gPlayer via GetPlayerPos()
-    minimap->Update(dt, *map, *gPlayer);
+
+    minimap->Update(dt, *currentMap, *gPlayer);
     UpdateWorldMap((float)dt);
 
-    GameObjectManager::GetInstance()->UpdateObjects(dt, map);
+    GameObjectManager::GetInstance()->UpdateObjects(dt, currentMap);
+
     DropSystem::PrintPickupDisplay(static_cast<float>(dt));
 }
 
-void GameState::Draw() { 
-    RenderWorldMap(); 
+void GameState::Draw() {
+    RenderWorldMap();
     GameObjectManager::GetInstance()->DrawObjects();
     DrawBossHPProgressBar();
     minimap->Render(*map, *gPlayer);
@@ -381,7 +422,6 @@ void GameState::Draw() {
 
     HandleTutorialDialogueRender();
 
-    //Draw Pet UI
     PetManager::GetInstance()->DrawUI();
 }
 
@@ -400,23 +440,24 @@ void GameState::ExitState() {
 void GameState::UnloadState() {
     if (wallMesh) AEGfxMeshFree(wallMesh);
     delete map;
+    delete nextMap;
     delete minimap;
     bgm.Exit();
+    if (font >= 0)
+        AEGfxDestroyFont(font);
 }
 
-// Boss getters and setters
-
-bool getBossAlive(){
+bool getBossAlive() {
     return bossAlive;
 }
 float getBossHPProgressBar() {
-	return bossHPProgressBar;
+    return bossHPProgressBar;
 }
 void setBossHPProgressBar(float current) {
     bossHPProgressBar = current;
 }
 float getBossMaxHPProgressBar() {
-	return bossMaxHPProgressBar;
+    return bossMaxHPProgressBar;
 }
 void setBossMaxHPProgressBar(float max) {
     bossMaxHPProgressBar = max;

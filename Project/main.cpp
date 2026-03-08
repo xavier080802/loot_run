@@ -6,6 +6,7 @@
 #include "./GameStates/MainMenuState.h"
 #include "./GameStates/GameState.h"
 #include "./GameStates/ShopState.h"
+#include "./GameStates/PetState.h"
 #include "./GameObjects/GameObjectManager.h"
 #include "UI/WorldText.h"
 #include "./Helpers/RenderUtils.h"
@@ -57,6 +58,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	goManager = GameObjectManager::GetInstance();
 	renderManager = RenderingManager::GetInstance();
 	petManager = PetManager::GetInstance();
+	PetManager::GetInstance()->SaveInventoryToJSON();
 	worldTextManager = WorldTextManager::GetInstance();
 	inputManager->Init();
 	uiManager->Init();
@@ -70,6 +72,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	stateManager->AddGameState("MainMenuState", new MainMenuState);
 	stateManager->AddGameState("GameState", new GameState);
 	stateManager->AddGameState("ShopState", new ShopState);
+	stateManager->AddGameState("PetState", new PetState);
 
 	//Enter first game state
 	stateManager->SetNextGameState("MainMenuState", true, true);

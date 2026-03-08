@@ -4,6 +4,7 @@
 #include "../DesignPatterns/PostOffice.h"
 #include "PetConsts.h"
 #include "Pet.h"
+#include "PetInventory.h" 
 #include "../Actor/Player.h"
 
 class RenderingManager;
@@ -36,9 +37,13 @@ public:
 	bool Handle(Message* message) override;
 
 	void DrawUI();
+	void SaveInventoryToJSON();
+
+	// Get the internal map for the UI loop
+	std::map<int, std::map<int, int>> const& GetInventory() const { return ownedPets; }
+	std::map<Pets::PET_TYPE, Pets::PetData> const& GetPetDataMap() const { return petData; }
 
 private:
-	const std::string InvFilePath{ "Assets/Data/pet_inv.csv" };
 	void LoadPetData();
 	PostOffice* po{};
 	RenderingManager* rm{};
@@ -48,15 +53,14 @@ private:
 	Player* player{};
 	std::string extraDesc{}; //Pet passive/mults/etc
 
-	//Pet inventory
-	std::vector<Pets::PetSaveData> ownedPets{};
+	//Pet inventory 
+	std::map<int, std::map<int, int>> ownedPets{};
 
 	//UI
 	UIElement* skillUI{};
 	bool showTooltip{ false };
 	void ShowPetTooltip();
 	void LoadUIJSON();
+	void LoadInventoryCounts(std::map<int, std::map<int, int>>& outMap);
 };
 #endif // !_PET_MANAGER_H_
-
-

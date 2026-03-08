@@ -49,21 +49,58 @@
                 }
             ],
             "multipliers": [
-                { // 0 - Scale with hp
-                    "value": 7.5,
-                    "mathType": 1,
-                    "stat": 0
-                },
-                { // 1 - Flat damage value
-                    "value": 5,
-                    "mathType": 0,
-                    "stat": 0
-                }
+                { "value": 7.5, "mathType": 1, "stat": 0 },
+                { "value": 5, "mathType": 0, "stat": 0 }
             ],
             "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
             "skillCooldown": 6,
             "skillDesc": "Yeet the rock",
             "texture": "Assets/finn.png"
+        },
+        {
+            "id": 2,
+            "name": "Slime",
+            "passive": [],
+            "multipliers": [],
+            "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
+            "skillCooldown": 5,
+            "skillDesc": "Placeholder Slime Skill"
+        },
+        {
+            "id": 3,
+            "name": "Wolf",
+            "passive": [],
+            "multipliers": [],
+            "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
+            "skillCooldown": 8,
+            "skillDesc": "Placeholder Wolf Skill"
+        },
+        {
+            "id": 4,
+            "name": "Whale",
+            "passive": [],
+            "multipliers": [],
+            "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
+            "skillCooldown": 10,
+            "skillDesc": "Placeholder Whale Skill"
+        },
+        {
+            "id": 5,
+            "name": "Garuda",
+            "passive": [],
+            "multipliers": [],
+            "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
+            "skillCooldown": 7,
+            "skillDesc": "Placeholder Garuda Skill"
+        },
+        {
+            "id": 6,
+            "name": "Dragon",
+            "passive": [],
+            "multipliers": [],
+            "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
+            "skillCooldown": 12,
+            "skillDesc": "Placeholder Dragon Skill"
         }
     ]
 }

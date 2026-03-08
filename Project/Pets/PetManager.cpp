@@ -1,10 +1,12 @@
 #include "PetManager.h"
 #include "PetSkills.h"
+#include "PetInventory.h" 
 #include "../RenderingManager.h"
 #include <iostream>
 #include <fstream>
 #include <iomanip>
 #include <json/json.h>
+#include <sstream> 
 #include "../File/CSV.h"
 #include "../UI/UIElement.h"
 #include "../Helpers/RenderUtils.h"
@@ -22,14 +24,14 @@
 namespace {
 	f32 descFontSize{ 0.35f };
 	f32 timerFontSize{ 0.5f };
-	AEVec2 padding{0.02f, 0.02f};
-	AEVec2 iconPos{-1,-1};
+	AEVec2 padding{ 0.02f, 0.02f };
+	AEVec2 iconPos{ -1,-1 };
 	f32 iconSize{};
 	f32 lineSpace{};
-	Color textCol{0,0,255,255};
+	Color textCol{ 0,0,255,255 };
 	Color tooltipBgCol{ 255,255,255,255 };
-	Color timerTextCol{0,0,0,255};
-	Color onCooldownCol{155,155,155,155};
+	Color timerTextCol{ 0,0,0,255 };
+	Color onCooldownCol{ 155,155,155,155 };
 	TextOriginPos tooltipAlignment{};
 	TextboxOriginPos boxAlignment{};
 	bool showTimerUnit{};
@@ -49,18 +51,18 @@ void PetManager::Init() {
 	//Values are TEMP
 	equippedPet->Init({}, { 25,25 }, 0, MESH_SQUARE, Collision::COL_CIRCLE, { 25,25 }, CreateBitmask(1, Collision::LAYER::ENEMIES), Collision::LAYER::PET);
 	equippedPet->SetEnabled(false);
-	//TEMP
-	SetPet(Pets::PET_1, Pets::MYTHICAL);
+
+	equippedPet->isSet = false;
 
 	//UI
 	LoadUIJSON();
-	skillUI = &(new UIElement{ NormToWorld(iconPos) + iconSize * 0.5f, {iconSize, iconSize}, 1, Collision::COL_RECT })
-		->SetHoverCallback([this](bool) {showTooltip = true;}); //Flag this frame to show tooltip (due to order of calling, showing tooltip here will render below icon)
+	skillUI = new UIElement{ NormToWorld(iconPos) + iconSize * 0.5f, {iconSize, iconSize}, 1, Collision::COL_RECT };
+	skillUI->SetHoverCallback([this](bool) {showTooltip = true; });
 }
 
 void PetManager::InitPetForGame()
 {
-	if (!equippedPet->isSet) return;
+	if (!equippedPet || !equippedPet->isSet) return;
 	if (!player) {
 		std::cout << "Player not linked to PetManager.\n";
 		return;
@@ -72,12 +74,13 @@ void PetManager::InitPetForGame()
 	equippedPet->SetEnabled(true);
 
 	//Generate description for passive
-	std::stringstream s{ extraDesc };
+	std::stringstream s;
+	s << extraDesc;
 	Pets::PetData const& d{ equippedPet->GetPetData() };
 	//Generate description for the skills
 	if (PetHasSkill()) {
 		//Cooldown
-		s << "\n[Cooldown " << std::setprecision(1) << d.skillCooldown << "s]\n";
+		s << "\n[Cooldown " << std::fixed << std::setprecision(1) << d.skillCooldown << "s]\n";
 		//Scalings
 		bool flag = false; //First listing
 		for (StatEffects::Mod const& m : d.multipliers) {
@@ -111,30 +114,31 @@ void PetManager::PlacePet(AEVec2 const& pos)
 void PetManager::SetPet(Pets::PET_TYPE pet, Pets::PET_RANK rank)
 {
 	if (pet == Pets::PET_TYPE::NONE) {
-		equippedPet->isSet = false;
+		if (equippedPet) equippedPet->isSet = false;
 		return;
 	}
 	//Set skill ptr, other values
-	Pets::PetData const& data{ petData.find(pet)->second };
-	equippedPet->SetData(data, rank);
-	equippedPet->GetRenderData().ReplaceTexture(data.texture.c_str(), 0);
-	equippedPet->isSet = true;
+	auto it = petData.find(pet);
+	if (it != petData.end()) {
+		Pets::PetData const& data{ it->second };
+		equippedPet->SetData(data, rank);
+		equippedPet->GetRenderData().ReplaceTexture(data.texture.c_str(), 0);
+		equippedPet->isSet = true;
+	}
 }
 
 bool PetManager::PetHasSkill() const
 {
-	return equippedPet->isSet && equippedPet->GetPetData().PetSkill;
+	return equippedPet && equippedPet->isSet && equippedPet->GetPetData().PetSkill;
 }
 
 bool PetManager::AddNewPet(Pets::PetSaveData const& newPet)
 {
-	if (ownedPets.size() >= MAX_PETS) return false;
-	if (CSV::Write(InvFilePath, { std::to_string(newPet.id), std::to_string(newPet.rank) })) {
-		//Write success
-		ownedPets.push_back(newPet);
-		return true;
-	}
-	return false;
+	// Increments the count for the specific Pet ID and Rank
+	ownedPets[static_cast<int>(newPet.id)][static_cast<int>(newPet.rank)]++;
+	SaveInventoryToJSON();
+
+	return true;
 }
 
 bool PetManager::Handle(Message* message)
@@ -149,7 +153,7 @@ bool PetManager::Handle(Message* message)
 	{
 	case PetSkillMsg::CAST_SKILL:
 		if (equippedPet && equippedPet->IsEnabled()) {
-			equippedPet->CastSkill({player, equippedPet});
+			equippedPet->CastSkill({ player, equippedPet });
 		}
 		break;
 	case PetSkillMsg::SKILL_READY:
@@ -163,12 +167,12 @@ bool PetManager::Handle(Message* message)
 
 void PetManager::DrawUI()
 {
-	if (!equippedPet) return;
-	
+	if (!equippedPet || !equippedPet->isSet) return;
+
 	DrawTintedMesh(GetTransformMtx(skillUI->GetPos(), 0, skillUI->GetSize()),
 		rm->GetMesh(MESH_SQUARE), rm->LoadTexture(equippedPet->GetPetData().texture),
-		equippedPet->IsOnCooldown() ? onCooldownCol : Color{255,255,255,255}, 255);
-	
+		equippedPet->IsOnCooldown() ? onCooldownCol : Color{ 255,255,255,255 }, 255);
+
 	//Write cooldown
 	if (equippedPet->IsOnCooldown()) {
 		DrawAEText(rm->GetFont(), std::to_string((int)equippedPet->GetCDTimer()) + (showTimerUnit ? "s" : ""), skillUI->GetPos(), timerFontSize,
@@ -183,104 +187,57 @@ void PetManager::DrawUI()
 
 void PetManager::ShowPetTooltip()
 {
-	std::string txt{ equippedPet->GetPetData().skillDesc + extraDesc};
+	std::string txt{ equippedPet->GetPetData().skillDesc + extraDesc };
 
 	s32 mx{}, my{};
 	AEInputGetCursorPosition(&mx, &my);
-	AEVec2 mP = ScreenToWorld(AEVec2{(float)mx, (float)my});
-
-	f32 nw{}, nh{};
-	GetAEMultilineTextSize(rm->GetFont(), txt, descFontSize, nw, nh, lineSpace);
-	AEVec2 nOffset = GetTextAlignPosNorm(rm->GetFont(), txt, mP, descFontSize, tooltipAlignment);
+	AEVec2 mP = ScreenToWorld(AEVec2{ (float)mx, (float)my });
 
 	//Draw text box
 	DrawAETextbox(rm->GetFont(), txt, AEVec2{ (float)mP.x, (float)mP.y },
 		AEGfxGetWinMaxX() * 0.4f, descFontSize, lineSpace, textCol, tooltipAlignment, TextboxOriginPos::BOTTOM,
-		TextboxBgCfg{padding, tooltipBgCol, 255, rm->GetMesh(MESH_SQUARE) });
+		TextboxBgCfg{ padding, tooltipBgCol, 255, rm->GetMesh(MESH_SQUARE) });
 }
 
-//Load UI stuff from JSON
 void PetManager::LoadUIJSON()
 {
 	std::ifstream ifs{ "Assets/Data/ui.json", std::ios_base::binary };
-
-	if (!ifs.is_open()) {
-		std::cout << "PET UI JSON FAILED TO OPEN\n";
-		return;
-	}
+	if (!ifs.is_open()) return;
 
 	Json::Value root;
 	Json::CharReaderBuilder builder;
 	std::string errs;
 
-	if (!Json::parseFromStream(builder, ifs, &root, &errs))
+	if (Json::parseFromStream(builder, ifs, &root, &errs) && root.isMember("pet_ui"))
 	{
-		std::cout << "Pet data: parse failed: " << errs << "\n";
-		ifs.close();
-		return;
+		Json::Value ui = root["pet_ui"];
+		descFontSize = ui.get("descFontSize", 0.35f).asFloat();
+		timerFontSize = ui.get("timerFontSize", 0.5f).asFloat();
+		if (ui["padding"].isArray()) {
+			padding.x = ui["padding"][0].asFloat();
+			padding.y = ui["padding"][1].asFloat();
+		}
+		if (ui["pos"].isArray()) {
+			iconPos.x = ui["pos"][0].asFloat();
+			iconPos.y = ui["pos"][1].asFloat();
+		}
+		iconSize = ui.get("size", 75).asFloat();
+		lineSpace = ui.get("lineSpace", 0.05f).asFloat();
+		showTimerUnit = ui.get("showTimerUnit", true).asBool();
 	}
-	if (!root.isObject() || !root.isMember("pet_ui")) {
-		std::cout << "Pet ui: missing/invalid 'pet_ui' object\n";
-		ifs.close();
-		return;
-	}
-	root = root["pet_ui"];
-	//Load ui values
-	descFontSize = root.get("descFontSize", 0.35f).asFloat();
-	timerFontSize = root.get("timerFontSize", 0.5f).asFloat();
-	if (root["padding"].isArray() && root["padding"].size() == 2) {
-		padding.x = root["padding"][0].asFloat();
-		padding.y = root["padding"][1].asFloat();
-	}
-	if (root["pos"].isArray() && root["pos"].size() == 2) {
-		iconPos.x = root["pos"][0].asFloat();
-		iconPos.y = root["pos"][1].asFloat();
-	}
-	iconSize = root.get("size", 75).asFloat();
-	lineSpace = root.get("lineSpace", 0.05f).asFloat();
-	if (root["textCol"].isArray() && root["textCol"].size() == 4) {
-		textCol = { root["textCol"][0].asFloat(), root["textCol"][1].asFloat() ,
-		root["textCol"][2].asFloat(),root["textCol"][3].asFloat() };
-	}
-	if (root["boxCol"].isArray() && root["boxCol"].size() == 4) {
-		tooltipBgCol = { root["boxCol"][0].asFloat(), root["boxCol"][1].asFloat() ,
-		root["boxCol"][2].asFloat(),root["boxCol"][3].asFloat() };
-	}
-	if (root["timerTextCol"].isArray() && root["timerTextCol"].size() == 4) {
-		timerTextCol = { root["timerTextCol"][0].asFloat(), root["timerTextCol"][1].asFloat() ,
-		root["timerTextCol"][2].asFloat(),root["timerTextCol"][3].asFloat() };
-	}
-	if (root["onCooldownCol"].isArray() && root["onCooldownCol"].size() == 4) {
-		onCooldownCol = { root["onCooldownCol"][0].asFloat(), root["onCooldownCol"][1].asFloat() ,
-		root["onCooldownCol"][2].asFloat(),root["onCooldownCol"][3].asFloat() };
-	}
-	showTimerUnit = root.get("showTimerUnit", true).asBool();
-	tooltipAlignment = ParseTextAlignment(root.get("textAlignment", "TEXT_LOWER_LEFT").asString());
-	boxAlignment = ParseTextboxAlignment(root.get("boxAlignment", "BOTTOM").asString());
-
 	ifs.close();
 }
 
-//Load Pet data from JSON
 void PetManager::LoadPetData()
 {
 	std::ifstream ifs{ "Assets/Data/pets.json", std::ios_base::binary };
-
-	if (!ifs.is_open()) {
-		std::cout << "PET DATA FAILED TO OPEN\n";
-		return;
-	}
+	if (!ifs.is_open()) return;
 
 	Json::Value root;
 	Json::CharReaderBuilder builder;
 	std::string errs;
 
-	if (!Json::parseFromStream(builder, ifs, &root, &errs))
-	{
-		std::cout << "Pet data: parse failed: " << errs << "\n";
-		ifs.close();
-		return;
-	}
+	if (Json::parseFromStream(builder, ifs, &root, &errs) && root["pets"].isArray()) {}
 
 	if (!root.isObject() || !root.isMember("pets") || !root["pets"].isArray()) {
 		std::cout << "Pet data: missing/invalid 'pets' array\n";
@@ -331,23 +288,67 @@ void PetManager::LoadPetData()
 
 		petData[pd.id] = pd;
 
-		// Pet inventory
-		CSV const& inv{ CSV{InvFilePath} };
-		//Each row is a pet entry
-		for (unsigned r{}; r < min(inv.GetRows(), MAX_PETS); ++r) {
-			Pets::PetSaveData d{};
-			//Each col is the variable
-			for (unsigned c{}; c < inv.GetCols(); ++c) {
-				if (0 == c) {
-					d.id = static_cast<Pets::PET_TYPE>(stoi(inv.GetData(r, c)));
-				}
-				else if (1 == c) {
-					d.rank = static_cast<Pets::PET_RANK>(stoi(inv.GetData(r, c)));
-				}
+		pd.skillCooldown = v.get("skillCooldown", 0).asFloat();
+		pd.skillDesc = v.get("skillDesc", "").asString();
+		pd.texture = v.get("texture", "").asString();
+		pd.passive.SetIcon(pd.texture);
+
+		if (static_cast<size_t>(pd.id) < PetSkills::skills.size()) {
+			pd.PetSkill = PetSkills::skills[pd.id];
+		}
+		else {
+			pd.PetSkill = PetSkills::PetNullSkill; // Default to the safe null skill
+			std::cout << "Warning: Skill ID " << pd.id << " is out of bounds. Skipping skill assignment.\n";
+		}
+
+		petData[pd.id] = pd;
+	}
+
+	ownedPets.clear();
+	LoadInventoryCounts(ownedPets);
+	ifs.close();
+}
+
+void PetManager::SaveInventoryToJSON() {
+	Json::Value root;
+	Json::Value invArray(Json::arrayValue);
+
+	for (auto const& outer : ownedPets) {
+		for (auto const& inner : outer.second) {
+			if (inner.second > 0) {
+				Json::Value entry;
+				entry["petId"] = outer.first;
+				entry["rank"] = inner.first;
+				entry["count"] = inner.second;
+				invArray.append(entry);
 			}
-			ownedPets.push_back(d);
 		}
 	}
 
+	root["inventory"] = invArray;
+	std::ofstream file("Assets/Data/pet_inventory.json");
+	if (file.is_open()) {
+		Json::StyledWriter writer;
+		file << writer.write(root);
+		file.close();
+	}
+}
+
+void PetManager::LoadInventoryCounts(std::map<int, std::map<int, int>>& outMap) {
+	outMap.clear();
+	std::ifstream ifs{ "Assets/Data/pet_inventory.json", std::ios_base::binary };
+	if (!ifs.is_open()) return;
+
+	Json::Value root;
+	Json::CharReaderBuilder builder;
+	std::string errs;
+
+	if (Json::parseFromStream(builder, ifs, &root, &errs)) {
+		if (root.isMember("inventory") && root["inventory"].isArray()) {
+			for (Json::Value const& v : root["inventory"]) {
+				outMap[v.get("petId", 0).asInt()][v.get("rank", 0).asInt()] = v.get("count", 0).asInt();
+			}
+		}
+	}
 	ifs.close();
 }
