@@ -1,8 +1,19 @@
 #include "AEMath.h"
 #include "StatusEffect.h"
 #include "Actor.h"
-
+#include "../UI/UIManager.h"
+#include "../Helpers/CoordUtils.h"
+#include "../Helpers/RenderUtils.h"
 #include <json/json.h>
+#include <sstream>
+#include <iomanip>
+
+StatEffects::StatusEffect::~StatusEffect()
+{
+	if (uiElement) {
+		uiElement->SetEnabled(false);
+	}
+}
 
 StatEffects::StatusEffect* StatEffects::StatusEffect::AddMod(Mod newMod)
 {
@@ -22,6 +33,8 @@ void StatEffects::StatusEffect::OnApply(Actor* _owner, Actor* _caster)
 {
 	owner = _owner;
 	caster = _caster;
+
+	uiElement = &(UIManager::GetInstance()->FetchOrphanUI()).SetHoverCallback([this](bool) {uiHovered = true;});
 }
 
 void StatEffects::StatusEffect::Tick(double dt)
@@ -37,6 +50,52 @@ void StatEffects::StatusEffect::OnEnd(END_REASON reason)
 {
 	(void)reason; //Unused param
 	hasEnded = true;
+}
+
+void StatEffects::StatusEffect::UpdateUI(bool showTooltip)
+{
+	if (showTooltip && uiHovered) {
+		DrawTooltip();
+	}
+	//Reset flag
+	uiHovered = false;
+}
+
+void StatEffects::StatusEffect::DrawTooltip() const
+{
+	static RenderingManager* rm{ RenderingManager::GetInstance() };
+	//Form text
+	std::ostringstream ss{};
+	ss << std::fixed;
+	ss << name;
+	if (maxStacks <= 1) {
+		ss << " [Unstackable]";
+	}
+	else {
+		ss << "\nStacks: " << stacks << " [Max " + std::to_string(maxStacks) + "]";
+	}
+	for (Mod const& m : mods) {
+		ss << "\n" << (m.value > 0 ? "+" : "")
+			<< std::setprecision(1) << m.value << (m.mathType == StatEffects::MATH_TYPE::MULTIPLICATIVE ? "% " : " ")
+			<< StatTypeToString(m.stat);
+	}
+	if (!isPermanent) {
+		ss << "\n" << std::setprecision(1) << (duration - durationTimer) << "s";
+	}
+	std::string txt{ss.str()};
+
+	s32 mx{}, my{};
+	AEInputGetCursorPosition(&mx, &my);
+	AEVec2 mP = ScreenToWorld(AEVec2{ (float)mx, (float)my });
+
+	f32 nw{}, nh{};
+	GetAEMultilineTextSize(rm->GetFont(), txt, 0.35f, nw, nh, 0.015f);
+	AEVec2 nOffset = GetTextAlignPosNorm(rm->GetFont(), txt, mP, 0.35f, TEXT_LOWER_LEFT);
+
+	//Draw text box
+	DrawAETextbox(rm->GetFont(), txt, AEVec2{ (float)mP.x, (float)mP.y },
+		AEGfxGetWinMaxX() * 0.4f, 0.35f, 0.015f, {0,0,0,255}, TEXT_LOWER_LEFT, TextboxOriginPos::BOTTOM,
+		TextboxBgCfg{ {0.015f, 0.015f}, Color{150,150,150,200}, 255, rm->GetMesh(MESH_SQUARE) });
 }
 
 void StatEffects::StatusEffect::OnReapply(int numStacks)

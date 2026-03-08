@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <iostream>
 #include "../DebugTools.h"
+#include "../UI/UIManager.h"
 
 namespace {
     // Just for debugging
@@ -216,7 +217,7 @@ void Actor::OnDeath(Actor* killer)
     }
 }
 
-void Actor::DrawStatusEffectIcons(float iconSize, AEVec2 center, int numIcons, bool isHUD) const
+void Actor::DrawStatusEffectIcons(float iconSize, AEVec2 center, int numIcons, bool allowTooltip, bool isHUD) const
 {
     //Draw status effects below GO.
     float displayWidth{ iconSize * numIcons };
@@ -240,6 +241,10 @@ void Actor::DrawStatusEffectIcons(float iconSize, AEVec2 center, int numIcons, b
             { 255,255,255,255 }, renderingData->alpha,
             { 0,0 });
 
+        if (allowTooltip && se.GetUIElement()) {
+            se.GetUIElement()->ReInit(_pos, _scale, 1, Collision::COL_RECT, true, false);
+        }
+
         //At max-visible but there's still more SEs: show a '+' to indicate more exists
         if (++i >= numIcons && statusEffectsDict.size() > numIcons) {
             _pos.x += iconSize + 2; //move to the right a bit
@@ -248,6 +253,14 @@ void Actor::DrawStatusEffectIcons(float iconSize, AEVec2 center, int numIcons, b
             break;
         }
     }
+
+    //I would let them update but rn only player's ones have tooltip and calling it here will set
+    //uiHovered to false before rendering the hp bar ones.
+    /*for (auto it{ statusEffectsDict.rbegin() }; it != statusEffectsDict.rend(); ++it) {
+        StatEffects::StatusEffect& se = *(*it).second;
+
+        se.UpdateUI(allowTooltip);
+    }*/
 }
 
 void Actor::ClearStatusEffects()

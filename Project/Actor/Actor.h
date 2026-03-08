@@ -93,7 +93,7 @@ protected:
 	// iconSize: Icons are square
 	// center: Center position from which icons are drawn around
 	// numIcons: Max number of icons to display. Display width is iconSize*numIcons
-	void DrawStatusEffectIcons(float iconSize, AEVec2 center, int numIcons, bool isHUD = false) const;
+	void DrawStatusEffectIcons(float iconSize, AEVec2 center, int numIcons, bool allowTooltip = false, bool isHUD = false) const;
 
 	ActorStats mStats{};
 	float mCurrentHP = 0.0f;

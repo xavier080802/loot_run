@@ -363,7 +363,14 @@ void Player::DrawUI() {
 		hpBarPos, HpBarSize.y / RenderingManager::GetInstance()->GetFontSize(), Color{ 0,0,0,255 }, TEXT_MIDDLE);
 
 	//Status effects above hp bar
-	DrawStatusEffectIcons(30, hpBarPos + AEVec2{0, HpBarSize.y * 0.5f +15}, 6, true);
+	DrawStatusEffectIcons(30, hpBarPos + AEVec2{0, HpBarSize.y * 0.5f +15}, 6, true, true);
+
+	//Tooltip
+	for (auto it{ statusEffectsDict.rbegin() }; it != statusEffectsDict.rend(); ++it) {
+		StatEffects::StatusEffect& se = *(*it).second;
+
+		se.UpdateUI(true);
+	}
 }
 
 bool Player::IsInvulnerable()

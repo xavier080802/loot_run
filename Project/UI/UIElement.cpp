@@ -61,3 +61,23 @@ UIElement& UIElement::SetEnabled(bool enable) {
 	isEnabled = enable;
 	return *this;
 }
+
+UIElement& UIElement::ReInit(AEVec2 _pos, AEVec2 _size, int _z, Collision::SHAPE _shape, bool _blockInteraction, bool resetCallbacks)
+{
+	pos = _pos;
+	size = _size;
+	z = _z;
+	shape = _shape;
+	blocksInteraction = _blockInteraction;
+	if (resetCallbacks) {
+		clickCallback = releaseCallback = {};
+		hoverCallback = {};
+	}
+	return *this;
+}
+
+UIElement& UIElement::SetOrphaned()
+{
+	isOrphan = true;
+	return *this;
+}
