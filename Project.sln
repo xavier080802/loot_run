@@ -11,9 +11,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Assets", "Assets", "{546F95
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{50DAE8ED-303F-4A26-9BB5-D9B821BC47A9}"
 	ProjectSection(SolutionItems) = preProject
+		Assets\Data\elements.json = Assets\Data\elements.json
 		Assets\Data\enemies.json = Assets\Data\enemies.json
 		Assets\Data\pets.json = Assets\Data\pets.json
 		Assets\Data\pet_inventory.json = Assets\Data\pet_inventory.json
+		Assets\Data\ui.json = Assets\Data\ui.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Player", "Player", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
