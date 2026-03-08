@@ -58,8 +58,6 @@ void PetManager::Init() {
 	LoadUIJSON();
 	skillUI = new UIElement{ NormToWorld(iconPos) + iconSize * 0.5f, {iconSize, iconSize}, 1, Collision::COL_RECT };
 	skillUI->SetHoverCallback([this](bool) {showTooltip = true; });
-
-	SetPet(Pets::PET_1, Pets::MYTHICAL);
 }
 
 void PetManager::InitPetForGame()
