@@ -1,4 +1,5 @@
 #include "ShopState.h"
+#include "../ShopFunctions.h"
 #include "../Helpers/Vec2Utils.h"
 #include "../helpers/CoordUtils.h"
 #include "../Helpers/CollisionUtils.h"
@@ -67,23 +68,29 @@ namespace {
 			(DEFAULT_H / 2 - y) * scale
 		};
 	}
-
-	void DrawSideButtons(const Button& button)
+	enum SideHover { NONE = 0, MINUS, PLUS };
+	void DrawSideButtons(const Button& button, SideHover hoverType)
 	{
 		// Calculate world position for the main button
 		AEVec2 worldPos = DefaultToWorld(button.pos.x, button.pos.y);
 
 		// Define sizes: side buttons match the height of the main button
-		AEVec2 sideSize = { 50.0f * scale, button.size.y * scale };
+		AEVec2 sideSize = { 60.0f * scale, button.size.y * scale };
 		float sideOffset = (button.size.x / 2.0f) * scale - sideSize.x / 2;
-
+		bool pHover = false, mHover = false;
+		if (hoverType == PLUS) {
+			pHover = true;
+		}
+		if (hoverType == MINUS) {
+			mHover = true;
+		}
 		AEMtx33 mtx;
 
 		// --- Minus Button (Red) ---
 		AEVec2 minusPos = { worldPos.x - sideOffset, worldPos.y };
 		GetTransformMtx(mtx, minusPos, 0.0f, sideSize);
 		AEGfxSetTransform(mtx.m);
-		AEGfxSetColorToMultiply(0.9f, 0.3f, 0.3f, 1.0f); // Red
+		AEGfxSetColorToMultiply(mHover ? 0.9f : 0.75f, mHover ? 0.3f : 0.2f, mHover ? 0.3f : 0.2f, 1.0f); // Red
 		AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 		DrawAEText(Font, "-", minusPos, scale, CreateColor(255, 255, 255, 255), TEXT_MIDDLE);
 
@@ -91,7 +98,7 @@ namespace {
 		AEVec2 plusPos = { worldPos.x + sideOffset, worldPos.y };
 		GetTransformMtx(mtx, plusPos, 0.0f, sideSize);
 		AEGfxSetTransform(mtx.m);
-		AEGfxSetColorToMultiply(0.3f, 0.9f, 0.3f, 1.0f); // Green
+		AEGfxSetColorToMultiply(pHover ? 0.3f : 0.2f, pHover ? 0.9f : 0.75f, pHover ? 0.3f : 0.2f, 1.0f); // Green
 		AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 		DrawAEText(Font, "+", plusPos, scale, CreateColor(255, 255, 255, 255), TEXT_MIDDLE);
 	}
@@ -184,15 +191,15 @@ void ShopState::Update(double dt)
 				{
 					AEAudioPlay(clickSound, buttonGroup, 0.6f, 0.6f, 0);
 					switch (i) {
-					case 0: //damage
+					case 0: // Damage
 						break;
-					case 1: //attack speed
+					case 1: // Attack Speed
 						break;
-					case 2: //move speed
+					case 2: // Move Speed
 						break;
-					case 3: //health
+					case 3: // Health
 						break;
-					case 4: //dodge
+					case 4: // Dodge (assuming DEF for now)
 						break;
 					case 5: // Gacha Trigger
 						isGachaActive = true;
@@ -204,37 +211,54 @@ void ShopState::Update(double dt)
 						GameStateManager::GetInstance()
 							->SetNextGameState("MainMenuState", true, true);
 						break;
-					case 7: //refund
+					case 7: // Refund
+						ShopFunctions::GetInstance()->sellAllShopUpgrades();
 						break;
 					case 8: //x1
+						ShopFunctions::GetInstance()->setPurchaseMultiplier(1);
 						break;
 					case 9: //x10
+						ShopFunctions::GetInstance()->setPurchaseMultiplier(10);
 						break;
 					case 10: //x25
+						ShopFunctions::GetInstance()->setPurchaseMultiplier(25);
 						break;
 					case 11: //x50
+						ShopFunctions::GetInstance()->setPurchaseMultiplier(50);
 						break;
 					}
 					std::cout << "Clicked Shop Button: " << shopButtons[i].label << std::endl;
 				}
+			}
+			// Side Buttons Logic (Plus and Minus)
+			if (shopButtons[i].hasSideButtons) {
+				float sideBtnSize = 60.0f * scale;
+				float sideOffset = (shopButtons[i].size.x / 2.0f) * scale - sideBtnSize / 2;
 
-				// Side Buttons Logic (Plus and Minus)
-				if (shopButtons[i].hasSideButtons) {
-					float sideBtnSize = 60.0f * scale;
-					float offset = (shopButtons[i].size.x / 2.0f + 50.0f) * scale;
+				// Identify which stat this specific button controls
+				STAT_TYPE currentStat =
+					(i == 0) ? STAT_TYPE::ATT :
+					(i == 1) ? STAT_TYPE::ATT_SPD :
+					(i == 2) ? STAT_TYPE::MOVE_SPD :
+					(i == 3) ? STAT_TYPE::MAX_HP : STAT_TYPE::DEF;
 
-					// Minus Button Check
-					AEVec2 minusPos = { worldPos.x - offset, worldPos.y };
-					if (IsCursorOverWorld(minusPos, sideBtnSize, sideBtnSize, true) && AEInputCheckTriggered(AEVK_LBUTTON)) {
+				// Minus Button Check
+				AEVec2 minusPos = { worldPos.x - sideOffset, worldPos.y };
+				if (IsCursorOverWorld(minusPos, sideBtnSize, sideBtnSize, true)) {
+					if (AEInputCheckTriggered(AEVK_LBUTTON)) {
 						AEAudioPlay(clickSound, buttonGroup, 0.6f, 0.6f, 0);
-						std::cout << "Decreased " << shopButtons[i].label << std::endl;
+						ShopFunctions::GetInstance()->sellShopUpgrade(currentStat);
+						std::cout << "Decreased " << shopButtons[i].label << " to " << ShopFunctions::GetInstance()->getStatBonus(currentStat) << std::endl;
 					}
+				}
 
-					// Plus Button Check
-					AEVec2 plusPos = { worldPos.x + offset, worldPos.y };
-					if (IsCursorOverWorld(plusPos, sideBtnSize, sideBtnSize, true) && AEInputCheckTriggered(AEVK_LBUTTON)) {
+				// Plus Button Check
+				AEVec2 plusPos = { worldPos.x + sideOffset, worldPos.y };
+				if (IsCursorOverWorld(plusPos, sideBtnSize, sideBtnSize, true)) {
+					if (AEInputCheckTriggered(AEVK_LBUTTON)) {
 						AEAudioPlay(clickSound, buttonGroup, 0.6f, 0.6f, 0);
-						std::cout << "Increased " << shopButtons[i].label << std::endl;
+						ShopFunctions::GetInstance()->buyShopUpgrade(currentStat);
+						std::cout << "Increased " << shopButtons[i].label << " to " << ShopFunctions::GetInstance()->getStatBonus(currentStat) << std::endl;
 					}
 				}
 			}
@@ -289,8 +313,19 @@ void ShopState::Draw()
 			DrawAEText(Font, shopButtons[i].label, worldPos, scale, CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
 
 			// Side Buttons Rendering
+			float sideBtnSize = 60.0f * scale;
+			float sideOffset = (shopButtons[i].size.x / 2.0f) * scale - sideBtnSize / 2;
+			AEVec2 minusPos = { worldPos.x - sideOffset, worldPos.y };
+			AEVec2 plusPos = { worldPos.x + sideOffset, worldPos.y };
 			if (shopButtons[i].hasSideButtons) {
-				DrawSideButtons(shopButtons[i]);
+				SideHover currentSideHover = NONE;
+				if (IsCursorOverWorld(minusPos, sideBtnSize, sideBtnSize, true)) {
+					currentSideHover = MINUS;
+				}
+				else if (IsCursorOverWorld(plusPos, sideBtnSize, sideBtnSize, true)) {
+					currentSideHover = PLUS;
+				}
+				DrawSideButtons(shopButtons[i], currentSideHover);
 			}
 		}
 	}

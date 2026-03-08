@@ -152,6 +152,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="Rendering\AnimationData.cpp" />
     <ClCompile Include="Rendering\RenderData.cpp" />
+    <ClCompile Include="ShopFunctions.cpp" />
     <ClCompile Include="TileMap.cpp" />
     <ClCompile Include="TutorialData.cpp" />
     <ClCompile Include="UI\Minimap.cpp" />
@@ -224,6 +225,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="Map.h" />
     <ClInclude Include="Rendering\AnimationData.h" />
     <ClInclude Include="Rendering\RenderData.h" />
+    <ClInclude Include="ShopFunctions.h" />
     <ClInclude Include="TileMap.h" />
     <ClInclude Include="TutorialData.h" />
     <ClInclude Include="UI\Minimap.h" />
