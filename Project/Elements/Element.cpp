@@ -17,6 +17,9 @@
 #include <json/json.h>
 
 namespace Elements {
+
+	//====================Extern variables====================
+	
 	//All element Settings
 	float elementDur;
 
@@ -75,6 +78,7 @@ namespace Elements {
 
 	//==========================================================================================================//
 
+	//Load settings from json
 	bool InitElementalSystem()
 	{
 		std::ifstream ifs{ "Assets/Data/elements.json", std::ios_base::binary };
@@ -91,7 +95,6 @@ namespace Elements {
 			std::cout << "Elemental system data: parse failed: " << errs << "\n";
 			return false;
 		}
-
 		if (!root.isObject()) {
 			std::cout << "Elemental system data: missing/invalid root\n";
 			return false;
@@ -197,7 +200,7 @@ namespace Elements {
 		return true;
 	}
 
-	//Static function to apply an element
+	//Static function to apply a basic element
 	bool ApplyElement(ELEMENT_TYPE ele, Actor* applier, Actor* target)
 	{
 		if (ele == ELEMENT_TYPE::NONE) return false;
@@ -210,6 +213,7 @@ namespace Elements {
 			std::cout << "APPLIED BLOOD\n";
 			break;
 		case ELEMENT_TYPE::SUN: {
+			//Apply random number of Sun stacks
 			unsigned s{ (rand() % (Elements::sunHighRange - Elements::sunLowRange + 1)) + Elements::sunLowRange };
 			se = new SunElement(s);
 			std::cout << "APPLIED SUN " << s << '\n';
@@ -296,7 +300,6 @@ namespace Elements {
 		//Failed to find other element
 		return false;
 	}
-
 }
 
 

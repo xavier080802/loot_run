@@ -167,16 +167,14 @@ void Actor::UpdateStatusEffects(double dt)
     for (std::map<std::string, StatEffects::StatusEffect*>::reverse_iterator rit = statusEffectsDict.rbegin(); rit != statusEffectsDict.rend(); ++rit) {
         //Update effect
         rit->second->Tick(dt);
-        if (statusEffectsDict.empty()) break; //This can happen if SE causes death
+        if (statusEffectsDict.empty()) break; //This can happen if SE causes death.
         
         //Remove effect if it has ended
         if (!rit->second->IsEnded()) continue;
-
         delete rit->second;
-        //"it" is pointing to after the element.
-        //statusEffectsDict.erase(std::next(rit).base());
         statusEffectsDict.erase(rit->first);
 
+        //Prevent error if this is the last element
         if (statusEffectsDict.empty()) break;
     }
 }

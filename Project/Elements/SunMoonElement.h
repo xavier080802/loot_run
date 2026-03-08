@@ -6,14 +6,11 @@ class Actor;
 struct EquipmentData;
 
 namespace Elements {
-	//Reaction between sun and moon.
-	//Places an object on the ground.
 	//Slows enemies, and reapplies all their debuffs periodically.
 	//For owner, instead reapplies all buffs periodically.
 	extern void SunMoonEffect(GameObject::CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float knockback, void* ex = nullptr);
 
-	//Reaction between sun and moon.
-	//Object lifetime ends, detonate to deal damage to enemies.
+	//When object lifetime ends, detonate to deal damage to enemies.
 	extern void SunMoonDetonate(Actor* caster);
 }
 

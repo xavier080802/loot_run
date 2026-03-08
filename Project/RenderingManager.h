@@ -15,7 +15,7 @@ enum MESH_SHAPE {
 };
 
 /// <summary>
-/// Caches common meshes, and all textures.
+/// Caches common meshes, rendering data and all textures.
 /// 
 /// Objects should not load and unload textures by themselves.
 /// Loading the same texture through AE will alloc a new instance.
@@ -28,7 +28,7 @@ class RenderingManager : public Singleton<RenderingManager>
 public:
 	void Init();
 
-	//Do not Free/delete this mesh outside of RenderingManager script
+	//Do not Free/delete this mesh outside of RenderingManager
 	AEGfxVertexList* GetMesh(MESH_SHAPE shape);
 	//Loads and caches a texture.
 	//Multiple objs using the same tex will not duplicate mem
@@ -39,8 +39,13 @@ public:
 	//and won't break the other objs when deleting texture.
 	AEGfxTexture* LoadTexture(std::string path);
 	s8 GetFont() const { return fontId; }
+	//Get absolute font size that the global font is initialized with.
 	int GetFontSize() const { return fontSize; }
+	//Get normalized height of a character with the global font.
+	//Note that different characters may have different heights, and this is just a general height.
+	//To get font height of text with font size =/= 1, take this value * you_font_size(normalized value)
 	f32 GetFontHeight() const { return fontHeight; }
+	//Get animation FPS
 	int GetAnimFPS() const { return animationFPS; };
 
 private:
