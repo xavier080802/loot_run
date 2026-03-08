@@ -39,8 +39,8 @@ namespace Tutorial {
 		void Update(double dt) override;
 
 		TutorialData data{};
-		Player* player;
-		MapData* map;
+		Player* player{};
+		MapData* map{};
 		void ChangeStage(TUT_STAGE next);
 
 		//Subscription

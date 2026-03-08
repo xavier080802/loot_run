@@ -95,7 +95,7 @@ static void DrawSolidRect(const AEMtx33& parent, float x, float y, float w, floa
     if (s_overlayQuad) AEGfxMeshDraw(s_overlayQuad, AE_GFX_MDM_TRIANGLES);
 }
 
-void BeginGachaOverlay(GachaAnimation& anim, int count, float intro, float roll, float delay) {
+void BeginGachaOverlay(GachaAnimation& anim, int count, float intro, float /*roll*/, float delay) {
     anim.Reset();
     anim.currentIndex = -1;
     s_particles.clear();

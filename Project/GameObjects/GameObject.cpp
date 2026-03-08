@@ -161,13 +161,13 @@ void GameObject::Temp_DoVelocityMovement(double dt)
 {
 	if (!HasForceApplied()) return;
 	//Testing: External force
-	Move(velocity * dt); 
+	Move(velocity * (float)dt); 
 
 	//Decay velocity
 	AEVec2 prevVel = velocity;
 	//Initial vel for a more linear decay
-	velocity.x = (abs(velocity.x) <= 1.f ? 0 : velocity.x - initialVel.x * dt);
-	velocity.y = (abs(velocity.y) <= 1.f ? 0 : velocity.y - initialVel.y * dt);
+	velocity.x = (abs(velocity.x) <= 1.f ? 0 : velocity.x - initialVel.x * (float)dt);
+	velocity.y = (abs(velocity.y) <= 1.f ? 0 : velocity.y - initialVel.y * (float)dt);
 
 	//Clamping to 0 if moveAmt pushes velocity to other direction.
 	if ((prevVel.x < 0 && velocity.x > 0) || (prevVel.x > 0 && velocity.x < 0)) velocity.x = 0;

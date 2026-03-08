@@ -21,9 +21,9 @@ StatEffects::StatusEffect* StatEffects::StatusEffect::AddMod(Mod newMod)
 	return this;
 }
 
-StatEffects::StatusEffect* StatEffects::StatusEffect::AddMod(std::vector<Mod> mods)
+StatEffects::StatusEffect* StatEffects::StatusEffect::AddMod(std::vector<Mod> _mods)
 {
-	for (Mod const& m : mods) {
+	for (Mod const& m : _mods) {
 		AddMod(m);
 	}
 	return this;

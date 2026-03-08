@@ -32,7 +32,7 @@ void BloodSunElement::TriggerDoT()
 	caster->DealDamage(owner, dmg, DAMAGE_TYPE::ELEMENTAL);
 }
 
-void BloodSunElement::SubscriptionAlert(ActorDeadSubContent content)
+void BloodSunElement::SubscriptionAlert(ActorDeadSubContent /*content*/)
 {
 	//Dmg in an AOE
 	AttackHitboxGO* hb{ dynamic_cast<AttackHitboxGO*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::ATTACK_HITBOX)) };

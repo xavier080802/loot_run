@@ -31,9 +31,9 @@ void Minimap::Update(double dt, TileMap const& tilemap, Player const& player)
     
     for (int x = 0; x < FOG_GRID_SIZE; ++x) {
         for (int y = 0; y < FOG_GRID_SIZE; ++y) {
-            if (regenTimerGrid[x][y] > 0.0f) regenTimerGrid[x][y] -= dt;
+            if (regenTimerGrid[x][y] > 0.0f) regenTimerGrid[x][y] -= (float)dt;
             else {
-                discoveryGrid[x][y] -= FOG_REGEN_RATE * dt;
+                discoveryGrid[x][y] -= FOG_REGEN_RATE * (float)dt;
                 if (discoveryGrid[x][y] < 0.0f) discoveryGrid[x][y] = 0.0f;
             }
             float tileWorldX = (x * fogTileSize.x) - mapSize.x/2.f + (fogTileSize.x * 0.5f);

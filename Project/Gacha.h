@@ -8,10 +8,10 @@
 enum class GachaPhase { None, Intro, Rolling, Reveal, Done };
 
 struct WordEntry {
-    std::string word;
-    std::string rarity;
-    float weight;
-    float r, g, b;
+    std::string word{};
+    std::string rarity{};
+    float weight{};
+    float r{}, g{}, b{};
 };
 
 struct GachaAnimation {

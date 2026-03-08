@@ -100,8 +100,8 @@ AEVec2 TileMap::GetTileIndFromPos(AEVec2 pos) const
 {
 	AEVec2 p{ pos + mapSize * 0.5f - posOffset };
 	AEVec2 out{
-		(int)(p.x / tileSize.x),
-		(int)(-(p.y - tileSize.y * 0.5f) / tileSize.y + (rows-1))
+		(float)((int)(p.x / tileSize.x)),
+		(float)((int)(-(p.y - tileSize.y * 0.5f) / tileSize.y + (rows - 1)))
 	};
 	return out;
 }
@@ -110,7 +110,7 @@ TileMap::Tile const* TileMap::QueryTile(AEVec2 pos) const
 {
 	AEVec2 inds{ GetTileIndFromPos(pos) };
 	if (inds.x < 0 || inds.x >= cols || inds.y < 0 || inds.y >= rows) return nullptr;
-	return &tiles[inds.y][inds.x];
+	return &tiles[(unsigned)inds.y][(unsigned)inds.x];
 }
 
 TileMap::Tile const* TileMap::QueryTile(unsigned rowInd, unsigned colInd) const
@@ -123,7 +123,7 @@ std::pair<TileMap::Tile const*, AEVec2> TileMap::QueryTileAndInd(AEVec2 pos) con
 {
 	AEVec2 inds{ GetTileIndFromPos(pos) };
 	//If Index out of bounds, tile should be nullptr
-	return std::make_pair((inds.x < 0 || inds.x >= cols || inds.y < 0 || inds.y >= rows) ? nullptr : &tiles[inds.y][inds.x], inds);
+	return std::make_pair((inds.x < 0 || inds.x >= cols || inds.y < 0 || inds.y >= rows) ? nullptr : &tiles[(unsigned)inds.y][(unsigned)inds.x], inds);
 }
 
 TileMap::Tile const* TileMap::ChangeTile(unsigned row, unsigned col, TILE_TYPE newType)

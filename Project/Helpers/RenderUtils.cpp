@@ -145,10 +145,10 @@ AEVec2 GetTextAlignPosNorm(s8 const& font, std::string const& text, AEVec2 pos, 
 {
 	f32 w, h;
 	AEGfxGetPrintSize(font, text.c_str(), fontSize, &w, &h);
-	return GetTextAlignPosNorm(font, text, pos, AEVec2{w,h }, alignment);
+	return GetTextAlignPosNorm(pos, AEVec2{w,h }, alignment);
 }
 
-AEVec2 GetTextAlignPosNorm(s8 const& font, std::string const& text, AEVec2 pos, AEVec2 size, TextOriginPos alignment)
+AEVec2 GetTextAlignPosNorm(AEVec2 pos, AEVec2 size, TextOriginPos alignment)
 {
 	AEVec2 normPos = WorldToNorm(pos);
 
@@ -292,7 +292,7 @@ AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 bo
 			f32 length, h;
 			AEGfxGetPrintSize(font, word.c_str(), fontSize, &length, &h);
 			length *= AEGfxGetWinMaxX();
-			size_t space_left = boxWidth - length;
+			size_t space_left = static_cast<size_t>(boxWidth - length);
 
 			//Wrap the rest of the text
 			while (words >> word) {
@@ -300,11 +300,11 @@ AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 bo
 				length *= AEGfxGetWinMaxX();
 				if (space_left < length + 1) {
 					wrapped << '\n' << word;
-					space_left = boxWidth - length;
+					space_left = static_cast<size_t>(boxWidth - length);
 				}
 				else {
 					wrapped << ' ' << word;
-					space_left -= length + 1;
+					space_left -= static_cast<size_t>(length + 1);
 				}
 			}
 		}
@@ -319,7 +319,7 @@ AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 bo
 	GetAEMultilineTextSize(font, wrapped.str(), fontSize, acBoxSize.x, acBoxSize.y, lineSpace);
 
 	//Norm-pos of text around pos (origin of textbox) - effectively normalized amount of offset from pos
-	AEVec2 norm = GetTextAlignPosNorm(font, wrapped.str(), {}, {acBoxSize.x, fontH}, textAlignment);
+	AEVec2 norm = GetTextAlignPosNorm({}, {acBoxSize.x, fontH}, textAlignment);
 	if (norm.y == 0) norm.y -= fontH; //Og anchor was bottom of first line (default so y=0), move textbox down so top of text is at anchor.
 	else if (norm.y == -fontH) norm.y = 0; //Og anchor is top, which is textbox anchor, so cancel the change
 	

@@ -48,8 +48,8 @@ private:
 	AEGfxVertexList* meshList[SHAPE_NUM]{};
 	//<filepath, texture>
 	std::map<std::string, AEGfxTexture*>textureMap;
-	s8 fontId;
-	f32 fontHeight;
+	s8 fontId{};
+	f32 fontHeight{};
 	int animationFPS{ 5 };
 
 	~RenderingManager();

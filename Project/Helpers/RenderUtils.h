@@ -91,7 +91,7 @@ void DrawBox(AEVec2 center, f32 width, f32 height, f32 thickness, Color col);
 
 //Get normalized position of text based on text alignment
 //Pass in normalized size to skip the AEGfxGetPrintSize call.
-AEVec2 GetTextAlignPosNorm(s8 const& font, std::string const& text, AEVec2 pos, AEVec2 normSize, TextOriginPos alignment);
+AEVec2 GetTextAlignPosNorm(AEVec2 pos, AEVec2 normSize, TextOriginPos alignment);
 
 // Get normalized position of text based on text alignment
 AEVec2 GetTextAlignPosNorm(s8 const& font, std::string const& text, AEVec2 pos, f32 fontSize, TextOriginPos alignment);

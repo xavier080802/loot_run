@@ -67,12 +67,12 @@ bool CSV::Write(std::vector<std::vector<std::string>> const& newData, bool appen
 
 	if (!append) {
 		data = newData;
-		rows = newData.size();
+		rows = static_cast<unsigned>(newData.size());
 		cols = _cols;
 	}
 	else {
 		data.insert(data.end(), newData.begin(), newData.end());
-		rows += newData.size();
+		rows += static_cast<unsigned>(newData.size());
 	}
 	file.close();
 	return true;

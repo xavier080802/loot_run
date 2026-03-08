@@ -313,7 +313,7 @@ void PetManager::LoadPetData()
 		if (v.findArray("rarityScaling")) {
 			Json::Value const& scales{ v["rarityScaling"] };
 			for (int i{}; i < 6; ++i) {
-				pd.rarityScaling[i] = scales[i].asInt();
+				pd.rarityScaling[i] = scales[i].asFloat();
 			}
 		}
 		pd.skillCooldown = v.get("skillCooldown", 0).asFloat();

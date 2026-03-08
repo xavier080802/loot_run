@@ -104,6 +104,7 @@ void MainMenuState::UnloadState()
 
 void MainMenuState::Update(double dt)
 {
+	(void)dt;
 	if (AEInputCheckTriggered(AEVK_ESCAPE))
 	{
 		Terminate();
@@ -227,9 +228,9 @@ void MainMenuState::Draw()
 
 		bool hover = IsCursorOverWorld(worldPos, worldSize.x, worldSize.y, true);
 
-		AEMtx33 mtx;
-		GetTransformMtx(mtx, worldPos, 0.0f, worldSize);
-		AEGfxSetTransform(mtx.m);
+		AEMtx33 _mtx;
+		GetTransformMtx(_mtx, worldPos, 0.0f, worldSize);
+		AEGfxSetTransform(_mtx.m);
 
 		AEGfxSetColorToMultiply(
 			hover ? 0.9f : 0.75f,
