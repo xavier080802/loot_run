@@ -469,9 +469,9 @@ namespace GameDB
 
     const EnemyDef* GetEnemyDef(int id)
     {
-        for (const auto& e : EnemyRegistry()){
+        for (const auto& e : EnemyRegistry()) {
             if (e.id == id) { return &e; }
-		return nullptr;
         }
-	}
+        return nullptr;
+    }
 }
