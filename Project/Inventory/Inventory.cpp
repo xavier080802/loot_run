@@ -116,8 +116,20 @@ void Inventory::ReplaceEquipment(const EquipmentData* oldItem, const EquipmentDa
         }
     }
 
-    // Pass it to the standard equip router so it binds to the weapon1/head/body slot correctly
-    Equip(newItem); 
+    // Pass it to the standard equip router so it binds to the weapon1/head/body slot
+    //HOLY FK THIS ITEM DUPE BUG IS KILLING MY BRAIN POINTER POINTER POINTER
+    if (mWeapon1 == oldItem) mWeapon1 = newItem;
+    else if (mWeapon2 == oldItem) mWeapon2 = newItem;
+    else if (mBow == oldItem) mBow = newItem;
+    else if (mHead == oldItem) mHead = newItem;
+    else if (mBody == oldItem) mBody = newItem;
+    else if (mHands == oldItem) mHands = newItem;
+    else if (mFeet == oldItem) mFeet = newItem;
+
+    // If it was a weapon and we were holding it, sync the active index
+    if (mWeapon1 == newItem) SetActiveMainWeapon(0);
+    else if (mWeapon2 == newItem) SetActiveMainWeapon(1);
+    else if (mBow == newItem) SetActiveMainWeapon(2);
 }
 
 /**
@@ -146,10 +158,14 @@ bool Inventory::Equip(const EquipmentData* data)
     // If it's a weapon (but not a bow), we first try to auto-equip it if slots are empty
     AutoEquipIfEmpty(data);
 
-    // If it successfully auto-equipped into weapon1 or weapon2, we're done
-    if (mWeapon1 == data || mWeapon2 == data) return true;
+    // Keep active index in sync if it equipped into the active slot
+    if (mWeapon1 == data) {
+        return true; 
+    }
+    if (mWeapon2 == data) { return true; }
 
     // Otherwise, force it into slot 0 (replacing current weapon1)
+    // Here we should probably make sure index stays in sync if they are holding slot 0
     return EquipMainWeapon(0, data);
 }
 
@@ -216,6 +232,7 @@ bool Inventory::EquipBow(const EquipmentData* data)
     if (data->weaponType != WeaponType::Bow) return false;
 
     mBow = data;
+    if (mActiveWeaponIndex == 2) SetActiveMainWeapon(2);
     return true;
 }
 
@@ -263,6 +280,12 @@ bool Inventory::EquipArmor(const EquipmentData* data)
 void Inventory::SwapMainWeapon()
 {
     mActiveWeaponIndex = (mActiveWeaponIndex == 0) ? 1 : 0;
+}
+
+void Inventory::SetActiveMainWeapon(int index)
+{
+    if (index == 0 || index == 1 || index == 2)
+        mActiveWeaponIndex = index;
 }
 
 const EquipmentData* Inventory::GetActiveMainWeapon() const
@@ -322,8 +345,16 @@ void Inventory::AutoEquipIfEmpty(const EquipmentData* data)
     if (!IsWeapon(data)) return;
     if (data->weaponType == WeaponType::Bow) return;
 
-    if (!mWeapon1) { mWeapon1 = data; return; }
-    if (!mWeapon2) { mWeapon2 = data; return; }
+    if (!mWeapon1) { 
+        mWeapon1 = data; 
+        if (mActiveWeaponIndex == 0) SetActiveMainWeapon(0);
+        return; 
+    }
+    if (!mWeapon2) { 
+        mWeapon2 = data; 
+        if (mActiveWeaponIndex == 1) SetActiveMainWeapon(1);
+        return; 
+    }
 }
 
 /**
@@ -346,10 +377,13 @@ EquipmentModifiers Inventory::GetEquipmentModifiers() const
     EquipmentModifiers out;
 
     // Tally up stats from equipped weapons
-    // Only get stats from the actively held melee weapon and the bow.
-    const EquipmentData* activeMelee = GetActiveMainWeapon();
-    if (activeMelee) AddMods(out.additive, activeMelee->mods.additive);
-    if (mBow)        AddMods(out.additive, mBow->mods.additive);
+    // Only get stats from the actively held melee weapon OR the bow, depending on what's active.
+    if (mActiveWeaponIndex == 2) {
+        if (mBow) AddMods(out.additive, mBow->mods.additive);
+    } else {
+        const EquipmentData* activeMelee = GetActiveMainWeapon();
+        if (activeMelee) AddMods(out.additive, activeMelee->mods.additive);
+    }
 
     // Tally up stats from equipped armor slots
     if (mHead)  AddMods(out.additive, mHead->mods.additive);

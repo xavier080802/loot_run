@@ -159,6 +159,11 @@ void Player::Update(double dt)
 					
 					// Re-purpose the dropped item to hold our OLD equipment so the player can pick it back up
 					mInventory.ReplaceEquipment(oldEquip, payload.equipment);
+					
+					// Ensure active main weapon index matches our held weapon state before we recalculate
+					if (heldWeapon == HeldWeapon::Weapon1) mInventory.SetActiveMainWeapon(0);
+					else if (heldWeapon == HeldWeapon::Weapon2) mInventory.SetActiveMainWeapon(1);
+					
 					RecalculateStats();
 
 					PickupPayload dropPayload{};
@@ -268,6 +273,20 @@ bool Player::TryPickup(const PickupPayload& payload)
 			// Auto-equip so the held slot can actually attack
 			mInventory.Equip(payload.equipment);
 
+            // Make sure the active index matches held weapon state so RecalculateStats works
+            if (payload.equipment->slot == EquipSlot::Weapon)
+            {
+                if (payload.equipment->weaponType != WeaponType::Bow)
+                {
+                    if (heldWeapon == HeldWeapon::Weapon1) mInventory.SetActiveMainWeapon(0);
+                    else if (heldWeapon == HeldWeapon::Weapon2) mInventory.SetActiveMainWeapon(1);
+                }
+                else
+                {
+                    if (heldWeapon == HeldWeapon::Bow) mInventory.SetActiveMainWeapon(2);
+                }
+            }
+
 			RecalculateStats();
 		}
 		break;
@@ -331,6 +350,8 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 
 			if (heldWeapon == HeldWeapon::Weapon1) heldWeapon = HeldWeapon::Weapon2;
 			else if (heldWeapon == HeldWeapon::Weapon2) heldWeapon = HeldWeapon::Weapon1;
+
+			RecalculateStats();
 
 			Debug::stream << "Swapped. Held: " << SafeName(GetHeldWeaponData()) << "\n";
 		}
@@ -398,18 +419,24 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 	case AEVK_Q:
 		if (content.type == Input::INPUT_TYPE::TRIGGERED) {
 			heldWeapon = HeldWeapon::Bow;
+			mInventory.SetActiveMainWeapon(2);
+			RecalculateStats();
 			Debug::stream << "Held: " << SafeName(GetHeldWeaponData()) << "\n";
 		}
 		break;
 	case AEVK_Z:
 		if (content.type == Input::INPUT_TYPE::TRIGGERED) {
 			heldWeapon = HeldWeapon::Weapon1;
+			mInventory.SetActiveMainWeapon(0);
+			RecalculateStats();
 			Debug::stream << "Held: " << SafeName(GetHeldWeaponData()) << "\n";
 		}
 		break;
 	case AEVK_X:
 		if (content.type == Input::INPUT_TYPE::TRIGGERED) {
 			heldWeapon = HeldWeapon::Weapon2;
+			mInventory.SetActiveMainWeapon(1);
+			RecalculateStats();
 			Debug::stream << "Held: " << SafeName(GetHeldWeaponData()) << "\n";
 		}
 		break;

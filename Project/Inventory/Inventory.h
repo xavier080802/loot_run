@@ -35,6 +35,7 @@ public:
 
     // Toggles the active weapon index between 0 and 1.
     void SwapMainWeapon();
+    void SetActiveMainWeapon(int index);
     
     // Returns the currently active melee weapon based on mActiveWeaponIndex.
     const EquipmentData* GetActiveMainWeapon() const;

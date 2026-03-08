@@ -59,7 +59,7 @@
         "weaponType": "Sword",
         "attackType": "SwingArc",
         "isRanged": false,
-        "element": "NONE",
+        "element": "MOON",
         "knockback": 160.0,
         "attackSize": 16.0,
         "rarity": "Epic",
