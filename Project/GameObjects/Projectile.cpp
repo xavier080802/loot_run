@@ -41,7 +41,7 @@ void Projectile::OnCollide(CollisionData& other)
 	isEnabled = false;
 }
 
-void Projectile::OnCollideTile(std::pair<TileMap::Tile const&, AEVec2> tile)
+void Projectile::OnCollideTile(std::pair<TileMap::Tile const&, AEVec2> /*tile*/)
 {
 	//Disable self
 	isEnabled = false;

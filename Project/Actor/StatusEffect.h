@@ -6,6 +6,7 @@
 
 //Circular dependency
 class Actor;
+class UIElement;
 
 namespace Json {
 	class Value;
@@ -82,7 +83,7 @@ namespace StatEffects {
 			}
 		};
 
-		virtual ~StatusEffect() {};
+		virtual ~StatusEffect();
 
 		//Add mod to the mods list of this SE. Can be chained.
 		virtual StatusEffect* AddMod(Mod newMod);
@@ -98,6 +99,9 @@ namespace StatEffects {
 		//Call when status effect ends (via timeout or removal). Func cleans up SE
 		virtual void OnEnd(END_REASON reason = TIMED_OUT);
 
+		//Called during Draw phase. Renders tooltip on-hover if possible.
+		void UpdateUI(bool showTooltip = false);
+
 		//Get the value of all mods of a stat. Multiplicative is based on the baseVal.
 		//Result will be an additive value
 		virtual float GetFinalModVal(STAT_TYPE stat, float baseVal) const;
@@ -108,13 +112,17 @@ namespace StatEffects {
 		EFF_TYPE GetType() const { return effType; }
 		std::string const& GetIcon() const { return icon; }
 		std::vector<Mod>const& GetMods() const { return mods; }
+		UIElement* GetUIElement() const { return uiElement; }
 
 		//Multiply the value of each Mod by the given scalar.
 		void ScaleMods(float scalar);
 
 		void SetIcon(std::string const& path);
+		void SetName(std::string const& newName);
 
 	protected:
+		virtual void DrawTooltip() const;
+
 		Actor* caster{}, * owner{};
 		//ID, should be unique.
 		std::string name{};
@@ -128,6 +136,9 @@ namespace StatEffects {
 		std::vector<Mod> mods{};
 		//Filepath to icon
 		std::string icon{};
+		//UI element
+		UIElement* uiElement{nullptr};
+		bool uiHovered{ false };
 
 		unsigned stacks{}, maxStacks{};
 	};

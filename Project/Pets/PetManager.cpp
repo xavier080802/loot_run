@@ -243,10 +243,67 @@ void PetManager::LoadPetData()
 			pd.id = static_cast<Pets::PET_TYPE>(v.get("id", Pets::PET_TYPE::NONE).asInt());
 			pd.name = v.get("name", "Pet").asString();
 
-			// Load Passive Mods
-			if (v.isMember("passive") && v["passive"].isArray()) {
-				for (Json::Value const& m : v["passive"]) {
-					pd.passive.AddMod(StatEffects::Mod::ParseFromJSON(m));
+	if (!root.isObject() || !root.isMember("pets") || !root["pets"].isArray()) {
+		std::cout << "Pet data: missing/invalid 'pets' array\n";
+		ifs.close();
+		return;
+	}
+
+	//Read array of PetData objects. 
+	for (Json::Value const& v : root["pets"]) {
+		Pets::PetData pd{};
+
+		pd.id = static_cast<Pets::PET_TYPE>(v.get("id", Pets::PET_TYPE::NONE).asInt());
+		pd.name = v.get("name", "Pet").asString();
+		//Load mods for passive
+		Json::Value const* passive{ v.findArray("passive") };
+		if (passive) {
+			for (Json::Value const& m : v["passive"]) {
+				//Each value should be a mod
+				pd.passive.AddMod(StatEffects::Mod::ParseFromJSON(m));
+			}
+		}
+		//Load multipliers
+		if (v.findArray("multipliers")) {
+			for (Json::Value const& m : v["multipliers"]) {
+				//Each value should be a mod
+				pd.multipliers.push_back(StatEffects::Mod::ParseFromJSON(m));
+			}
+		}
+		//Rarity scalings (array of numbers)
+		if (v.findArray("rarityScaling")) {
+			Json::Value const& scales{ v["rarityScaling"] };
+			for (int i{}; i < 6; ++i) {
+				pd.rarityScaling[i] = scales[i].asFloat();
+			}
+		}
+		pd.skillCooldown = v.get("skillCooldown", 0).asFloat();
+		pd.skillDesc = v.get("skillDesc", "").asString();
+		pd.texture = v.get("texture", "").asString();
+		pd.passive.SetIcon(pd.texture); //Set passive icon to same tex as pet
+		if (v.findArray("skillElements")) {
+			for (Json::Value const& m : v["skillElements"]) {
+				pd.skillElements.push_back(static_cast<Elements::ELEMENT_TYPE>(m.asInt()));
+			}
+		}
+
+		//Get pet skill ptr
+		pd.PetSkill = PetSkills::skills[pd.id];
+
+		petData[pd.id] = pd;
+
+		// Pet inventory
+		CSV const& inv{ CSV{InvFilePath} };
+		//Each row is a pet entry
+		for (unsigned r{}; r < min(inv.GetRows(), MAX_PETS); ++r) {
+			Pets::PetSaveData d{};
+			//Each col is the variable
+			for (unsigned c{}; c < inv.GetCols(); ++c) {
+				if (0 == c) {
+					d.id = static_cast<Pets::PET_TYPE>(stoi(inv.GetData(r, c)));
+				}
+				else if (1 == c) {
+					d.rank = static_cast<Pets::PET_RANK>(stoi(inv.GetData(r, c)));
 				}
 			}
 

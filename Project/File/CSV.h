@@ -2,6 +2,7 @@
 #define _CSV_H_
 #include <string>
 #include <vector>
+#include <cassert>
 
 class CSV
 {
@@ -33,12 +34,12 @@ public:
 	unsigned GetCols() const { return cols; }
 	//Get string from given row and col. Returns empty string if invalid index
 	std::string const& GetData(unsigned rowInd, unsigned colInd) const { 
-		if (rowInd >= rows || colInd >= cols) return ""; //Invalid
+		if (rowInd >= rows || colInd >= cols) assert("Inputted rows and cols is out-of-bounds."); //Invalid
 		return data[rowInd][colInd]; 
 	}
 	//Get string through 1D index. Returns empty string if invalid index
 	std::string const& GetData(unsigned ind1d) const {
-		if (ind1d >= rows*cols) return ""; //Invalid
+		if (ind1d >= rows*cols) assert("Inputted rows and cols is out-of-bounds."); //Invalid
 		return data[ind1d / cols][ind1d % rows];
 	}
 	//Gets raw data that is modifiable. Use at your own risk, remember to update rows and cols if modified.

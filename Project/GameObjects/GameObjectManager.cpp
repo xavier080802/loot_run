@@ -57,7 +57,7 @@ void GameObjectManager::UpdateObjects(double dt, TileMap const* tilemap)
 		//Hotspots at 45 deg angle intervals (0->360, 8 total)
 		//Allow all hotspots to check in 1 frame (Do not break the loop)
 		for (int h{}; h < 8;++h) {
-			AEVec2 hotspotDir{ AECosDeg(h * 45), AESinDeg(h * 45) };
+			AEVec2 hotspotDir{ AECosDeg(h * 45.f), AESinDeg(h * 45.f) };
 			//Check if hotspot collides with a tile by checking if hotspot is on a collidable tile.
 			std::pair<TileMap::Tile const*, AEVec2> tile{ tilemap->QueryTileAndInd(go->pos + hotspotDir * go->scale * 0.5f) };
 			if (!tile.first || !BitmaskContainsFlag(go->collisionLayers, tile.first->layer)) {
@@ -190,7 +190,7 @@ GameObject* GameObjectManager::FetchGO(GO_TYPE type)
 void GameObjectManager::Helper_HandleGOTileCollision(AEVec2 tileInd, GameObject& go, TileMap const& tilemap)
 {
 	//Collided with tile. Prevent clipping.
-	AEVec2 tilePos{ tilemap.GetTilePosition(tileInd.y, tileInd.x) };
+	AEVec2 tilePos{ tilemap.GetTilePosition((unsigned)tileInd.y, (unsigned)tileInd.x) };
 	const AEVec2 tileSize{ tilemap.GetTileSize() * 0.5f };
 	//Get pos of the edge closest to the go.
 	AEVec2 closest{ AEClamp(go.pos.x, tilePos.x - tileSize.x, tilePos.x + tileSize.x),

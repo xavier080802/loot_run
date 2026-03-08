@@ -159,6 +159,7 @@ namespace GameDB
 			reg.push_back(def);
 		}
 		std::cout << "LoadEnemyDefs: loaded " << (int)reg.size() << " enemies from " << path << "\n";
+        file.close();
 		return true;
 	}
 
@@ -245,6 +246,7 @@ namespace GameDB
         }
         
         std::cout << "LoadEquipmentDefs: loaded " << totalLoaded << " equipment pieces from " << path << "\n";
+        file.close();
         return true;
     }
 
@@ -273,6 +275,7 @@ namespace GameDB
         }
 
         std::cout << "LoadPlayerDef: Successfully loaded player defaults from " << path << "\n";
+        file.close();
         return true;
     }
 
@@ -300,6 +303,7 @@ namespace GameDB
         sPlayerInventory.feet = root.get("feet", 0).asInt();
 
         std::cout << "LoadPlayerInventory: Successfully loaded player inventory from " << path << "\n";
+        file.close();
         return true;
     }
 
@@ -313,6 +317,13 @@ namespace GameDB
 				return &e;
 		return nullptr;
 	}
+
+    void UnloadEquipmentReg()
+    {
+        for (EquipmentData& d : sEquipmentRegistry) {
+            free((void*)d.name);
+        }
+    }
 
 	const EnemyDef* GetEnemyDef(int id)
 	{

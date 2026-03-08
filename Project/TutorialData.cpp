@@ -260,7 +260,7 @@ namespace Tutorial {
 		data.stage = next;
 	}
 
-	void TutorialFairy::SubscriptionAlert(LootChestSubContent content)
+	void TutorialFairy::SubscriptionAlert(LootChestSubContent /*content*/)
 	{
 		if (data.stage != LOOT) return;
 

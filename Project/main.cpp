@@ -17,6 +17,7 @@
 #include "InputManager.h"
 #include "DebugTools.h"
 #include "Drops/DropSystem.h"
+#include "GameDB.h"
 #if defined(DEBUG) | defined(_DEBUG)
 	#include <memory>
 #endif
@@ -122,6 +123,7 @@ void Terminate(void)
 		goManager->Destroy();
 		renderManager->Destroy();
 		worldTextManager->Destroy();
+		GameDB::UnloadEquipmentReg();
 		inputManager->Destroy();
 		uiManager->Destroy();
 		PostOffice::GetInstance()->Destroy();

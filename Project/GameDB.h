@@ -21,6 +21,8 @@ namespace GameDB
     // Retrieves immutable stats and definitions for a specific piece of equipment
     const EquipmentData* GetEquipmentData(EquipmentCategory category, int id);
 
+    void UnloadEquipmentReg();
+
     struct PlayerInventoryDef {
         int weapon1 = 0;
         int weapon2 = 0;

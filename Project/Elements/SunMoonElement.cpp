@@ -5,7 +5,7 @@
 #include <map>
 
 namespace {
-	void DetonateDoDmg(GameObject::CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE /*element*/, float /*knockback*/, void* e = nullptr) {
+	void DetonateDoDmg(GameObject::CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE /*element*/, float /*knockback*/, void* = nullptr) {
 		Actor* other{ dynamic_cast<Actor*>(&target.other) };
 		if (!other || !caster) return;
 

@@ -8,10 +8,10 @@
 enum class GachaPhase { None, Intro, Rolling, Reveal, Done };
 
 struct WordEntry {
-    std::string word;
-    std::string rarity;
-    float weight;
-    float r, g, b;
+    std::string word{};
+    std::string rarity{};
+    float weight{};
+    float r{}, g{}, b{};
 };
 
 struct GachaAnimation {
@@ -39,5 +39,7 @@ void EnsureOverlayMesh();
 void BeginGachaOverlay(GachaAnimation& anim, int rollCount, float introTime, float rollingTime, float revealDelay);
 void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skipPressed, bool openPressed);
 void DrawGachaOverlay(GachaAnimation& anim, s8 fontId);
+
+void UnloadGacha();
 
 #endif

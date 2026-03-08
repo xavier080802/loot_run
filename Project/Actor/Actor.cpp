@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <iostream>
 #include "../DebugTools.h"
+#include "../UI/UIManager.h"
 
 namespace {
     // Just for debugging
@@ -64,40 +65,14 @@ void Actor::Draw()
 {
     GameObject::Draw();
 
-    //Draw status effects below GO.
-    int num{ min(static_cast<int>(statusEffectsDict.size()), NUM_SE_ICONS) }; //Number of SEs to show
     float width{ scale.x / NUM_SE_ICONS }; //Width of each icon
-    AEGfxVertexList* mesh{ RenderingManager::GetInstance()->GetMesh(MESH_SHAPE::MESH_SQUARE) };
-    float pos1{ (pos.x - scale.x * 0.5f + width*0.5f) + width * (float)(NUM_SE_ICONS - num) * 0.5f }; //X-Pos of first SE. Render all icons centered
-    int i{};
-    //Render backwards, as based on EFF_TYPE, Elements appear last in the map (maps sort automatically in asc order)
-    //This will show elements before other SEs (not perfect)
-    for (auto it{ statusEffectsDict.rbegin() }; it != statusEffectsDict.rend(); ++it) {
-        StatEffects::StatusEffect const& se = *(*it).second;
-        f32 _rot = 0; 
-        AEVec2 _scale = {width, width};
-        AEVec2 _pos{ pos1 + width*i, pos.y - (scale.y + width) * 0.5f}; 
-        GetObjViewFromCamera(&_pos, &_rot, &_scale);
-        DrawMeshWithTexOffset(GetTransformMtx(_pos, _rot, _scale),
-            mesh,
-            RenderingManager::GetInstance()->LoadTexture(se.GetIcon().c_str()),
-            {255,255,255,255}, renderingData->alpha,
-            {0,0});
-
-        //At max-visible but there's still more SEs: show a '+' to indicate more exists
-        if (++i >= NUM_SE_ICONS && statusEffectsDict.size() > NUM_SE_ICONS) {
-            _pos.x += width + 2; //move to the right a bit
-            DrawAEText(RenderingManager::GetInstance()->GetFont(), "+", _pos,
-                (width*2) / RenderingManager::GetInstance()->GetFontSize(), { 255,255,255,255 }, TextOriginPos::TEXT_MIDDLE);
-            break;
-        }
-    }
+    DrawStatusEffectIcons(width, { pos.x, pos.y - (scale.y + width) * 0.5f }, NUM_SE_ICONS);
 }
 
 void Actor::DealDamage(Actor* target, float baseDmg, DAMAGE_TYPE dmgType, const EquipmentData* weapon)
 {
     // Make sure we have a valid and alive target before doing anything.
-    if (!target || target->IsDead()) return;
+    if (!target || target->IsDead() || target->IsInvulnerable()) return;
 
     float finalDmg = baseDmg;
 
@@ -240,6 +215,52 @@ void Actor::OnDeath(Actor* killer)
             s->SubscriptionAlert({killer, this});
         }
     }
+}
+
+void Actor::DrawStatusEffectIcons(float iconSize, AEVec2 center, int numIcons, bool allowTooltip, bool isHUD) const
+{
+    //Draw status effects below GO.
+    float displayWidth{ iconSize * numIcons };
+    int num{ min(static_cast<int>(statusEffectsDict.size()), numIcons) }; //Number of SEs to show
+    float pos1{ (center.x - displayWidth * 0.5f + iconSize * 0.5f) + iconSize * (float)(numIcons - num) * 0.5f }; //X-Pos of first SE. Render all icons centered
+    AEGfxVertexList* mesh{ RenderingManager::GetInstance()->GetMesh(MESH_SHAPE::MESH_SQUARE) };
+    int i{};
+    //Render backwards, as based on EFF_TYPE, Elements appear last in the map (maps sort automatically in asc order)
+    //This will show elements before other SEs (not perfect)
+    for (auto it{ statusEffectsDict.rbegin() }; it != statusEffectsDict.rend(); ++it) {
+        StatEffects::StatusEffect const& se = *(*it).second;
+        f32 _rot = 0;
+        AEVec2 _scale = { iconSize, iconSize };
+        AEVec2 _pos{ pos1 + iconSize * i, center.y };
+        if (!isHUD) {
+            GetObjViewFromCamera(&_pos, &_rot, &_scale);
+        }
+        DrawMeshWithTexOffset(GetTransformMtx(_pos, _rot, _scale),
+            mesh,
+            RenderingManager::GetInstance()->LoadTexture(se.GetIcon().c_str()),
+            { 255,255,255,255 }, renderingData->alpha,
+            { 0,0 });
+
+        if (allowTooltip && se.GetUIElement()) {
+            se.GetUIElement()->ReInit(_pos, _scale, 1, Collision::COL_RECT, true, false);
+        }
+
+        //At max-visible but there's still more SEs: show a '+' to indicate more exists
+        if (++i >= numIcons && statusEffectsDict.size() > numIcons) {
+            _pos.x += iconSize + 2; //move to the right a bit
+            DrawAEText(RenderingManager::GetInstance()->GetFont(), "+", _pos,
+                (iconSize * 2) / RenderingManager::GetInstance()->GetFontSize(), { 255,255,255,255 }, TextOriginPos::TEXT_MIDDLE);
+            break;
+        }
+    }
+
+    //I would let them update but rn only player's ones have tooltip and calling it here will set
+    //uiHovered to false before rendering the hp bar ones.
+    /*for (auto it{ statusEffectsDict.rbegin() }; it != statusEffectsDict.rend(); ++it) {
+        StatEffects::StatusEffect& se = *(*it).second;
+
+        se.UpdateUI(allowTooltip);
+    }*/
 }
 
 void Actor::ClearStatusEffects()

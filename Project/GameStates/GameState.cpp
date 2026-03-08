@@ -24,7 +24,6 @@
 #include "../TileMap.h"
 #include "../UI/Minimap.h"
 #include "../Drops/DropSystem.h"
-#define TUTORIAL 0
 
 namespace {
     // --- GLOBAL SYSTEMS ---
@@ -68,6 +67,7 @@ namespace {
     bool inProceduralMap = false;
 
     // --- TUTORIAL ---
+    bool doTutorial{ false };
     Tutorial::TutorialFairy* fairy;
     s8 font{};
 
@@ -117,7 +117,7 @@ namespace {
     // Draws the boss HP BossProgress bar at the top of the screen
     void DrawBossHPProgressBar()
     {
-        if (TUTORIAL && fairy->data.stage != Tutorial::BOSS) return;
+        if (doTutorial && fairy->data.stage != Tutorial::BOSS) return; //Only show hp bar at tut boss stage.
 
         bossHPProgressBarHeight = 50.f;
         bossHPProgressBarWidth = (float)AEGfxGetWinMaxX() - (float)AEGfxGetWinMinX();
@@ -214,7 +214,7 @@ void GameState::LoadState() {
 
     boss = new Enemy();
 
-    if (TUTORIAL) {
+    if (doTutorial) {
         fairy = new Tutorial::TutorialFairy();
     }
 }
@@ -334,7 +334,7 @@ void GameState::InitState()
 
     minimap->Reset();
 
-    if (TUTORIAL) {
+    if (doTutorial) {
         fairy->InitTutorial(gPlayer, &currentLevel);
     }
 }
@@ -398,7 +398,7 @@ void GameState::Update(double dt)
     bossHPProgressBar = (boss->GetHP() / boss->GetMaxHP()) * bossMaxHPProgressBar;
 
     bossAlive = !boss->IsDead();
-    if (TUTORIAL && fairy->data.stage == Tutorial::BOSS && !bossAlive) {
+    if (doTutorial && fairy->data.stage == Tutorial::BOSS && !bossAlive) {
         fairy->ChangeStage(Tutorial::END);
     }
 
@@ -416,6 +416,10 @@ void GameState::Draw() {
     DrawBossHPProgressBar();
     minimap->Render(*map, *gPlayer);
 
+    if (gPlayer) {
+        gPlayer->DrawUI();
+    }
+
     HandleTutorialDialogueRender();
 
     PetManager::GetInstance()->DrawUI();
@@ -423,7 +427,8 @@ void GameState::Draw() {
 
 void GameState::HandleTutorialDialogueRender()
 {
-    if (!TUTORIAL || !fairy || !fairy->data.playDialogue) return;
+    if (!doTutorial || !fairy || !fairy->data.playDialogue) return;
+    //Render text
     DrawAEText(font, fairy->data.dialogueLines[fairy->data.currDialogueLine].c_str(),
         fairy->data.dialoguePos, fairy->data.dialogueSize, CreateColor(238, 128, 238, 255), TEXT_MIDDLE, 1);
 }

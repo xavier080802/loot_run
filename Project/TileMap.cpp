@@ -18,7 +18,7 @@ using TilePair = std::pair<TileMap::TILE_TYPE, TileMap::Tile>;
 
 
 // ============================================================
-//  Constructor — CSV-based map
+//  Constructor ï¿½ CSV-based map
 //  Reads a CSV file where each cell is an integer tile type.
 //  offset shifts the whole map in world space.
 //  tileX / tileY are the pixel dimensions of a single tile.
@@ -113,7 +113,7 @@ void TileMap::GenerateProcedural(unsigned int r, unsigned int c, int seed)
         tiles = next;
     }
 
-    // map centre — used as anchor for everything below
+    // map centre ï¿½ used as anchor for everything below
     int midR = rows / 2;
     int midC = cols / 2;
 
@@ -130,7 +130,7 @@ void TileMap::GenerateProcedural(unsigned int r, unsigned int c, int seed)
     // --- Step 4: Cross corridors ---
     // A horizontal + vertical corridor through the map centre guarantees that
     // the connectors on each edge are always reachable from the spawn point.
-    // Only carve walls — already-open tiles are left alone.
+    // Only carve walls ï¿½ already-open tiles are left alone.
     for (unsigned int j = 1; j < cols - 1; ++j)
         if (tiles[midR][j].type == TILE_WALL)
             tiles[midR][j] = tileMap[TILE_NONE];
@@ -199,7 +199,7 @@ void TileMap::Render() const
         }
     }
 }
-// Minimap render — draws the tilemap scaled down into the minimap box.
+// Minimap render ï¿½ draws the tilemap scaled down into the minimap box.
 // offsetPos = minimap centre on screen, scale = shrink factor to fit the box.
 // isHud = true skips camera correction since the minimap is fixed to the screen.
 void TileMap::Render(AEVec2 offsetPos, float rotOffset, AEVec2 scale, bool isHud) const
@@ -237,16 +237,16 @@ AEVec2 TileMap::GetTilePosition(unsigned rowInd, unsigned colInd) const
 
 // Converts a world-space position back to a (col, row) float index.
 // The returned x = column index, y = row index.
-// Fractional values indicate a position inside a tile — callers that
+// Fractional values indicate a position inside a tile ï¿½ callers that
 // want the actual tile should cast to int.
 AEVec2 TileMap::GetTileIndFromPos(AEVec2 pos) const
 {
-    AEVec2 p{ pos + mapSize * 0.5f - posOffset }; // shift into local tile space
-    AEVec2 out{
-        (f32)((int)(p.x / tileSize.x)),
-        (f32)((int)(-(p.y - tileSize.y * 0.5f) / tileSize.y + (rows - 1)))
-    };
-    return out;
+	AEVec2 p{ pos + mapSize * 0.5f - posOffset };
+	AEVec2 out{
+		(float)((int)(p.x / tileSize.x)),
+		(float)((int)(-(p.y - tileSize.y * 0.5f) / tileSize.y + (rows - 1)))
+	};
+	return out;
 }
 
 
@@ -255,9 +255,9 @@ AEVec2 TileMap::GetTileIndFromPos(AEVec2 pos) const
 // Returns nullptr if the position is outside the map.
 TileMap::Tile const* TileMap::QueryTile(AEVec2 pos) const
 {
-    AEVec2 inds{ GetTileIndFromPos(pos) };
-    if (inds.x < 0 || inds.x >= cols || inds.y < 0 || inds.y >= rows) return nullptr;
-    return &tiles[(unsigned)inds.y][(unsigned)inds.x];
+	AEVec2 inds{ GetTileIndFromPos(pos) };
+	if (inds.x < 0 || inds.x >= cols || inds.y < 0 || inds.y >= rows) return nullptr;
+	return &tiles[(unsigned)inds.y][(unsigned)inds.x];
 }
 
 // Same but takes a row/col index directly instead of a world position.
@@ -271,12 +271,9 @@ TileMap::Tile const* TileMap::QueryTile(unsigned rowInd, unsigned colInd) const
 // so the caller doesn't need to calculate it separately.
 std::pair<TileMap::Tile const*, AEVec2> TileMap::QueryTileAndInd(AEVec2 pos) const
 {
-    AEVec2 inds{ GetTileIndFromPos(pos) };
-    bool outOfBounds = (inds.x < 0 || inds.x >= cols || inds.y < 0 || inds.y >= rows);
-    return std::make_pair(
-        outOfBounds ? nullptr : &tiles[(unsigned)inds.y][(unsigned)inds.x],
-        inds
-    );
+	AEVec2 inds{ GetTileIndFromPos(pos) };
+	//If Index out of bounds, tile should be nullptr
+	return std::make_pair((inds.x < 0 || inds.x >= cols || inds.y < 0 || inds.y >= rows) ? nullptr : &tiles[(unsigned)inds.y][(unsigned)inds.x], inds);
 }
 
 // Swaps the tile at (row, col) to a new type.

@@ -29,7 +29,7 @@ namespace Debug {
 		char* buffer = new char[MaxBufferSize];
 		va_list args;
 		va_start(args, fmt);
-		int count = vsnprintf_s(buffer, MaxBufferSize, MaxBufferSize, fmt, args);
+		vsnprintf_s(buffer, MaxBufferSize, MaxBufferSize, fmt, args);
 #ifdef _DEBUG
 		vprintf(fmt, args);
 #endif
@@ -43,9 +43,12 @@ namespace Debug {
 
 	std::string GetDebugLogs(unsigned num)
 	{
+		unsigned i{};
 		std::string str;
 		for (std::string const& s : debugLogQueue) {
 			str += s + "\n";
+			++i;
+			if (i >= num) break;
 		}
 		return str;
 	}

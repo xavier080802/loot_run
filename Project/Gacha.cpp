@@ -36,7 +36,7 @@ static float s_mythicalFlashTimer = 0.0f;
 static float s_mythicalPulseTimer = 0.0f;
 static bool  s_isMythicalRevealing = false;
 
-// Same idea as mythical pulse but for legendary — separate so they
+// Same idea as mythical pulse but for legendary ï¿½ separate so they
 // can run at different speeds without interfering with each other
 static float s_legendaryPulseTimer = 0.0f;
 
@@ -44,7 +44,7 @@ static float s_legendaryPulseTimer = 0.0f;
 struct GachaParticle {
     float x, y;      // current position (in AE normalised screen coords)
     float vx, vy;    // velocity per frame
-    float life;      // seconds remaining — particle dies when this hits 0
+    float life;      // seconds remaining ï¿½ particle dies when this hits 0
     float r, g, b;   // colour
     float floorY;    // y level the particle bounces off
 };
@@ -613,4 +613,9 @@ void DrawGachaOverlay(GachaAnimation& anim, s8 fontId) {
         if (!s_chestOpened)
             AEGfxPrint(fontId, "[O]: Open Chest           [ESC]: Quit", -0.20f, -0.75f, 0.85f, 1, 1, 1, 1);
     }
+}
+
+void UnloadGacha()
+{
+    AEGfxMeshFree(s_overlayQuad);
 }

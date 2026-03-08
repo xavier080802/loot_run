@@ -6,8 +6,9 @@
 #include "../Drops/PickupGO.h"
 #include "../Helpers/BitmaskUtils.h"
 #include "../Inventory/EquipmentTypes.h"
+#include "../InputManager.h"
 
-class Player : public Actor
+class Player : public Actor, Input::InputSub
 {
 public:
     // This performs GameObject::Init + runtime init
@@ -19,10 +20,12 @@ public:
 
     void Update(double dt) override;
     void HandleMovementInput(double dt);
-    void HandleAttackInput(double dt);
     void OnCollide(CollisionData& other) override;
 
     void Draw() override;
+    void DrawUI();
+
+    bool IsInvulnerable() override;
 
     // Recomputes the player's final stats by combining base stats, equipment modifiers, and upgrades.
     // Should be called whenever inventory changes.
@@ -40,6 +43,8 @@ public:
     GO_TYPE GetGOType()const override { return GO_TYPE::PLAYER; }
     const ActorStats& GetBaseStats() const override { return mBaseStats; }
 
+    void SubscriptionAlert(Input::InputKeyData content) override;
+
     ~Player() {};
 
 private:
@@ -56,6 +61,7 @@ private:
     AEVec2 moveDirNorm{};
 
     float dodgeCDTimer{};
+    float dodgeIFrameTimer{};
 
     // Which slot the player is currently "holding" for Left Mouse attack
     HeldWeapon heldWeapon = HeldWeapon::Weapon1;
@@ -64,4 +70,7 @@ private:
     float attackCooldownTimer = 0.0f;
 
     float playerSpeed = 300.f;
+
+    //UI stuff
+    AEGfxVertexList* squareMesh{};
 };

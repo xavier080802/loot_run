@@ -70,10 +70,10 @@ private:
     AEVec2 offset = { 0.0f, 0.0f };
     bool followOwner = true;
     bool disableOnHit = true;
-    void* extraData;
+    void* extraData{ nullptr };
 
     void (*OnHit)(CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float knockback, void* extra) = nullptr;
-    void (*OnEnd)(Actor* caster);
+    void (*OnEnd)(Actor* caster) = nullptr;
     std::vector<GameObject*> hitOnce; // enemies already damaged this swing
 };
 
