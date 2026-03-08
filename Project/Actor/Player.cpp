@@ -361,6 +361,9 @@ void Player::DrawUI() {
 	DrawAEText(RenderingManager::GetInstance()->GetFont(),
 		std::string{ std::to_string((int)mCurrentHP) + " / " + std::to_string((int)mStats.maxHP) }.c_str(),
 		hpBarPos, HpBarSize.y / RenderingManager::GetInstance()->GetFontSize(), Color{ 0,0,0,255 }, TEXT_MIDDLE);
+
+	//Status effects above hp bar
+	DrawStatusEffectIcons(30, hpBarPos + AEVec2{0, HpBarSize.y * 0.5f +15}, 6, true);
 }
 
 bool Player::IsInvulnerable()

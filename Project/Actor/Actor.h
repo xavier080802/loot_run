@@ -89,6 +89,12 @@ protected:
 	// Override point for Player/Enemy-specific death behavior
 	virtual void OnDeath(Actor* killer = nullptr);
 
+	// Draw icons of status effects
+	// iconSize: Icons are square
+	// center: Center position from which icons are drawn around
+	// numIcons: Max number of icons to display. Display width is iconSize*numIcons
+	void DrawStatusEffectIcons(float iconSize, AEVec2 center, int numIcons, bool isHUD = false) const;
+
 	ActorStats mStats{};
 	float mCurrentHP = 0.0f;
 	std::map<std::string, StatEffects::StatusEffect*> statusEffectsDict;
