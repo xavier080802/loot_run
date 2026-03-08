@@ -153,44 +153,43 @@ static void SpawnMythicalBurst(float x, float y, int count) {
 //  as approximate percentages (they roughly add to 100).
 //
 //  Design rules:
-//    Rock / Slime / Wolf / Whale -- can appear at any rarity
-//    Garuda                      -- Legendary only
+//    Rock / Slime / Lycan / Scylla -- can appear at any rarity
+//    Phoenix                        -- Legendary only
 //    Dragon                      -- Mythical only
 // ============================================================
 static std::vector<WordEntry> gachaPool = {
     // --- Common (~63% total, split evenly across 4 pets) ---
     {"Rock",  "Common", 15.75f, 1.0f, 1.0f, 1.0f},
     {"Slime", "Common", 15.75f, 1.0f, 1.0f, 1.0f},
-    {"Wolf",  "Common", 15.75f, 1.0f, 1.0f, 1.0f},
-    {"Whale", "Common", 15.75f, 1.0f, 1.0f, 1.0f},
+    {"Lycan ",  "Common", 15.75f, 1.0f, 1.0f, 1.0f},
+    {"Scylla", "Common", 15.75f, 1.0f, 1.0f, 1.0f},
 
     // --- Uncommon (~20% total) ---
     {"Rock",  "Uncommon", 5.0f, 0.0f, 1.0f, 0.0f},
     {"Slime", "Uncommon", 5.0f, 0.0f, 1.0f, 0.0f},
-    {"Wolf",  "Uncommon", 5.0f, 0.0f, 1.0f, 0.0f},
-    {"Whale", "Uncommon", 5.0f, 0.0f, 1.0f, 0.0f},
+    {"Lycan ",  "Uncommon", 5.0f, 0.0f, 1.0f, 0.0f},
+    {"Scylla", "Uncommon", 5.0f, 0.0f, 1.0f, 0.0f},
 
     // --- Rare (~10% total) ---
     {"Rock",  "Rare", 2.5f, 0.0f, 0.5f, 1.0f},
     {"Slime", "Rare", 2.5f, 0.0f, 0.5f, 1.0f},
-    {"Wolf",  "Rare", 2.5f, 0.0f, 0.5f, 1.0f},
-    {"Whale", "Rare", 2.5f, 0.0f, 0.5f, 1.0f},
+    {"Lycan ",  "Rare", 2.5f, 0.0f, 0.5f, 1.0f},
+    {"Scylla", "Rare", 2.5f, 0.0f, 0.5f, 1.0f},
 
     // --- Epic (~5% total) ---
     {"Rock",  "Epic", 1.25f, 0.6f, 0.1f, 0.9f},
     {"Slime", "Epic", 1.25f, 0.6f, 0.1f, 0.9f},
-    {"Wolf",  "Epic", 1.25f, 0.6f, 0.1f, 0.9f},
-    {"Whale", "Epic", 1.25f, 0.6f, 0.1f, 0.9f},
+    {"Lycan ",  "Epic", 1.25f, 0.6f, 0.1f, 0.9f},
+    {"Scylla", "Epic", 1.25f, 0.6f, 0.1f, 0.9f},
 
     // --- Legendary (~1% total, intentionally low) ---
-    // Garuda shares this pool with the normal pets
     {"Rock",   "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
     {"Slime",  "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
-    {"Wolf",   "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
-    {"Whale",  "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
-    {"Garuda", "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
+    {"lycan ",   "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
+    {"Scylla",  "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
+    {"Phoenix  ", "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
 
-    // --- Mythical (effectively ~0%, if you can respect to you) ---
+    // --- Mythical (effectively ~0%, if you can get it respect to you) ---
     {"Dragon", "Mythical", 0.000005f, 1.0f, 0.0f, 0.0f},
 };
 

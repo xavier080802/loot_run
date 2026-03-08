@@ -418,7 +418,9 @@ void GameState::Draw() {
     RenderWorldMap();
     GameObjectManager::GetInstance()->DrawObjects();
     DrawBossHPProgressBar();
-    minimap->Render(*map, *gPlayer);
+
+    TileMap* currentMap = inProceduralMap ? nextMap : map;
+    minimap->Render(*currentMap, *gPlayer);
 
     if (gPlayer) {
         gPlayer->DrawUI();
