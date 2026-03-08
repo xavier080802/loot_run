@@ -40,4 +40,6 @@ void BeginGachaOverlay(GachaAnimation& anim, int rollCount, float introTime, flo
 void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skipPressed, bool openPressed);
 void DrawGachaOverlay(GachaAnimation& anim, s8 fontId);
 
+void UnloadGacha();
+
 #endif

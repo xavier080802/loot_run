@@ -227,3 +227,8 @@ void DrawGachaOverlay(GachaAnimation& anim, s8 fontId) {
         }
     }
 }
+
+void UnloadGacha()
+{
+    AEGfxMeshFree(s_overlayQuad);
+}
