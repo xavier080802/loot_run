@@ -459,16 +459,16 @@ void GameState::UnloadState() {
     delete nextMap;   nextMap = nullptr;
     delete minimap;   minimap = nullptr;
 
-    delete gPlayer;   gPlayer = nullptr;
-    delete boss;      boss = nullptr;
+    /*delete gPlayer;   gPlayer = nullptr;
+    delete boss;      boss = nullptr;*/
 
-    for (Enemy* e : csvEnemies) delete e;
+    //for (Enemy* e : csvEnemies) delete e;
     csvEnemies.clear();
 
-    if (doTutorial && fairy) {
+    /*if (doTutorial && fairy) {
         delete fairy;
         fairy = nullptr;
-    }
+    }*/
     bossAlive = true;
     bgm.Exit();
     if (font >= 0)

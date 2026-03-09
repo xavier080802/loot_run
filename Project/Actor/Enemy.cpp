@@ -9,7 +9,7 @@ GameObject* Enemy::Init(AEVec2 _pos, AEVec2 _scale, int _z,
 {
     // Used by collision, filtering, and game logic to identify enemy objects
     goType = GO_TYPE::ENEMY;
-    return GameObject::Init(_pos, _scale, _z, _meshShape, _colShape, _colSize,
+    return Actor::Init(_pos, _scale, _z, _meshShape, _colShape, _colSize,
         _collideWithLayers, _isInLayers);
 }
 
