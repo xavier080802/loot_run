@@ -3,6 +3,7 @@
     {
       "id": 1,
       "name": "Slime",
+      "category": "Normal",
       "dropTableId": 0,
       "baseStats": {
         "maxHP": 20,
@@ -22,12 +23,14 @@
         "attackType": "CircleAOE",
         "element": "NONE",
         "knockback": 10.0,
-        "attackSize": 15.0
+        "attackSize": 15.0,
+        "aggroRange": 200.0
       }
     },
     {
       "id": 2,
-      "name": "Boss",
+      "name": "SlimeKing",
+      "category": "Boss",
       "dropTableId": 0,
       "baseStats": {
         "maxHP": 100,
@@ -47,7 +50,143 @@
         "attackType": "Projectile",
         "element": "BLOOD",
         "knockback": 100.0,
-        "attackSize": 25.0
+        "attackSize": 25.0,
+        "aggroRange": 200.0
+      }
+    },
+    {
+      "id": 3,
+      "name": "Goblin",
+      "category": "Normal",
+      "dropTableId": 0,
+      "baseStats": {
+        "maxHP": 25,
+        "attack": 6,
+        "defense": 2,
+        "moveSpeed": 150,
+        "attackSpeed": 1.2
+      },
+      "render": {
+        "radius": 25,
+        "mesh": "circle",
+        "texturePath": "Assets/enemyplaceholder.png"
+      },
+      "attack": {
+        "range": 40.0,
+        "cooldown": 1.2,
+        "attackType": "SwingArc",
+        "element": "NONE",
+        "knockback": 15.0,
+        "attackSize": 20.0,
+        "aggroRange": 200.0
+      }
+    },
+    {
+      "id": 4,
+      "name": "Skeleton",
+      "category": "Normal",
+      "dropTableId": 0,
+      "baseStats": {
+        "maxHP": 30,
+        "attack": 8,
+        "defense": 3,
+        "moveSpeed": 100,
+        "attackSpeed": 0.9
+      },
+      "render": {
+        "radius": 28,
+        "mesh": "circle",
+        "texturePath": "Assets/enemyplaceholder.png"
+      },
+      "attack": {
+        "range": 60.0,
+        "cooldown": 1.8,
+        "attackType": "Stab",
+        "element": "NONE",
+        "knockback": 20.0,
+        "attackSize": 18.0,
+        "aggroRange": 200.0
+      }
+    },
+    {
+      "id": 5,
+      "name": "Orc",
+      "category": "Elite",
+      "dropTableId": 0,
+      "baseStats": {
+        "maxHP": 80,
+        "attack": 18,
+        "defense": 10,
+        "moveSpeed": 90,
+        "attackSpeed": 0.7
+      },
+      "render": {
+        "radius": 40,
+        "mesh": "circle",
+        "texturePath": "Assets/enemyplaceholder.png"
+      },
+      "attack": {
+        "range": 50.0,
+        "cooldown": 2.0,
+        "attackType": "SwingArc",
+        "element": "NONE",
+        "knockback": 60.0,
+        "attackSize": 20.0,
+        "aggroRange": 200.0
+      }
+    },
+    {
+      "id": 6,
+      "name": "Troll",
+      "category": "Elite",
+      "dropTableId": 0,
+      "baseStats": {
+        "maxHP": 120,
+        "attack": 22,
+        "defense": 15,
+        "moveSpeed": 70,
+        "attackSpeed": 0.6
+      },
+      "render": {
+        "radius": 50,
+        "mesh": "circle",
+        "texturePath": "Assets/enemyplaceholder.png"
+      },
+      "attack": {
+        "range": 55.0,
+        "cooldown": 2.5,
+        "attackType": "CircleAOE",
+        "element": "NONE",
+        "knockback": 80.0,
+        "attackSize": 20.0,
+        "aggroRange": 200.0
+      }
+    },
+    {
+      "id": 7,
+      "name": "Dragon",
+      "category": "Boss",
+      "dropTableId": 0,
+      "baseStats": {
+        "maxHP": 300,
+        "attack": 35,
+        "defense": 20,
+        "moveSpeed": 110,
+        "attackSpeed": 0.5
+      },
+      "render": {
+        "radius": 70,
+        "mesh": "circle",
+        "texturePath": "Assets/enemyplaceholder.png"
+      },
+      "attack": {
+        "range": 150.0,
+        "cooldown": 3.0,
+        "attackType": "Projectile",
+        "element": "SUN",
+        "knockback": 150.0,
+        "attackSize": 25.0,
+        "aggroRange": 200.0
       }
     }
   ]

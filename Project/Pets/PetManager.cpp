@@ -167,7 +167,7 @@ bool PetManager::Handle(Message* message)
 
 void PetManager::DrawUI()
 {
-	if (!equippedPet || !equippedPet->isSet) return;
+	if (!equippedPet || !equippedPet->isSet || !PetHasSkill()) return;
 
 	DrawTintedMesh(GetTransformMtx(skillUI->GetPos(), 0, skillUI->GetSize()),
 		rm->GetMesh(MESH_SQUARE), rm->LoadTexture(equippedPet->GetPetData().texture),

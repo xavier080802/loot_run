@@ -71,8 +71,11 @@ void Enemy::Update(double dt)
         }
 
         if (mState == EnemyState::IDLE) {
-            // Constant aggro for now (can add checks based on distance later)
-            mState = EnemyState::CHASE;
+            // Wake up and chase if player enters aggro range
+            float aggroRange = mDef ? mDef->attack.aggroRange : 500.0f;
+            if (distSq <= aggroRange * aggroRange) {
+                mState = EnemyState::CHASE;
+            }
         } 
         else if (mState == EnemyState::CHASE) {
             // Move towards player
@@ -118,4 +121,114 @@ void Enemy::Free()
 {
     mDef = nullptr;
     Actor::Free();
+}
+
+/**
+ * @brief Core spawn function. Creates, initialises, and returns a live Enemy.
+ *
+ * Mirrors the SpawnEnemyFromDef lambda previously duplicated in GameState.cpp.
+ * Reads mesh/collision shape from the def's render data and calls Init() +
+ * InitEnemyRuntime() on the new Enemy.
+ *
+ * @param def  Immutable definition for the enemy type to spawn. CONST POINTER.
+ * @param pos  World-space spawn position. Passed by VALUE.
+ *
+ * @return Pointer to the newly allocated Enemy, or nullptr if def is null.
+ *
+ * @note Called by:
+ *   - SpawnRandomNormalEnemy / SpawnRandomEliteEnemy / SpawnRandomBossEnemy / SpawnWeightedEnemy
+ *   - GameState::InitState() (replaces the old local lambda)
+ */
+Enemy* SpawnEnemyFromDef(const EnemyDef* def, AEVec2 pos)
+{
+    if (!def) return nullptr;
+
+    float r = def->render.radius;
+    MESH_SHAPE  meshShape = (def->render.mesh == EnemyMesh::Square) ? MESH_SQUARE : MESH_CIRCLE;
+    Collision::SHAPE colShape = (meshShape == MESH_SQUARE) ? Collision::COL_RECT : Collision::COL_CIRCLE;
+
+    Enemy* enemy = new Enemy();
+    enemy->Init(
+        pos,
+        { r * 2.0f, r * 2.0f },
+        0,
+        meshShape,
+        colShape,
+        { r * 2.0f, r * 2.0f },
+        CreateBitmask(2, Collision::PLAYER, Collision::OBSTACLE),
+        Collision::ENEMIES
+    );
+    enemy->InitEnemyRuntime(def);
+
+    // Set texture after InitEnemyRuntime so it is not overwritten
+    enemy->GetRenderData().AddTexture(def->render.texturePath.empty()
+        ? "Assets/enemyplaceholder.png"
+        : def->render.texturePath.c_str());
+    enemy->GetRenderData().SetActiveTexture(0);
+    enemy->GetRenderData().tint = CreateColor(255, 255, 255, 255);
+    enemy->GetRenderData().alpha = 255;
+
+    return enemy;
+}
+
+/**
+ * @brief Spawns a uniformly random Normal-tier enemy at the given position.
+ *
+ * @param pos  World-space spawn position. Passed by VALUE.
+ * @return Newly allocated Enemy*, or nullptr if no Normal enemies are registered.
+ *
+ * @note Called by:
+ *   - Wave spawners / GameState when a Normal encounter is needed.
+ */
+Enemy* SpawnRandomNormalEnemy(AEVec2 pos)
+{
+    return SpawnEnemyFromDef(GameDB::GetRandomNormalEnemy(), pos);
+}
+
+/**
+ * @brief Spawns a uniformly random Elite-tier enemy at the given position.
+ *
+ * @param pos  World-space spawn position. Passed by VALUE.
+ * @return Newly allocated Enemy*, or nullptr if no Elite enemies are registered.
+ *
+ * @note Called by:
+ *   - Wave spawners / GameState when an Elite encounter is needed.
+ */
+Enemy* SpawnRandomEliteEnemy(AEVec2 pos)
+{
+    return SpawnEnemyFromDef(GameDB::GetRandomEliteEnemy(), pos);
+}
+
+/**
+ * @brief Spawns a uniformly random Boss-tier enemy at the given position.
+ *
+ * @param pos  World-space spawn position. Passed by VALUE.
+ * @return Newly allocated Enemy*, or nullptr if no Boss enemies are registered.
+ *
+ * @note Called by:
+ *   - Boss-room / end-of-level spawner.
+ */
+Enemy* SpawnRandomBossEnemy(AEVec2 pos)
+{
+    return SpawnEnemyFromDef(GameDB::GetRandomBossEnemy(), pos);
+}
+
+/**
+ * @brief Spawns a Normal or Elite enemy using weighted probability.
+ *
+ * Delegates the tier roll to GameDB::GetWeightedRandomEnemy(). Boss enemies
+ * are intentionally excluded and must be spawned via SpawnRandomBossEnemy().
+ *
+ * @param pos          World-space spawn position. Passed by VALUE.
+ * @param normalChance Probability [0..1] of selecting Normal (default 70%).
+ * @param eliteChance  Probability [0..1] of selecting Elite  (default 30%).
+ *
+ * @return Newly allocated Enemy*, or nullptr if the roll misses both bands.
+ *
+ * @note Called by:
+ *   - Generic wave spawners that want tier-weighted variety without Bosses.
+ */
+Enemy* SpawnWeightedEnemy(AEVec2 pos, float normalChance, float eliteChance)
+{
+    return SpawnEnemyFromDef(GameDB::GetWeightedRandomEnemy(normalChance, eliteChance), pos);
 }

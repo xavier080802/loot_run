@@ -18,6 +18,19 @@ enum class EnemyMesh : unsigned char
 };
 
 /**
+ * @brief Classifies an enemy's tier / difficulty category.
+ *
+ * Loaded from the "category" field in enemies.json.
+ * Used by GameDB spawn-helper functions to filter the registry by tier.
+ */
+enum class EnemyCategory : unsigned char
+{
+    Normal = 0, // Standard weak enemy, encountered often.
+    Elite  = 1, // Stronger variant with higher stats.
+    Boss   = 2, // Unique powerful enemy, typically one per area.
+};
+
+/**
  * @brief Holds the visual rendering information for how an enemy looks in game.
  *
  * Every enemy type needs to know how big to draw itself and what it looks like.
@@ -41,6 +54,7 @@ struct EnemyRenderDef
  */
 struct EnemyAttackDef
 {
+    float aggroRange = 500.0f; // How close player must be for enemy to wake up and chase.
     float range = 100.0f;     // How close the enemy has to get before it stops chasing and starts attacking.
     float cooldown = 2.0f;    // How many seconds the enemy waits between each attack swing.
 
@@ -66,6 +80,7 @@ struct EnemyDef
 {
     int id = 0; // A unique number used to look up this enemy type from GameDB.
     std::string name; // The display name of the enemy (e.g. "Slime", "Boss").
+    EnemyCategory category = EnemyCategory::Normal; // Tier classification: Normal, Elite, or Boss.
     ActorStats baseStats{}; // The starting stats for this type (health, speed, damage etc.).
     int dropTableId = 0; // Which loot table to roll when this enemy dies.
     EnemyRenderDef render{}; // How this enemy looks when drawn on screen.

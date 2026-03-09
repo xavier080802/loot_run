@@ -80,10 +80,11 @@ void Pet::SetData(const Pets::PetData& newData, Pets::PET_RANK rank)
 	for (StatEffects::Mod& m : data.multipliers) {
 		m.value *= data.rarityScaling[rank];
 	}
-	//Rank too low for skill
-	if (rank <= Pets::PET_RANK::EPIC) {
+	//Rank too low for skill 
+	//NOTE: TEMP, PLS UNCOMMENT
+	/*if (rank <= Pets::PET_RANK::EPIC) { 
 		data.PetSkill = nullptr;
-	}
+	}*/
 }
 
 const Pets::PetData& Pet::GetPetData()

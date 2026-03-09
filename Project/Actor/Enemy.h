@@ -2,6 +2,7 @@
 #include "AEEngine.h"
 #include "Actor.h"
 #include "EnemyDef.h"
+#include "../GameDB.h"
 
 // Basic AI states for the enemy
 enum class EnemyState {
@@ -42,3 +43,22 @@ private:
     Actor* mTarget = nullptr; // Reference to the player
     float mAttackCooldown = 0.0f; // Mock attack delay
 };
+
+// Enemy spawn helpers
+
+/// Creates an Enemy from an explicit EnemyDef pointer.
+/// Returns nullptr if def is null.
+Enemy* SpawnEnemyFromDef(const EnemyDef* def, AEVec2 pos);
+
+/// Picks a uniformly random Normal-tier enemy and spawns it.
+Enemy* SpawnRandomNormalEnemy(AEVec2 pos);
+
+/// Picks a uniformly random Elite-tier enemy and spawns it.
+Enemy* SpawnRandomEliteEnemy(AEVec2 pos);
+
+/// Picks a uniformly random Boss-tier enemy and spawns it.
+Enemy* SpawnRandomBossEnemy(AEVec2 pos);
+
+/// Weighted roll: normalChance for Normal, eliteChance for Elite, no Boss.
+/// Returns nullptr if the roll falls outside both bands.
+Enemy* SpawnWeightedEnemy(AEVec2 pos, float normalChance = 0.70f, float eliteChance = 0.30f);
