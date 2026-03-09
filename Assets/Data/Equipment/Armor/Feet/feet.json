@@ -2,12 +2,78 @@
     {
         "id": 1,
         "name": "Leather Boots",
+        "sellPrice": 15,
+        "texturePath": "",
         "slot": "Armor",
         "armorSlot": "Feet",
         "rarity": "Common",
         "stats": {
-            "moveSpeed": 20.0,
-            "defense": 1.0
+            "moveSpeed": 5.0
+        }
+    },
+    {
+        "id": 2,
+        "name": "Bronze Boots",
+        "sellPrice": 40,
+        "texturePath": "",
+        "slot": "Armor",
+        "armorSlot": "Feet",
+        "rarity": "Uncommon",
+        "stats": {
+            "moveSpeed": 10.0,
+            "defense": 2.0
+        }
+    },
+    {
+        "id": 3,
+        "name": "Iron Boots",
+        "sellPrice": 100,
+        "texturePath": "",
+        "slot": "Armor",
+        "armorSlot": "Feet",
+        "rarity": "Rare",
+        "stats": {
+            "moveSpeed": 15.0,
+            "defense": 5.0
+        }
+    },
+    {
+        "id": 4,
+        "name": "Steel Greaves",
+        "sellPrice": 250,
+        "texturePath": "",
+        "slot": "Armor",
+        "armorSlot": "Feet",
+        "rarity": "Epic",
+        "stats": {
+            "moveSpeed": 25.0,
+            "defense": 10.0
+        }
+    },
+    {
+        "id": 5,
+        "name": "Mithril Sabatons",
+        "sellPrice": 800,
+        "texturePath": "",
+        "slot": "Armor",
+        "armorSlot": "Feet",
+        "rarity": "Legendary",
+        "stats": {
+            "moveSpeed": 40.0,
+            "defense": 20.0
+        }
+    },
+    {
+        "id": 6,
+        "name": "Mythical Striders",
+        "sellPrice": 2500,
+        "texturePath": "",
+        "slot": "Armor",
+        "armorSlot": "Feet",
+        "rarity": "Mythical",
+        "stats": {
+            "moveSpeed": 70.0,
+            "defense": 40.0
         }
     }
 ]

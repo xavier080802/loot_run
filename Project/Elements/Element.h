@@ -8,6 +8,10 @@
 
 //NOTE: Declare extern and define in Element.cpp, otherwise linker error :<
 
+// To apply element onto a target, call ApplyElement static function.
+// ApplyElement calls ApplyStatusEffect to apply the element as a SE.
+// ApplyStatusEffect calls CheckReaction to look for other elements and cause a reaction.
+
 namespace Elements {
 	enum class ELEMENT_TYPE {
 		NONE,
@@ -20,7 +24,7 @@ namespace Elements {
 	extern bool InitElementalSystem();
 
 	//Static function to apply element to a target.
-	//Returns whether the element was applied or not
+	//Returns whether the element was successfully applied or not
 	extern bool ApplyElement(ELEMENT_TYPE ele, Actor* applier, Actor* target);
 
 	//Checks if eff reacts with any other element in the dictionary.

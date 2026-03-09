@@ -2,12 +2,79 @@
     {
         "id": 1,
         "name": "Leather Gloves",
+        "sellPrice": 15,
+        "texturePath": "",
         "slot": "Armor",
         "armorSlot": "Hands",
         "rarity": "Common",
         "stats": {
             "attack": 1.0,
             "attackSpeed": 0.05
+        }
+    },
+    {
+        "id": 2,
+        "name": "Bronze Gauntlets",
+        "sellPrice": 40,
+        "texturePath": "",
+        "slot": "Armor",
+        "armorSlot": "Hands",
+        "rarity": "Uncommon",
+        "stats": {
+            "attack": 3.0,
+            "attackSpeed": 0.1
+        }
+    },
+    {
+        "id": 3,
+        "name": "Iron Gauntlets",
+        "sellPrice": 100,
+        "texturePath": "",
+        "slot": "Armor",
+        "armorSlot": "Hands",
+        "rarity": "Rare",
+        "stats": {
+            "attack": 8.0,
+            "attackSpeed": 0.15
+        }
+    },
+    {
+        "id": 4,
+        "name": "Steel Gauntlets",
+        "sellPrice": 250,
+        "texturePath": "",
+        "slot": "Armor",
+        "armorSlot": "Hands",
+        "rarity": "Epic",
+        "stats": {
+            "attack": 15.0,
+            "attackSpeed": 0.2
+        }
+    },
+    {
+        "id": 5,
+        "name": "Mithril Gloves",
+        "sellPrice": 800,
+        "texturePath": "",
+        "slot": "Armor",
+        "armorSlot": "Hands",
+        "rarity": "Legendary",
+        "stats": {
+            "attack": 30.0,
+            "attackSpeed": 0.3
+        }
+    },
+    {
+        "id": 6,
+        "name": "Mythical Claws",
+        "sellPrice": 2500,
+        "texturePath": "",
+        "slot": "Armor",
+        "armorSlot": "Hands",
+        "rarity": "Mythical",
+        "stats": {
+            "attack": 60.0,
+            "attackSpeed": 0.5
         }
     }
 ]

@@ -58,12 +58,18 @@ static std::vector<GachaParticle> s_particles;
 //  the pool, add a matching line here or it'll save as NONE.
 // ============================================================
 static Pets::PET_TYPE GetPetTypeFromWord(const std::string& word) {
-    if (word == "Rock")   return Pets::PET_1;
+    /*if (word == "Rock")   return Pets::PET_1;
     if (word == "Slime")  return Pets::PET_2;
-    if (word == "Wolf")   return Pets::PET_3;
-    if (word == "Whale")  return Pets::PET_4;
-    if (word == "Garuda") return Pets::PET_5;
+    if (word == "Lycan") return Pets::PET_3;
+    if (word == "Scylla")  return Pets::PET_4;
+    if (word == "Pheonix") return Pets::PET_5;
     if (word == "Dragon") return Pets::PET_6;
+    return Pets::PET_TYPE::NONE;*/
+    auto const& petmap = PetManager::GetInstance()->GetPetDataMap();
+    for (auto it{ petmap.begin() }; it != petmap.end(); ++it) {
+        Pets::PetData const& data{ it->second };
+        if (data.name == word) return it->first;
+    }
     return Pets::PET_TYPE::NONE;
 }
 
@@ -161,7 +167,7 @@ static std::vector<WordEntry> gachaPool = {
     // --- Common (~63% total, split evenly across 4 pets) ---
     {"Rock",  "Common", 15.75f, 1.0f, 1.0f, 1.0f},
     {"Slime", "Common", 15.75f, 1.0f, 1.0f, 1.0f},
-    {"Lycan ",  "Common", 15.75f, 1.0f, 1.0f, 1.0f},
+    {"Lycan",  "Common", 15.75f, 1.0f, 1.0f, 1.0f},
     {"Scylla", "Common", 15.75f, 1.0f, 1.0f, 1.0f},
 
     // --- Uncommon (~20% total) ---
@@ -173,19 +179,19 @@ static std::vector<WordEntry> gachaPool = {
     // --- Rare (~10% total) ---
     {"Rock",  "Rare", 2.5f, 0.0f, 0.5f, 1.0f},
     {"Slime", "Rare", 2.5f, 0.0f, 0.5f, 1.0f},
-    {"Lycan ",  "Rare", 2.5f, 0.0f, 0.5f, 1.0f},
+    {"Lycan",  "Rare", 2.5f, 0.0f, 0.5f, 1.0f},
     {"Scylla", "Rare", 2.5f, 0.0f, 0.5f, 1.0f},
 
     // --- Epic (~5% total) ---
     {"Rock",  "Epic", 1.25f, 0.6f, 0.1f, 0.9f},
     {"Slime", "Epic", 1.25f, 0.6f, 0.1f, 0.9f},
-    {"Lycan ",  "Epic", 1.25f, 0.6f, 0.1f, 0.9f},
+    {"Lycan",  "Epic", 1.25f, 0.6f, 0.1f, 0.9f},
     {"Scylla", "Epic", 1.25f, 0.6f, 0.1f, 0.9f},
 
     // --- Legendary (~1% total, intentionally low) ---
     {"Rock",   "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
     {"Slime",  "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
-    {"lycan ",   "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
+    {"lycan",   "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
     {"Scylla",  "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
     {"Phoenix  ", "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
 
@@ -265,7 +271,7 @@ static void DrawSolidRect(const AEMtx33& parent,
 //   intro  -- seconds to sit in the Intro phase before showing the chest
 //   roll   -- unused carry-over param 
 //   delay  -- seconds between each card flip for Common-Rare
-void BeginGachaOverlay(GachaAnimation& anim, int count, float intro, float roll, float delay) {
+void BeginGachaOverlay(GachaAnimation& anim, int count, float intro, float /*roll*/, float delay) {
     anim.Reset();
     anim.currentIndex = -1;
     s_particles.clear();

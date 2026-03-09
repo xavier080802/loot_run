@@ -1,9 +1,9 @@
 {
     "weapon1": 1,
-    "weapon2": 2,
-    "bow": 1,
-    "head": 1,
-    "body": 1,
-    "hands": 1,
-    "feet": 1
+    "weapon2": 4,
+    "bow": 0,
+    "head": 0,
+    "body": 0,
+    "hands": 0,
+    "feet": 0
 }

@@ -45,7 +45,8 @@ struct AttackHitboxConfig
 
     Color tint{ 160,160,160,180 };
 
-    int zIndex{ 0 };
+    int zIndex
+        ;
 
     // Ptr to whatever extra data
     void* extraData{nullptr};
@@ -66,7 +67,7 @@ private:
     float knockback = 100.0f;
     float lifespan = 0.0f, hitTimer=0.0f;
     float hitCooldown{ -1 };
-    int ticks{ 0 };//Number of frame ticks this has went through.
+    int ticks{};//Number of frame ticks this has went through.
     AEVec2 offset = { 0.0f, 0.0f };
     bool followOwner = true;
     bool disableOnHit = true;

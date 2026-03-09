@@ -17,7 +17,7 @@ public:
 	void Update(double dt) override;
 	
 	// Handles intersection logic, usually triggering TryPickup on the Player
-	void OnCollide(CollisionData& other) override;
+	// void OnCollide(CollisionData& other) override;
 
 	// Retrieves what this pickup contains
 	const PickupPayload& GetPayload() const { return mPayload; }
