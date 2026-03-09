@@ -30,9 +30,13 @@ public:
     // Recomputes the player's final stats by combining base stats, equipment modifiers, and upgrades.
     // Should be called whenever inventory changes.
     void RecalculateStats();
+
+    // Reads the current ShopFunctions upgrade levels and applies them as UpgradeMultipliers,
+    // then recalculates stats. Call this after any shop purchase or refund.
+    void ApplyShopUpgrades();
     
     // Processes collision with a PickupGO payload, adding items/ammo/health to the player.
-    void TryPickup(const PickupPayload& payload);
+    bool TryPickup(const PickupPayload& payload);
     
     // Retrieves the currently wielded equipment based on the 'heldWeapon' slot state.
     const EquipmentData* GetHeldWeaponData() const;
@@ -56,9 +60,13 @@ private:
     };
 
 private:
+    void OnDeath(Actor* killer = nullptr) override;
+
     ActorStats mBaseStats{};
     Inventory  mInventory{};
     AEVec2 moveDirNorm{};
+
+    PickupGO* mInteractablePickup = nullptr; // Track the nearest un-picked item
 
     float dodgeCDTimer{};
     float dodgeIFrameTimer{};
@@ -72,5 +80,6 @@ private:
     float playerSpeed = 300.f;
 
     //UI stuff
+    bool mShowStatsUI = true;
     AEGfxVertexList* squareMesh{};
 };

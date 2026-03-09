@@ -160,6 +160,11 @@ void GameState::LoadState() {
     GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Body/body.json", EquipmentCategory::Body);
     GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Hands/hands.json", EquipmentCategory::Hands);
     GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Feet/feet.json", EquipmentCategory::Feet);
+    
+    if (!GameDB::LoadDropTables("Assets/Data/Drops/drops.json"))
+    {
+        std::cout << "WARNING: drops.json failed to load.\n";
+    }
 
     if (!GameDB::LoadPlayerDef("Assets/Data/Player/player.json"))
     {
@@ -280,6 +285,8 @@ void GameState::InitState()
     base.attackSpeed = 1.0f;
     base.moveSpeed = playerSpeed;
     gPlayer->InitPlayerRuntime(base);
+    gPlayer->ApplyShopUpgrades();
+    gPlayer->Heal(gPlayer->GetMaxHP()); // fill to the actual maxHP after upgrades are applied
 
     LootChest* chest = dynamic_cast<LootChest*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
     chest->Init(chestTilePos, { 35,35 }, 0, MESH_SQUARE, Collision::COL_RECT, { 35,35 }, CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE)
@@ -400,6 +407,10 @@ void GameState::Update(double dt)
     bossAlive = !boss->IsDead();
     if (doTutorial && fairy->data.stage == Tutorial::BOSS && !bossAlive) {
         fairy->ChangeStage(Tutorial::END);
+    }
+    if (!doTutorial && !bossAlive) {
+        GameStateManager::GetInstance()->SetNextGameState("MainMenuState");
+        std::cout << "BOSS SLAYED\n";
     }
 
     minimap->Update(dt, *currentMap, *gPlayer);

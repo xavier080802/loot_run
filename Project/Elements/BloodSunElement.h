@@ -3,6 +3,8 @@
 #include "BloodElement.h"
 #include "../Actor/ActorSubscriptions.h"
 
+// Enhanced DoT effect.
+// When the owner dies, does an instance of damage in an AOE
 class BloodSunElement : public BloodElement, ActorDeadSub
 {
 public:

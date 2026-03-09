@@ -8,6 +8,7 @@ namespace GameDB
 {
     // Retrieves a predefined loot table by ID
     const DropTable* GetDropTable(int id);
+    bool LoadDropTables(const char* path);
 
     // Enemies
     // Parses and loads enemy definitions from a file into the database
@@ -20,6 +21,7 @@ namespace GameDB
     bool LoadEquipmentDefs(const char* path, EquipmentCategory category);
     // Retrieves immutable stats and definitions for a specific piece of equipment
     const EquipmentData* GetEquipmentData(EquipmentCategory category, int id);
+    const EquipmentData* GetRandomEquipment();
 
     void UnloadEquipmentReg();
 
@@ -31,6 +33,7 @@ namespace GameDB
         int body = 0;
         int hands = 0;
         int feet = 0;
+        int ammo = 0;
     };
 
     // Player Configuration

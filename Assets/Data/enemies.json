@@ -5,7 +5,7 @@
       "name": "Slime",
       "dropTableId": 0,
       "baseStats": {
-        "maxHP": 300,
+        "maxHP": 20,
         "attack": 5,
         "defense": 5,
         "moveSpeed": 120,

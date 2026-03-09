@@ -68,7 +68,7 @@
         },
         {
             "id": 3,
-            "name": "Wolf",
+            "name": "Lycan",
             "passive": [],
             "multipliers": [],
             "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
@@ -77,7 +77,7 @@
         },
         {
             "id": 4,
-            "name": "Whale",
+            "name": "Scylla",
             "passive": [],
             "multipliers": [],
             "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
@@ -86,7 +86,7 @@
         },
         {
             "id": 5,
-            "name": "Garuda",
+            "name": "Pheonix",
             "passive": [],
             "multipliers": [],
             "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],

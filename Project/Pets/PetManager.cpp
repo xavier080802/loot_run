@@ -136,7 +136,7 @@ bool PetManager::AddNewPet(Pets::PetSaveData const& newPet)
 {
 	// Increments the count for the specific Pet ID and Rank
 	ownedPets[static_cast<int>(newPet.id)][static_cast<int>(newPet.rank)]++;
-	SaveInventoryToJSON();
+	//SaveInventoryToJSON();
 
 	return true;
 }
@@ -237,34 +237,65 @@ void PetManager::LoadPetData()
 	Json::CharReaderBuilder builder;
 	std::string errs;
 
-	if (Json::parseFromStream(builder, ifs, &root, &errs) && root["pets"].isArray()) {
-		for (Json::Value const& v : root["pets"]) {
-			Pets::PetData pd{};
-			pd.id = static_cast<Pets::PET_TYPE>(v.get("id", Pets::PET_TYPE::NONE).asInt());
-			pd.name = v.get("name", "Pet").asString();
+	if (!Json::parseFromStream(builder, ifs, &root, &errs) || !root["pets"].isArray()) {
+		std::cout << "LoadEnemyDefs: parse failed: " << errs << "\n";
+		return;
+	}
 
-			// Load Passive Mods
-			if (v.isMember("passive") && v["passive"].isArray()) {
-				for (Json::Value const& m : v["passive"]) {
-					pd.passive.AddMod(StatEffects::Mod::ParseFromJSON(m));
-				}
+	if (!root.isObject() || !root.isMember("pets") || !root["pets"].isArray()) {
+		std::cout << "Pet data: missing/invalid 'pets' array\n";
+		ifs.close();
+		return;
+	}
+
+	//Read array of PetData objects. 
+	for (Json::Value const& v : root["pets"]) {
+		Pets::PetData pd{};
+
+		pd.id = static_cast<Pets::PET_TYPE>(v.get("id", Pets::PET_TYPE::NONE).asInt());
+		pd.name = v.get("name", "Pet").asString();
+		//Load mods for passive
+		Json::Value const* passive{ v.findArray("passive") };
+		if (passive) {
+			for (Json::Value const& m : v["passive"]) {
+				//Each value should be a mod
+				pd.passive.AddMod(StatEffects::Mod::ParseFromJSON(m));
 			}
-
-			pd.skillCooldown = v.get("skillCooldown", 0).asFloat();
-			pd.skillDesc = v.get("skillDesc", "").asString();
-			pd.texture = v.get("texture", "").asString();
-			pd.passive.SetIcon(pd.texture);
-
-			if (static_cast<size_t>(pd.id) < PetSkills::skills.size()) {
-				pd.PetSkill = PetSkills::skills[pd.id];
-			}
-			else {
-				pd.PetSkill = PetSkills::PetNullSkill; // Default to the safe null skill
-				std::cout << "Warning: Skill ID " << pd.id << " is out of bounds. Skipping skill assignment.\n";
-			}
-
-			petData[pd.id] = pd;
 		}
+		//Load multipliers
+		if (v.findArray("multipliers")) {
+			for (Json::Value const& m : v["multipliers"]) {
+				//Each value should be a mod
+				pd.multipliers.push_back(StatEffects::Mod::ParseFromJSON(m));
+			}
+		}
+		//Rarity scalings (array of numbers)
+		if (v.findArray("rarityScaling")) {
+			Json::Value const& scales{ v["rarityScaling"] };
+			for (int i{}; i < 6; ++i) {
+				pd.rarityScaling[i] = scales[i].asFloat();
+			}
+		}
+		pd.skillCooldown = v.get("skillCooldown", 0).asFloat();
+		pd.skillDesc = v.get("skillDesc", "").asString();
+		pd.texture = v.get("texture", "").asString();
+		pd.passive.SetIcon(pd.texture); //Set passive icon to same tex as pet
+		if (v.findArray("skillElements")) {
+			for (Json::Value const& m : v["skillElements"]) {
+				pd.skillElements.push_back(static_cast<Elements::ELEMENT_TYPE>(m.asInt()));
+			}
+		}
+
+		//Get pet skill ptr
+		if (static_cast<size_t>(pd.id) < PetSkills::skills.size()) {
+			pd.PetSkill = PetSkills::skills[pd.id];
+		}
+		else {
+			pd.PetSkill = PetSkills::PetNullSkill; // Default to the safe null skill
+			std::cout << "Warning: Skill ID " << pd.id << " is out of bounds. Skipping skill assignment.\n";
+		}
+
+		petData[pd.id] = pd;
 	}
 
 	ownedPets.clear();

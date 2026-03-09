@@ -241,12 +241,12 @@ AEVec2 TileMap::GetTilePosition(unsigned rowInd, unsigned colInd) const
 // want the actual tile should cast to int.
 AEVec2 TileMap::GetTileIndFromPos(AEVec2 pos) const
 {
-	AEVec2 p{ pos + mapSize * 0.5f - posOffset };
-	AEVec2 out{
-		(float)((int)(p.x / tileSize.x)),
-		(float)((int)(-(p.y - tileSize.y * 0.5f) / tileSize.y + (rows - 1)))
-	};
-	return out;
+    AEVec2 p{ pos + mapSize * 0.5f - posOffset }; // shift into local tile space
+    AEVec2 out{
+        (f32)((int)(p.x / tileSize.x)),
+        (f32)((int)(-(p.y - tileSize.y * 0.5f) / tileSize.y + (rows - 1)))
+    };
+    return out;
 }
 
 
@@ -255,9 +255,9 @@ AEVec2 TileMap::GetTileIndFromPos(AEVec2 pos) const
 // Returns nullptr if the position is outside the map.
 TileMap::Tile const* TileMap::QueryTile(AEVec2 pos) const
 {
-	AEVec2 inds{ GetTileIndFromPos(pos) };
-	if (inds.x < 0 || inds.x >= cols || inds.y < 0 || inds.y >= rows) return nullptr;
-	return &tiles[(unsigned)inds.y][(unsigned)inds.x];
+    AEVec2 inds{ GetTileIndFromPos(pos) };
+    if (inds.x < 0 || inds.x >= cols || inds.y < 0 || inds.y >= rows) return nullptr;
+    return &tiles[(unsigned)inds.y][(unsigned)inds.x];
 }
 
 // Same but takes a row/col index directly instead of a world position.

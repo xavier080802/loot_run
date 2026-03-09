@@ -1,0 +1,54 @@
+{
+  "dropTables": [
+    {
+      "id": 0,
+      "entries": [
+        {
+          "type": "Coin",
+          "chance": 0.5,
+          "minAmount": 5,
+          "maxAmount": 10
+        },
+        {
+          "type": "Heal",
+          "chance": 0.2
+        },
+        {
+          "type": "Ammo",
+          "chance": 0.4,
+          "minAmount": 5,
+          "maxAmount": 15
+        },
+        {
+          "type": "Equipment",
+          "category": "Any",
+          "chance": 0.3
+        },
+        {
+          "type": "None",
+          "chance": 0.3
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "entries": [
+        {
+          "type": "Coin",
+          "chance": 1.0,
+          "minAmount": 100,
+          "maxAmount": 500
+        },
+        {
+          "type": "Equipment",
+          "category": "Any",
+          "chance": 1.0
+        },
+        {
+          "type": "Heal",
+          "chance": 1.0
+        }
+      ]
+    }
+  ]
+}

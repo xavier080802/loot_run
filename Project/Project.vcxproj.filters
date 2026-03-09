@@ -260,6 +260,9 @@
     </ClCompile>
     <ClCompile Include="GameStates\PetState.cpp">
       <Filter>Source Files\GameStates</Filter>
+      </ClCompile>
+    <ClCompile Include="ShopFunctions.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -449,6 +452,9 @@
     <ClInclude Include="Elements\SunMoonElement.h">
       <Filter>Header Files\Elements</Filter>
     </ClInclude>
+    <ClInclude Include="ShopFunctions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Actor\ActorSubscriptions.h">
       <Filter>Header Files\Actors</Filter>
     </ClInclude>
@@ -479,10 +485,5 @@
     <ClInclude Include="GameStates\PetState.h">
       <Filter>Header Files\GameStates</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Pet.json">
-      <Filter>Source Files\Pets</Filter>
-    </None>
   </ItemGroup>
 </Project>

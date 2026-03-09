@@ -3,9 +3,8 @@
 #include "Element.h"
 #include "../Actor/ActorSubscriptions.h"
 
-//DoT that counts as a hit.
+//DoT that should count as a hit.
 //Reapplying triggers 1 instance of the DoT immediately
-//Reapply as different name
 class BloodElement : public StatEffects::StatusEffect
 {
 public:

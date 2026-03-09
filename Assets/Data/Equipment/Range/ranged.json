@@ -1,17 +1,104 @@
 [
     {
         "id": 1,
-        "name": "Demo Bow",
+        "name": "Common Wood Bow",
+        "sellPrice": 15,
+        "texturePath": "",
         "slot": "Weapon",
         "weaponType": "Bow",
         "attackType": "Projectile",
         "isRanged": true,
-        "element": "BLOOD",
-        "knockback": 100.0,
-        "attackSize": 10.0,
+        "element": "NONE",
+        "knockback": 50.0,
+        "attackSize": 5.0,
         "rarity": "Common",
         "stats": {
-            "attack": 5.0
+            "attack": 8.0
+        }
+    },
+    {
+        "id": 2,
+        "name": "Uncommon Reinforced Bow",
+        "sellPrice": 40,
+        "texturePath": "",
+        "slot": "Weapon",
+        "weaponType": "Bow",
+        "attackType": "Projectile",
+        "isRanged": true,
+        "element": "NONE",
+        "knockback": 60.0,
+        "attackSize": 5.0,
+        "rarity": "Uncommon",
+        "stats": {
+            "attack": 12.0
+        }
+    },
+    {
+        "id": 3,
+        "name": "Rare Hunter Bow",
+        "sellPrice": 100,
+        "texturePath": "",
+        "slot": "Weapon",
+        "weaponType": "Bow",
+        "attackType": "Projectile",
+        "isRanged": true,
+        "element": "NONE",
+        "knockback": 70.0,
+        "attackSize": 6.0,
+        "rarity": "Rare",
+        "stats": {
+            "attack": 20.0
+        }
+    },
+    {
+        "id": 4,
+        "name": "Epic Elven Bow",
+        "sellPrice": 250,
+        "texturePath": "",
+        "slot": "Weapon",
+        "weaponType": "Bow",
+        "attackType": "Projectile",
+        "isRanged": true,
+        "element": "NONE",
+        "knockback": 80.0,
+        "attackSize": 6.0,
+        "rarity": "Epic",
+        "stats": {
+            "attack": 35.0
+        }
+    },
+    {
+        "id": 5,
+        "name": "Legendary Dragon Bow",
+        "sellPrice": 800,
+        "texturePath": "",
+        "slot": "Weapon",
+        "weaponType": "Bow",
+        "attackType": "Projectile",
+        "isRanged": true,
+        "element": "NONE",
+        "knockback": 100.0,
+        "attackSize": 8.0,
+        "rarity": "Legendary",
+        "stats": {
+            "attack": 65.0
+        }
+    },
+    {
+        "id": 6,
+        "name": "Mythical Artemis Bow",
+        "sellPrice": 2500,
+        "texturePath": "",
+        "slot": "Weapon",
+        "weaponType": "Bow",
+        "attackType": "Projectile",
+        "isRanged": true,
+        "element": "MOON",
+        "knockback": 150.0,
+        "attackSize": 10.0,
+        "rarity": "Mythical",
+        "stats": {
+            "attack": 120.0
         }
     }
 ]
