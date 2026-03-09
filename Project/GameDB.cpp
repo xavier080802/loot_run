@@ -3,6 +3,7 @@
 #include <fstream>
 #include <json/json.h>
 #include <iostream>
+#include <cstdlib>
 #include "./Helpers/ColorUtils.h"
 
 namespace
@@ -228,6 +229,12 @@ namespace GameDB
 			def.name = e.get("name", "").asString();
 			def.dropTableId = e.get("dropTableId", 0).asInt();
 
+			// Parse category (Normal / Elite / Boss)
+			std::string catStr = e.get("category", "Normal").asString();
+			if (catStr == "Elite"  || catStr == "ELITE")  def.category = EnemyCategory::Elite;
+			else if (catStr == "Boss" || catStr == "BOSS") def.category = EnemyCategory::Boss;
+			else                                           def.category = EnemyCategory::Normal;
+
 			// Parse base stats
 			const auto& s = e["baseStats"];
 			def.baseStats.maxHP = s.get("maxHP", 0.0f).asFloat();
@@ -249,6 +256,7 @@ namespace GameDB
 			// Parse Enemy Attack pattern
 			if (e.isMember("attack")) {
 				const auto& atk = e["attack"];
+				def.attack.aggroRange = atk.get("aggroRange", def.attack.aggroRange).asFloat();
 				def.attack.range = atk.get("range", def.attack.range).asFloat();
 				def.attack.cooldown = atk.get("cooldown", def.attack.cooldown).asFloat();
 
@@ -596,6 +604,106 @@ namespace GameDB
         for (const auto& e : EnemyRegistry()) {
             if (e.id == id) { return &e; }
         }
+        return nullptr;
+    }
+
+    /**
+     * @brief Returns a uniformly random EnemyDef whose category is Normal.
+     *
+     * Builds a filtered view of the registry at call time, then picks a
+     * random entry. Returns nullptr if no Normal enemies are registered.
+     *
+     * @return A CONST POINTER to a randomly selected Normal EnemyDef, or nullptr.
+     *
+     * @note Called by:
+     *   - Any spawner that needs a generic Normal-tier enemy.
+     */
+    const EnemyDef* GetRandomNormalEnemy()
+    {
+        std::vector<const EnemyDef*> pool;
+        for (const auto& e : EnemyRegistry())
+            if (e.category == EnemyCategory::Normal)
+                pool.push_back(&e);
+
+        if (pool.empty()) return nullptr;
+        return pool[rand() % pool.size()];
+    }
+
+    /**
+     * @brief Returns a uniformly random EnemyDef whose category is Elite.
+     *
+     * Builds a filtered view of the registry at call time, then picks a
+     * random entry. Returns nullptr if no Elite enemies are registered.
+     *
+     * @return A CONST POINTER to a randomly selected Elite EnemyDef, or nullptr.
+     *
+     * @note Called by:
+     *   - Any spawner that needs a stronger Elite-tier enemy.
+     */
+    const EnemyDef* GetRandomEliteEnemy()
+    {
+        std::vector<const EnemyDef*> pool;
+        for (const auto& e : EnemyRegistry())
+            if (e.category == EnemyCategory::Elite)
+                pool.push_back(&e);
+
+        if (pool.empty()) return nullptr;
+        return pool[rand() % pool.size()];
+    }
+
+    /**
+     * @brief Returns a uniformly random EnemyDef whose category is Boss.
+     *
+     * Builds a filtered view of the registry at call time, then picks a
+     * random entry. Returns nullptr if no Boss enemies are registered.
+     *
+     * @return A CONST POINTER to a randomly selected Boss EnemyDef, or nullptr.
+     *
+     * @note Called by:
+     *   - Whichever functions ends up signaling to spawn a Boss.
+     */
+    const EnemyDef* GetRandomBossEnemy()
+    {
+        std::vector<const EnemyDef*> pool;
+        for (const auto& e : EnemyRegistry())
+            if (e.category == EnemyCategory::Boss)
+                pool.push_back(&e);
+
+        if (pool.empty()) return nullptr;
+        return pool[rand() % pool.size()];
+    }
+
+    /**
+     * @brief Picks a random Normal or Elite EnemyDef using weighted probability.
+     *
+     * Generates a float in [0, 1) and uses cumulative probability bands to
+     * decide the category. Boss enemies are intentionally excluded as they have
+     * separate, hand-crafted spawn requirements.
+     *
+     * Default weights: 70% Normal, 30% Elite (sum = 1.0).
+     * If the roll somehow falls outside both bands, nullptr is returned.
+     *
+     * @param normalChance  Probability [0..1] of selecting a Normal enemy.
+     * @param eliteChance   Probability [0..1] of selecting an Elite enemy.
+     *
+     * @return A CONST POINTER to a randomly selected Normal or Elite EnemyDef,
+     *         or nullptr if the pool for the chosen tier is empty.
+     *
+     * @note Called by:
+     *   - Generic wave spawners that want tier-weighted variety without Bosses.
+     */
+    const EnemyDef* GetWeightedRandomEnemy(float normalChance, float eliteChance)
+    {
+        // Generate a value in [0.0, 1.0)
+        float roll = static_cast<float>(rand()) / (static_cast<float>(RAND_MAX) + 1.0f);
+
+        if (roll < normalChance)
+            return GetRandomNormalEnemy();
+
+        if (roll < normalChance + eliteChance)
+            return GetRandomEliteEnemy();
+
+        // Roll fell outside both bands; Boss enemies require explicit spawning.
         return nullptr;
     }
 }
