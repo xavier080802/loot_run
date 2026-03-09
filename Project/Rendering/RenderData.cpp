@@ -9,40 +9,31 @@ void RenderData::Init(MESH_SHAPE shape)
 
 void RenderData::Free()
 {
-	delete texList;
-	texList = nullptr;
 }
 
 AEGfxTexture* RenderData::GetTexture() const
 {
-    return !texCount ? nullptr : texList[currTex];
+    return !texList.size() ? nullptr : texList.at(currTex);
 }
 
 AEGfxTexture* RenderData::SetActiveTexture(int index)
 {
-    if (index >= texCount)
+    if (index >= texList.size())
         return nullptr;
 
-    return texList[currTex = index];
+	currTex = index;
+    return texList.at(currTex);
 }
 
 void RenderData::AddTexture(const char* texturePath)
 {
-	AEGfxTexture** prev = texList;
-	texList = (AEGfxTexture**)realloc(texList, sizeof(AEGfxTexture*) * ++texCount);
-	if (!texList) {
-		printf("ERROR: Failed to realloc for texture in AddTexture. | %s\n", texturePath);
-		//Free prev
-		free(prev);
-		return;
-	}
-	texList[texCount - 1] = RenderingManager::GetInstance()->LoadTexture(texturePath);
+	texList.push_back(RenderingManager::GetInstance()->LoadTexture(texturePath));
 }
 
 void RenderData::ReplaceTexture(const char* texturePath, int index)
 {
 	if (index < 0) return;
-	if (index >= texCount) {
+	if (index >= texList.size()) {
 		return AddTexture(texturePath);
 	}
 	texList[index] = RenderingManager::GetInstance()->LoadTexture(texturePath);

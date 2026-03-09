@@ -3,11 +3,12 @@
 #include "AEEngine.h"
 #include "../Helpers/ColorUtils.h"
 #include "../RenderingManager.h"
+#include <vector>
 
 class RenderData
 {
 public:
-	AEGfxTexture** texList{};
+	std::vector<AEGfxTexture*> texList{};
 	virtual AEGfxTexture* GetTexture() const;
 	virtual AEGfxTexture* SetActiveTexture(int index);
 	void AddTexture(const char* texturePath);
@@ -23,7 +24,6 @@ public:
 
 protected:
 	int currTex{};
-	int texCount{};
 	AEGfxVertexList* mesh{};
 };
 
