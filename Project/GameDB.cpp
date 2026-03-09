@@ -56,6 +56,18 @@ namespace
 
 namespace GameDB
 {
+    /**
+     * @brief Retrieves a drop table by its unique ID.
+     *
+     * Scans the loaded drop tables array and returns a pointer to the matching table.
+     *
+     * @param id  The unique identifier of the drop table to find. Passed by VALUE.
+     *
+     * @return A CONST POINTER to the DropTable if found, nullptr otherwise.
+     *
+     * @note Called by:
+     *   - DropSystem - when resolving a drop table ID into a DropTable reference.
+     */
     const DropTable* GetDropTable(int id)
     {
         for (const auto& t : sDropTables)
@@ -157,8 +169,19 @@ namespace GameDB
     }
 
 
-	// Parses JSON file to load Enemy Definitions into the EnemyRegistry collection.
-	// Makes enemy variations data-driven rather than hardcoded.
+	/**
+	 * @brief Parses JSON file to load Enemy Definitions into the EnemyRegistry collection.
+	 *
+	 * Makes enemy variations data-driven rather than hardcoded. Pulls in stats, render data,
+	 * and attack patterns for each enemy type.
+	 *
+	 * @param path  File path to the enemies JSON file. Passed as a CONST POINTER.
+     *
+     * @return true if successfully loaded and parsed, false otherwise.
+     *
+     * @note Called by:
+     *   - GameState::Init() - once on game startup.
+	 */
 	bool LoadEnemyDefs(const char* path)
 	{
 		std::ifstream file(path, std::ios::binary);
@@ -263,6 +286,20 @@ namespace GameDB
 		return true;
 	}
 
+    /**
+     * @brief Loads equipment definitions from a JSON file into the registry.
+     *
+     * Reads a list of equipment items (weapons, armor, bows) and adds them to
+     * the global EquipmentRegistry. Can be called multiple times for different item categories.
+     *
+     * @param path      File path to the equipment JSON file. Passed as a CONST POINTER.
+     * @param category  The EquipmentCategory classification for these loaded items. Passed by VALUE.
+     *
+     * @return true if successfully loaded and parsed, false otherwise.
+     *
+     * @note Called by:
+     *   - GameState::Init() - called multiple times for each equipment JSON file.
+     */
     bool LoadEquipmentDefs(const char* path, EquipmentCategory category)
     {
         auto& reg = EquipmentRegistry();
@@ -354,6 +391,19 @@ namespace GameDB
         return true;
     }
 
+    /**
+     * @brief Loads the player's base stats from a JSON file.
+     *
+     * Sets the default, starting stats for the player character before any equipment
+     * or shop upgrades are applied.
+     *
+     * @param path  File path to the player definition JSON file. Passed as a CONST POINTER.
+     *
+     * @return true if successfully loaded and parsed, false otherwise.
+     *
+     * @note Called by:
+     *   - GameState::Init() - once on game startup.
+     */
     bool LoadPlayerDef(const char* path)
     {
         std::ifstream file(path);
@@ -383,6 +433,18 @@ namespace GameDB
         return true;
     }
 
+    /**
+     * @brief Loads the player's starter inventory setup from a JSON file.
+     *
+     * Determines which equipment IDs the player starts the game with.
+     *
+     * @param path  File path to the inventory JSON file. Passed as a CONST POINTER.
+     *
+     * @return true if successfully loaded and parsed, false otherwise.
+     *
+     * @note Called by:
+     *   - GameState::Init() - once on game startup.
+     */
     bool LoadPlayerInventory(const char* path)
     {
         std::ifstream file(path);
@@ -412,9 +474,40 @@ namespace GameDB
         return true;
     }
 
+    /**
+     * @brief Gets the player's base stats loaded from the JSON config.
+     *
+     * @return A CONST REFERENCE to the player's base ActorStats.
+     *
+     * @note Called by:
+     *   - DropSystem - to get player max hp for heal drops.
+     */
     const ActorStats& GetPlayerBaseStats() { return sPlayerBaseStats; }
+
+    /**
+     * @brief Gets the player's starter inventory definition.
+     *
+     * @return A CONST REFERENCE to the PlayerInventoryDef struct.
+     *
+     * @note Called by:
+     *   - Player::InitPlayerRuntime() - to know what starter gear to give.
+     */
     const PlayerInventoryDef& GetPlayerStarterInventory() { return sPlayerInventory; }
 
+	/**
+	 * @brief Searches the equipment registry for a specific item by category and ID.
+	 *
+	 * Used to retrieve an item's data when loading starting gear or rolling a specific drop.
+	 *
+	 * @param category  The EquipmentCategory to filter by. Passed by VALUE.
+	 * @param id        The unique numeric ID of the equipment to find. Passed by VALUE.
+	 *
+	 * @return A CONST POINTER to the EquipmentData if found, nullptr otherwise.
+     *
+     * @note Called by:
+     *   - Player::InitPlayerRuntime() - to load player starter equipment.
+     *   - DropSystem - when resolving a drop table entry into an equipment drop.
+	 */
 	const EquipmentData* GetEquipmentData(EquipmentCategory category, int id)
 	{
 		for (const auto& e : EquipmentRegistry())
@@ -437,6 +530,17 @@ namespace GameDB
 		}
 	}
 
+    /**
+     * @brief Returns a random piece of equipment from the registry, weighted by rarity.
+     *
+     * Items with lower rarities (Common) have a much higher chance to be selected
+     * than items with higher rarities (Mythical). Used for generating generic loot drops.
+     *
+     * @return A CONST POINTER to a randomly selected EquipmentData, or nullptr if registry is empty.
+     *
+     * @note Called by:
+     *   - DropSystem - when resolving a wildcard "Any Equipment" drop.
+     */
     const EquipmentData* GetRandomEquipment()
     {
         auto& reg = EquipmentRegistry();
@@ -459,6 +563,14 @@ namespace GameDB
         return &reg.back();
     }
 
+    /**
+     * @brief Frees allocated memory for dynamic strings in the equipment registry.
+     *
+     * Should be called on application exit to prevent memory leaks from _strdup allocations.
+     *
+     * @note Called by:
+     *   - Application Cleanup / Exit.
+     */
     void UnloadEquipmentReg()
     {
         for (EquipmentData& d : sEquipmentRegistry) {
@@ -467,6 +579,18 @@ namespace GameDB
         }
     }
 
+    /**
+     * @brief Retrieves an enemy definition by its unique ID.
+     *
+     * Used when spawning a specific type of enemy to access its template data.
+     *
+     * @param id  The unique identifier of the enemy to find. Passed by VALUE.
+     *
+     * @return A CONST POINTER to the EnemyDef if found, nullptr otherwise.
+     *
+     * @note Called by:
+     *   - GameState::Init() - when spawning Slimes or Bosses.
+     */
     const EnemyDef* GetEnemyDef(int id)
     {
         for (const auto& e : EnemyRegistry()) {

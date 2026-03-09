@@ -242,11 +242,6 @@ void DropSystem::AddToPickupDisplay(const PickupPayload& payload)
  * of the screen. Each message stays on screen for `timeTillPop` seconds before
  * the oldest one is removed from the front of the queue.
  *
- * Uses the deque (double-ended queue) structure so we can:
- *  - add new messages to the BACK quickly (push_back)
- *  - remove old messages from the FRONT cheaply (pop_front)
- *  Unlike a vector, a deque doesn't need to shift all elements when removing from the front.
- *
  * @param dt  Time since the last frame in seconds. Passed by VALUE.
  *
  * @note Called by:

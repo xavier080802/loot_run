@@ -45,7 +45,7 @@ ActorStats StatsCalc::ComputeFinalStats(const ActorStats& base,
 /**
  * @brief Figures out how much damage actually lands after the target's defense reduces it.
  *
- * Uses a classic game formula: the higher the defense, the less damage gets through.
+ * Why this formula: the higher the defense, the less damage gets through.
  * But defense can NEVER fully block all damage (you can't reduce to 0 with finite defense).
  *
  * Formula: finalDamage = attack * (100 / (100 + defense))

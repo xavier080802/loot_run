@@ -223,6 +223,7 @@ GameObjectManager::~GameObjectManager()
 		if (!go) continue;
 		go->Free();
 		delete go;
+		go = nullptr;
 	}
 	goList.clear();
 }

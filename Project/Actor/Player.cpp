@@ -28,6 +28,26 @@ namespace {
 	}
 }
 
+/**
+ * @brief Initializes the Player GameObject with physics, collision, and rendering data.
+ *
+ * Sets up the player's initial transform, collision mesh, and assigns the correct GO_TYPE.
+ * Also initializes the player's dodge cooldowns and health bar graphics.
+ *
+ * @param _pos               Starting world position. Passed by VALUE.
+ * @param _scale             Size of the player. Passed by VALUE.
+ * @param _z                 Z-index for rendering order. Passed by VALUE.
+ * @param _meshShape         The visual mesh shape (e.g., Square). Passed by VALUE.
+ * @param _colShape          The collision bounding box shape. Passed by VALUE.
+ * @param _colSize           The size of the collision bounding box. Passed by VALUE.
+ * @param _collideWithLayers Bitmask of which layers the player can hit. Passed by VALUE.
+ * @param _isInLayers        The collision layer the player belongs to. Passed by VALUE.
+ *
+ * @return A POINTER to this newly initialized GameObject.
+ *
+ * @note Called by:
+ *   - GameState::Init() - when the game level starts and spawns the hero.
+ */
 GameObject* Player::Init(AEVec2 _pos, AEVec2 _scale, int _z,
 	MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize,
 	Bitmask _collideWithLayers, Collision::LAYER _isInLayers)
@@ -42,6 +62,18 @@ GameObject* Player::Init(AEVec2 _pos, AEVec2 _scale, int _z,
 	return GameObject::Init(_pos, _scale, _z, _meshShape, _colShape, _colSize, _collideWithLayers, _isInLayers);
 }
 
+/**
+ * @brief Sets up the player's runtime stats and starter equipment.
+ *
+ * Resets the inventory to a clean slate, loads the starter items defined in the JSON,
+ * equips them, and runs the first stat calculation to initialize the actor's HP.
+ *
+ * @param baseStats  The player's core stats before any gear or upgrades.
+ *                   Passed by CONST REFERENCE. We only copy the values into mBaseStats.
+ *
+ * @note Called by:
+ *   - GameState::Init() - immediately after loading the player definition from GameDB.
+ */
 void Player::InitPlayerRuntime(const ActorStats& baseStats)
 {
 	mBaseStats = baseStats;
@@ -81,6 +113,19 @@ void Player::InitPlayerRuntime(const ActorStats& baseStats)
 		.Key(AEVK_G).Key(AEVK_B);
 }
 
+/**
+ * @brief Recalculates the player's final combat stats from all sources.
+ *
+ * Collects the base stats, adds the raw values from equipped gear (weapons & armor),
+ * and then multiplies them by the shop upgrade bonuses. Also caps current HP 
+ * if the new max HP is lower.
+ *
+ * @note Called by:
+ *   - Player::InitPlayerRuntime() - initial setup.
+ *   - Player::TryPickup() - when picking up new equipment.
+ *   - Player::SubscriptionAlert() - when swapping or dropping weapons.
+ *   - Player::ApplyShopUpgrades() - when returning from the shop.
+ */
 void Player::RecalculateStats()
 {
 	EquipmentModifiers eq = mInventory.GetEquipmentModifiers();
@@ -118,6 +163,17 @@ void Player::ApplyShopUpgrades()
 	RecalculateStats();
 }
 
+/**
+ * @brief Main update loop for the Player.
+ *
+ * Handles ground item interaction logic (selling/swapping), tick down ability cooldowns,
+ * and processes movement physics based on input.
+ *
+ * @param dt  Delta time since the last frame in seconds. Passed by VALUE.
+ *
+ * @note Called by:
+ *   - GameStateManager / standard game loop - runs every frame.
+ */
 void Player::Update(double dt)
 {
 	if (mInteractablePickup && mInteractablePickup->IsEnabled())
@@ -197,6 +253,18 @@ void Player::Update(double dt)
 	Actor::Update(dt);
 }
 
+/**
+ * @brief Polls the keyboard for movement commands and applies velocity.
+ *
+ * Checks WASD for directional movement. Also handles the Spacebar dodge roll
+ * if the cooldown is ready, applying a sudden burst of force and setting i-frames.
+ * Updates the moveDirNorm vector for other systems to read.
+ *
+ * @param dt  Delta time since the last frame in seconds. Passed by VALUE.
+ *
+ * @note Called by:
+ *   - Player::Update() - every frame to parse player navigation inputs.
+ */
 void Player::HandleMovementInput(double dt)
 {
 	float fdt = (float)dt;
@@ -223,6 +291,18 @@ void Player::HandleMovementInput(double dt)
 	SetPos(p);
 }
 
+/**
+ * @brief Retrieves the data of the weapon the player is currently yielding.
+ *
+ * Checks the 'heldWeapon' state to determine if the player is using Weapon1,
+ * Weapon2, or the Bow, and pulls the corresponding struct from the inventory.
+ *
+ * @return A CONST POINTER to the currently active EquipmentData, or nullptr if unarmed.
+ *
+ * @note Called by:
+ *   - Player::SubscriptionAlert() - to check attack type/ammo when LBUTTON is clicked.
+ *   - Player::Update() - to know what weapon is being swapped out during ground item interaction.
+ */
 const EquipmentData* Player::GetHeldWeaponData() const
 {
 	switch (heldWeapon)
@@ -234,6 +314,21 @@ const EquipmentData* Player::GetHeldWeaponData() const
 	}
 }
 
+/**
+ * @brief Attempts to add a generic ground pickup to the player's inventory.
+ *
+ * Sorts the payload by DropType. For equipment, it checks if the slots are full
+ * before grabbing it. For ammo/health/coins, it adds them immediately.
+ * 
+ * @param payload  The contents of the pickup (type, amount, equipment pointer).
+ *                 Passed by CONST REFERENCE. Read-only access to what the drop contains.
+ *
+ * @return true if the item was successfully picked up (consumed), false if the player's
+ *         inventory for that item type was full and they couldn't take it.
+ *
+ * @note Called by:
+ *   - Player::OnCollide() - when the player's hitbox overlaps a PickupGO.
+ */
 bool Player::TryPickup(const PickupPayload& payload)
 {
 	switch (payload.type)
@@ -303,11 +398,39 @@ bool Player::TryPickup(const PickupPayload& payload)
 	return true;
 }
 
+/**
+ * @brief Gets the normalized vector of the direction the player is currently holding/moving.
+ *
+ * Used primarily for visual aids like showing the minimap arrow direction or
+ * determining which way to drop an item if the player is standing still.
+ *
+ * @return A 2D vector of the movement direction. Passed by VALUE.
+ *
+ * @note Called by:
+ *   - Minimap::Draw() - to rotate the player arrow icon.
+ *   - Player::SubscriptionAlert() - to figure out which direction to toss a dropped item.
+ */
 AEVec2 Player::GetMoveDirNorm() const
 {
 	return moveDirNorm;
 }
 
+/**
+ * @brief Receives input events that the player is subscribed to.
+ *
+ * Acts as the centralized input router for discrete actions:
+ * - LBUTTON : Attack
+ * - RBUTTON : Swap Melee Weapons
+ * - G       : Drop Active Weapon
+ * - Q, Z, X : Direct Weapon Hotkeys
+ * - B       : Toggle Stats Menu
+ *
+ * @param content  A struct containing the key code and whether it was triggered/held/released.
+ *                 Passed by VALUE.
+ *
+ * @note Called by:
+ *   - InputManager - automatically fires when a watched key state changes.
+ */
 void Player::SubscriptionAlert(Input::InputKeyData content)
 {
 	switch (content.key)
@@ -450,6 +573,17 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 	}
 }
 
+/**
+ * @brief Handles player death sequence.
+ *
+ * Disables the player's collision and updates, then kicks the game state
+ * back out to the MainMenuState. 
+ *
+ * @param killer  The actor who dealt the fatal blow. Passed as a RAW POINTER.
+ *
+ * @note Called by:
+ *   - Actor::TakeDamage() - when the player's HP drops to 0.
+ */
 void Player::OnDeath(Actor* killer)
 {
 	Actor::OnDeath(killer);
@@ -457,6 +591,19 @@ void Player::OnDeath(Actor* killer)
 	Debug::stream << "PLAYER DIED\n";
 }
 
+/**
+ * @brief Handles physics collisions between the player and other GameObjects.
+ *
+ * Primarily filters for generic items (PickupGO) and triggers TryPickup.
+ * Combat hitboxes (like enemy swords) do not run through this; they use overlapping
+ * triggers managed by the AttackHitboxGO instead.
+ *
+ * @param other  Data about the collision (what object, the intersection area, etc).
+ *               Passed by REFERENCE because it modifies the resolution data.
+ *
+ * @note Called by:
+ *   - CollisionSystem / Physics tick - when the AABB of this player overlaps another object.
+ */
 void Player::OnCollide(CollisionData& other)
 {
 	switch (other.other.GetGOType())
@@ -494,6 +641,15 @@ void Player::Draw()
 	Actor::Draw();
 }
 
+/**
+ * @brief Renders the player's Heads-Up Display (HUD) element overlay.
+ *
+ * Draws the HP bar, status effect icons, interaction prompts for ground items,
+ * and the expanded stats/equipment menu if the 'B' key toggle is active.
+ *
+ * @note Called by:
+ *   - GameState::Draw() - rendered in screen-space after the world draws.
+ */
 void Player::DrawUI() {
 	AEVec2 camPos;
 	AEGfxGetCamPosition(&camPos.x, &camPos.y);
@@ -581,6 +737,16 @@ void Player::DrawUI() {
 	}
 }
 
+/**
+ * @brief Checks if the player is currently immune to damage.
+ *
+ * True if the player recently performed a dodge roll and is within their i-frames.
+ *
+ * @return true if invincible, false if vulnerable.
+ *
+ * @note Called by:
+ *   - Actor::DealDamage() - checked by attackers before applying a hit.
+ */
 bool Player::IsInvulnerable()
 {
 	return dodgeIFrameTimer > 0.f;
