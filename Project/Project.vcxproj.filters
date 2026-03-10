@@ -270,6 +270,9 @@
     <ClCompile Include="Pets\Pet_1.cpp">
       <Filter>Source Files\Pets\Derived</Filter>
     </ClCompile>
+    <ClCompile Include="Pets\Pet_2.cpp">
+      <Filter>Source Files\Pets\Derived</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -489,6 +492,9 @@
       <Filter>Header Files\GameStates</Filter>
     </ClInclude>
     <ClInclude Include="Pets\Pet_1.h">
+      <Filter>Header Files\Pets\Derived</Filter>
+    </ClInclude>
+    <ClInclude Include="Pets\Pet_2.h">
       <Filter>Header Files\Pets\Derived</Filter>
     </ClInclude>
   </ItemGroup>

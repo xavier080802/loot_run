@@ -131,6 +131,8 @@ namespace StatEffects {
 		void SetIcon(std::string const& path);
 		void SetName(std::string const& newName);
 
+		static StatusEffect ParseFromJson(Json::Value const& v);
+
 	protected:
 		virtual void DrawTooltip() const;
 

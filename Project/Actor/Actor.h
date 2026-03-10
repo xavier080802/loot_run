@@ -43,6 +43,10 @@ public:
 	// Called when this actor receives damage.
 	virtual void TakeDamage(DamageData const& data);
 
+	//Grant the actor a shield of the given value.
+	void AddShield(float value);
+	float GetShieldVal() const { return mShieldValue; }
+
 	virtual bool IsInvulnerable() { return false; }
 	
 	// Restores the actor's HP by the specified amount, clamping at maxHP.
@@ -97,6 +101,7 @@ protected:
 
 	ActorStats mStats{};
 	float mCurrentHP = 0.0f;
+	float mShieldValue{}; //Blocks post-mitigation damage from affecting hp. 
 	std::map<std::string, StatEffects::StatusEffect*> statusEffectsDict;
 
 private:

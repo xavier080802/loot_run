@@ -137,6 +137,28 @@ void StatEffects::StatusEffect::SetName(std::string const& newName)
 	name = newName;
 }
 
+StatEffects::StatusEffect StatEffects::StatusEffect::ParseFromJson(Json::Value const& v)
+{
+	//Parse eff type string by changing to upper case first
+	EFF_TYPE et{NONE};
+	std::string _typeStr{ v.get("type", "").asString() };
+	std::transform(_typeStr.begin(), _typeStr.end(), _typeStr.begin(), std::toupper);
+	if (_typeStr == "BUFF") et = BUFF;
+	else if (_typeStr == "DEBUFF") et = DEBUFF;
+	//Create copy to store
+	StatusEffect out{ nullptr, v.get("duration", -1).asFloat(), v.get("maxStacks", 1).asUInt(), v.get("name","").asString(),
+	v.get("startStacks",1U).asUInt(), et, v.get("icon", "auto").asString()};
+
+	//Add mods
+	if (v.findArray("mods")) {
+		for (Json::Value const& m : v["mods"]) {
+			//Each value should be a mod
+			out.AddMod(StatEffects::Mod::ParseFromJSON(m));
+		}
+	}
+	return out;
+}
+
 float StatEffects::Mod::GetValFromActor(Actor const& actor) const
 {
 	if (mathType == FLAT) return value;
@@ -169,7 +191,21 @@ float StatEffects::Mod::GetValFromActor(Actor const& actor) const
 
 StatEffects::Mod StatEffects::Mod::ParseFromJSON(Json::Value const& v)
 {
-	return Mod{ v.get("value", 0).asFloat(),
-			static_cast<StatEffects::MATH_TYPE>(v.get("mathType", StatEffects::MATH_TYPE::MULTIPLICATIVE).asInt()),
-			static_cast<STAT_TYPE>(v.get("stat", STAT_TYPE::ATT).asInt()) };
+	Mod out{};
+	out.value = v.get("value", 0).asFloat();
+	if (v.find("stat")) {
+		if (v["stat"].isString()) {
+			out.stat = ParseStatTypeFromStr(v.get("stat", "att").asCString());
+		}
+		else out.stat = static_cast<STAT_TYPE>(v.get("stat", STAT_TYPE::ATT).asInt());
+	}
+
+	if (v["mathType"].isString()) {
+		std::string s{ v.get("mathType", "flat").asString() };
+		std::transform(s.begin(), s.end(), s.begin(), std::toupper);
+		if (s == "MULT" || s == "MULTIPLICATIVE" || s == "*" || s == "%") out.mathType = MATH_TYPE::MULTIPLICATIVE;
+		else out.mathType = MATH_TYPE::FLAT;
+	}
+	else out.mathType = static_cast<StatEffects::MATH_TYPE>(v.get("mathType", StatEffects::MATH_TYPE::MULTIPLICATIVE).asInt());
+	return out;
 }

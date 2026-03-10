@@ -65,6 +65,7 @@ void PetManager::InitPetForGame()
 		return;
 	}
 	PlacePet(player->GetPos());
+	equippedPet->Setup(*player);
 	//Apply passive
 	player->ApplyStatusEffect(new StatEffects::StatusEffect{ equippedPet->GetPetData().passive }, player);
 
@@ -242,7 +243,7 @@ void PetManager::LoadPetData()
 		//Load mods for passive
 		Json::Value const* passive{ v.findArray("passive") };
 		if (passive) {
-			for (Json::Value const& m : v["passive"]) {
+			for (Json::Value const& m : *passive) {
 				//Each value should be a mod
 				pd.passive.AddMod(StatEffects::Mod::ParseFromJSON(m));
 			}
@@ -254,6 +255,14 @@ void PetManager::LoadPetData()
 				pd.multipliers.push_back(StatEffects::Mod::ParseFromJSON(m));
 			}
 		}
+		//Load damage type array
+		if (v.findArray("dmgTypes")) {
+			for (Json::Value const& m : v["dmgTypes"]) {
+				//Each value should be a mod
+				pd.dmgTypes.push_back(ParseDmgTypeFromStr(m.asCString()));
+			}
+		}
+		else pd.dmgTypes.push_back(DAMAGE_TYPE::MAGICAL); //By default, add something
 		//Rarity scalings (array of numbers)
 		if (v.findArray("rarityScaling")) {
 			Json::Value const& scales{ v["rarityScaling"] };
@@ -268,6 +277,16 @@ void PetManager::LoadPetData()
 		if (v.findArray("skillElements")) {
 			for (Json::Value const& m : v["skillElements"]) {
 				pd.skillElements.push_back(static_cast<Elements::ELEMENT_TYPE>(m.asInt()));
+			}
+		}
+
+		//(Optional) Extra status effect stuff
+		if (v.findArray("effects")) {
+			//Load mods for passive
+			Json::Value const* effects{ v.findArray("effects") };
+			for (Json::Value const& se : *effects) {
+				//Each value should be a mod
+				pd.extraEffects.push_back(StatEffects::StatusEffect::ParseFromJson(se));
 			}
 		}
 

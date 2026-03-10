@@ -36,11 +36,13 @@ namespace Pets {
 		std::string name{};
 		StatEffects::StatusEffect passive{nullptr, -1, 1, "Pet"}; //Load from an array of Mods
 		std::vector<StatEffects::Mod> multipliers{}; //Skill/Passive extra multipliers
+		std::vector<DAMAGE_TYPE> dmgTypes{};
 		std::array<float, 6> rarityScaling{}; //For each rarity, the mults/statEffect values * rarityScaling[rarity]
 		float skillCooldown{};
 		std::string skillDesc{};
 		std::string texture{};
 		std::vector<Elements::ELEMENT_TYPE> skillElements{};
+		std::vector<StatEffects::StatusEffect> extraEffects{};
 	};
 
 	struct PetSaveData {

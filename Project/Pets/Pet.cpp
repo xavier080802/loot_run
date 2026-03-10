@@ -82,13 +82,13 @@ void Pet::SetPath(std::initializer_list<AEVec2> const& _path, bool append)
 void Pet::SetData(const Pets::PetData& newData, Pets::PET_RANK _rank)
 {
 	data = newData;
+	rank = _rank;
 	data.passive.SetName(data.name + "'s Call of Awakening");
 	//Scale values based on rarity
-	data.passive.ScaleMods(data.rarityScaling[rank]);
+	data.passive.ScaleMods(data.rarityScaling[_rank]);
 	for (StatEffects::Mod& m : data.multipliers) {
-		m.value *= data.rarityScaling[rank];
+		m.value *= data.rarityScaling[_rank];
 	}
-	rank = _rank;
 }
 
 const Pets::PetData& Pet::GetPetData()
@@ -137,7 +137,11 @@ void Pet::MoveToTarget(double dt)
 	if (!path.empty() && AEVec2SquareDistance(&pos, &targetPos) <= pointTolerance) path.pop();
 }
 
-bool Pet::DoSkill(const Pets::SkillCastData& data)
+void Pet::Setup(Player&)
+{
+}
+
+bool Pet::DoSkill(const Pets::SkillCastData&)
 {
 	return false;
 }

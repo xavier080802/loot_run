@@ -14,6 +14,10 @@
 	 - Derived classes only control the unique features of a pet, like their skill effects
 	   and unique GO_TYPE.
 	 - Pet object is created by GO Manager, therefore it needs a GO_TYPE for each PET_TYPE
+
+	 Pet scalings
+	  - Read from JSON
+	  - Multipliers and passive mods are scaled by rarity
 */
 class Pet : public GameObject
 {
@@ -21,6 +25,9 @@ public:
 	//If possible, casts the pet's skill.
 	//Sets the cooldown if the skill casted successfully.
 	void CastSkill(const Pets::SkillCastData& data);
+
+	//To be overrided. Called when game is starting. Used for eg. subscribing
+	virtual void Setup(Player& player);
 
 	GameObject* Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, Collision::LAYER _isInLayer) override;
 
@@ -52,11 +59,11 @@ public:
 	bool isSet{ false };
 protected:
 	void MoveToTarget(double dt);
-
+	
 	//To be overrided. Get GO_TYPE of this pet.
 	virtual GO_TYPE GetPetGOType() const { return GO_TYPE::PET_6; }
 	//To be overrided. Performs the action of the skill.
-	virtual bool DoSkill(const Pets::SkillCastData& data);
+	virtual bool DoSkill(const Pets::SkillCastData& _data);
 	//To be overrided. Update function for skill behavior (if any)
 	virtual void SkillUpdate(float dt);
 

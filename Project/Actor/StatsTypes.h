@@ -58,7 +58,10 @@ enum STAT_TYPE {
     MOVE_SPD, // Affects how fast the character moves.
 };
 
+//STAT_TYPE to a pretty string
 const char* StatTypeToString(STAT_TYPE stat);
+
+STAT_TYPE ParseStatTypeFromStr(const char* str);
 
 /**
  * @brief Identifies what kind of hit a damage event is, so defense can be applied correctly.
@@ -73,5 +76,7 @@ enum class DAMAGE_TYPE {
     ELEMENTAL, // Fire, ice, lightning etc. Bypasses normal defense.
     TRUE_DAMAGE // Always deals the full listed damage. Nothing can reduce it.
 };
+
+DAMAGE_TYPE ParseDmgTypeFromStr(const char* str);
 
 #endif

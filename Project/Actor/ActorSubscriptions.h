@@ -61,7 +61,8 @@ struct OnHitContent {
 	//Add hit details here
 	const EquipmentData* weapon;
 	DAMAGE_TYPE dmgType; // The type of damage that was taken
-	float dmgDealt; // Exact damage successfully dealt and subtracted from health
+	float dmgDealt; // Exact damage successfully dealt to shield+health
+	float shieldMitigated; // Damage mitigated by shield. Is included in dmgDealt
 };
 //Alert when actor is hit by something (specifically on-hit effect)
 struct ActorOnHitSub : Subscriber<OnHitContent> {

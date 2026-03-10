@@ -59,6 +59,7 @@ void Actor::InitActorRuntime(const ActorStats& finalStats)
 {
     mStats = finalStats;
     mCurrentHP = mStats.maxHP;
+    mShieldValue = 0.f;
 }
 
 void Actor::Free()
@@ -166,7 +167,10 @@ void Actor::TakeDamage(DamageData const& data)
               << (data.attacker ? " from attacker" : " (no attacker)")
               << " after " << mStats.defense << " defense mitigation.\n";
 
-    mCurrentHP -= actualDmg;
+    //Dmg blocked by shield - extra dmg still goes to hp
+    float shieldMitigation{ min(mShieldValue, actualDmg) };
+    mCurrentHP -= actualDmg - shieldMitigation;
+    mShieldValue -= max(shieldMitigation, 0.f); //Deduct shield
 
     if (goType == GO_TYPE::PLAYER) {
         std::cout << "[Player] Took " << actualDmg << " damage. Current HP: " << mCurrentHP << "/" << mStats.maxHP << '\n';
@@ -175,7 +179,7 @@ void Actor::TakeDamage(DamageData const& data)
     // Alert on-hit subscribers (e.g., target's defensive reactive effects, or attacker's lifesteal)
     for (ActorOnHitSub* sub : onHitSubs) {
         if (!sub) continue;
-        sub->SubscriptionAlert({ data.attacker, this, data.weapon, data.dmgType, actualDmg });
+        sub->SubscriptionAlert({ data.attacker, this, data.weapon, data.dmgType, actualDmg, shieldMitigation });
     }
     PostOffice::GetInstance()->Send("WorldTextManager", new ShowWorldTextMsg{ std::to_string((int)actualDmg),
         pos + AEVec2{static_cast<float>(rand() % 20 - 10), static_cast<float>(rand() % 20 - 10)},
@@ -187,6 +191,11 @@ void Actor::TakeDamage(DamageData const& data)
         // Pass the attacker to OnDeath so we know who got the kill
         OnDeath(data.attacker);
     }
+}
+
+void Actor::AddShield(float value)
+{
+    mShieldValue += max(0, value);
 }
 
 /**
