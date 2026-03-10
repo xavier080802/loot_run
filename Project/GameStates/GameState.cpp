@@ -276,7 +276,6 @@ void GameState::InitState()
         collideMask,
         Collision::LAYER::PLAYER
     );
-    PetManager::GetInstance()->PlacePet(GetPlayerPos());
     PetManager::GetInstance()->InitPetForGame();
 
     ActorStats base{};

@@ -79,6 +79,12 @@
     <Filter Include="Source Files\UI">
       <UniqueIdentifier>{2742a0c9-014b-4e39-b3a8-87b29394e26f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Pets\Derived">
+      <UniqueIdentifier>{ee49c824-3f0e-4c5f-8f8a-905a094b89bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Pets\Derived">
+      <UniqueIdentifier>{92d64180-0dec-4650-9387-4af58bce9523}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -145,9 +151,6 @@
       <Filter>Source Files\Pets</Filter>
     </ClCompile>
     <ClCompile Include="Pets\PetManager.cpp">
-      <Filter>Source Files\Pets</Filter>
-    </ClCompile>
-    <ClCompile Include="Pets\PetSkills.cpp">
       <Filter>Source Files\Pets</Filter>
     </ClCompile>
     <ClCompile Include="Actor\Actor.cpp">
@@ -260,9 +263,12 @@
     </ClCompile>
     <ClCompile Include="GameStates\PetState.cpp">
       <Filter>Source Files\GameStates</Filter>
-      </ClCompile>
+    </ClCompile>
     <ClCompile Include="ShopFunctions.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Pets\Pet_1.cpp">
+      <Filter>Source Files\Pets\Derived</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -348,9 +354,6 @@
       <Filter>Header Files\Pets</Filter>
     </ClInclude>
     <ClInclude Include="Pets\PetConsts.h">
-      <Filter>Header Files\Pets</Filter>
-    </ClInclude>
-    <ClInclude Include="Pets\PetSkills.h">
       <Filter>Header Files\Pets</Filter>
     </ClInclude>
     <ClInclude Include="GameObjects\LootChest.h">
@@ -484,6 +487,9 @@
     </ClInclude>
     <ClInclude Include="GameStates\PetState.h">
       <Filter>Header Files\GameStates</Filter>
+    </ClInclude>
+    <ClInclude Include="Pets\Pet_1.h">
+      <Filter>Header Files\Pets\Derived</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

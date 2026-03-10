@@ -1,5 +1,4 @@
 #include "PetManager.h"
-#include "PetSkills.h"
 #include "PetInventory.h" 
 #include "../RenderingManager.h"
 #include <iostream>
@@ -17,8 +16,9 @@
 /* Flow
 1. App executes, loading pet manager and game state -> LinkPlayer
 2. In main menu, pet is selected, calling SetPet (can be several times)
-3. Game starts -> GameState.Init -> Calls InitPetForGame to apply pet's passive
+3. Game starts -> GameState.Init -> Calls InitPetForGame to create the Pet class and apply pet's passive
 4. Game ends -> GameState.ExitState -> Clears status effects, so no need to handle that here.
+5. Program ends -> GO Manager deleted the created pet classes.
 */
 
 namespace {
@@ -44,16 +44,6 @@ void PetManager::Init() {
 
 	LoadPetData();
 
-	//Init pet GO
-	if (!equippedPet) {
-		equippedPet = new Pet{};
-	}
-	//Values are TEMP
-	equippedPet->Init({}, { 25,25 }, 0, MESH_SQUARE, Collision::COL_CIRCLE, { 25,25 }, CreateBitmask(1, Collision::LAYER::ENEMIES), Collision::LAYER::PET);
-	equippedPet->SetEnabled(false);
-
-	equippedPet->isSet = false;
-
 	//UI
 	LoadUIJSON();
 	skillUI = new UIElement{ NormToWorld(iconPos) + iconSize * 0.5f, {iconSize, iconSize}, 1, Collision::COL_RECT };
@@ -62,20 +52,25 @@ void PetManager::Init() {
 
 void PetManager::InitPetForGame()
 {
-	if (!equippedPet || !equippedPet->isSet) return;
+	CreatePet();
+
+	if (!equippedPet || !equippedPet->isSet) {
+		//No selected / pet invalid
+		extraDesc = "";
+		return;
+	}
+
 	if (!player) {
 		std::cout << "Player not linked to PetManager.\n";
 		return;
 	}
+	PlacePet(player->GetPos());
 	//Apply passive
 	player->ApplyStatusEffect(new StatEffects::StatusEffect{ equippedPet->GetPetData().passive }, player);
-	//Reset pet vars
-	equippedPet->Reset();
-	equippedPet->SetEnabled(true);
 
 	//Generate description for passive
+
 	std::stringstream s;
-	s << extraDesc;
 	Pets::PetData const& d{ equippedPet->GetPetData() };
 	//Generate description for the skills
 	if (PetHasSkill()) {
@@ -113,23 +108,13 @@ void PetManager::PlacePet(AEVec2 const& pos)
 //Call when selecting pet in main menu
 void PetManager::SetPet(Pets::PET_TYPE pet, Pets::PET_RANK rank)
 {
-	if (pet == Pets::PET_TYPE::NONE) {
-		if (equippedPet) equippedPet->isSet = false;
-		return;
-	}
-	//Set skill ptr, other values
-	auto it = petData.find(pet);
-	if (it != petData.end()) {
-		Pets::PetData const& data{ it->second };
-		equippedPet->SetData(data, rank);
-		equippedPet->GetRenderData().ReplaceTexture(data.texture.c_str(), 0);
-		equippedPet->isSet = true;
-	}
+	selectedPetInfo.first = pet;
+	selectedPetInfo.second = rank;
 }
 
 bool PetManager::PetHasSkill() const
 {
-	return equippedPet && equippedPet->isSet && equippedPet->GetPetData().PetSkill;
+	return equippedPet && equippedPet->isSet && equippedPet->HasSkill();
 }
 
 bool PetManager::AddNewPet(Pets::PetSaveData const& newPet)
@@ -153,7 +138,7 @@ bool PetManager::Handle(Message* message)
 	{
 	case PetSkillMsg::CAST_SKILL:
 		if (equippedPet && equippedPet->IsEnabled()) {
-			equippedPet->CastSkill({ player, equippedPet });
+			equippedPet->CastSkill({ player });
 		}
 		break;
 	case PetSkillMsg::SKILL_READY:
@@ -286,21 +271,56 @@ void PetManager::LoadPetData()
 			}
 		}
 
-		//Get pet skill ptr
-		if (static_cast<size_t>(pd.id) < PetSkills::skills.size()) {
-			pd.PetSkill = PetSkills::skills[pd.id];
-		}
-		else {
-			pd.PetSkill = PetSkills::PetNullSkill; // Default to the safe null skill
-			std::cout << "Warning: Skill ID " << pd.id << " is out of bounds. Skipping skill assignment.\n";
-		}
-
 		petData[pd.id] = pd;
 	}
 
 	ownedPets.clear();
 	LoadInventoryCounts(ownedPets);
 	ifs.close();
+}
+
+void PetManager::CreatePet()
+{
+	if (selectedPetInfo.first == Pets::PET_TYPE::NONE) {
+		return;
+	}
+	////Set skill ptr, other values
+	auto it = petData.find(selectedPetInfo.first);
+	if (it == petData.end()) {
+		std::cout << "Failed to find pet data\n";
+		return;
+	}
+
+	switch (selectedPetInfo.first)
+	{
+	case Pets::PET_1:
+		equippedPet = (Pet*)GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PET_1);
+		break;
+	case Pets::PET_2:
+		equippedPet = (Pet*)GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PET_2);
+		break;
+	case Pets::PET_3:
+		equippedPet = (Pet*)GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PET_3);
+		break;
+	case Pets::PET_4:
+		equippedPet = (Pet*)GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PET_4);
+		break;
+	case Pets::PET_5:
+		equippedPet = (Pet*)GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PET_5);
+		break;
+	case Pets::PET_6:
+		equippedPet = (Pet*)GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PET_6);
+		break;
+	default:
+		break;
+	}
+
+	equippedPet->Init({}, { 25,25 }, 0, MESH_SQUARE, Collision::COL_CIRCLE, { 25,25 }, CreateBitmask(1, Collision::LAYER::ENEMIES), Collision::LAYER::PET);
+	Pets::PetData const& data{ it->second };
+	equippedPet->SetData(data, selectedPetInfo.second);
+	equippedPet->GetRenderData().ReplaceTexture(data.texture.c_str(), 0);
+	equippedPet->isSet = true;
+	equippedPet->SetEnabled(true);
 }
 
 void PetManager::SaveInventoryToJSON() {

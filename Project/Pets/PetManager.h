@@ -45,11 +45,13 @@ public:
 
 private:
 	void LoadPetData();
+	void CreatePet();
 	PostOffice* po{};
 	RenderingManager* rm{};
 	//Constant data. info for each pet, not player-specific
 	std::map<Pets::PET_TYPE, Pets::PetData> petData{};
 	Pet* equippedPet{};
+	std::pair<Pets::PET_TYPE, Pets::PET_RANK> selectedPetInfo{};
 	Player* player{};
 	std::string extraDesc{}; //Pet passive/mults/etc
 

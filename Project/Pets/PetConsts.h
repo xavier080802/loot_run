@@ -6,7 +6,7 @@
 #include "../Actor/StatsTypes.h"
 #include "../Actor/StatusEffect.h"
 #include "../Elements/Element.h"
-#include "PetSkills.h"
+class Player;
 
 namespace Pets {
 	enum PET_RANK {
@@ -41,8 +41,6 @@ namespace Pets {
 		std::string skillDesc{};
 		std::string texture{};
 		std::vector<Elements::ELEMENT_TYPE> skillElements{};
-
-		bool (*PetSkill)(const PetSkills::SkillCastData& data) = nullptr;
 	};
 
 	struct PetSaveData {
@@ -52,6 +50,10 @@ namespace Pets {
 		PetSaveData(PET_TYPE _id = PET_TYPE::NONE, PET_RANK _rank = PET_RANK::COMMON)
 			: id{ _id }, rank{ _rank } {
 		};
+	};
+
+	struct SkillCastData {
+		Player* player;
 	};
 }
 #endif // !_PET_CONSTS_H_
