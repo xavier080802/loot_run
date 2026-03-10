@@ -25,6 +25,7 @@
 #include "../TileMap.h"
 #include "../UI/Minimap.h"
 #include "../Drops/DropSystem.h"
+#include "../Debug.h"
 
 namespace {
     // --- GLOBAL SYSTEMS ---
@@ -93,281 +94,28 @@ namespace {
     bool showKeybindOverlay = false; // K — shows all in-game keybinds overlay
 
     // Individual debug feature toggles
-    bool debugShowAggroRings = false; // F5 — draw a circle around each enemy showing its aggro radius
-    bool debugShowSpawnPoints = false; // F6 — highlight TILE_ENEMY tiles on the map
-    bool debugGodMode = false; // F7 — player takes no damage
-    bool debugShowStats = false; // F8 — print live player/enemy stats on screen
-    bool debugFreezeEnemies = false; // F9 — enemies stop updating (AI frozen)
+    bool debugGodMode = false; // F7 — equip best gear + invincible
+    bool debugShowStats = false; // F8 — print live enemy stats on screen
+    bool debugFreezeEnemies = false; // F9 — enemies stop moving
 
-    // Draws a circle outline in world space (used by aggro ring debug)
-    void DrawDebugCircle(AEVec2 centre, float radius, float r, float g, float b)
+    // Builds a DebugContext from the current anonymous-namespace state.
+    // Pass this to every Debug.h function instead of raw globals.
+    DebugContext MakeDebugCtx()
     {
-        const int SEGMENTS = 32;
-        AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-        AEGfxTextureSet(nullptr, 0, 0);
-        for (int i = 0; i < SEGMENTS; ++i) {
-            float a0 = (float)i / SEGMENTS * 2.f * 3.14159f;
-            float a1 = (float)(i + 1) / SEGMENTS * 2.f * 3.14159f;
-            AEVec2 p0 = { centre.x + cosf(a0) * radius, centre.y + sinf(a0) * radius };
-            AEVec2 p1 = { centre.x + cosf(a1) * radius, centre.y + sinf(a1) * radius };
-            // Draw as a thin quad between the two edge points
-            float thickness = 3.0f;
-            AEVec2 mid = { (p0.x + p1.x) * 0.5f, (p0.y + p1.y) * 0.5f };
-            float dx = p1.x - p0.x, dy = p1.y - p0.y;
-            float len = sqrtf(dx * dx + dy * dy);
-            float angle = atan2f(dy, dx);
-            AEMtx33 mtx;
-            GetTransformMtx(mtx, mid, angle, { len, thickness });
-            AEGfxSetTransform(mtx.m);
-            AEGfxSetColorToMultiply(r, g, b, 0.6f);
-            AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
-        }
-    }
-
-    // Draws a semi-transparent dark rectangle in SCREEN space.
-    // Used as a background panel behind overlay text so it's readable over any scene.
-    void DrawPanel(float screenX, float screenY, float w, float h)
-    {
-        AEVec2 pos = { screenX + w * 0.5f, screenY - h * 0.5f };
-        AEMtx33 mtx;
-        GetTransformMtx(mtx, pos, 0, { w, h });
-        AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-        AEGfxTextureSet(nullptr, 0, 0);
-        AEGfxSetTransform(mtx.m);
-        AEGfxSetColorToMultiply(0.05f, 0.05f, 0.05f, 0.82f);
-        AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
-    }
-
-    // Draws all in-game keybinds — toggle with K (works outside debug mode too)
-    void DrawKeybindOverlay()
-    {
-        if (font < 0) return;
-
-        // Use camera position so coords match the world-space draw system (same as Player::DrawUI)
-        AEVec2 camPos;
-        AEGfxGetCamPosition(&camPos.x, &camPos.y);
-
-        float panelW = 320.f;
-        float panelH = 460.f;
-        float panelX = camPos.x + 370.f;
-        float panelY = camPos.y + 310.f;
-        DrawPanel(panelX, panelY, panelW, panelH);
-
-        s8 fnt = RenderingManager::GetInstance()->GetFont();
-        float x = panelX + 12.f;
-        float keyW = 90.f;   // width reserved for the key column
-        float y = panelY - 16.f;
-        float lineH = 20.f;
-        float sz = 0.38f;
-
-        // Section header
-        auto Header = [&](const char* txt) {
-            DrawAEText(fnt, txt, { x, y }, sz,
-                CreateColor(100, 180, 255, 255), TEXT_MIDDLE_LEFT);
-            y -= lineH;
-            };
-        // Two-column row: key in white, description in light grey
-        auto KV = [&](const char* key, const char* desc) {
-            DrawAEText(fnt, key, { x,        y }, sz, CreateColor(255, 255, 255, 255), TEXT_MIDDLE_LEFT);
-            DrawAEText(fnt, desc, { x + keyW, y }, sz, CreateColor(180, 180, 180, 255), TEXT_MIDDLE_LEFT);
-            y -= lineH;
-            };
-        auto Gap = [&]() { y -= 5.f; };
-
-        // Title
-        DrawAEText(fnt, "=== KEYBINDS ===", { x, y }, sz,
-            CreateColor(255, 200, 60, 255), TEXT_MIDDLE_LEFT);
-        y -= lineH; Gap();
-
-        Header("--- Movement ---");
-        KV("[W/A/S/D]", "Move");
-        KV("[SPACE]", "Dodge roll");
-        Gap();
-
-        Header("--- Combat ---");
-        KV("[LMB]", "Attack");
-        KV("[Z]", "Weapon slot 1");
-        KV("[X]", "Weapon slot 2");
-        KV("[Q]", "Equip bow");
-        KV("[RMB]", "Swap melee weapons");
-        KV("[G]", "Drop held weapon");
-        Gap();
-
-        Header("--- Interaction ---");
-        KV("[E]", "Swap item (slot full)");
-        KV("[C]", "Sell item");
-        KV("[Connector]", "Enter dungeon");
-        Gap();
-
-        Header("--- UI ---");
-        KV("[B]", "Stats & equipment");
-        KV("[K]", "Keybind overlay");
-        KV("[TAB]", "Debug overlay");
-        KV("[M]", "Main menu");
-        Gap();
-
-        Header("--- Pets ---");
-        KV("[R]", "Cast pet skill");
-        Gap();
-
-        Header("--- Dev / Testing ---");
-        KV("[N]", "Spawn enemy");
-        KV("[L]", "Move chest here");
-        Gap();
-    }
-
-    // Draws the debug HUD — called from Draw() only when debugMode is true
-    void DrawDebugOverlay()
-    {
-        if (font < 0 || !gPlayer) return;
-
-        AEVec2 camPos;
-        AEGfxGetCamPosition(&camPos.x, &camPos.y);
-
-        float panelW = 480.f;
-        float panelH = 560.f;
-        float panelX = showKeybindOverlay
-            ? camPos.x + 410.f - 300.f - panelW - 10.f
-            : camPos.x + 320.f;
-        float panelY = camPos.y + 320.f;
-        DrawPanel(panelX, panelY, panelW, panelH);
-
-        // Two columns: label at x, value at x + valOffset
-        float x = panelX + 18.f;
-        float valOffset = 140.f;
-        float y = panelY - 20.f;
-        float lineH = 26.f;
-        float sz = 0.44f;
-
-        s8 fnt = RenderingManager::GetInstance()->GetFont();
-
-        // Helper: draw a key=value row. Key in white, value in cyan.
-        auto KV = [&](const char* key, const char* val,
-            float vr = 0.4f, float vg = 1.f, float vb = 0.9f) {
-                DrawAEText(fnt, key, { x, y }, sz,
-                    CreateColor(220, 220, 220, 255), TEXT_MIDDLE_LEFT);
-                DrawAEText(fnt, val, { x + valOffset, y }, sz,
-                    CreateColor((u8)(vr * 255), (u8)(vg * 255), (u8)(vb * 255), 255), TEXT_MIDDLE_LEFT);
-                y -= lineH;
-            };
-        // Helper: full-width line (section headers, footers)
-        auto Line = [&](const char* txt, float r, float g, float b) {
-            DrawAEText(fnt, txt, { x, y }, sz,
-                CreateColor((u8)(r * 255), (u8)(g * 255), (u8)(b * 255), 255), TEXT_MIDDLE_LEFT);
-            y -= lineH;
-            };
-        // Helper: toggle row — key+label left, [ON]/[off] right in colour
-        auto Toggle = [&](const char* key, const char* label, bool state) {
-            std::ostringstream lbl;
-            lbl << key << "  " << label;
-            DrawAEText(fnt, lbl.str().c_str(), { x, y }, sz,
-                CreateColor(200, 200, 200, 255), TEXT_MIDDLE_LEFT);
-            DrawAEText(fnt, state ? "[ON] " : "[off]", { x + valOffset + 80.f, y }, sz,
-                CreateColor(state ? 80 : 120, state ? 255 : 120, state ? 80 : 120, 255), TEXT_MIDDLE_LEFT);
-            y -= lineH;
-            };
-
-        // ---- Header ----
-        Line("=== DEBUG MODE ===", 1.f, 0.75f, 0.f);
-        y -= 6.f;
-
-        // ---- Live stats ----
-        std::ostringstream oss;
-        AEVec2 pp = gPlayer->GetPos();
-        oss << (int)pp.x << ", " << (int)pp.y;
-        KV("Pos:", oss.str().c_str());
-
-        oss.str(""); oss << (int)gPlayer->GetHP() << " / " << (int)gPlayer->GetMaxHP();
-        KV("HP:", oss.str().c_str(),
-            gPlayer->GetHP() < gPlayer->GetMaxHP() * 0.3f ? 1.f : 0.4f,
-            gPlayer->GetHP() < gPlayer->GetMaxHP() * 0.3f ? 0.3f : 1.f,
-            0.4f);
-
-        KV("Map:", inProceduralMap ? "Procedural" : "CSV");
-
-        oss.str(""); oss << enemiesKilledInRoom << " / " << enemiesRequiredForBoss;
-        KV("Kills:", oss.str().c_str());
-
-        KV("Boss:", bossSpawned ? "SPAWNED" : "waiting",
-            bossSpawned ? 1.f : 0.6f,
-            bossSpawned ? 0.4f : 0.8f,
-            0.4f);
-
-        y -= 12.f;
-
-        // ---- Toggles ----
-        Line("--- Toggles ---", 0.4f, 0.7f, 1.f);
-        Toggle("[F5]", "Aggro rings", debugShowAggroRings);
-        Toggle("[F6]", "Spawn pts", debugShowSpawnPoints);
-        Toggle("[F7]", "God mode", debugGodMode);
-        Toggle("[F8]", "Live stats", debugShowStats);
-        Toggle("[F9]", "Freeze AI", debugFreezeEnemies);
-
-        y -= 12.f;
-
-        // ---- Actions ----
-        Line("--- Actions ---", 0.4f, 0.7f, 1.f);
-        Line("[F1]  Kill all enemies", 0.85f, 0.85f, 0.85f);
-        Line("[F2]  Force-spawn boss", 0.85f, 0.85f, 0.85f);
-        Line("[F3]  Teleport to spawn", 0.85f, 0.85f, 0.85f);
-        Line("[F4]  Refill HP", 0.85f, 0.85f, 0.85f);
-        Line("[N]   Spawn enemy at cursor", 0.85f, 0.85f, 0.85f);
-    }
-
-    // Draws aggro rings around every live enemy (F5 toggle)
-    void DrawAggroRings()
-    {
-        auto& gos = GameObjectManager::GetInstance()->GetGameObjects();
-        for (GameObject* go : gos) {
-            if (!go || !go->IsEnabled() || go->GetGOType() != GO_TYPE::ENEMY) continue;
-            Enemy* e = dynamic_cast<Enemy*>(go);
-            if (!e) continue;
-            float aggro = e->GetDefinition().attack.aggroRange;
-            // Yellow ring = aggro radius, orange ring = leash (1.5x)
-            DrawDebugCircle(e->GetPos(), aggro, 1.f, 1.f, 0.f);
-            DrawDebugCircle(e->GetPos(), aggro * 1.5f, 1.f, 0.6f, 0.f);
-        }
-    }
-
-    // Draws a small marker on every TILE_ENEMY position in the current map (F6 toggle)
-    void DrawSpawnPoints(TileMap const& tilemap)
-    {
-        auto mapSz = tilemap.GetMapSize();
-        unsigned cols = mapSz.first;
-        unsigned rows = mapSz.second;
-        for (unsigned r = 0; r < rows; ++r) {
-            for (unsigned c = 0; c < cols; ++c) {
-                const TileMap::Tile* t = tilemap.QueryTile(r, c);
-                if (!t || t->type != TileMap::TILE_ENEMY) continue;
-                AEVec2 pos = tilemap.GetTilePosition(r, c);
-                AEMtx33 mtx;
-                GetTransformMtx(mtx, pos, 0, { 20.f, 20.f });
-                AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-                AEGfxTextureSet(nullptr, 0, 0);
-                AEGfxSetTransform(mtx.m);
-                AEGfxSetColorToMultiply(1.f, 0.2f, 1.f, 0.8f); // magenta dot
-                AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
-            }
-        }
-    }
-
-    // Draws live stats above each enemy's head (F8 toggle)
-    void DrawEnemyStats()
-    {
-        if (font < 0) return;
-        auto& gos = GameObjectManager::GetInstance()->GetGameObjects();
-        for (GameObject* go : gos) {
-            if (!go || !go->IsEnabled() || go->GetGOType() != GO_TYPE::ENEMY) continue;
-            Enemy* e = dynamic_cast<Enemy*>(go);
-            if (!e) continue;
-            AEVec2 pos = e->GetPos();
-            pos.y += e->GetDefinition().render.radius + 20.f;
-            std::ostringstream oss;
-            oss << e->GetDefinition().name
-                << " HP:" << (int)e->GetHP() << "/" << (int)e->GetMaxHP();
-            DrawAEText(font, oss.str().c_str(), pos, 0.45f,
-                CreateColor(255, 255, 100, 255), TEXT_MIDDLE, 0);
-        }
+        DebugContext ctx;
+        ctx.squareMesh = squareMesh;
+        ctx.font = font;
+        ctx.gPlayer = gPlayer;
+        ctx.showDebugOverlay = showDebugOverlay;
+        ctx.showKeybindOverlay = showKeybindOverlay;
+        ctx.debugGodMode = debugGodMode;
+        ctx.debugShowStats = debugShowStats;
+        ctx.debugFreezeEnemies = debugFreezeEnemies;
+        ctx.inProceduralMap = inProceduralMap;
+        ctx.bossSpawned = bossSpawned;
+        ctx.enemiesKilledInRoom = enemiesKilledInRoom;
+        ctx.enemiesRequiredForBoss = enemiesRequiredForBoss;
+        return ctx;
     }
 
     // --- SPAWN HELPERS ---
@@ -381,11 +129,19 @@ namespace {
         int midR = (int)rows / 2;
         int midC = (int)cols / 2;
 
-        // Pass 1: designer-placed TILE_ENEMY markers — always use all of them
+        // Pass 1: designer-placed TILE_ENEMY markers — validate they're not inside/next to walls
         for (unsigned r = 0; r < rows; ++r) {
             for (unsigned c = 0; c < cols; ++c) {
                 const TileMap::Tile* t = tilemap.QueryTile(r, c);
-                if (t && t->type == TileMap::TILE_ENEMY)
+                if (!t || t->type != TileMap::TILE_ENEMY) continue;
+                // Reject if any tile in a 2-tile radius is solid
+                bool nearWall = false;
+                for (int dr2 = -2; dr2 <= 2 && !nearWall; ++dr2)
+                    for (int dc2 = -2; dc2 <= 2 && !nearWall; ++dc2) {
+                        const TileMap::Tile* n = tilemap.QueryTile(r + dr2, c + dc2);
+                        if (!n || n->isSolid) nearWall = true;
+                    }
+                if (!nearWall)
                     positions.push_back(tilemap.GetTilePosition(r, c));
             }
         }
@@ -393,19 +149,20 @@ namespace {
 
         // Pass 2: procedural fallback — spaced open tiles only
         const float MIN_SPACING = 115.0f * 3.0f;
-        for (unsigned r = 2; r < rows - 2 && (int)positions.size() < maxCount; ++r) {
-            for (unsigned c = 2; c < cols - 2 && (int)positions.size() < maxCount; ++c) {
+        for (unsigned r = 3; r < rows - 3 && (int)positions.size() < maxCount; ++r) {
+            for (unsigned c = 3; c < cols - 3 && (int)positions.size() < maxCount; ++c) {
                 const TileMap::Tile* t = tilemap.QueryTile(r, c);
                 if (!t || t->type != TileMap::TILE_NONE || t->isSolid) continue;
 
-                const TileMap::Tile* up = tilemap.QueryTile(r - 1, c);
-                const TileMap::Tile* down = tilemap.QueryTile(r + 1, c);
-                const TileMap::Tile* left = tilemap.QueryTile(r, c - 1);
-                const TileMap::Tile* right = tilemap.QueryTile(r, c + 1);
-                if (!up || up->isSolid)    continue;
-                if (!down || down->isSolid)  continue;
-                if (!left || left->isSolid)  continue;
-                if (!right || right->isSolid) continue;
+                // Check all 8 neighbours AND a 2-tile buffer — reject if any nearby tile is solid
+                bool nearWall = false;
+                for (int dr2 = -2; dr2 <= 2 && !nearWall; ++dr2) {
+                    for (int dc2 = -2; dc2 <= 2 && !nearWall; ++dc2) {
+                        const TileMap::Tile* n = tilemap.QueryTile(r + dr2, c + dc2);
+                        if (!n || n->isSolid) nearWall = true;
+                    }
+                }
+                if (nearWall) continue;
 
                 int dr = (int)r - midR, dc = (int)c - midC;
                 if (dr >= -3 && dr <= 3 && dc >= -3 && dc <= 3) continue;
@@ -542,17 +299,6 @@ namespace {
         AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
     }
 
-    // Draws a small [DEBUG] badge when debug mode is on
-    void DrawDebugBadge()
-    {
-        if (font < 0) return;
-        AEVec2 camPos;
-        AEGfxGetCamPosition(&camPos.x, &camPos.y);
-        float x = camPos.x + 320.f;
-        float y = camPos.y + 305.f;
-        DrawAEText(RenderingManager::GetInstance()->GetFont(), "[ DEBUG MODE ]", { x, y }, 0.38f,
-            CreateColor(255, 200, 0, 255), TEXT_MIDDLE_LEFT);
-    }
 }
 
 // =============================================================
@@ -741,11 +487,12 @@ void GameState::Update(double dt)
     // All keys below only fire when debug mode is active
     if (debugMode) {
         // Feature toggles
-        if (AEInputCheckTriggered(AEVK_F5)) { debugShowAggroRings = !debugShowAggroRings;  std::cout << "[Debug] Aggro rings " << (debugShowAggroRings ? "ON" : "OFF") << "\n"; }
-        if (AEInputCheckTriggered(AEVK_F6)) { debugShowSpawnPoints = !debugShowSpawnPoints; std::cout << "[Debug] Spawn points " << (debugShowSpawnPoints ? "ON" : "OFF") << "\n"; }
-        if (AEInputCheckTriggered(AEVK_F7)) { debugGodMode = !debugGodMode;         std::cout << "[Debug] God mode " << (debugGodMode ? "ON" : "OFF") << "\n"; }
-        if (AEInputCheckTriggered(AEVK_F8)) { debugShowStats = !debugShowStats;       std::cout << "[Debug] Live stats " << (debugShowStats ? "ON" : "OFF") << "\n"; }
-        if (AEInputCheckTriggered(AEVK_F9)) { debugFreezeEnemies = !debugFreezeEnemies;   std::cout << "[Debug] Freeze AI " << (debugFreezeEnemies ? "ON" : "OFF") << "\n"; }
+        if (AEInputCheckTriggered(AEVK_F5)) {
+            debugGodMode = !debugGodMode;
+            std::cout << "[Debug] God mode " << (debugGodMode ? "ON" : "OFF") << "\n";
+        }
+        if (AEInputCheckTriggered(AEVK_F6)) { debugShowStats = !debugShowStats;     std::cout << "[Debug] Live stats " << (debugShowStats ? "ON" : "OFF") << "\n"; }
+        if (AEInputCheckTriggered(AEVK_F7)) { debugFreezeEnemies = !debugFreezeEnemies; std::cout << "[Debug] Freeze AI " << (debugFreezeEnemies ? "ON" : "OFF") << "\n"; }
 
         // Action keys
         if (AEInputCheckTriggered(AEVK_F1)) {
@@ -872,20 +619,29 @@ void GameState::Update(double dt)
         std::cout << "BOSS SLAYED\n";
     }
 
-    // Freeze AI — skip GO update and handle manually
-    if (debugMode && debugFreezeEnemies) {
-        // Still update non-enemy objects (player, projectiles, etc.)
-        // by passing nullptr as the tilemap so enemies skip their AI
-        // If GameObjectManager doesn't support that, just skip the call:
-        // GameObjectManager::GetInstance()->UpdateObjects(dt, currentMap);
-        // For now we still call it — enemies check debugFreezeEnemies in their own Update
-        // via a global flag if you add that check, otherwise use the F1 kill approach.
-        // Simple fallback: call update normally (enemies still move), freeze is visual-only.
-    }
-
     minimap->Update(dt, *currentMap, *gPlayer);
     UpdateWorldMap((float)dt);
-    GameObjectManager::GetInstance()->UpdateObjects(dt, currentMap);
+
+    // Freeze AI — temporarily disable enemies so UpdateObjects skips them,
+    // but everything else (player, loot, projectiles) still runs normally
+    if (debugMode && debugFreezeEnemies) {
+        // Disable all enemies before update
+        auto& gos = GameObjectManager::GetInstance()->GetGameObjects();
+        for (GameObject* go : gos) {
+            if (go && go->IsEnabled() && go->GetGOType() == GO_TYPE::ENEMY)
+                go->SetEnabled(false);
+        }
+        GameObjectManager::GetInstance()->UpdateObjects(dt, currentMap);
+        // Re-enable them after so they still draw
+        for (GameObject* go : gos) {
+            if (go && !go->IsEnabled() && go->GetGOType() == GO_TYPE::ENEMY)
+                go->SetEnabled(true);
+        }
+    }
+    else {
+        GameObjectManager::GetInstance()->UpdateObjects(dt, currentMap);
+    }
+
     DropSystem::PrintPickupDisplay(static_cast<float>(dt));
 }
 
@@ -901,27 +657,15 @@ void GameState::Draw() {
 
     // Debug visuals — drawn on top of everything
     if (debugMode) {
-        if (debugShowAggroRings)  DrawAggroRings();
-        if (debugShowSpawnPoints) DrawSpawnPoints(*currentMap);
-        if (debugShowStats)       DrawEnemyStats();
-        // Text overlays require texture render mode
+        DebugContext dbg = MakeDebugCtx();
+        if (debugShowStats)   DrawEnemyStats(dbg);
         AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-        if (showDebugOverlay)     DrawDebugOverlay();
-        DrawDebugBadge();
+        if (showDebugOverlay) DrawDebugOverlay(dbg);
     }
 
     // Keybind overlay — available always, independent of debug mode
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-    if (showKeybindOverlay) DrawKeybindOverlay();
-
-    // Persistent hint in bottom-right so players know K exists
-    if (!showKeybindOverlay && font >= 0) {
-        AEVec2 camPos;
-        AEGfxGetCamPosition(&camPos.x, &camPos.y);
-        DrawAEText(RenderingManager::GetInstance()->GetFont(), "[K] Keybinds",
-            { camPos.x + 340.f, camPos.y - 280.f },
-            0.4f, CreateColor(180, 180, 180, 180), TEXT_MIDDLE_LEFT);
-    }
+    if (showKeybindOverlay) DrawKeybindOverlay(MakeDebugCtx());
 
     if (gPlayer) gPlayer->DrawUI();
     HandleTutorialDialogueRender();
@@ -948,8 +692,6 @@ void GameState::ExitState() {
     debugMode = false;
     showDebugOverlay = false;
     showKeybindOverlay = false;
-    debugShowAggroRings = false;
-    debugShowSpawnPoints = false;
     debugGodMode = false;
     debugShowStats = false;
     debugFreezeEnemies = false;

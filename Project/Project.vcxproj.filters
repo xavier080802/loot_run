@@ -260,8 +260,11 @@
     </ClCompile>
     <ClCompile Include="GameStates\PetState.cpp">
       <Filter>Source Files\GameStates</Filter>
-      </ClCompile>
+    </ClCompile>
     <ClCompile Include="ShopFunctions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -484,6 +487,9 @@
     </ClInclude>
     <ClInclude Include="GameStates\PetState.h">
       <Filter>Header Files\GameStates</Filter>
+    </ClInclude>
+    <ClInclude Include="Debug.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
