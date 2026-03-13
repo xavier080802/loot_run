@@ -11,6 +11,7 @@
 #include "../Pets/Pet.h"
 #include "../Pets/Pet_1.h"
 #include "../Pets/Pet_2.h"
+#include "../Pets/Pet_5.h"
 #include <iostream>
 
 void GameObjectManager::RegisterGO(GameObject* go)
@@ -188,9 +189,10 @@ GameObject* GameObjectManager::FetchGO(GO_TYPE type)
 		return new Pet_1{};
 	case GO_TYPE::PET_2:
 		return new Pet_2{};
+	case GO_TYPE::PET_5:
+		return new Pet_5{};
 	case GO_TYPE::PET_3:
 	case GO_TYPE::PET_4:
-	case GO_TYPE::PET_5:
 	case GO_TYPE::PET_6:
 		return new Pet{};
 	default:

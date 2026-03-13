@@ -88,6 +88,8 @@ public:
 	void SubToOnHit(ActorOnHitSub* sub, bool remove = false);
 	//Subscribe to be alerted BEFORE actor deals damage
 	void SubToBeforeDealingDmg(ActorBeforeDealingDmgSub* sub, bool remove = false);
+	//Sub to be alerted when this actor is inflicted with a status effect
+	void SubToSEGain(ActorGainedStatusEffectSub* sub, bool remove = false);
 
 protected:
 	// Override point for Player/Enemy-specific death behavior
@@ -110,4 +112,5 @@ private:
 	std::vector<ActorBeforeCastSub*> beforeCastSubs;
 	std::vector<ActorOnHitSub*> onHitSubs;
 	std::vector<ActorBeforeDealingDmgSub*> beforeDealingDmgSubs;
+	std::vector<ActorGainedStatusEffectSub*> seGainedSubs;
 };

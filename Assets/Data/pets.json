@@ -35,7 +35,8 @@
         "skillCooldown": 0,
         "skillDesc": "",
         "skillElements": [ ], //Elements the skill may inflict. ELEMENT_TYPE
-        "texture": "" // Filepath to texture
+        "texture": "", // Filepath to texture
+        "extra": {} //OPTIONAL Object with whatever keys and STRING values
     }
 
     ------------------------------------------------------------
@@ -81,12 +82,18 @@
             "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
             "skillCooldown": 6,
             "skillDesc": "Yeet the rock",
-            "texture": "Assets/finn.png"
+            "texture": ""
         },
         {
             "id": 2,
             "name": "Slime",
-            "passive": [],
+            "passive": [
+                {
+                    "value": 5,
+                    "mathType": "mult",
+                    "stat": "hp"
+                }
+            ],
             "multipliers": [
                 { //0 - shield
                     "value": 20,
@@ -152,11 +159,45 @@
         {
             "id": 5,
             "name": "Pheonix",
-            "passive": [],
-            "multipliers": [],
+            "passive": [
+                {
+                    "value": 7.5,
+                    "mathType": "mult",
+                    "stat": "att"
+                }
+            ],
+            "multipliers": [
+                { // 0 - Aura damage
+                    "value": 5,
+                    "mathType": "mult",
+                    "stat": "att"
+                },
+                { // 1 - Aura damage
+                    "value": 1,
+                    "mathType": "flat"
+                },
+                { // 2 - Healing
+                    "value": 2.5,
+                    "mathType": "mult",
+                    "stat": "hp"
+                },
+                { // 3 - Healing
+                    "value": 1,
+                    "mathType": "flat"
+                }
+            ],
             "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
             "skillCooldown": 7,
-            "skillDesc": "Placeholder Garuda Skill"
+            "skillDesc": "Trigger a burning aura that applies Sun.\nHitting enemies with Sun or gaining Glow stacks a certain number of times heals and cleanses a debuff.",
+            "dmgType": "ele",
+            "extra": { //Required to be strings
+                "auraDuration": "5",
+                "auraSize": "200",
+                "auraTimeBetweenHits": "1.5",
+                "auraColor": "200 60 0 200", //Format: r g b a
+                "sunRequired": "5" //Number of times to hit enemies with sun stacks for bonus effect
+            },
+            "texture": "Assets/finn.png"
         },
         {
             "id": 6,

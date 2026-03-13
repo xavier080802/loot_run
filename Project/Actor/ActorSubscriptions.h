@@ -70,4 +70,15 @@ struct ActorOnHitSub : Subscriber<OnHitContent> {
 };
 
 //===============================================================================
+
+struct EffectAppliedContent {
+	bool reapplied;
+	unsigned stacksApplied;
+	StatEffects::StatusEffect& se;
+};
+struct ActorGainedStatusEffectSub : Subscriber<EffectAppliedContent> {
+	void SubscriptionAlert(EffectAppliedContent content) override = 0;
+};
+
+//===============================================================================
 #endif // !_ACTOR_SUBSCRIPTIONS_H_

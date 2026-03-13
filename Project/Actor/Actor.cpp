@@ -222,7 +222,12 @@ void Actor::ApplyStatusEffect(StatEffects::StatusEffect* eff, Actor* caster)
 {
     //Check if existing
     if (statusEffectsDict.find(eff->GetName()) != statusEffectsDict.end()) {
-        statusEffectsDict[eff->GetName()]->OnReapply();
+        statusEffectsDict[eff->GetName()]->OnReapply(eff->GetStackCount());
+
+        for (auto& sub : seGainedSubs) {
+            sub->SubscriptionAlert({true, eff->GetStackCount(), *statusEffectsDict[eff->GetName()]});
+        }
+
         delete eff;
     }
     else { //New, insert
@@ -232,6 +237,10 @@ void Actor::ApplyStatusEffect(StatEffects::StatusEffect* eff, Actor* caster)
         }
         statusEffectsDict.insert(std::pair<std::string, StatEffects::StatusEffect*>(eff->GetName(), eff));
         eff->OnApply(this, caster);
+
+        for (auto& sub : seGainedSubs) {
+            sub->SubscriptionAlert({ false, eff->GetStackCount(), *statusEffectsDict[eff->GetName()] });
+        }
     }
 }
 
@@ -421,4 +430,16 @@ void Actor::SubToBeforeDealingDmg(ActorBeforeDealingDmgSub* sub, bool remove)
     }
     if (remove) return;
     beforeDealingDmgSubs.push_back(sub);
+}
+
+void Actor::SubToSEGain(ActorGainedStatusEffectSub* sub, bool remove)
+{
+    for (auto it = seGainedSubs.begin(); it != seGainedSubs.end(); ++it) {
+        if (*it == sub) {
+            if (remove) seGainedSubs.erase(it);
+            return;
+        }
+    }
+    if (remove) return;
+    seGainedSubs.push_back(sub);
 }

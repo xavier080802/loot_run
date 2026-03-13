@@ -3,6 +3,7 @@
 #include <string>
 #include <array>
 #include <vector>
+#include <map>
 #include "../Actor/StatsTypes.h"
 #include "../Actor/StatusEffect.h"
 #include "../Elements/Element.h"
@@ -43,6 +44,7 @@ namespace Pets {
 		std::string texture{};
 		std::vector<Elements::ELEMENT_TYPE> skillElements{};
 		std::vector<StatEffects::StatusEffect> extraEffects{};
+		std::map<std::string, std::string> extra{};
 	};
 
 	struct PetSaveData {

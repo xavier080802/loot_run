@@ -70,7 +70,7 @@ protected:
 	Pets::PetData data{};
 	Pets::PET_RANK rank{};
 
-	//Skill stuff
+	//Time before can cast skill again. Ticks down
 	float cooldownTimer{};
 
 	//Movement

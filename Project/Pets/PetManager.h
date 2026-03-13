@@ -23,7 +23,8 @@ public:
 	void PlacePet(AEVec2 const& pos);
 	//Pass in player GO so pet can follow, and other stuff
 	void LinkPlayer(Player* playerGO);
-	Player const& GetPlayer() { return *player; }
+	Player const& GetPlayer() const { return *player; }
+	Player& GetPlayer() { return *player; }
 
 	//Sets the pet based on the type.
 	void SetPet(Pets::PET_TYPE pet, Pets::PET_RANK rank);

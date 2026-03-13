@@ -19,6 +19,14 @@
 3. Game starts -> GameState.Init -> Calls InitPetForGame to create the Pet class and apply pet's passive
 4. Game ends -> GameState.ExitState -> Clears status effects, so no need to handle that here.
 5. Program ends -> GO Manager deleted the created pet classes.
+
+Implementing new pet:
+ 1. Create the class derived from Pet
+ 2. Add pet id to PET_TYPE
+ 3. Under GameObjectManager's FetchGO, return the new pet class when the type is called
+ 4. Within the new pet class, override GetPetGOType to return the new PET_TYPE.
+ 5. Implement DoSkill and other stuff as necessary
+ 6. Update the pet json
 */
 
 namespace {
@@ -287,6 +295,16 @@ void PetManager::LoadPetData()
 			for (Json::Value const& se : *effects) {
 				//Each value should be a mod
 				pd.extraEffects.push_back(StatEffects::StatusEffect::ParseFromJson(se));
+			}
+		}
+
+		if (v.isMember("extra")) {
+			Json::Value const& extras{ v["extra"] };
+			Json::Value::Members extra_members{extras.getMemberNames()};
+			for (Json::Value::Members::iterator it = extra_members.begin(); it != extra_members.end(); ++it) {
+				const std::string& key = *it;
+				Json::Value const& value = extras[key];
+				pd.extra[key] = value.asString();
 			}
 		}
 
