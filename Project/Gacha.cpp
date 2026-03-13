@@ -164,8 +164,8 @@ static void SpawnMythicalBurst(float x, float y, int count) {
 //    Dragon                      -- Mythical only
 // ============================================================
 static std::vector<WordEntry> gachaPool = {
-    // --- Common (~63% total, split evenly across 4 pets) ---
-    {"Rock",  "Common", 15.75f, 1.0f, 1.0f, 1.0f},
+    // --- Common (~63% total, split across 4 pets) ---
+    {"Rock",  "Common", 15.799995f, 1.0f, 1.0f, 1.0f}, //have abit more to ensure weight add up to 100
     {"Slime", "Common", 15.75f, 1.0f, 1.0f, 1.0f},
     {"Lycan",  "Common", 15.75f, 1.0f, 1.0f, 1.0f},
     {"Scylla", "Common", 15.75f, 1.0f, 1.0f, 1.0f},
@@ -173,7 +173,7 @@ static std::vector<WordEntry> gachaPool = {
     // --- Uncommon (~20% total) ---
     {"Rock",  "Uncommon", 5.0f, 0.0f, 1.0f, 0.0f},
     {"Slime", "Uncommon", 5.0f, 0.0f, 1.0f, 0.0f},
-    {"Lycan ",  "Uncommon", 5.0f, 0.0f, 1.0f, 0.0f},
+    {"Lycan",  "Uncommon", 5.0f, 0.0f, 1.0f, 0.0f},
     {"Scylla", "Uncommon", 5.0f, 0.0f, 1.0f, 0.0f},
 
     // --- Rare (~10% total) ---
@@ -189,11 +189,11 @@ static std::vector<WordEntry> gachaPool = {
     {"Scylla", "Epic", 1.25f, 0.6f, 0.1f, 0.9f},
 
     // --- Legendary (~1% total, intentionally low) ---
-    {"Rock",   "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
-    {"Slime",  "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
-    {"lycan",   "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
-    {"Scylla",  "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
-    {"Phoenix  ", "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
+    {"Rock",   "Legendary", 0.19f, 1.0f, 0.5f, 0.0f},
+    {"Slime",  "Legendary", 0.19f, 1.0f, 0.5f, 0.0f},
+    {"Lycan",   "Legendary", 0.19f, 1.0f, 0.5f, 0.0f},
+    {"Scylla",  "Legendary", 0.19f, 1.0f, 0.5f, 0.0f},
+    {"Phoenix  ", "Legendary", 0.19f, 1.0f, 0.5f, 0.0f},
 
     // --- Mythical (effectively ~0%, if you can get it respect to you) ---
     {"Dragon", "Mythical", 0.000005f, 1.0f, 0.0f, 0.0f},
