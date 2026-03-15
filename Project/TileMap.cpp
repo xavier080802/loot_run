@@ -158,11 +158,12 @@ void TileMap::GenerateProcedural(unsigned int r, unsigned int c, int seed)
     // --- Step 6: Enemy and chest placement ---
     // Only scatter into open tiles that aren't on the corridors or the safe center.
     // ~4% chance of enemy, ~3% chance of chest per qualifying tile.
-    // Start at i=2/j=2 so neighbour reads never go out of bounds.
-    // All 4 orthogonal neighbours must be non-solid - stops enemies spawning
-    // directly against a wall.
-    for (unsigned int i = 2; i < rows - 2; ++i) {
-        for (unsigned int j = 2; j < cols - 2; ++j) {
+    // Start at i=3/j=3 so the 2-tile clearance check never reads out of bounds.
+    // Enemy collision bodies are up to 60px and tiles are 115px — a 1-tile
+    // gap isn't enough clearance, so we require all tiles within a 2-tile box
+    // around the candidate to be non-solid.
+    for (unsigned int i = 3; i < rows - 3; ++i) {
+        for (unsigned int j = 3; j < cols - 3; ++j) {
             if (tiles[i][j].type != TILE_NONE) continue;
 
             bool onCorridor = ((int)i == midR || (int)j == midC);
@@ -170,11 +171,12 @@ void TileMap::GenerateProcedural(unsigned int r, unsigned int c, int seed)
             bool inCenter = (dr >= -2 && dr <= 2 && dc >= -2 && dc <= 2);
             if (onCorridor || inCenter) continue;
 
-            // skip tiles adjacent to any wall
-            if (tiles[i - 1][j].isSolid) continue;
-            if (tiles[i + 1][j].isSolid) continue;
-            if (tiles[i][j - 1].isSolid) continue;
-            if (tiles[i][j + 1].isSolid) continue;
+            // 2-tile clearance box — reject if any tile within 2 steps is solid
+            bool nearWall = false;
+            for (int cr = -2; cr <= 2 && !nearWall; ++cr)
+                for (int cc2 = -2; cc2 <= 2 && !nearWall; ++cc2)
+                    if (tiles[i + cr][j + cc2].isSolid) nearWall = true;
+            if (nearWall) continue;
 
             int chance = rand() % 100;
             if (chance < 4) tiles[i][j] = tileMap[TILE_ENEMY];

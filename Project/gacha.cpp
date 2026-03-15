@@ -193,7 +193,7 @@ static std::vector<WordEntry> gachaPool = {
     {"Slime",  "Legendary", 0.19f, 1.0f, 0.5f, 0.0f},
     {"Lycan",   "Legendary", 0.19f, 1.0f, 0.5f, 0.0f},
     {"Scylla",  "Legendary", 0.19f, 1.0f, 0.5f, 0.0f},
-    {"Phoenix  ", "Legendary", 0.19f, 1.0f, 0.5f, 0.0f},
+    {"Phoenix", "Legendary", 0.19f, 1.0f, 0.5f, 0.0f},
 
     // --- Mythical (effectively ~0%, if you can get it respect to you) ---
     {"Dragon", "Mythical", 0.000005f, 1.0f, 0.0f, 0.0f},
