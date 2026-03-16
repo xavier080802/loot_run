@@ -273,6 +273,9 @@
     <ClCompile Include="Pets\Pet_2.cpp">
       <Filter>Source Files\Pets\Derived</Filter>
     </ClCompile>
+    <ClCompile Include="GameStates\LevelSelectState.cpp">
+      <Filter>Source Files\GameStates</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -481,6 +484,9 @@
     </ClInclude>
     <ClInclude Include="DebugTools.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStates\LevelSelectState.h">
+      <Filter>Header Files\GameStates</Filter>
     </ClInclude>
     <ClInclude Include="Actor\Combat.h">
       <Filter>Header Files\Actors</Filter>
