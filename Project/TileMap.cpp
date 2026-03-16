@@ -113,7 +113,7 @@ void TileMap::GenerateProcedural(unsigned int r, unsigned int c, int seed)
         tiles = next;
     }
 
-    // map centre � used as anchor for everything below
+    // map centre  used as anchor for everything below
     int midR = rows / 2;
     int midC = cols / 2;
 
@@ -237,7 +237,7 @@ AEVec2 TileMap::GetTilePosition(unsigned rowInd, unsigned colInd) const
 
 // Converts a world-space position back to a (col, row) float index.
 // The returned x = column index, y = row index.
-// Fractional values indicate a position inside a tile � callers that
+// Fractional values indicate a position inside a tile callers that
 // want the actual tile should cast to int.
 AEVec2 TileMap::GetTileIndFromPos(AEVec2 pos) const
 {

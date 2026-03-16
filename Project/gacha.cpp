@@ -10,7 +10,7 @@
 
 
 static float s_screenShake = 0.0f;  // reserved for future screen-shake use
-static bool  s_chestOpened = false; // has the player pressed Open this session?
+static bool  s_chestOpened = false; // has the player pressed Open this session
 static float s_chestLightTimer = 0.0f;  // how long the "light burst" after opening lasts
 static const float s_chestLightMax = 0.85f; // duration of that light burst in seconds
 
@@ -52,19 +52,16 @@ static std::vector<GachaParticle> s_particles;
 
 
 // ============================================================
-//  Pet type lookup
+//  //  Pet type lookup
 //  Converts the string name used in gachaPool to the enum
-//  value PetManager actually stores.  If a new pet is added to
-//  the pool, add a matching line here or it'll save as NONE.
+//  value PetManager actually stores.
+//  Iterates the PetManager data map and matches against
+//  PetData::name (case-sensitive, exact match).
+//  Returns NONE if no match is found.
+//  If a new pet is added to the pool, a corresponding entry
+//  must exist in PetManager's data map or it will save as NONE.
 // ============================================================
 static Pets::PET_TYPE GetPetTypeFromWord(const std::string& word) {
-    /*if (word == "Rock")   return Pets::PET_1;
-    if (word == "Slime")  return Pets::PET_2;
-    if (word == "Lycan") return Pets::PET_3;
-    if (word == "Scylla")  return Pets::PET_4;
-    if (word == "Pheonix") return Pets::PET_5;
-    if (word == "Dragon") return Pets::PET_6;
-    return Pets::PET_TYPE::NONE;*/
     auto const& petmap = PetManager::GetInstance()->GetPetDataMap();
     for (auto it{ petmap.begin() }; it != petmap.end(); ++it) {
         Pets::PetData const& data{ it->second };
@@ -173,7 +170,7 @@ static std::vector<WordEntry> gachaPool = {
     // --- Uncommon (~20% total) ---
     {"Rock",  "Uncommon", 5.0f, 0.0f, 1.0f, 0.0f},
     {"Slime", "Uncommon", 5.0f, 0.0f, 1.0f, 0.0f},
-    {"Lycan ",  "Uncommon", 5.0f, 0.0f, 1.0f, 0.0f},
+    {"Lycan",  "Uncommon", 5.0f, 0.0f, 1.0f, 0.0f},
     {"Scylla", "Uncommon", 5.0f, 0.0f, 1.0f, 0.0f},
 
     // --- Rare (~10% total) ---
@@ -191,9 +188,9 @@ static std::vector<WordEntry> gachaPool = {
     // --- Legendary (~1% total, intentionally low) ---
     {"Rock",   "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
     {"Slime",  "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
-    {"lycan",   "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
+    {"Lycan",   "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
     {"Scylla",  "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
-    {"Phoenix  ", "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
+    {"Phoenix", "Legendary", 0.2f, 1.0f, 0.5f, 0.0f},
 
     // --- Mythical (effectively ~0%, if you can get it respect to you) ---
     {"Dragon", "Mythical", 0.000005f, 1.0f, 0.0f, 0.0f},
