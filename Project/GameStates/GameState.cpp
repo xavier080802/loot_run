@@ -410,7 +410,6 @@ void GameState::InitState()
         AEVec2{ playerRadius * 2.f, playerRadius * 2.f },
         collideMask, Collision::LAYER::PLAYER
     );
-    PetManager::GetInstance()->PlacePet(GetPlayerPos());
     PetManager::GetInstance()->InitPetForGame();
 
     ActorStats base{};

@@ -651,7 +651,7 @@ void Player::Draw()
  *   - GameState::Draw() - rendered in screen-space after the world draws.
  */
 void Player::DrawUI() {
-	AEVec2 camPos;
+	AEVec2 camPos{};
 	AEGfxGetCamPosition(&camPos.x, &camPos.y);
 
 	if (mShowStatsUI) {
@@ -706,12 +706,19 @@ void Player::DrawUI() {
 	//Health indicator fill
 	AEVec2 hpBarFillSize{ HpBarSize.x * (mCurrentHP / mStats.maxHP), HpBarSize.y };
 	AEVec2 hpBarFillPos = hpBarPos;
-	hpBarFillPos.x -= (HpBarSize.x - hpBarFillSize.x) / 2.f;
+	hpBarFillPos.x -= (HpBarSize.x - hpBarFillSize.x) * 0.5f;
 	DrawTintedMesh(GetTransformMtx(hpBarFillPos, 0, hpBarFillSize),
 		squareMesh, nullptr, {240, 20, 20, 255}, 255);
-	//Hp Text: "curr / max"
+	//Shield value (if any)
+	if (mShieldValue) {
+		float shieldFill{ HpBarSize.x * min(mShieldValue / mStats.maxHP, 1.f) };
+		DrawTintedMesh(GetTransformMtx(hpBarPos - AEVec2{ (HpBarSize.x - shieldFill) *0.5f,0}, 0, { shieldFill, HpBarSize.y }),
+			squareMesh, nullptr, { 255, 255, 0, 255 }, 200);
+	}
+	//Hp Text: "curr (+shield) / max"
 	DrawAEText(RenderingManager::GetInstance()->GetFont(),
-		std::string{ std::to_string((int)mCurrentHP) + " / " + std::to_string((int)mStats.maxHP) }.c_str(),
+		std::string{ std::to_string((int)mCurrentHP) + (mShieldValue ? (" (+" + std::to_string((int)mShieldValue)+")") : "")
+		+ " / " + std::to_string((int)mStats.maxHP)}.c_str(),
 		hpBarPos, HpBarSize.y / RenderingManager::GetInstance()->GetFontSize(), Color{ 0,0,0,255 }, TEXT_MIDDLE);
 
 	//Status effects above hp bar

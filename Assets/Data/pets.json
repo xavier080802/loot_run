@@ -3,9 +3,11 @@
     NOTES:
     
     value: For multiplicative, note that 1 means 1% of the stat
-    mathType: FLAT=0, MULTIPLICATIVE=1. If flat, stat doesnt really matter.
-    stat: STAT_TYPE enum in StatsType.h, start from 0
+    mathType: Flat=0, Multiplicative/mult=1. If flat, stat doesnt really matter. Can use string(case insensitive) or int
+    stat: STAT_TYPE enum in StatsType.h, start from 0 or use string(case insensitive)
     rarityScaling: Multiplied with the base values of passive/multipliers for each rarity, starting from COMMON
+    dmgTypes: phy/mag/ele/true. Can write longer but these are the minimum strings to parse. (case insensitive)
+    effects: Status Effects (see far below for format) array.
 
     Arrays can be omitted if empty, PetManager will check if the array exists
     ------------------------------------------------------------
@@ -27,11 +29,28 @@
                 "stat": 1
             }
         ],
+        "dmgTypes": [] // DAMAGE_TYPES array. Dev handles which index is for what. Default (if omitted) is Magical
+        "effects: [] //OPTIONAL extra status effects
         "rarityScaling": [ 1, 2, 3, 4, 5, 6 ], // Must have 6 entries, 1 for each rarity. COMMON first, to LEGENDARY
         "skillCooldown": 0,
         "skillDesc": "",
         "skillElements": [ ], //Elements the skill may inflict. ELEMENT_TYPE
-        "texture": "" // Filepath to texture
+        "texture": "", // Filepath to texture
+        "extra": {} //OPTIONAL Object with whatever keys and STRING values
+    }
+
+    ------------------------------------------------------------
+
+    Status effect format:
+
+    {
+        "name": "",
+        "duration": 5,      // Omit/-1 for permanent
+        "maxStacks": 1,     // Omit for default 1
+        "startStacks": 1,   // Omit for default 1. Number of stacks for first application
+        "icon": "Assets/",  // Omit for default. Texture path for icon
+        "type": "",         // "buff" / "debuff" / omit for NONE. (case insensitive)
+        "mods": []          // Stat changes. Follow Mod format of value, mathType, stat
     }
 
 */
@@ -44,27 +63,80 @@
             "passive": [
                 {
                     "value": 10,
-                    "mathType": 1,
-                    "stat": 0
+                    "mathType": "mult",
+                    "stat": "att"
                 }
             ],
             "multipliers": [
-                { "value": 7.5, "mathType": 1, "stat": 0 },
-                { "value": 5, "mathType": 0, "stat": 0 }
+                {
+                    "value": 7.5,
+                    "mathType": "mult",
+                    "stat": "att"
+                },
+                {
+                    "value": 5,
+                    "mathType": "flat"
+                }
             ],
+            "dmgTypes": [ "phy" ],
             "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
             "skillCooldown": 6,
             "skillDesc": "Yeet the rock",
-            "texture": "Assets/finn.png"
+            "texture": ""
         },
         {
             "id": 2,
             "name": "Slime",
-            "passive": [],
-            "multipliers": [],
-            "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
-            "skillCooldown": 5,
-            "skillDesc": "Placeholder Slime Skill"
+            "passive": [
+                {
+                    "value": 5,
+                    "mathType": "mult",
+                    "stat": "hp"
+                }
+            ],
+            "multipliers": [
+                { //0 - shield
+                    "value": 20,
+                    "mathType": "mult",
+                    "stat": "MaxHp"
+                },
+                { //1 - shield
+                    "value": 10,
+                    "mathType": "flat"
+                },
+                { //2 - shield value threshold (of player) for revenge dmg
+                    "value": 30,
+                    "mathType": "mult",
+                    "stat": "MaxHp"
+                },
+                { //3 - Revenge dmg
+                    "value": 5,
+                    "mathType": "mult",
+                    "stat": "Att"
+                },
+                { //4 - Revenge dmg
+                    "value": 0,
+                    "mathType": "flat"
+                }
+            ],
+            "dmgTypes": [ "phy" ], //Dmg type of revenge dmg
+            "rarityScaling": [ 1, 1.5, 2, 2.5, 3.5, 5 ],
+            "skillCooldown": 6,
+            "skillDesc": "Grants a shield that slows attackers.\nWhen shield value exceeds a certain amount, damages attackers as well",
+            "effects": [ // On-hit debuff
+                {
+                    "name": "Gooey",
+                    "duration": 5,
+                    "type": "debuff", // "buff" / "debuff" / omit for NONE
+                    "mods": [
+                        {
+                            "value": 15,
+                            "mathType": "mult",
+                            "stat": "spd"
+                        }
+                    ]
+                }
+            ]
         },
         {
             "id": 3,
@@ -87,11 +159,45 @@
         {
             "id": 5,
             "name": "Pheonix",
-            "passive": [],
-            "multipliers": [],
+            "passive": [
+                {
+                    "value": 7.5,
+                    "mathType": "mult",
+                    "stat": "att"
+                }
+            ],
+            "multipliers": [
+                { // 0 - Aura damage
+                    "value": 5,
+                    "mathType": "mult",
+                    "stat": "att"
+                },
+                { // 1 - Aura damage
+                    "value": 1,
+                    "mathType": "flat"
+                },
+                { // 2 - Healing
+                    "value": 2.5,
+                    "mathType": "mult",
+                    "stat": "hp"
+                },
+                { // 3 - Healing
+                    "value": 1,
+                    "mathType": "flat"
+                }
+            ],
             "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
             "skillCooldown": 7,
-            "skillDesc": "Placeholder Garuda Skill"
+            "skillDesc": "Trigger a burning aura that applies Sun.\nHitting enemies with Sun or gaining Glow stacks a certain number of times heals and cleanses a debuff.",
+            "dmgType": "ele",
+            "extra": { //Required to be strings
+                "auraDuration": "5",
+                "auraSize": "200",
+                "auraTimeBetweenHits": "1.5",
+                "auraColor": "200 60 0 200", //Format: r g b a
+                "sunRequired": "5" //Number of times to hit enemies with sun stacks for bonus effect
+            },
+            "texture": "Assets/finn.png"
         },
         {
             "id": 6,

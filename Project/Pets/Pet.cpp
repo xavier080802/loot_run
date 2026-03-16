@@ -12,13 +12,19 @@ namespace {
 	const float pointTolerance{ 10 };
 }
 
-void Pet::CastSkill(const PetSkills::SkillCastData& skillData)
+void Pet::CastSkill(const Pets::SkillCastData& skillData)
 {
-	if (cooldownTimer > 0 || !data.PetSkill) return;
-	if (data.PetSkill(skillData)) {
+	if (cooldownTimer > 0 || !HasSkill()) return;
+	if (DoSkill(skillData)) {
 		//Skill casted successfully.
 		cooldownTimer = data.skillCooldown;
 	}
+}
+
+GameObject* Pet::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, Collision::LAYER _isInLayer)
+{
+	goType = GetPetGOType();
+	return GameObject::Init(_pos, _scale, _z, _meshShape, _colShape, _colSize, _collideWithLayers, _isInLayer);
 }
 
 void Pet::Update(double dt) {
@@ -59,6 +65,8 @@ void Pet::Update(double dt) {
 			path.pop();
 		}
 	}
+
+	SkillUpdate((float)dt);
 }
 
 void Pet::SetPath(std::initializer_list<AEVec2> const& _path, bool append)
@@ -71,20 +79,16 @@ void Pet::SetPath(std::initializer_list<AEVec2> const& _path, bool append)
 	}
 }
 
-void Pet::SetData(const Pets::PetData& newData, Pets::PET_RANK rank)
+void Pet::SetData(const Pets::PetData& newData, Pets::PET_RANK _rank)
 {
 	data = newData;
+	rank = _rank;
 	data.passive.SetName(data.name + "'s Call of Awakening");
 	//Scale values based on rarity
-	data.passive.ScaleMods(data.rarityScaling[rank]);
+	data.passive.ScaleMods(data.rarityScaling[_rank]);
 	for (StatEffects::Mod& m : data.multipliers) {
-		m.value *= data.rarityScaling[rank];
+		m.value *= data.rarityScaling[_rank];
 	}
-	//Rank too low for skill 
-	//NOTE: TEMP, PLS UNCOMMENT
-	/*if (rank <= Pets::PET_RANK::EPIC) { 
-		data.PetSkill = nullptr;
-	}*/
 }
 
 const Pets::PetData& Pet::GetPetData()
@@ -131,4 +135,17 @@ void Pet::MoveToTarget(double dt)
 
 	//If near targetPos (reached path point), pop path point
 	if (!path.empty() && AEVec2SquareDistance(&pos, &targetPos) <= pointTolerance) path.pop();
+}
+
+void Pet::Setup(Player&)
+{
+}
+
+bool Pet::DoSkill(const Pets::SkillCastData&)
+{
+	return false;
+}
+
+void Pet::SkillUpdate(float)
+{
 }

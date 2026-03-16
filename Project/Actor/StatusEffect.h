@@ -123,6 +123,7 @@ namespace StatEffects {
 		EFF_TYPE GetType() const { return effType; }
 		std::string const& GetIcon() const { return icon; }
 		std::vector<Mod>const& GetMods() const { return mods; }
+		unsigned GetStackCount() const { return stacks; }
 		UIElement* GetUIElement() const { return uiElement; }
 
 		//Multiply the value of each Mod by the given scalar.
@@ -130,6 +131,8 @@ namespace StatEffects {
 
 		void SetIcon(std::string const& path);
 		void SetName(std::string const& newName);
+
+		static StatusEffect ParseFromJson(Json::Value const& v);
 
 	protected:
 		virtual void DrawTooltip() const;

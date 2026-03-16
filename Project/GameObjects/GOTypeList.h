@@ -12,6 +12,14 @@ enum class GO_TYPE {
 	LOOT_CHEST,
 	ENEMY,
 
+	//Pets
+	PET_1,
+	PET_2,
+	PET_3,
+	PET_4,
+	PET_5,
+	PET_6,
+
 	NUM_GO_TYPES //Not a type. Last
 };
 

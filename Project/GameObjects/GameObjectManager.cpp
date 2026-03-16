@@ -1,13 +1,17 @@
 #include "GameObjectManager.h"
 #include "GameObject.h"
 #include "../helpers/CollisionUtils.h"
+#include "../TileMap.h"
+#include "../Helpers/Vec2Utils.h"
+#include "../Helpers/RenderUtils.h"
 #include "Projectile.h"
 #include "LootChest.h"
 #include "../Drops/PickupGO.h"
 #include "AttackHitboxGO.h"
-#include "../TileMap.h"
-#include "../Helpers/Vec2Utils.h"
-#include "../Helpers/RenderUtils.h"
+#include "../Pets/Pet.h"
+#include "../Pets/Pet_1.h"
+#include "../Pets/Pet_2.h"
+#include "../Pets/Pet_5.h"
 #include <iostream>
 
 void GameObjectManager::RegisterGO(GameObject* go)
@@ -143,6 +147,7 @@ void GameObjectManager::DisableAllGOs()
 	}
 }
 
+//BROKEN
 GameObject* GameObjectManager::Clone(GameObject* const original)
 {
 	GameObject* newGo = new GameObject(*original);
@@ -180,6 +185,16 @@ GameObject* GameObjectManager::FetchGO(GO_TYPE type)
 		return new PickupGO{};
 	case GO_TYPE::ATTACK_HITBOX:
 		return new AttackHitboxGO{};
+	case GO_TYPE::PET_1:
+		return new Pet_1{};
+	case GO_TYPE::PET_2:
+		return new Pet_2{};
+	case GO_TYPE::PET_5:
+		return new Pet_5{};
+	case GO_TYPE::PET_3:
+	case GO_TYPE::PET_4:
+	case GO_TYPE::PET_6:
+		return new Pet{};
 	default:
 		std::cout << "WARNING: FetchGO implementation not done for GO_TYPE " << (int)type << '\n';
 		return nullptr;
