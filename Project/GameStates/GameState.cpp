@@ -94,9 +94,9 @@ namespace {
     bool showKeybindOverlay = false; // K � shows all in-game keybinds overlay
 
     // Individual debug feature toggles
-    bool debugGodMode = false; // F7 � equip best gear + invincible
-    bool debugShowStats = false; // F8 � print live enemy stats on screen
-    bool debugFreezeEnemies = false; // F9 � enemies stop moving
+    bool debugGodMode = false; // F5 � invincible
+    bool debugShowStats = false; // F6 � live enemy HP labels
+    bool debugFreezeEnemies = false; // F7 � enemies stop moving
 
     // Builds a DebugContext from the current anonymous-namespace state.
     // Pass this to every Debug.h function instead of raw globals.
@@ -129,19 +129,11 @@ namespace {
         int midR = (int)rows / 2;
         int midC = (int)cols / 2;
 
-        // Pass 1: designer-placed TILE_ENEMY markers � validate they're not inside/next to walls
+        // Pass 1: designer-placed TILE_ENEMY markers � use all of them directly
         for (unsigned r = 0; r < rows; ++r) {
             for (unsigned c = 0; c < cols; ++c) {
                 const TileMap::Tile* t = tilemap.QueryTile(r, c);
-                if (!t || t->type != TileMap::TILE_ENEMY) continue;
-                // Reject if any tile in a 2-tile radius is solid
-                bool nearWall = false;
-                for (int dr2 = -2; dr2 <= 2 && !nearWall; ++dr2)
-                    for (int dc2 = -2; dc2 <= 2 && !nearWall; ++dc2) {
-                        const TileMap::Tile* n = tilemap.QueryTile(r + dr2, c + dc2);
-                        if (!n || n->isSolid) nearWall = true;
-                    }
-                if (!nearWall)
+                if (t && t->type == TileMap::TILE_ENEMY)
                     positions.push_back(tilemap.GetTilePosition(r, c));
             }
         }
@@ -222,7 +214,7 @@ namespace {
     {
         int dead = 0;
         for (Enemy* e : procEnemies)
-            if (e && (!e->IsEnabled() || e->IsDead())) ++dead;
+            if (e && (!e->IsEnabled() || e->GetHP() <= 0.f)) ++dead;
         enemiesKilledInRoom = dead;
     }
 
@@ -449,7 +441,7 @@ void GameState::InitState()
 
     boss = nullptr;
     bossSpawned = false;
-    bossAlive = false;
+    bossAlive = true;  // no boss yet, but enemies are alive
     enemiesRequiredForBoss = (int)csvEnemies.size();
     enemiesKilledInRoom = 0;
     bossMaxHPProgressBar = (float)enemiesRequiredForBoss;
@@ -596,14 +588,16 @@ void GameState::Update(double dt)
         playerDir = gPlayer->GetMoveDirNorm();
 
     if (inProceduralMap) {
-        CountDeadProcEnemies();
+        if (!(debugMode && debugFreezeEnemies)) CountDeadProcEnemies();
         TrySpawnBoss(*nextMap);
     }
     else {
-        int dead = 0;
-        for (Enemy* e : csvEnemies)
-            if (e && (!e->IsEnabled() || e->IsDead())) ++dead;
-        enemiesKilledInRoom = dead;
+        if (!(debugMode && debugFreezeEnemies)) {
+            int dead = 0;
+            for (Enemy* e : csvEnemies)
+                if (e && (!e->IsEnabled() || e->GetHP() <= 0.f)) ++dead;
+            enemiesKilledInRoom = dead;
+        }
     }
 
     if (boss && bossSpawned) {
@@ -622,20 +616,23 @@ void GameState::Update(double dt)
     minimap->Update(dt, *currentMap, *gPlayer);
     UpdateWorldMap((float)dt);
 
-    // Freeze AI � temporarily disable enemies so UpdateObjects skips them,
-    // but everything else (player, loot, projectiles) still runs normally
+    // Freeze AI � save positions, run full update so damage/death/projectiles work,
+    // then snap living enemies back so only movement is blocked
     if (debugMode && debugFreezeEnemies) {
-        // Disable all enemies before update
-        auto& gos = GameObjectManager::GetInstance()->GetGameObjects();
-        for (GameObject* go : gos) {
-            if (go && go->IsEnabled() && go->GetGOType() == GO_TYPE::ENEMY)
-                go->SetEnabled(false);
+        auto& gameObjects = GameObjectManager::GetInstance()->GetGameObjects();
+        std::vector<std::pair<GameObject*, AEVec2>> frozenEnemies;
+        for (int i = 0; i < (int)gameObjects.size(); ++i) {
+            GameObject* obj = gameObjects[i];
+            if (obj && obj->IsEnabled() && obj->GetGOType() == GO_TYPE::ENEMY)
+                frozenEnemies.push_back(std::make_pair(obj, obj->GetPos()));
         }
         GameObjectManager::GetInstance()->UpdateObjects(dt, currentMap);
-        // Re-enable them after so they still draw
-        for (GameObject* go : gos) {
-            if (go && !go->IsEnabled() && go->GetGOType() == GO_TYPE::ENEMY)
-                go->SetEnabled(true);
+        for (int i = 0; i < (int)frozenEnemies.size(); ++i) {
+            GameObject* obj = frozenEnemies[i].first;
+            AEVec2 savedPos = frozenEnemies[i].second;
+            if (!obj->IsEnabled()) continue;
+            Enemy* enemy = dynamic_cast<Enemy*>(obj);
+            if (enemy && enemy->GetHP() > 0.f) enemy->SetPos(savedPos);
         }
     }
     else {
