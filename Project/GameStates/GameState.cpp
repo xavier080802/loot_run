@@ -149,13 +149,26 @@ namespace {
 }
 
 void GameState::LoadState() {
-    PetManager::GetInstance()->LinkPlayer(gPlayer);
+	if (!GameDB::LoadEnemyDefs("Assets/Data/enemies.json")) {
+		std::cout << "WARNING: enemies.json failed to load.\n";
+	}
+	font = RenderingManager::GetInstance()->GetFont();
 
-    boss = new Enemy();
+	GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Melee/melee.json", EquipmentCategory::Melee);
+	GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Range/ranged.json", EquipmentCategory::Ranged);
+	GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Head/head.json", EquipmentCategory::Head);
+	GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Body/body.json", EquipmentCategory::Body);
+	GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Hands/hands.json", EquipmentCategory::Hands);
+	GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Feet/feet.json", EquipmentCategory::Feet);
 
-    if (doTutorial) {
-        fairy = new Tutorial::TutorialFairy();
-    }
+	if (!GameDB::LoadDropTables("Assets/Data/Drops/drops.json"))
+	{
+		std::cout << "WARNING: drops.json failed to load.\n";
+	}
+
+	if (!GameDB::LoadPlayerDef("Assets/Data/Player/player.json"))
+	{
+		std::cout << "WARNING: player.json failed to load.\n";
 	}
 	if (!GameDB::LoadPlayerInventory("Assets/Data/Player/inventory.json"))
 	{
