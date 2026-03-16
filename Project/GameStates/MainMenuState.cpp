@@ -29,7 +29,7 @@ namespace {
 		AEVec2 size;
 		const char* label;
 	};
-	Button shopButtons[] =
+	Button menuButtons[] =
 	{
 		{{ 200.f, 300.f }, { 235.f, 67.f }, "New Run"},
 		{{ 200.f, 400.f }, { 235.f, 67.f }, "Pets"},
@@ -40,7 +40,7 @@ namespace {
 	};
 	Title title = { { DEFAULT_W / 2, 100.f }, { 675.f, 110.f }, "LOOT RUN" };
 
-	constexpr int SHOP_BTN_COUNT = sizeof(shopButtons) / sizeof(Button);
+	constexpr int MENU_BTN_COUNT = sizeof(menuButtons) / sizeof(Button);
 
 	float winW;
 	float winH;
@@ -61,8 +61,9 @@ namespace {
 	AEAudio clickSound;
 
 	// Track previous hover state
-	bool btnHoverStates[SHOP_BTN_COUNT] = { false };
+	bool btnHoverStates[MENU_BTN_COUNT] = { false };
 }
+
 void MainMenuState::LoadState()
 {
 	squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
@@ -81,7 +82,7 @@ void MainMenuState::InitState()
 	scale = (winW * 2 / DEFAULT_W) < (winH * 2 / DEFAULT_H) ? (winW * 2 / DEFAULT_W) : (winH * 2 / DEFAULT_H); //scale of window compared to default
 
 	// Reset hover tracking when entering state
-	for (int i = 0; i < SHOP_BTN_COUNT; ++i) btnHoverStates[i] = false;
+	for (int i = 0; i < MENU_BTN_COUNT; ++i) btnHoverStates[i] = false;
 }
 
 void MainMenuState::ExitState()
@@ -110,16 +111,16 @@ void MainMenuState::Update(double dt)
 		Terminate();
 		return;
 	}
-	for (int i = 0; i < SHOP_BTN_COUNT; ++i)
+	for (int i = 0; i < MENU_BTN_COUNT; ++i)
 	{
 		AEVec2 worldPos = DefaultToWorld(
-			shopButtons[i].pos.x,
-			shopButtons[i].pos.y
+			menuButtons[i].pos.x,
+			menuButtons[i].pos.y
 		);
 
 		AEVec2 worldSize = {
-			shopButtons[i].size.x * scale,
-			shopButtons[i].size.y * scale
+			menuButtons[i].size.x * scale,
+			menuButtons[i].size.y * scale
 		};
 
 		// boolean check names reserved for input/hover checks
@@ -144,7 +145,7 @@ void MainMenuState::Update(double dt)
 				{
 				case 0: //new game
 					GameStateManager::GetInstance()
-						->SetNextGameState("GameState", true, true);
+						->SetNextGameState("LevelSelectState", true, true);
 					
 					break;
 				case 1: // pet button
@@ -213,15 +214,15 @@ void MainMenuState::Draw()
 	// Draw Buttons
 	// ----------------
 
-	for (int i = 0; i < SHOP_BTN_COUNT; ++i)
+	for (int i = 0; i < MENU_BTN_COUNT; ++i)
 	{
 		AEVec2 worldPos = DefaultToWorld(
-			shopButtons[i].pos.x,
-			shopButtons[i].pos.y
+			menuButtons[i].pos.x,
+			menuButtons[i].pos.y
 		);
 
 		AEVec2 worldSize = MultVec2(
-			shopButtons[i].size,
+			menuButtons[i].size,
 			ToVec2(scale, scale)
 		);
 
@@ -241,7 +242,7 @@ void MainMenuState::Draw()
 		AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 
 		DrawAEText(
-			Font, shopButtons[i]. label, worldPos, scale,
+			Font, menuButtons[i]. label, worldPos, scale,
 			CreateColor(10, 10, 10, 255),
 			TEXT_MIDDLE
 		);
