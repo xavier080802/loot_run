@@ -85,6 +85,12 @@
     <Filter Include="Header Files\Pets\Derived">
       <UniqueIdentifier>{92d64180-0dec-4650-9387-4af58bce9523}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Pets\Props">
+      <UniqueIdentifier>{b6806e39-a7f5-4adc-950f-69886945bad7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Pets\Props">
+      <UniqueIdentifier>{c5a6b18d-eea9-4e8a-921d-45fbe9b0fe8d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -275,6 +281,12 @@
     </ClCompile>
     <ClCompile Include="Pets\Pet_5.cpp">
       <Filter>Source Files\Pets\Derived</Filter>
+    </ClCompile>
+    <ClCompile Include="Pets\Pet_4.cpp">
+      <Filter>Source Files\Pets\Derived</Filter>
+    </ClCompile>
+    <ClCompile Include="Pets\Whirlpool.cpp">
+      <Filter>Source Files\Pets\Props</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -502,6 +514,12 @@
     </ClInclude>
     <ClInclude Include="Pets\Pet_5.h">
       <Filter>Header Files\Pets\Derived</Filter>
+    </ClInclude>
+    <ClInclude Include="Pets\Pet_4.h">
+      <Filter>Header Files\Pets\Derived</Filter>
+    </ClInclude>
+    <ClInclude Include="Pets\Whirlpool.h">
+      <Filter>Header Files\Pets\Props</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
