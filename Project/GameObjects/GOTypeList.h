@@ -19,6 +19,8 @@ enum class GO_TYPE {
 	PET_4,
 	PET_5,
 	PET_6,
+	//Pet_4 stuff
+	WHIRLPOOL,
 
 	NUM_GO_TYPES //Not a type. Last
 };

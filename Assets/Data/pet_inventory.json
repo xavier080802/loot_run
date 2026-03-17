@@ -31,9 +31,14 @@
       "count": 1
     },
     {
-      "petId": 6,
-      "rank": 5,
-      "count": 1
+        "petId": 6,
+        "rank": 5,
+        "count": 1
+    },
+    {
+        "petId": 4,
+        "rank": 5,
+        "count": 1
     }
   ]
 }

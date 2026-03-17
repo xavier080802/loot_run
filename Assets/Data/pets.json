@@ -150,11 +150,37 @@
         {
             "id": 4,
             "name": "Scylla",
-            "passive": [],
-            "multipliers": [],
+            "passive": [
+                {
+                    "value": 10,
+                    "mathType": "mult",
+                    "stat": "def"
+                }
+            ],
+            "multipliers": [
+                {
+                    "value": 20,
+                    "mathType": "mult",
+                    "stat": "att"
+                },
+                {
+                    "value": 1,
+                    "mathType": "flat",
+                    "stat": "att"
+                }
+            ],
             "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
             "skillCooldown": 10,
-            "skillDesc": "Placeholder Whale Skill"
+            "skillDesc": "Forms a whirlpool at the mouse position.\nWhirlpool pulls enemies in and damages them at the end of its duration.\nWhile the pool is active, recast to end it early.",
+            "extra": {
+                "pull": "100",
+                "duration": "7",
+                "size": "150",
+                "color": "26 60 195 200",
+                "minDmgFalloff": "0.3"
+            },
+            "dmgTypes": [ "mag" ],
+            "skillElements": [ 3 ] //Moon
         },
         {
             "id": 5,
