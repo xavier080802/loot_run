@@ -158,7 +158,7 @@
         },
         {
             "id": 5,
-            "name": "Pheonix",
+            "name": "Phoenix",
             "passive": [
                 {
                     "value": 7.5,
@@ -189,7 +189,7 @@
             "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
             "skillCooldown": 7,
             "skillDesc": "Trigger a burning aura that applies Sun.\nHitting enemies with Sun or gaining Glow stacks a certain number of times heals and cleanses a debuff.",
-            "dmgType": "ele",
+            "dmgTypes": "ele",
             "extra": { //Required to be strings
                 "auraDuration": "5",
                 "auraSize": "200",

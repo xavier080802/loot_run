@@ -8,7 +8,6 @@
 #include <string>
 #include <map>
 
-
 static float s_screenShake = 0.0f;  // reserved for future screen-shake use
 static bool  s_chestOpened = false; // has the player pressed Open this session
 static float s_chestLightTimer = 0.0f;  // how long the "light burst" after opening lasts
@@ -64,8 +63,9 @@ static std::vector<GachaParticle> s_particles;
 static Pets::PET_TYPE GetPetTypeFromWord(const std::string& word) {
     auto const& petmap = PetManager::GetInstance()->GetPetDataMap();
     for (auto it{ petmap.begin() }; it != petmap.end(); ++it) {
-        Pets::PetData const& data{ it->second };
-        if (data.name == word) return it->first;
+        if (it->second.name == word) {
+            return it->first;
+        }
     }
     return Pets::PET_TYPE::NONE;
 }
