@@ -81,7 +81,6 @@ protected:
 
 	//Movement
 	AEVec2 targetPos{};
-	std::queue<AEVec2> path{};
 	bool followPlayer{ true };
 	TileMap const* tilemap;
 };

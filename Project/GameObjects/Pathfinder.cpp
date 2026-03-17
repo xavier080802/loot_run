@@ -98,6 +98,11 @@ void Pathfinder::PopPath()
     path.pop_front();
 }
 
+void Pathfinder::PushPath(AEVec2 const& newNodePos)
+{
+    path.push_back(newNodePos);
+}
+
 std::array<AEVec2, Pathfinder::DIRS> Pathfinder::FindNeighbourNodes(Node const& curr, TileMap const& map) const
 {
     std::array<AEVec2, DIRS> neighbours{};

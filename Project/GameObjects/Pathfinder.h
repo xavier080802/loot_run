@@ -44,6 +44,8 @@ protected:
 	bool DoPathFinding(TileMap const& map, AEVec2 const& start, AEVec2 const& dest);
 	//Remove the first node in the path (if possible)
 	void PopPath();
+	//Add new pos to the path (pushed to back)
+	void PushPath(AEVec2 const& newNodePos);
 
 private:
 	//Number of directions to look at for neighbours

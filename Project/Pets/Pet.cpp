@@ -50,10 +50,10 @@ void Pet::Update(double dt) {
 void Pet::SetPath(std::initializer_list<AEVec2> const& _path, bool append)
 {
 	if (!append) {
-		ClearPath();
+		ResetPathfinder();
 	}
 	for (AEVec2 const& p : _path) {
-		path.push(p);
+		PushPath(p);
 	}
 }
 
@@ -87,10 +87,7 @@ Elements::ELEMENT_TYPE Pet::GetSkillElement(unsigned index)
 
 void Pet::ClearPath()
 {
-	size_t temp{ path.size() }; //Dont put path.size() into loop.
-	for (unsigned i = 0; i < temp; i++) {
-		path.pop();
-	}
+	ResetPathfinder();
 }
 
 void Pet::Reset()
@@ -103,12 +100,21 @@ void Pet::Reset()
 
 void Pet::DoMovement(double dt)
 {
+	UpdatePathfinding((float)dt); //Timers
+
+	//If not following player, complete path.
+	if (!followPlayer) {
+		std::deque<AEVec2> const& path{ GetFoundPath() }; //Previous path
+		targetPos = path.empty() ? pos : path.front();
+		MoveToTarget(dt);
+		return;
+	}
+
 	GameObject const& player = PetManager::GetInstance()->GetPlayer();
 	AEVec2 playerPos = player.GetPos();
 	float sqrDistFromPlayer{ AEVec2SquareDistance(&pos, &playerPos) };
 	//Start pathfinding
 	bool isNearPlayer = sqrDistFromPlayer <= playerStopDist * playerStopDist;
-	UpdatePathfinding((float)dt);
 	if (!isNearPlayer && tilemap) {
 		DoPathFinding(*tilemap, pos, playerPos);
 		std::deque<AEVec2> const& path{ GetFoundPath() };

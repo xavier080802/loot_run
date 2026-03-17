@@ -291,6 +291,9 @@
     <ClCompile Include="GameObjects\Pathfinder.cpp">
       <Filter>Source Files\GameObjects</Filter>
     </ClCompile>
+    <ClCompile Include="Pets\Pet_3.cpp">
+      <Filter>Source Files\Pets\Derived</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -526,6 +529,9 @@
     </ClInclude>
     <ClInclude Include="GameObjects\Pathfinder.h">
       <Filter>Header Files\GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="Pets\Pet_3.h">
+      <Filter>Header Files\Pets\Derived</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
