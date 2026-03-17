@@ -102,6 +102,7 @@ std::array<AEVec2, Pathfinder::DIRS> Pathfinder::FindNeighbourNodes(Node const& 
 {
     std::array<AEVec2, DIRS> neighbours{};
     AEVec2 ind = map.GetTileIndFromPos(curr.pos);
+    //Check adjacent tile in each cardinal direction
     for (size_t i{}; i < Directions.size(); ++i) {
         neighbours[i] = map.GetTilePosition(ind.y + Directions[i].y, ind.x + Directions[i].x);
     }
@@ -142,10 +143,9 @@ void Pathfinder::FormPath(Node const& last, AEVec2 dest)
             break;
         }
     }
-    //Reverse path since we build from last node to start
-    //std::reverse(path.begin(), path.end());
 }
 
+//Node ctor
 Pathfinder::Node::Node(AEVec2 _nodePos, AEVec2 dest, unsigned _parentId, unsigned _id)
     : pos{_nodePos}, cost{(unsigned)AEVec2Distance(&dest, &_nodePos)}, parent{_parentId}, id{_id}
 {

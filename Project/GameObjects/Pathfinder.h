@@ -6,14 +6,21 @@
 #include <deque>
 #include <array>
 
+/*	Pathfinder
+
+	Class to handle Best-First pathfinding based on a tilemap.
+	
+	USAGE 
+		Add as a parent class.
+		Call UpdatePathfinding in an Update function,
+		and DoPathFinding whenever (in Update is fine too)
+*/
 class Pathfinder
 {
 public:
 	struct Node {
 		AEVec2 pos;
-		//Node* parent;
-		unsigned id, parent;
-		unsigned cost;
+		unsigned id, parent, cost;
 
 		Node(AEVec2 _nodePos, AEVec2 dest, unsigned _parentId, unsigned _id);
 	};

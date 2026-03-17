@@ -66,7 +66,7 @@ void Pet::Update(double dt) {
 	else if (isNearPlayer) { //No need to pathfind
 		ResetPathfinder(); //Clear path
 	}
-	DrawPath();
+	//DrawPath();
 
 	SkillUpdate((float)dt);
 }
