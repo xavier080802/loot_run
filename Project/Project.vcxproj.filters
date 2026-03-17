@@ -288,6 +288,9 @@
     <ClCompile Include="Pets\Whirlpool.cpp">
       <Filter>Source Files\Pets\Props</Filter>
     </ClCompile>
+    <ClCompile Include="GameObjects\Pathfinder.cpp">
+      <Filter>Source Files\GameObjects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -520,6 +523,9 @@
     </ClInclude>
     <ClInclude Include="Pets\Whirlpool.h">
       <Filter>Header Files\Pets\Props</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjects\Pathfinder.h">
+      <Filter>Header Files\GameObjects</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

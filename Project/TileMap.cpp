@@ -18,7 +18,7 @@ using TilePair = std::pair<TileMap::TILE_TYPE, TileMap::Tile>;
 
 
 // ============================================================
-//  Constructor � CSV-based map
+//  Constructor for CSV-based map
 //  Reads a CSV file where each cell is an integer tile type.
 //  offset shifts the whole map in world space.
 //  tileX / tileY are the pixel dimensions of a single tile.
@@ -236,9 +236,7 @@ AEVec2 TileMap::GetTilePosition(unsigned rowInd, unsigned colInd) const
 }
 
 // Converts a world-space position back to a (col, row) float index.
-// The returned x = column index, y = row index.
-// Fractional values indicate a position inside a tile � callers that
-// want the actual tile should cast to int.
+// x = column index, y = row index.
 AEVec2 TileMap::GetTileIndFromPos(AEVec2 pos) const
 {
     AEVec2 p{ pos + mapSize * 0.5f - posOffset }; // shift into local tile space
@@ -248,8 +246,6 @@ AEVec2 TileMap::GetTileIndFromPos(AEVec2 pos) const
     };
     return out;
 }
-
-
 
 // Given a world position, returns the tile sitting there.
 // Returns nullptr if the position is outside the map.
@@ -274,6 +270,12 @@ std::pair<TileMap::Tile const*, AEVec2> TileMap::QueryTileAndInd(AEVec2 pos) con
 	AEVec2 inds{ GetTileIndFromPos(pos) };
 	//If Index out of bounds, tile should be nullptr
 	return std::make_pair((inds.x < 0 || inds.x >= cols || inds.y < 0 || inds.y >= rows) ? nullptr : &tiles[(unsigned)inds.y][(unsigned)inds.x], inds);
+}
+
+AEVec2 TileMap::SnapPosToTile(AEVec2 pos) const
+{
+    AEVec2 inds{ GetTileIndFromPos(pos) };
+    return GetTilePosition((unsigned)inds.y, (unsigned)inds.x);
 }
 
 // Swaps the tile at (row, col) to a new type.

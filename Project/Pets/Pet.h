@@ -7,6 +7,8 @@
 #include "PetConsts.h"
 #include "../Actor/StatusEffect.h"
 #include <initializer_list>
+#include "../GameObjects/Pathfinder.h"
+class TileMap;
 
 /*
 	Base class for a Pet.
@@ -19,7 +21,7 @@
 	  - Read from JSON
 	  - Multipliers and passive mods are scaled by rarity
 */
-class Pet : public GameObject
+class Pet : public GameObject, public Pathfinder
 {
 public:
 	//If possible, casts the pet's skill.
@@ -30,6 +32,8 @@ public:
 	virtual void Setup(Player& player);
 
 	GameObject* Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, Collision::LAYER _isInLayer) override;
+
+	void SetTilemap(TileMap const& map);
 
 	//Update pet logic (like skill cooldowns)
 	void Update(double dt) override;
@@ -77,5 +81,6 @@ protected:
 	AEVec2 targetPos{};
 	std::queue<AEVec2> path{};
 	bool followPlayer{ true };
+	TileMap const* tilemap;
 };
 #endif // !_PETS_H_

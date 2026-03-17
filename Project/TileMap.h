@@ -15,9 +15,9 @@ public:
 		TILE_DOOR,        // 2: The Exit Door (Room 6)
 		TILE_ENEMY,       // 3: Enemy Spawn Point
 		TILE_CHEST,       // 4: Loot Chest
-		TILE_CONNECTOR,	 //  5: Passege 
+		TILE_CONNECTOR,	 //  5: Passage 
 
-		TILE_NUM, // Total: 6
+		TILE_NUM, // Last, num of tile types
 	};
 
 	//A tile on the map
@@ -56,6 +56,8 @@ public:
 	//First: Pointer to the tile at the pos
 	//Second: Index of the tile
 	std::pair<Tile const*, AEVec2> QueryTileAndInd(AEVec2 pos) const;
+	//Snaps a world pos to the center of the tile it is in.
+	AEVec2 SnapPosToTile(AEVec2 pos) const;
 
 	AEVec2 GetTileSize() const { return tileSize; }
 	//Get Cols(first) and Rows(second) of the map

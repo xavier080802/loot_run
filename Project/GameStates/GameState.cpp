@@ -276,7 +276,7 @@ void GameState::InitState()
         collideMask,
         Collision::LAYER::PLAYER
     );
-    PetManager::GetInstance()->InitPetForGame();
+    PetManager::GetInstance()->InitPetForGame(*map);
 
     ActorStats base{};
     base.maxHP = 100.0f;

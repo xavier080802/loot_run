@@ -1,6 +1,7 @@
 #include "Pet.h"
 #include "PetManager.h"
 #include "../Helpers/Vec2Utils.h"
+#include "../TileMap.h"
 #include <iostream>
 
 namespace {
@@ -10,6 +11,8 @@ namespace {
 	const float petMoveSpeed{ 300.f };
 	//Distance from a point to consider it as "at" that point
 	const float pointTolerance{ 10 };
+	//Max number of path nodes till pet is considered too far
+	const unsigned maxPathLength{ 10 };
 }
 
 void Pet::CastSkill(const Pets::SkillCastData& skillData)
@@ -27,6 +30,11 @@ GameObject* Pet::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape,
 	return GameObject::Init(_pos, _scale, _z, _meshShape, _colShape, _colSize, _collideWithLayers, _isInLayer);
 }
 
+void Pet::SetTilemap(TileMap const& map)
+{
+	tilemap = &map;
+}
+
 void Pet::Update(double dt) {
 	GameObject::Update(dt);
 	if (cooldownTimer > 0) {
@@ -35,36 +43,30 @@ void Pet::Update(double dt) {
 
 	//------------------Movement-------------------
 
-	//If not following player, complete path.
-	if (!followPlayer) {
-		targetPos = path.empty() ? pos : path.front();
-		MoveToTarget(dt);
-		return;
-	}
-
 	GameObject const& player = PetManager::GetInstance()->GetPlayer();
-
 	AEVec2 playerPos = player.GetPos();
-	bool isNearPlayer = AEVec2SquareDistance(&pos, &playerPos) <= playerStopDist * playerStopDist;
-	//Not near player and last path point is sufficiently far
-	if (!isNearPlayer && AEVec2SquareDistance(&playerPos, path.empty() ? &pos : &path.back()) >= pointTolerance * pointTolerance) {
-		//Record player path
-		path.push(playerPos);
-	}
-
-	//Follow path to player
-	if (!isNearPlayer) {
-		//Set targetPos to the next path point.
-		targetPos = path.empty() ? playerPos : path.front();
-		MoveToTarget(dt);
-	}
-	else if (!path.empty()){
-		//Near player again. Clear path to prevent funny movement when player leaves vicinity.
-		size_t temp{ path.size() }; //Dont put path.size() into loop.
-		for (unsigned i = 0; i < temp; i++) {
-			path.pop();
+	float sqrDistFromPlayer{ AEVec2SquareDistance(&pos, &playerPos) };
+	//Start pathfinding
+	bool isNearPlayer = sqrDistFromPlayer <= playerStopDist * playerStopDist;
+	UpdatePathfinding((float)dt);
+	if (!isNearPlayer && tilemap) {
+		DoPathFinding(*tilemap, pos, playerPos);
+		std::deque<AEVec2> const& path{ GetFoundPath() };
+		//Pet too far from player (in terms of path nodes) - TP to player
+		if (path.size() >= maxPathLength) {
+			SetPos(playerPos);
+			ResetPathfinder();
+		}
+		else {
+			//Follow the path created by the pathfinder
+			targetPos = path.empty() ? pos : path.front();
+			MoveToTarget(dt);
 		}
 	}
+	else if (isNearPlayer) { //No need to pathfind
+		ResetPathfinder(); //Clear path
+	}
+	DrawPath();
 
 	SkillUpdate((float)dt);
 }
@@ -134,7 +136,8 @@ void Pet::MoveToTarget(double dt)
 	pos.y += stepNorm.y * petMoveSpeed * static_cast<float>(dt);
 
 	//If near targetPos (reached path point), pop path point
-	if (!path.empty() && AEVec2SquareDistance(&pos, &targetPos) <= pointTolerance) path.pop();
+	//if (!path.empty() && AEVec2SquareDistance(&pos, &targetPos) <= pointTolerance) path.pop();
+	if (AEVec2SquareDistance(&pos, &targetPos) <= pointTolerance) PopPath();
 }
 
 void Pet::Setup(Player&)

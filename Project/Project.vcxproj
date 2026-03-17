@@ -127,6 +127,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="GameObjects\GameObject.cpp" />
     <ClCompile Include="GameObjects\GameObjectManager.cpp" />
     <ClCompile Include="GameObjects\LootChest.cpp" />
+    <ClCompile Include="GameObjects\Pathfinder.cpp" />
     <ClCompile Include="GameObjects\Projectile.cpp" />
     <ClCompile Include="GameStates\GameState.cpp" />
     <ClCompile Include="GameStateManager.cpp" />
@@ -202,6 +203,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="GameObjects\GameObjectManager.h" />
     <ClInclude Include="GameObjects\GOTypeList.h" />
     <ClInclude Include="GameObjects\LootChest.h" />
+    <ClInclude Include="GameObjects\Pathfinder.h" />
     <ClInclude Include="GameObjects\Projectile.h" />
     <ClInclude Include="GameStates\GameState.h" />
     <ClInclude Include="GameStateManager.h" />
