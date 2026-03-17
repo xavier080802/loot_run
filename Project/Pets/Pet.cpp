@@ -116,10 +116,10 @@ void Pet::DoMovement(double dt)
 	//Start pathfinding
 	bool isNearPlayer = sqrDistFromPlayer <= playerStopDist * playerStopDist;
 	if (!isNearPlayer && tilemap) {
-		DoPathFinding(*tilemap, pos, playerPos);
+		Pathfinder::RESULT res = DoPathFinding(*tilemap, pos, playerPos);
 		std::deque<AEVec2> const& path{ GetFoundPath() };
 		//Pet too far from player (in terms of path nodes) - TP to player
-		if (path.size() >= maxPathLength) {
+		if (res == Pathfinder::RESULT::FAILED || path.size() >= maxPathLength) {
 			SetPos(playerPos);
 			ResetPathfinder();
 		}
@@ -129,10 +129,9 @@ void Pet::DoMovement(double dt)
 			MoveToTarget(dt);
 		}
 	}
-	else if (isNearPlayer) { //No need to pathfind
+	else { //No need to pathfind
 		ResetPathfinder(); //Clear path
 	}
-	//DrawPath();
 }
 
 void Pet::MoveToTarget(double dt)

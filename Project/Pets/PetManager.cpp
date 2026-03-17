@@ -180,6 +180,8 @@ void PetManager::DrawUI()
 		ShowPetTooltip();
 		showTooltip = false;
 	}
+
+	//equippedPet->DrawPath();
 }
 
 void PetManager::ShowPetTooltip()

@@ -18,6 +18,11 @@
 class Pathfinder
 {
 public:
+	enum class RESULT {
+		FAILED,
+		SUCCESS,
+		COOLDOWN,
+	};
 	struct Node {
 		AEVec2 pos;
 		unsigned id, parent, cost;
@@ -41,7 +46,7 @@ protected:
 	//Performs pathfinding.
 	//Has a timer built-in for optimization. Call ResetPathfinder if calling this out of update.
 	//Returns whether a path was made or not (No path found, or still on cooldown)
-	bool DoPathFinding(TileMap const& map, AEVec2 const& start, AEVec2 const& dest);
+	RESULT DoPathFinding(TileMap const& map, AEVec2 const& start, AEVec2 const& dest);
 	//Remove the first node in the path (if possible)
 	void PopPath();
 	//Add new pos to the path (pushed to back)
@@ -49,23 +54,22 @@ protected:
 
 private:
 	//Number of directions to look at for neighbours
-	enum {DIRS=4};
+	enum {DIRS=8};
 	//Array of tile index offsets for the neighbours.
-	//Note: Diagonal tiles can cause clipping through walls, currently no check for that so removing.
 	const std::array<AEVec2, DIRS> Directions{
-		//AEVec2{-1, 1}, //Top-left
+		AEVec2{-1, 1}, //Top-left
 		AEVec2{0,1}, //Top
-		//AEVec2{1, 1}, //Top-right
+		AEVec2{1, 1}, //Top-right
 		AEVec2{-1,0}, //Left
 		AEVec2{1,0}, //Right
-		//AEVec2{-1, -1},//Bottom-left
+		AEVec2{-1, -1},//Bottom-left
 		AEVec2{0,-1}, //Bottom
-		//AEVec2{1, -1}, //Bottom-right
+		AEVec2{1, -1}, //Bottom-right
 	};
 
 	//Return array of nodes surrounding the curr node
-	//Does not check if the neighbour is valid.
-	std::array<AEVec2, DIRS> FindNeighbourNodes(Node const& curr, TileMap const& map) const;
+	//Invalid neighbours are not added
+	std::vector<AEVec2> FindNeighbourNodes(Node const& curr, TileMap const& map) const;
 	//True if the pos exists in the closed list.
 	//Pos is tile pos (snapped to center)
 	bool FindInClosedList(AEVec2 const& pos);
