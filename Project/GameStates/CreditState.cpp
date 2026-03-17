@@ -10,7 +10,9 @@
 #include <iostream>
 
 namespace {
-    AEGfxVertexList* squareMesh = nullptr;
+    AEGfxVertexList* squareMesh   = nullptr;
+    AEGfxTexture*    texClosed    = nullptr;
+    AEGfxTexture*    texOpen      = nullptr;
     s8 Font = -1;
 
     constexpr float DEFAULT_W = 1600.0f;
@@ -21,29 +23,33 @@ namespace {
     AEAudioGroup audioGroup;
     AEAudio clickSound;
 
-    // --- State machine ---
-    // WAITING  : black screen, flashing "Touch to reveal"
-    // UNROLLING: scroll grows downward from centre
-    // SCROLLING: credits roll upward inside the scroll
     enum ScrollState { STATE_WAITING, STATE_UNROLLING, STATE_SCROLLING };
     ScrollState state = STATE_WAITING;
 
-    // --- Scroll geometry ---
-    float scrollBodyHeight = 0.0f;
-    const float SCROLL_FULL_HEIGHT = 680.0f;
+    float scrollBodyHeight   = 0.0f;
+    const float SCROLL_FULL_HEIGHT  = 680.0f;
     const float SCROLL_UNROLL_SPEED = 10.0f;
-    const float SCROLL_W = 580.0f;
-    const float CAP_H = 28.0f; // rolled curl height at top and bottom
+    const float SCROLL_W            = 580.0f;
 
-    // --- Credits text ---
-    float yPos_credits = 0.0f;
-    const float LINE_H = 58.0f;
+    // Sprite is 35x75px.
+    // SPRITE_CAP_TOP  — pixels from top of sprite to where parchment starts
+    // SPRITE_CAP_BOT  — pixels from bottom of sprite to where parchment ends
+    // Only edit these two numbers to move the clip boundaries independently.
+    const float SPRITE_H        = 75.0f;
+    const float SPRITE_CAP_TOP  = 14.0f;
+    const float SPRITE_CAP_BOT  = 14.0f;
+    // Extra world-unit padding pulled inward from the bottom clip — increase to
+    // make text disappear higher, decrease to let it go lower.
+    const float BOTTOM_PADDING  = 50.0f;
+
+    const float CAP_H = SCROLL_FULL_HEIGHT * (SPRITE_CAP_TOP / SPRITE_H);
+
+    float yPos_credits   = 0.0f;
+    const float LINE_H   = 58.0f;
     const float SCROLL_SPEED = 1.0f;
 
-    // Flash timer for "Touch to reveal"
     float flashTimer = 0.0f;
 
-    // Converts default-resolution coords to world space, matching MainMenuState
     AEVec2 DefaultToWorld(float x, float y)
     {
         return {
@@ -53,50 +59,49 @@ namespace {
     }
 
     const char* credits[] = {
-        "Team STD::Null",
+        "(C) MetaDigger",
+        "(C) Kenney Assets",
+        "Copyrights for software, tools and libraries",
         " ",
-        "Team Members:",
+        "Mandy WONG   Johnny DEEK",
+        "TAN Chek Ming   Prasanna Kumar GHALI",
+        "Claude COMAIR   CHU Jason Yeu Tat   Michael GATS",
+        "EXECUTIVES",
         " ",
-        "TEAM LEAD and PROGRAMMER",
-        "Xavier Lim",
+        "Claude COMAIR",
+        "PRESIDENT",
         " ",
-        "TECH LEAD and PROGRAMMER",
-        "Edna",
+        "DigiPen Institute of Technology Singapore",
+        "Created at",
         " ",
-        "GAMEPLAY LEAD and PROGRAMMER",
-        "Hong Teck",
+        "Placeholder",
+        "SPECIAL THANKS TO",
         " ",
-        "UI LEAD and PROGRAMMER",
-        "Joon Hin",
+        "DR Soroor",
+        "MR Tommy Tan",
+        "MR Gerald Wong",
+        "Instructors",
         " ",
         "Faculty and Advisors",
         " ",
-        "Instructors",
-        "MR Gerald Wong",
-        "MR Tommy Tan",
-        "DR Soroor",
+        "Joon Hin",
+        "UI LEAD and PROGRAMMER",
         " ",
-        "SPECIAL THANKS TO",
-        "Placeholder",
+        "Hong Teck",
+        "GAMEPLAY LEAD and PROGRAMMER",
         " ",
-        "Created at",
-        "DigiPen Institute of Technology Singapore",
+        "Edna",
+        "TECH LEAD and PROGRAMMER",
         " ",
-        "PRESIDENT",
-        "Claude COMAIR",
+        "Xavier Lim",
+        "TEAM LEAD and PROGRAMMER",
         " ",
-        "EXECUTIVES",
-        "Claude COMAIR   CHU Jason Yeu Tat   Michael GATS",
-        "TAN Chek Ming   Prasanna Kumar GHALI",
-        "Mandy WONG   Johnny DEEK",
+        "Team Members:",
         " ",
-        "Copyrights for software, tools and libraries",
-        "(C) Kenney Assets",
-        "(C) MetaDigger",
+        "Team STD::Null",
         nullptr
     };
 
-    // Returns true if the line is all caps — treat as a section header
     bool IsHeader(const char* line)
     {
         if (!line || line[0] == ' ' || line[0] == '\0') return false;
@@ -105,74 +110,34 @@ namespace {
         return true;
     }
 
-    // Draws the parchment scroll using only AEGfx — no images needed.
-    // cx/cy = world-space centre of the scroll, bodyH = current body height.
     void DrawScroll(float cx, float cy, float bodyH)
     {
         if (bodyH <= 0.0f) return;
+        AEVec2 pos  = { cx, cy };
+        AEVec2 size = { SCROLL_W * scale, bodyH };
+        DrawTintedMesh(GetTransformMtx(pos, 0.0f, size),
+            squareMesh, texOpen, { 255, 255, 255, 255 }, 255);
+    }
 
-        float left = cx - SCROLL_W * 0.5f * scale;
-        float bodyTop = cy - bodyH * 0.5f;
-        float scaledW = SCROLL_W * scale;
-
-        AEMtx33 mtx;
-        AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-        AEGfxTextureSet(nullptr, 0, 0);
-
-        // --- Parchment body (warm cream) ---
-        GetTransformMtx(mtx, { cx, cy }, 0.0f, { scaledW, bodyH });
-        AEGfxSetTransform(mtx.m);
-        AEGfxSetColorToMultiply(0.94f, 0.86f, 0.67f, 1.0f);
-        AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
-
-        // --- Left edge shadow strip ---
-        float stripW = 18.0f * scale;
-        GetTransformMtx(mtx, { left + stripW * 0.5f, cy }, 0.0f, { stripW, bodyH });
-        AEGfxSetTransform(mtx.m);
-        AEGfxSetColorToMultiply(0.70f, 0.61f, 0.39f, 0.47f);
-        AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
-
-        // --- Right edge shadow strip ---
-        GetTransformMtx(mtx, { left + scaledW - stripW * 0.5f, cy }, 0.0f, { stripW, bodyH });
-        AEGfxSetTransform(mtx.m);
-        AEGfxSetColorToMultiply(0.70f, 0.61f, 0.39f, 0.47f);
-        AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
-
-        // --- Top curl (dark ellipse + lighter inner) ---
-        float capScaledH = CAP_H * scale;
-        // outer curl
-        GetTransformMtx(mtx, { cx, bodyTop }, 0.0f, { scaledW, capScaledH });
-        AEGfxSetTransform(mtx.m);
-        AEGfxSetColorToMultiply(0.63f, 0.47f, 0.24f, 1.0f);
-        AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
-        // inner highlight
-        GetTransformMtx(mtx, { cx, bodyTop }, 0.0f, { scaledW * 0.88f, capScaledH * 0.7f });
-        AEGfxSetTransform(mtx.m);
-        AEGfxSetColorToMultiply(0.78f, 0.63f, 0.35f, 1.0f);
-        AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
-
-        // --- Bottom curl — only once scroll is tall enough ---
-        if (bodyH > CAP_H * 2.0f * scale) {
-            float bottomY = bodyTop + bodyH;
-            GetTransformMtx(mtx, { cx, bottomY }, 0.0f, { scaledW, capScaledH });
-            AEGfxSetTransform(mtx.m);
-            AEGfxSetColorToMultiply(0.63f, 0.47f, 0.24f, 1.0f);
-            AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
-
-            GetTransformMtx(mtx, { cx, bottomY }, 0.0f, { scaledW * 0.88f, capScaledH * 0.7f });
-            AEGfxSetTransform(mtx.m);
-            AEGfxSetColorToMultiply(0.78f, 0.63f, 0.35f, 1.0f);
-            AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
-        }
+    void DrawScrollClosed(float cx, float cy)
+    {
+        AEVec2 pos  = { cx, cy };
+        AEVec2 size = { SCROLL_W * scale, (SCROLL_W * 0.5f) * scale };
+        DrawTintedMesh(GetTransformMtx(pos, 0.0f, size),
+            squareMesh, texClosed, { 255, 255, 255, 255 }, 255);
     }
 }
 
 // =============================================================
 void CreditState::LoadState()
 {
-    // =============================================================
+// =============================================================
     squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
-    Font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 28);
+    Font       = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 28);
+    texClosed  = RenderingManager::GetInstance()->LoadTexture("Assets/scroll_closed.png");
+    texOpen    = RenderingManager::GetInstance()->LoadTexture("Assets/scroll_open.png");
+    std::cout << "[CreditState] scroll_closed: " << (texClosed ? "OK" : "FAILED") << "\n";
+    std::cout << "[CreditState] scroll_open:   " << (texOpen   ? "OK" : "FAILED") << "\n";
     audioGroup = AEAudioCreateGroup();
     clickSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17766.wav");
 }
@@ -180,22 +145,22 @@ void CreditState::LoadState()
 // =============================================================
 void CreditState::InitState()
 {
-    // =============================================================
-    winW = static_cast<float>(AEGfxGetWinMaxX());
-    winH = static_cast<float>(AEGfxGetWinMaxY());
+// =============================================================
+    winW  = static_cast<float>(AEGfxGetWinMaxX());
+    winH  = static_cast<float>(AEGfxGetWinMaxY());
     scale = (winW * 2.0f / DEFAULT_W) < (winH * 2.0f / DEFAULT_H)
-        ? (winW * 2.0f / DEFAULT_W) : (winH * 2.0f / DEFAULT_H);
+          ? (winW * 2.0f / DEFAULT_W) : (winH * 2.0f / DEFAULT_H);
 
-    state = STATE_WAITING;
+    state            = STATE_WAITING;
     scrollBodyHeight = 0.0f;
-    flashTimer = 0.0f;
-    yPos_credits = 0.0f;
+    flashTimer       = 0.0f;
+    yPos_credits     = 0.0f;
 }
 
 // =============================================================
 void CreditState::Update(double dt)
 {
-    // =============================================================
+// =============================================================
     (void)dt;
 
     if (AEInputCheckTriggered(AEVK_ESCAPE)) {
@@ -203,35 +168,30 @@ void CreditState::Update(double dt)
         return;
     }
 
-    // --- STATE: WAITING ---
     if (state == STATE_WAITING) {
         flashTimer += static_cast<float>(dt);
         if (AEInputCheckTriggered(AEVK_LBUTTON) ||
-            AEInputCheckTriggered(AEVK_SPACE) ||
+            AEInputCheckTriggered(AEVK_SPACE)   ||
             AEInputCheckTriggered(AEVK_RETURN)) {
             AEAudioPlay(clickSound, audioGroup, 0.6f, 0.6f, 0);
-            state = STATE_UNROLLING;
+            state            = STATE_UNROLLING;
             scrollBodyHeight = 0.0f;
         }
         return;
     }
 
-    // --- STATE: UNROLLING ---
     if (state == STATE_UNROLLING) {
         scrollBodyHeight += SCROLL_UNROLL_SPEED * scale;
         float fullH = SCROLL_FULL_HEIGHT * scale;
         if (scrollBodyHeight >= fullH) {
             scrollBodyHeight = fullH;
-            state = STATE_SCROLLING;
-            // Start credits just below the bottom of the scroll interior
-            // so they scroll upward into view from the bottom
-            float cy = 0.0f; // world centre
-            yPos_credits = cy + fullH * 0.5f - CAP_H * scale;
+            state            = STATE_SCROLLING;
+            float cy         = 0.0f;
+            yPos_credits     = cy + fullH * 0.5f - CAP_H * scale;
         }
         return;
     }
 
-    // --- STATE: SCROLLING ---
     if (state == STATE_SCROLLING) {
         yPos_credits -= SCROLL_SPEED * scale;
     }
@@ -240,90 +200,71 @@ void CreditState::Update(double dt)
 // =============================================================
 void CreditState::Draw()
 {
-    // =============================================================
-    AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f); // black
+// =============================================================
+    AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 
-    float cx = 0.0f; // world centre x
-    float cy = 0.0f; // world centre y
+    float cx = 0.0f;
+    float cy = 0.0f;
 
-    // -------------------------------------------------------
-    // STATE: WAITING — flash "Touch to reveal"
-    // -------------------------------------------------------
     if (state == STATE_WAITING) {
+        DrawScrollClosed(cx, cy);
         AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
         if ((int)(flashTimer / 0.6f) % 2 == 0) {
-            DrawAEText(Font, "Touch to reveal", { cx, cy }, scale,
+            AEVec2 promptPos = { cx, cy - SCROLL_W * 0.3f * scale };
+            DrawAEText(Font, "Touch to reveal", promptPos, scale,
                 CreateColor(200, 170, 80, 255), TEXT_MIDDLE);
         }
-        // ESC hint bottom left
         AEVec2 hintPos = DefaultToWorld(80.0f, DEFAULT_H - 40.0f);
         DrawAEText(Font, "[ESC] Back", hintPos, scale * 0.75f,
             CreateColor(140, 140, 140, 255), TEXT_MIDDLE);
         return;
     }
 
-    // -------------------------------------------------------
-    // STATE: UNROLLING — draw scroll growing downward
-    // -------------------------------------------------------
     if (state == STATE_UNROLLING) {
         DrawScroll(cx, cy, scrollBodyHeight);
-        AEVec2 hintPos = DefaultToWorld(80.0f, DEFAULT_H - 40.0f);
         AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        AEVec2 hintPos = DefaultToWorld(80.0f, DEFAULT_H - 40.0f);
         DrawAEText(Font, "[ESC] Back", hintPos, scale * 0.75f,
             CreateColor(140, 140, 140, 255), TEXT_MIDDLE);
         return;
     }
 
-    // -------------------------------------------------------
-    // STATE: SCROLLING — draw scroll + clipped rolling text
-    // -------------------------------------------------------
-    float fullH = SCROLL_FULL_HEIGHT * scale;
+    float fullH   = SCROLL_FULL_HEIGHT * scale;
     float scaledW = SCROLL_W * scale;
 
     DrawScroll(cx, cy, fullH);
 
-    // Clip region = scroll interior, inset slightly from the edge shadows
-    float clipInset = 20.0f * scale;
-    float clipX = (winW * 0.5f) - scaledW * 0.5f + clipInset;
-    float clipY = (winH * 0.5f) - fullH * 0.5f + CAP_H * scale;
-    float clipW = scaledW - clipInset * 2.0f;
-    float clipH = fullH - CAP_H * scale * 2.0f;
-
-    // AE doesn't have a built-in clip rect — we skip drawing lines outside the window manually
-    float clipWorldTop = cy - fullH * 0.5f + CAP_H * scale;
-    float clipWorldBottom = cy + fullH * 0.5f - CAP_H * scale;
+    // Top clip — derived from SPRITE_CAP_TOP, do not change this line
+    float clipWorldTop    = cy - fullH * 0.5f + SCROLL_FULL_HEIGHT * (SPRITE_CAP_TOP / SPRITE_H) * scale;
+    // Bottom clip — only change BOTTOM_PADDING (at the top of the file) to move this up or down
+    float clipWorldBottom = cy + fullH * 0.5f - SCROLL_FULL_HEIGHT * (SPRITE_CAP_BOT / SPRITE_H) * scale - BOTTOM_PADDING;
 
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
 
     int totalLines = 0;
     for (int i = 0; credits[i] != nullptr; ++i) totalLines++;
 
-    for (int i = 0; credits[i] != nullptr; ++i) {
-        float y = yPos_credits + i * LINE_H * scale;
+    for (int i = totalLines - 1; i >= 0; --i) {
+        int   reversedIdx = (totalLines - 1) - i;
+        float y           = yPos_credits + reversedIdx * LINE_H * scale;
 
-        // skip lines outside the visible scroll interior
         if (y < clipWorldTop)    continue;
         if (y > clipWorldBottom) continue;
 
         if (IsHeader(credits[i])) {
-            // Dark gold — readable on cream parchment
             DrawAEText(Font, credits[i], { cx, y }, scale * 0.85f,
                 CreateColor(160, 110, 10, 255), TEXT_MIDDLE);
         }
         else {
-            // Dark brown for names
             DrawAEText(Font, credits[i], { cx, y }, scale * 0.7f,
                 CreateColor(40, 25, 10, 255), TEXT_MIDDLE);
         }
     }
 
-    // Loop back when all lines scroll past the top of the scroll
-    // When the last line scrolls above the top edge, loop back from the bottom
     if (yPos_credits + totalLines * LINE_H * scale < clipWorldTop) {
         yPos_credits = clipWorldBottom;
     }
 
-    // ESC hint
     AEVec2 hintPos = DefaultToWorld(80.0f, DEFAULT_H - 40.0f);
     DrawAEText(Font, "[ESC] Back", hintPos, scale * 0.75f,
         CreateColor(140, 140, 140, 255), TEXT_MIDDLE);
@@ -332,13 +273,13 @@ void CreditState::Draw()
 // =============================================================
 void CreditState::ExitState()
 {
-    // =============================================================
+// =============================================================
 }
 
 // =============================================================
 void CreditState::UnloadState()
 {
-    // =============================================================
+// =============================================================
     if (Font >= 0) AEGfxDestroyFont(Font);
     AEAudioUnloadAudio(clickSound);
     AEAudioUnloadAudioGroup(audioGroup);
