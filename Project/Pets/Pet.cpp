@@ -41,32 +41,8 @@ void Pet::Update(double dt) {
 		cooldownTimer -= static_cast<float>(dt);
 	}
 
-	//------------------Movement-------------------
-
-	GameObject const& player = PetManager::GetInstance()->GetPlayer();
-	AEVec2 playerPos = player.GetPos();
-	float sqrDistFromPlayer{ AEVec2SquareDistance(&pos, &playerPos) };
-	//Start pathfinding
-	bool isNearPlayer = sqrDistFromPlayer <= playerStopDist * playerStopDist;
-	UpdatePathfinding((float)dt);
-	if (!isNearPlayer && tilemap) {
-		DoPathFinding(*tilemap, pos, playerPos);
-		std::deque<AEVec2> const& path{ GetFoundPath() };
-		//Pet too far from player (in terms of path nodes) - TP to player
-		if (path.size() >= maxPathLength) {
-			SetPos(playerPos);
-			ResetPathfinder();
-		}
-		else {
-			//Follow the path created by the pathfinder
-			targetPos = path.empty() ? pos : path.front();
-			MoveToTarget(dt);
-		}
-	}
-	else if (isNearPlayer) { //No need to pathfind
-		ResetPathfinder(); //Clear path
-	}
-	//DrawPath();
+	//Handle pet pathfinding movement
+	DoMovement(dt);
 
 	SkillUpdate((float)dt);
 }
@@ -123,6 +99,34 @@ void Pet::Reset()
 	targetPos = {};
 	cooldownTimer = 0.f;
 	followPlayer = true;
+}
+
+void Pet::DoMovement(double dt)
+{
+	GameObject const& player = PetManager::GetInstance()->GetPlayer();
+	AEVec2 playerPos = player.GetPos();
+	float sqrDistFromPlayer{ AEVec2SquareDistance(&pos, &playerPos) };
+	//Start pathfinding
+	bool isNearPlayer = sqrDistFromPlayer <= playerStopDist * playerStopDist;
+	UpdatePathfinding((float)dt);
+	if (!isNearPlayer && tilemap) {
+		DoPathFinding(*tilemap, pos, playerPos);
+		std::deque<AEVec2> const& path{ GetFoundPath() };
+		//Pet too far from player (in terms of path nodes) - TP to player
+		if (path.size() >= maxPathLength) {
+			SetPos(playerPos);
+			ResetPathfinder();
+		}
+		else {
+			//Follow the path created by the pathfinder
+			targetPos = path.empty() ? pos : path.front();
+			MoveToTarget(dt);
+		}
+	}
+	else if (isNearPlayer) { //No need to pathfind
+		ResetPathfinder(); //Clear path
+	}
+	//DrawPath();
 }
 
 void Pet::MoveToTarget(double dt)

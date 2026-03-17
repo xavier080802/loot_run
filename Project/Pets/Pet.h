@@ -62,6 +62,8 @@ public:
 
 	bool isSet{ false };
 protected:
+	void DoMovement(double dt);
+
 	void MoveToTarget(double dt);
 	
 	//To be overrided. Get GO_TYPE of this pet.
