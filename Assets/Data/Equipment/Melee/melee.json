@@ -100,5 +100,22 @@
         "stats": {
             "attack": 150.0
         }
+    },
+    { //Unique weapon for Lycan pet only.
+        "id": 7,
+        "name": "Midnight Scourge",
+        "sellPrice": 0,
+        "texturePath": "",
+        "slot": "Weapon",
+        "weaponType": "Sword",
+        "attackType": "SwingArc",
+        "isRanged": false,
+        "element": "BLOOD",
+        "knockback": 150.0,
+        "attackSize": 12.5,
+        "rarity": "Unique",
+        "stats": {
+            "attack": 0.0
+        }
     }
 ]

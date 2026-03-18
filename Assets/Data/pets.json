@@ -138,16 +138,24 @@
                 }
             ]
         },
-      {
-        "id": 3,
-        "name": "Lycan",
-        "passive": [],
-        "multipliers": [],
-        "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
-        "skillCooldown": 8,
-        "skillDesc": "Placeholder Wolf Skill",
-        "texture": "Assets/lycan_default.png"
-      },
+        {
+            "id": 3,
+            "name": "Lycan",
+            "passive": [
+                {
+                    "value": 10,
+                    "mathType": "mult",
+                    "stat": "att"
+                }
+            ],
+            "multipliers": [],
+            "rarityScaling": [ 1, 1.25, 1.5, 1.75, 2, 2.5 ],
+            "skillCooldown": 5,
+            "skillDesc": "Placeholder Wolf Skill",
+            "extra": {
+                "attackCooldown": "1.0"
+            }
+        },
         {
             "id": 4,
             "name": "Scylla",
@@ -230,10 +238,42 @@
             "id": 6,
             "name": "Dragon",
             "passive": [],
-            "multipliers": [],
-            "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
-            "skillCooldown": 12,
-            "skillDesc": "Placeholder Dragon Skill"
+            "multipliers": [ //0 to 3required
+                { // 0 - turret dmg
+                    "value": 20,
+                    "mathType": "mult",
+                    "stat": "att"
+                },
+                { //1 - turret dmg
+                    "value": 2,
+                    "mathType": "flat",
+                    "stat": "att"
+                },
+                { //2 - skill dmg
+                    "value": 50,
+                    "mathType": "mult",
+                    "stat": "att"
+                },
+                { //3 - skill dmg
+                    "value": 5,
+                    "mathType": "flat",
+                    "stat": "att"
+                }
+            ],
+            "rarityScaling": [ 1, 1, 1, 1, 1, 1 ],
+            "skillCooldown": 8,
+            "skillDesc": "Passively fires piercing shots at nearby enemies.\nCast skill to knock back enemies in range.",
+            "dmgTypes": [ "mag" ],
+            "extra": {
+                "knockback": "600",
+                "skillRange": "300", //Range of the skill AoE
+                "attackCooldown": "2.5", //Turret time-between-attacks
+                "turretRange": "650", //Range where enemies are selectable
+                "projSpd": "400",
+                "projSize": "50",
+                "projLife": "3",
+                "projCol": "255 128 0 150"
+            }
         }
     ]
 }

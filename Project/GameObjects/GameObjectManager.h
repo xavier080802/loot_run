@@ -68,6 +68,9 @@ public:
 	//Finds the first gameobject hovered by the mouse (world space)
 	//Nullptr if nothing is found
 	GameObject* QueryOnMouse();
+	//Find the closest GO of the given type within range
+	//Note: currently does not take into account the size of the other GOs
+	GameObject* FindClosestGO(AEVec2 pos, float range, GO_TYPE type);
 
 	//TODO: redo wtih copy swap idiom, and proper copy ctor
 	GameObject* Clone(GameObject* const original);

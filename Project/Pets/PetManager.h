@@ -18,6 +18,8 @@ public:
 	void Init();
 	//When game state inits, call to reset pet data
 	void InitPetForGame(TileMap const& tilemap);
+	//Call when changing tilemap
+	void SetTilemap(TileMap const& tilemap);
 	//Place pet somewhere in world
 	void PlacePet(AEVec2 const& pos);
 	void LinkPlayer(Player* playerGO);

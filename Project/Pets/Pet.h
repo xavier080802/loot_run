@@ -62,7 +62,7 @@ public:
 
 	bool isSet{ false };
 protected:
-	void DoMovement(double dt);
+	virtual void DoMovement(double dt);
 
 	void MoveToTarget(double dt);
 	

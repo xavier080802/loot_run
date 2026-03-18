@@ -299,6 +299,9 @@
     <ClCompile Include="Pets\Pet_3.cpp">
       <Filter>Source Files\Pets\Derived</Filter>
     </ClCompile>
+    <ClCompile Include="Pets\Pet_6.cpp">
+      <Filter>Source Files\Pets\Derived</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -541,6 +544,9 @@
       <Filter>Header Files\GameObjects</Filter>
     </ClInclude>
     <ClInclude Include="Pets\Pet_3.h">
+      <Filter>Header Files\Pets\Derived</Filter>
+    </ClInclude>
+    <ClInclude Include="Pets\Pet_6.h">
       <Filter>Header Files\Pets\Derived</Filter>
     </ClInclude>
   </ItemGroup>

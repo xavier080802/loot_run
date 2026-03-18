@@ -105,6 +105,12 @@ void PetManager::InitPetForGame(TileMap const& tilemap)
 	extraDesc = s.str();
 }
 
+void PetManager::SetTilemap(TileMap const& tilemap) {
+	if (equippedPet) {
+		equippedPet->SetTilemap(tilemap);
+	}
+}
+
 void PetManager::LinkPlayer(Player* playerGO)
 {
 	player = playerGO;
