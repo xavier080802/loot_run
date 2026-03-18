@@ -334,9 +334,12 @@ void GameState::LoadState() {
 	}
 }
 
+// =============================================================
 void GameState::InitState()
 {
-	map = new TileMap(mapSelected, { 0,0 }, 115.f, 115.f);
+    // =============================================================
+    InitTutorial(currentLevel);
+    map = new TileMap(mapSelected, { 0,0 }, 115.f, 115.f);
 
     float    procTileSize = 115.f;
     unsigned procRows = 50, procCols = 50;
@@ -347,16 +350,6 @@ void GameState::InitState()
 	unsigned csvCols = map->GetMapSize().first;
 	unsigned csvRows = map->GetMapSize().second;
 	playerPos = map->GetTilePosition(1, 1);
-	bool foundSpawn = false;
-	for (unsigned r = 1; r < csvRows - 1 && !foundSpawn; ++r) {
-		for (unsigned c = 1; c < csvCols - 1 && !foundSpawn; ++c) {
-			const TileMap::Tile* t = map->QueryTile(r, c);
-			if (t && !t->isSolid && t->type == TileMap::TILE_NONE) {
-				playerPos = map->GetTilePosition(r, c);
-				foundSpawn = true;
-			}
-		}
-	}
 
     camPos = playerPos;
     minimap = new Minimap{};
@@ -370,37 +363,22 @@ void GameState::InitState()
 		static_cast<unsigned>(mapHeight)
 	);
 
-	if (!gPlayer) gPlayer = new Player();
-	PetManager::GetInstance()->LinkPlayer(gPlayer);
+    // Find safe spawn position
+    AEVec2 safeSpawnPos = map->GetTilePosition(1, 1);
+    bool foundSpawn = false;
+    for (unsigned r = 1; r < csvRows - 1 && !foundSpawn; ++r) {
+        for (unsigned c = 1; c < csvCols - 1 && !foundSpawn; ++c) {
+            const TileMap::Tile* t = map->QueryTile(r, c);
+            if (t && !t->isSolid && t->type == TileMap::TILE_NONE) {
+                safeSpawnPos = map->GetTilePosition(r, c);
+                foundSpawn = true;
+            }
+        }
+    }
 
-    boss = nullptr;
-
-    if (doTutorial)
-        fairy = new Tutorial::TutorialFairy();
-}
-
-// =============================================================
-void GameState::InitState()
-{
-    // =============================================================
-    InitTutorial(currentLevel);
-
-		unsigned csvCols = map->GetMapSize().first;
-		unsigned csvRows = map->GetMapSize().second;
-		AEVec2 safeSpawnPos = map->GetTilePosition(1, 1);
-		bool found = false;
-		for (unsigned r = 1; r < csvRows - 1 && !found; ++r) {
-			for (unsigned c = 1; c < csvCols - 1 && !found; ++c) {
-				const TileMap::Tile* t = map->QueryTile(r, c);
-				if (t && !t->isSolid && t->type == TileMap::TILE_NONE) {
-					safeSpawnPos = map->GetTilePosition(r, c);
-					found = true;
-				}
-			}
-		}
-
+    // Find chest position
     AEVec2 chestTilePos = currentLevel.chestPos;
-    bool   foundChest = false;
+    bool foundChest = false;
     for (unsigned r = 0; r < csvRows; ++r) {
         for (unsigned c = 0; c < csvCols; ++c) {
             const TileMap::Tile* t = map->QueryTile(r, c);
@@ -412,12 +390,28 @@ void GameState::InitState()
         }
     }
 
+    camPos = safeSpawnPos;
+    camVel = { 0, 0 };
+    minimap = new Minimap{};
+
+    mapWidth = map->GetFullMapSize().x + nextMap->GetFullMapSize().x;
+    mapHeight = (map->GetFullMapSize().y > nextMap->GetFullMapSize().y)
+        ? map->GetFullMapSize().y : nextMap->GetFullMapSize().y;
+
+    GameObjectManager::GetInstance()->InitCollisionGrid(
+        static_cast<unsigned>(mapWidth),
+        static_cast<unsigned>(mapHeight)
+    );
+
+    // Player init
+    if (!gPlayer) gPlayer = new Player();
+    PetManager::GetInstance()->LinkPlayer(gPlayer);
+
     Bitmask collideMask = CreateBitmask(3,
         Collision::LAYER::ENEMIES,
         Collision::LAYER::INTERACTABLE,
         Collision::LAYER::OBSTACLE
     );
-
     gPlayer->Init(
         safeSpawnPos,
         AEVec2{ playerRadius * 2.f, playerRadius * 2.f },
@@ -437,12 +431,13 @@ void GameState::InitState()
     gPlayer->ApplyShopUpgrades();
     gPlayer->Heal(gPlayer->GetMaxHP());
 
+    // Chest
     LootChest* chest = dynamic_cast<LootChest*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
     chest->Init(chestTilePos, { 35,35 }, 0, MESH_SQUARE, Collision::COL_RECT, { 35,35 },
         CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE)
         ->GetRenderData().tint = CreateColor(255, 0.84f * 255.f, 0, 255);
 
-    // CSV map: spawn at every TILE_ENEMY marker, weighted 70/30 Normal/Elite
+    // CSV enemy spawns
     std::vector<AEVec2> csvSpawns = FindSafeSpawnPositions(*map, 0);
     csvEnemies.clear();
     for (AEVec2 const& pos : csvSpawns) {
@@ -454,22 +449,21 @@ void GameState::InitState()
         }
     }
 
+    // Boss state
     boss = nullptr;
     bossSpawned = false;
-    bossAlive = true;  // no boss yet, but enemies are alive
+    bossAlive = true;
     enemiesRequiredForBoss = (int)csvEnemies.size();
     enemiesKilledInRoom = 0;
     bossMaxHPProgressBar = (float)enemiesRequiredForBoss;
     bossHPProgressBar = 0.f;
 
-    camPos = safeSpawnPos;
-    camVel = { 0, 0 };
     minimap->Reset();
 
+    // Tutorial
     if (doTutorial)
         fairy->InitTutorial(gPlayer, &currentLevel);
 }
-
 // =============================================================
 void GameState::Update(double dt)
 {
