@@ -160,8 +160,8 @@ void MainMenuState::Update(double dt)
 						->SetNextGameState("SettingsState", true, true);*/
 					break;
 				case 4: //credits
-					/*GameStateManager::GetInstance()
-						->SetNextGameState("CreditsState", true, true);*/
+					GameStateManager::GetInstance()
+						->SetNextGameState("CreditState", true, true);
 					break;
 				case 5: //exit game
 					Terminate();

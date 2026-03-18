@@ -18,6 +18,7 @@
 #include "InputManager.h"
 #include "DebugTools.h"
 #include "Drops/DropSystem.h"
+#include "../Project/GameStates/CreditState.h"
 #include "GameDB.h"
 #if defined(DEBUG) | defined(_DEBUG)
 	#include <memory>
@@ -75,6 +76,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	stateManager->AddGameState("GameState", new GameState);
 	stateManager->AddGameState("ShopState", new ShopState);
 	stateManager->AddGameState("PetState", new PetState);
+	stateManager->AddGameState("CreditState", new CreditState);
 
 	//Enter first game state
 	stateManager->SetNextGameState("MainMenuState", true, true);

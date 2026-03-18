@@ -267,6 +267,12 @@
     <ClCompile Include="ShopFunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Debug.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStates\CreditState.cpp">
+      <Filter>Source Files\GameStates</Filter>
+    </ClCompile>
     <ClCompile Include="Pets\Pet_1.cpp">
       <Filter>Source Files\Pets\Derived</Filter>
     </ClCompile>
@@ -495,6 +501,12 @@
       <Filter>Header Files\Pets</Filter>
     </ClInclude>
     <ClInclude Include="GameStates\PetState.h">
+      <Filter>Header Files\GameStates</Filter>
+    </ClInclude>
+    <ClInclude Include="Debug.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStates\CreditState.h">
       <Filter>Header Files\GameStates</Filter>
     </ClInclude>
     <ClInclude Include="Pets\Pet_1.h">
