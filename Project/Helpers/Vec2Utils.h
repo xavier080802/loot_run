@@ -14,7 +14,7 @@ AEVec2 VecZero(void);
 AEVec2 VecOne(void);
 
 //Returns the mouse world coords
-//inHUDSpace: World coordinate system without being based on the camera movement
+//inHUDSpace: If true, World coordinate system without being based on the camera movement
 AEVec2 GetMouseWorldVec(bool inHUDSpace = false);
 
 //Returns cursor position

@@ -187,7 +187,7 @@ void PetManager::DrawUI()
 		showTooltip = false;
 	}
 
-	equippedPet->DrawPath();
+	//equippedPet->DrawPath();
 }
 
 void PetManager::ShowPetTooltip()

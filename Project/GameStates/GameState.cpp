@@ -439,11 +439,6 @@ void GameState::Draw() {
     HandleTutorialDialogueRender();
 
     PetManager::GetInstance()->DrawUI();
-
-    AEVec2 m{ GetMouseWorldVec() }, scale{};
-    f32 rot;
-    GetObjViewFromCamera(&m, &rot, &scale);
-    DrawTintedMesh(GetTransformMtx(m, rot, scale), RenderingManager::GetInstance()->GetMesh(MESH_CIRCLE), nullptr, { 255,0,0,255 }, 255);
 }
 
 void GameState::HandleTutorialDialogueRender()
