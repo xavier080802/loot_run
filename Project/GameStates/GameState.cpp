@@ -308,9 +308,10 @@ void GameState::InitState()
 		std::cout << "bossDef=" << (bossDef ? "OK" : "NULL")
 			<< " slimeDef=" << (slimeDef ? "OK" : "NULL") << "\n";
 
-		auto SpawnEnemyFromDef = [&](Enemy* enemy, const EnemyDef* def, AEVec2 pos)
-			{
-				if (!enemy || !def) return;
+    auto SpawnEnemyAtPos = [&](Enemy* enemy, const EnemyDef* def, AEVec2 pos)
+        {
+            // Reassign the pre-allocated Enemy object by re-initialising it from a def.
+            if (!enemy || !def) return;
 
 				float r = def->render.radius;
 				MESH_SHAPE meshShape = (def->render.mesh == EnemyMesh::Square) ? MESH_SQUARE : MESH_CIRCLE;
@@ -335,16 +336,21 @@ void GameState::InitState()
 				enemy->GetRenderData().alpha = 255;
 			};
 
-		// Spawn one enemy per TILE_ENEMY found in CSV
-		csvEnemies.clear();
-		for (size_t i = 0; i < enemyTilePositions.size(); ++i) {
-			Enemy* e = new Enemy();
-			SpawnEnemyFromDef(e, slimeDef, enemyTilePositions[i]);
-			csvEnemies.push_back(e);
-		}
+    // Spawn one enemy per TILE_ENEMY found in CSV using weighted random tier
+    // (70% Normal, 30% Elite) so the map already has a mix on load.
+    csvEnemies.clear();
+    for (size_t i = 0; i < enemyTilePositions.size(); ++i) {
+        Enemy* e = SpawnWeightedEnemy(enemyTilePositions[i]);
+        if (e) {
+            std::cout << "[Spawn] " << e->GetDefinition().name
+                      << " (" << (e->GetDefinition().category == EnemyCategory::Elite ? "Elite" : "Normal")
+                      << ") at tile " << i << "\n";
+            csvEnemies.push_back(e);
+        }
+    }
 
-		// Spawn boss at first enemy tile if available, else fallback
-		SpawnEnemyFromDef(boss, bossDef, bossPos);
+    // Spawn boss at first enemy tile if available, else fallback
+    SpawnEnemyAtPos(boss, bossDef, bossPos);
 
 		camPos = safeSpawnPos;
 		camVel = { 0,0 };
@@ -370,9 +376,21 @@ void GameState::InitState()
 			chest->Init(m, { 75,75 }, 1, MESH_SQUARE, Collision::COL_RECT, { 75,75 }, CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE);
 		}
 
-		if (AEInputCheckTriggered(AEVK_R)) {
-			PostOffice::GetInstance()->Send("PetManager", new PetSkillMsg(PetSkillMsg::CAST_SKILL));
-		}
+    if (AEInputCheckTriggered(AEVK_R)) {
+        PostOffice::GetInstance()->Send("PetManager", new PetSkillMsg(PetSkillMsg::CAST_SKILL));
+    }
+
+    // [TEST] Press N to spawn a weighted random enemy (Normal/Elite) at the mouse cursor.
+    // Check the console output to watch the 70/30 distribution.
+    if (AEInputCheckTriggered(AEVK_N)) {
+        AEVec2 m = GetMouseWorldVec();
+        Enemy* e = SpawnWeightedEnemy(m);
+        if (e) {
+            const char* tier = (e->GetDefinition().category == EnemyCategory::Elite) ? "Elite" : "Normal";
+            std::cout << "[Spawn] " << e->GetDefinition().name << " (" << tier << ")\n";
+            csvEnemies.push_back(e);
+        }
+    }
 #pragma endregion
 
 		if (!gPlayer) return;
