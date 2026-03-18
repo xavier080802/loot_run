@@ -13,6 +13,14 @@ class EquipmentData;
 
 	extra:
 		attackCooldown - (float) Time between attacks
+
+	Pet's attack data is in melee.json, the unique weapon with id 7
+	 - Attack size
+	 - Element
+	 - Knockback
+	 - Etc
+
+	Using a melee weapon to reuse Combat code
 */
 class Pet_3 : public Pet
 {
