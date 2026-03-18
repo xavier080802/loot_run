@@ -138,24 +138,26 @@
                 }
             ]
         },
-        {
-            "id": 3,
-            "name": "Lycan",
-            "passive": [
-                {
-                    "value": 10,
-                    "mathType": "mult",
-                    "stat": "att"
-                }
-            ],
-            "multipliers": [],
-            "rarityScaling": [ 1, 1.25, 1.5, 1.75, 2, 2.5 ],
-            "skillCooldown": 5,
-            "skillDesc": "Placeholder Wolf Skill",
-            "extra": {
-                "attackCooldown": "1.0"
-            }
-        },
+      {
+        "id": 3,
+        "name": "Lycan",
+        "passive": [
+          {
+            "value": 10,
+            "mathType": "mult",
+            "stat": "att"
+          }
+        ],
+        "multipliers": [],
+        "rarityScaling": [ 1, 1.25, 1.5, 1.75, 2, 2.5 ],
+        "skillCooldown": 5,
+        "skillDesc": "Placeholder Wolf Skill",
+        "texture": "Assets/lycan_default.png",
+        "extra": {
+          "attackCooldown": "1.0",
+          "attackTexture": "Assets/lycan_attack.png"
+        }
+      },
         {
             "id": 4,
             "name": "Scylla",
