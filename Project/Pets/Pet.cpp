@@ -33,6 +33,7 @@ GameObject* Pet::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape,
 void Pet::SetTilemap(TileMap const& map)
 {
 	tilemap = &map;
+	ResetPathfinder();
 }
 
 void Pet::Update(double dt) {

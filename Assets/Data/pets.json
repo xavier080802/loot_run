@@ -141,11 +141,20 @@
         {
             "id": 3,
             "name": "Lycan",
-            "passive": [],
+            "passive": [
+                {
+                    "value": 10,
+                    "mathType": "mult",
+                    "stat": "att"
+                }
+            ],
             "multipliers": [],
-            "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
-            "skillCooldown": 8,
-            "skillDesc": "Placeholder Wolf Skill"
+            "rarityScaling": [ 1, 1.25, 1.5, 1.75, 2, 2.5 ],
+            "skillCooldown": 5,
+            "skillDesc": "Placeholder Wolf Skill",
+            "extra": {
+                "attackCooldown": "1.0"
+            }
         },
         {
             "id": 4,

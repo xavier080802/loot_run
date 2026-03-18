@@ -111,6 +111,176 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 		target.ApplyForce({ dir.x * knockbackForce, dir.y * knockbackForce });
 	}
 
+	/**
+	 * @brief Routes an attack to the right spawner depending on the weapon type.
+	 *
+	 * This is the main entry point for any character wanting to attack.
+	 * Given a weapon and a world-space aim position, it:
+	 * - Fetches a pooled game object (Projectile or AttackHitboxGO)
+	 * - Configures it based on the weapon's attack type
+	 * - Launches it toward the target
+	 *
+	 * Attack types handled:
+	 *   - Projectile: Fires a flying bullet/arrow toward targetPos.
+	 *   - SwingArc: Creates a circular hitbox in front of the caster.
+	 *   - Stab: Creates a rectangular hitbox directly in front of the caster.
+	 *   - CircleAOE: Creates a large circular hitbox centered on the caster.
+	 *
+	 * @param caster    The character doing the attacking. Passed as a raw POINTER
+	 *                  so we can query their position and collision layers.
+	 * @param casterPos Position where the attack will be generated from.
+	 * @param weapon    The item being used to attack. Passed as a CONST POINTER.
+	 *                  Read its properties (size, type, element) but never change it.
+	 * @param targetPos The world position being aimed at (e.g. mouse cursor for player,
+	 *                  player's position for enemy). Passed by VALUE.
+	 *
+	 * @note Called by:
+	 *   - Player::Update() - when the player left-clicks to attack.
+	 *   - Enemy::Update() - when the enemy's attack cooldown expires and it's in attack range.
+	 */
+	void ExecuteAttack(Actor* caster, AEVec2 casterPos, const EquipmentData* weapon, AEVec2 targetPos) {
+		if (!caster || !weapon) return;
+
+		AEVec2 pos = casterPos;
+
+		switch (weapon->attackType)
+		{
+		case AttackType::Projectile:
+		{
+			Projectile* proj = dynamic_cast<Projectile*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PROJECTILE));
+			if (!proj) return;
+
+			AEVec2 fireDir = { targetPos.x - pos.x, targetPos.y - pos.y };
+
+			// Fire(caster, direction, radius, speed, lifetime, callback, element, knockback)
+			proj->Fire(caster, fireDir, weapon->attackSize, 200.0f, 3.0f, &OnProjectileHit, weapon->element, weapon->knockback);
+			Bitmask bm{ caster->GetCollisionLayers() };
+			ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
+			proj->SetCollisionLayers(bm); // Proj will scan for interactables otherwise
+
+			std::cout << "[Combat] Enemy/Player fired a projectile!\n";
+			break;
+		}
+
+		case AttackType::SwingArc:
+		{
+			AttackHitboxGO* hb = dynamic_cast<AttackHitboxGO*>(
+				GameObjectManager::GetInstance()->FetchGO(GO_TYPE::ATTACK_HITBOX)
+				);
+			if (!hb) { return; }
+
+			AEVec2 dir = { targetPos.x - pos.x, targetPos.y - pos.y };
+
+			// If exact overlap, default to right or caster movement dir
+			if (dir.x == 0.0f && dir.y == 0.0f) {
+				dir = { 1.0f, 0.0f };
+			}
+			else {
+				AEVec2Normalize(&dir, &dir);
+			}
+
+			AttackHitboxConfig cfg{};
+			cfg.owner = caster;
+			cfg.element = weapon->element;
+			cfg.knockback = weapon->knockback;
+			cfg.lifetime = 0.30f;
+			cfg.zIndex = caster->GetZ() - 1;
+
+			// Tentative version: circle hitbox
+			cfg.colliderShape = Collision::COL_CIRCLE;
+			cfg.colliderSize = { weapon->attackSize * 5.0f, weapon->attackSize * 5.0f };   // diameter (scaled up a bit for melee so it's not tiny)
+			cfg.renderScale = { weapon->attackSize * 5.0f, weapon->attackSize * 5.0f };
+			cfg.offset = (pos - caster->GetPos()) + AEVec2{ dir.x* (weapon->attackSize * 2.5f), dir.y* (weapon->attackSize * 2.5f) }; // offset in front
+			cfg.onHit = &OnMeleeHit;
+			cfg.disableOnHit = false;
+
+			hb->Start(cfg);
+
+			Bitmask bm{ caster->GetCollisionLayers() };
+			ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
+			hb->SetCollisionLayers(bm);
+
+			std::cout << "[Combat] Enemy/Player spawned a melee hitbox!\n";
+			break;
+		}
+
+		case AttackType::Stab:
+		{
+			AttackHitboxGO* hb = dynamic_cast<AttackHitboxGO*>(
+				GameObjectManager::GetInstance()->FetchGO(GO_TYPE::ATTACK_HITBOX)
+				);
+			if (!hb) { return; }
+
+			AEVec2 dir = { targetPos.x - pos.x, targetPos.y - pos.y };
+			if (dir.x == 0.0f && dir.y == 0.0f) {
+				dir = { 1.0f, 0.0f };
+			}
+			else {
+				AEVec2Normalize(&dir, &dir);
+			}
+
+			AttackHitboxConfig cfg{};
+			cfg.owner = caster;
+			cfg.element = weapon->element;
+			cfg.knockback = weapon->knockback;
+			cfg.lifetime = 0.15f;
+			cfg.zIndex = caster->GetZ() - 1;
+
+			cfg.colliderShape = Collision::COL_RECT;
+			cfg.colliderSize = { weapon->attackSize * 3.0f, weapon->attackSize * 3.0f };
+			cfg.renderScale = { weapon->attackSize * 3.0f, weapon->attackSize * 3.0f };
+			cfg.offset = { dir.x * (weapon->attackSize * 4.0f), dir.y * (weapon->attackSize * 4.0f) };
+			cfg.onHit = &OnMeleeHit;
+			cfg.disableOnHit = false;
+
+			hb->Start(cfg);
+
+			Bitmask bm{ caster->GetCollisionLayers() };
+			ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
+			hb->SetCollisionLayers(bm);
+
+			std::cout << "[Combat] Enemy/Player performed a Stab!\n";
+			break;
+		}
+
+		case AttackType::CircleAOE:
+		{
+			AttackHitboxGO* hb = dynamic_cast<AttackHitboxGO*>(
+				GameObjectManager::GetInstance()->FetchGO(GO_TYPE::ATTACK_HITBOX)
+				);
+			if (!hb) { return; }
+
+			AttackHitboxConfig cfg{};
+			cfg.owner = caster;
+			cfg.element = weapon->element;
+			cfg.knockback = weapon->knockback;
+			cfg.lifetime = 0.30f;
+			cfg.zIndex = caster->GetZ() - 1;
+
+			cfg.colliderShape = Collision::COL_CIRCLE;
+			// Massive scale to cover an area
+			cfg.colliderSize = { weapon->attackSize * 8.0f, weapon->attackSize * 8.0f };
+			cfg.renderScale = { weapon->attackSize * 8.0f, weapon->attackSize * 8.0f };
+			cfg.offset = { 0.0f, 0.0f }; // Centered precisely on the caster
+			cfg.onHit = &OnMeleeHit;
+			cfg.disableOnHit = false;
+			cfg.followOwner = true; // Stay on the caster as they move
+
+			hb->Start(cfg);
+
+			Bitmask bm{ caster->GetCollisionLayers() };
+			ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
+			hb->SetCollisionLayers(bm);
+
+			std::cout << "[Combat] Enemy/Player casted a Circle AOE!\n";
+			break;
+		}
+
+		default:
+			// std::cout << "Combat::ExecuteAttack: Weapon has no valid AttackType.\n";
+			break;
+		}
+	}
 
 	/**
 	 * @brief Routes an attack to the right spawner depending on the weapon type.
@@ -140,144 +310,6 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 	 */
 	void ExecuteAttack(Actor* caster, const EquipmentData* weapon, AEVec2 targetPos)
 	{
-		if (!caster || !weapon) return;
-
-        AEVec2 pos = caster->GetPos();
-
-		switch (weapon->attackType)
-		{
-		case AttackType::Projectile:
-		{
-			Projectile* proj = dynamic_cast<Projectile*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PROJECTILE));
-			if (!proj) return;
-
-			AEVec2 fireDir = { targetPos.x - pos.x, targetPos.y - pos.y };
-
-			// Fire(caster, direction, radius, speed, lifetime, callback, element, knockback)
-			proj->Fire(caster, fireDir, weapon->attackSize, 200.0f, 3.0f, &OnProjectileHit, weapon->element, weapon->knockback);
-			Bitmask bm{ caster->GetCollisionLayers() };
-			ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
-			proj->SetCollisionLayers(bm); // Proj will scan for interactables otherwise
-			
-			std::cout << "[Combat] Enemy/Player fired a projectile!\n";
-			break;
-		}
-
-		case AttackType::SwingArc:
-		{
-			AttackHitboxGO* hb = dynamic_cast<AttackHitboxGO*>(
-				GameObjectManager::GetInstance()->FetchGO(GO_TYPE::ATTACK_HITBOX)
-			);
-			if (!hb) { return; }
-
-			AEVec2 dir = { targetPos.x - pos.x, targetPos.y - pos.y };
-
-			// If exact overlap, default to right or caster movement dir
-			if (dir.x == 0.0f && dir.y == 0.0f) {
-				dir = { 1.0f, 0.0f };
-			} else {
-				AEVec2Normalize(&dir, &dir);
-			}
-
-			AttackHitboxConfig cfg{};
-			cfg.owner = caster;
-			cfg.element = weapon->element;
-			cfg.knockback = weapon->knockback;
-			cfg.lifetime = 0.30f;
-			cfg.zIndex = caster->GetZ() - 1;
-
-			// Tentative version: circle hitbox
-			cfg.colliderShape = Collision::COL_CIRCLE;
-			cfg.colliderSize = { weapon->attackSize * 5.0f, weapon->attackSize * 5.0f };   // diameter (scaled up a bit for melee so it's not tiny)
-			cfg.renderScale = { weapon->attackSize * 5.0f, weapon->attackSize * 5.0f };
-			cfg.offset = { dir.x * (weapon->attackSize * 2.5f), dir.y * (weapon->attackSize * 2.5f) }; // offset in front
-			cfg.onHit = &OnMeleeHit;
-            cfg.disableOnHit = false;
-
-			hb->Start(cfg);
-            
-            Bitmask bm{ caster->GetCollisionLayers() };
-		    ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
-		    hb->SetCollisionLayers(bm);
-
-            std::cout << "[Combat] Enemy/Player spawned a melee hitbox!\n";
-			break;
-		}
-
-        case AttackType::Stab:
-		{
-			AttackHitboxGO* hb = dynamic_cast<AttackHitboxGO*>(
-				GameObjectManager::GetInstance()->FetchGO(GO_TYPE::ATTACK_HITBOX)
-			);
-			if (!hb) { return; }
-
-			AEVec2 dir = { targetPos.x - pos.x, targetPos.y - pos.y };
-			if (dir.x == 0.0f && dir.y == 0.0f) {
-				dir = { 1.0f, 0.0f };
-			} else {
-				AEVec2Normalize(&dir, &dir);
-			}
-
-			AttackHitboxConfig cfg{};
-			cfg.owner = caster;
-			cfg.element = weapon->element;
-			cfg.knockback = weapon->knockback;
-			cfg.lifetime = 0.15f;
-			cfg.zIndex = caster->GetZ() - 1;
-
-			cfg.colliderShape = Collision::COL_RECT;
-			cfg.colliderSize = { weapon->attackSize * 3.0f, weapon->attackSize * 3.0f };   
-			cfg.renderScale = { weapon->attackSize * 3.0f, weapon->attackSize * 3.0f };
-			cfg.offset = { dir.x * (weapon->attackSize * 4.0f), dir.y * (weapon->attackSize * 4.0f) };
-			cfg.onHit = &OnMeleeHit;
-            cfg.disableOnHit = false;
-
-			hb->Start(cfg);
-            
-            Bitmask bm{ caster->GetCollisionLayers() };
-		    ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
-		    hb->SetCollisionLayers(bm);
-
-            std::cout << "[Combat] Enemy/Player performed a Stab!\n";
-			break;
-		}
-
-        case AttackType::CircleAOE:
-		{
-			AttackHitboxGO* hb = dynamic_cast<AttackHitboxGO*>(
-				GameObjectManager::GetInstance()->FetchGO(GO_TYPE::ATTACK_HITBOX)
-			);
-			if (!hb) { return; }
-
-			AttackHitboxConfig cfg{};
-			cfg.owner = caster;
-			cfg.element = weapon->element;
-			cfg.knockback = weapon->knockback;
-			cfg.lifetime = 0.30f;
-			cfg.zIndex = caster->GetZ() - 1;
-
-			cfg.colliderShape = Collision::COL_CIRCLE;
-			// Massive scale to cover an area
-			cfg.colliderSize = { weapon->attackSize * 8.0f, weapon->attackSize * 8.0f };   
-			cfg.renderScale = { weapon->attackSize * 8.0f, weapon->attackSize * 8.0f };
-			cfg.offset = { 0.0f, 0.0f }; // Centered precisely on the caster
-			cfg.onHit = &OnMeleeHit;
-            cfg.disableOnHit = false;
-            cfg.followOwner = true; // Stay on the caster as they move
-
-			hb->Start(cfg);
-            
-            Bitmask bm{ caster->GetCollisionLayers() };
-		    ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
-		    hb->SetCollisionLayers(bm);
-
-            std::cout << "[Combat] Enemy/Player casted a Circle AOE!\n";
-			break;
-		}
-
-		default:
-			// std::cout << "Combat::ExecuteAttack: Weapon has no valid AttackType.\n";
-			break;
-		}
+		ExecuteAttack(caster, caster->GetPos(), weapon, targetPos);
 	}
 }

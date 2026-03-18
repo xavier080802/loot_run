@@ -140,7 +140,7 @@ void GameObjectManager::DrawObjects()
 
 void GameObjectManager::InitCollisionGrid(unsigned width, unsigned height)
 {
-	grid.Init(width, height, 5);
+	grid.Init(width, height, 10);
 }
 
 void GameObjectManager::DisableAllGOs()
@@ -160,8 +160,9 @@ GameObject* GameObjectManager::QueryOnMouse()
 	//Find gameobject on mouse
 	for (GOCollision::Element const& e : grid.cells.at(i).elements) {
 		GameObject& go{ *goList.at(e.index) };
-		if ((go.colShape == Collision::COL_RECT && IsCursorOverWorld(go.GetPos(), go.GetScale()))
-			|| (go.colShape == Collision::COL_CIRCLE && IsCursorOverOvalWorld(go.GetPos(), go.GetScale(), 0))) {
+		if (!go.IsEnabled()) continue;
+		if ((go.colShape == Collision::COL_RECT && IsCursorOverWorld(go.GetPos(), go.GetColSize(), false))
+			|| (go.colShape == Collision::COL_CIRCLE && IsCursorOverOvalWorld(go.GetPos(), go.GetColSize(),0, false))) {
 			//Collision
 			return &go;
 		}
