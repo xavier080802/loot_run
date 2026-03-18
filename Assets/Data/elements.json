@@ -23,10 +23,10 @@
     "blood": {
         "name": "Bloodletting",
         "dmgMods": [ //DoT
-            { //Flat dmg
-                "value": 10,
-                "mathType": 0,
-                "stat": 0
+            { // Dmg per tick
+                "value": 2,
+                "mathType": "flat",
+                "stat": "hp"
             }
         ],
         "icon": "Assets/bloodEle.png"
@@ -35,14 +35,14 @@
         "name": "Under The Sun",
         "buffName": "Glow",
         "maxStacks": 20,
-        "buffDur": 7.5,
-        "lowRange": 3, // Lower limit for stacks to apply
-        "highRange": 5, // Upper limit for stacks to apply
+        "buffDur": 9,
+        "lowRange": 2, // Lower limit for stacks to apply
+        "highRange": 4, // Upper limit for stacks to apply
         "buffMods": [
             { // Att buff
                 "value": 1,
-                "mathType": 1, // 0=FLAT, 1=MULTIPLICATIVE -- How value will be applied to the stat
-                "stat": 2 // Stat to scale with. Check STAT_TYPE enum.
+                "mathType": "mult",
+                "stat": "att"
             }
         ],
         "icon": "Assets/sunEle.png"
@@ -78,14 +78,14 @@
         "name": "Boiling Blood",
         "dotDmgMods": [ //Based on max-hp of the element-sufferer
             { //Flat dmg
-                "value": 10,
-                "mathType": 0,
-                "stat": 0
+                "value": 5,
+                "mathType": "flat",
+                "stat": "hp"
             },
             { //% hp dmg
-                "value": 5,
-                "mathType": 1,
-                "stat": 0
+                "value": 3,
+                "mathType": "mult",
+                "stat": "hp"
             }
         ],
         "detonateDmgMods": [

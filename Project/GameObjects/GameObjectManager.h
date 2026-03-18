@@ -36,6 +36,9 @@ namespace GOCollision {
 		//Init a grid of _numDimensions x _numDimensions to cover the world
 		void Init(unsigned _worldWidth, unsigned _worldHeight, unsigned _numDimensions);
 		void SortObjects(GameObject** gos, size_t count);
+		//Get grid cell based on world position
+		//x = column index, y = row index
+		AEVec2 GetCell(AEVec2 const& pos) const;
 		void InsertToCell(GameObject* go, unsigned ind, unsigned cellInd);
 
 		unsigned partitions=0;
@@ -62,6 +65,9 @@ public:
 	void InitCollisionGrid(unsigned width, unsigned height);
 	//Disable all gameobjects
 	void DisableAllGOs();
+	//Finds the first gameobject hovered by the mouse (world space)
+	//Nullptr if nothing is found
+	GameObject* QueryOnMouse();
 
 	//TODO: redo wtih copy swap idiom, and proper copy ctor
 	GameObject* Clone(GameObject* const original);

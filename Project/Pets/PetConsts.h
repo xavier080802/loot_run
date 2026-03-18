@@ -3,10 +3,11 @@
 #include <string>
 #include <array>
 #include <vector>
+#include <map>
 #include "../Actor/StatsTypes.h"
 #include "../Actor/StatusEffect.h"
 #include "../Elements/Element.h"
-#include "PetSkills.h"
+class Player;
 
 namespace Pets {
 	enum PET_RANK {
@@ -36,13 +37,14 @@ namespace Pets {
 		std::string name{};
 		StatEffects::StatusEffect passive{nullptr, -1, 1, "Pet"}; //Load from an array of Mods
 		std::vector<StatEffects::Mod> multipliers{}; //Skill/Passive extra multipliers
+		std::vector<DAMAGE_TYPE> dmgTypes{};
 		std::array<float, 6> rarityScaling{}; //For each rarity, the mults/statEffect values * rarityScaling[rarity]
 		float skillCooldown{};
 		std::string skillDesc{};
 		std::string texture{};
 		std::vector<Elements::ELEMENT_TYPE> skillElements{};
-
-		bool (*PetSkill)(const PetSkills::SkillCastData& data) = nullptr;
+		std::vector<StatEffects::StatusEffect> extraEffects{};
+		std::map<std::string, std::string> extra{};
 	};
 
 	struct PetSaveData {
@@ -52,6 +54,10 @@ namespace Pets {
 		PetSaveData(PET_TYPE _id = PET_TYPE::NONE, PET_RANK _rank = PET_RANK::COMMON)
 			: id{ _id }, rank{ _rank } {
 		};
+	};
+
+	struct SkillCastData {
+		Player* player;
 	};
 }
 #endif // !_PET_CONSTS_H_

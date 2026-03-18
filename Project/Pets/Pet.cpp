@@ -1,6 +1,7 @@
 #include "Pet.h"
 #include "PetManager.h"
 #include "../Helpers/Vec2Utils.h"
+#include "../TileMap.h"
 #include <iostream>
 
 namespace {
@@ -10,15 +11,28 @@ namespace {
 	const float petMoveSpeed{ 300.f };
 	//Distance from a point to consider it as "at" that point
 	const float pointTolerance{ 10 };
+	//Max number of path nodes till pet is considered too far
+	const unsigned maxPathLength{ 10 };
 }
 
-void Pet::CastSkill(const PetSkills::SkillCastData& skillData)
+void Pet::CastSkill(const Pets::SkillCastData& skillData)
 {
-	if (cooldownTimer > 0 || !data.PetSkill) return;
-	if (data.PetSkill(skillData)) {
+	if (cooldownTimer > 0 || !HasSkill()) return;
+	if (DoSkill(skillData)) {
 		//Skill casted successfully.
 		cooldownTimer = data.skillCooldown;
 	}
+}
+
+GameObject* Pet::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, Collision::LAYER _isInLayer)
+{
+	goType = GetPetGOType();
+	return GameObject::Init(_pos, _scale, _z, _meshShape, _colShape, _colSize, _collideWithLayers, _isInLayer);
+}
+
+void Pet::SetTilemap(TileMap const& map)
+{
+	tilemap = &map;
 }
 
 void Pet::Update(double dt) {
@@ -27,64 +41,32 @@ void Pet::Update(double dt) {
 		cooldownTimer -= static_cast<float>(dt);
 	}
 
-	//------------------Movement-------------------
+	//Handle pet pathfinding movement
+	DoMovement(dt);
 
-	//If not following player, complete path.
-	if (!followPlayer) {
-		targetPos = path.empty() ? pos : path.front();
-		MoveToTarget(dt);
-		return;
-	}
-
-	GameObject const& player = PetManager::GetInstance()->GetPlayer();
-
-	AEVec2 playerPos = player.GetPos();
-	bool isNearPlayer = AEVec2SquareDistance(&pos, &playerPos) <= playerStopDist * playerStopDist;
-	//Not near player and last path point is sufficiently far
-	if (!isNearPlayer && AEVec2SquareDistance(&playerPos, path.empty() ? &pos : &path.back()) >= pointTolerance * pointTolerance) {
-		//Record player path
-		path.push(playerPos);
-	}
-
-	//Follow path to player
-	if (!isNearPlayer) {
-		//Set targetPos to the next path point.
-		targetPos = path.empty() ? playerPos : path.front();
-		MoveToTarget(dt);
-	}
-	else if (!path.empty()){
-		//Near player again. Clear path to prevent funny movement when player leaves vicinity.
-		size_t temp{ path.size() }; //Dont put path.size() into loop.
-		for (unsigned i = 0; i < temp; i++) {
-			path.pop();
-		}
-	}
+	SkillUpdate((float)dt);
 }
 
 void Pet::SetPath(std::initializer_list<AEVec2> const& _path, bool append)
 {
 	if (!append) {
-		ClearPath();
+		ResetPathfinder();
 	}
 	for (AEVec2 const& p : _path) {
-		path.push(p);
+		PushPath(p);
 	}
 }
 
-void Pet::SetData(const Pets::PetData& newData, Pets::PET_RANK rank)
+void Pet::SetData(const Pets::PetData& newData, Pets::PET_RANK _rank)
 {
 	data = newData;
+	rank = _rank;
 	data.passive.SetName(data.name + "'s Call of Awakening");
 	//Scale values based on rarity
-	data.passive.ScaleMods(data.rarityScaling[rank]);
+	data.passive.ScaleMods(data.rarityScaling[_rank]);
 	for (StatEffects::Mod& m : data.multipliers) {
-		m.value *= data.rarityScaling[rank];
+		m.value *= data.rarityScaling[_rank];
 	}
-	//Rank too low for skill 
-	//NOTE: TEMP, PLS UNCOMMENT
-	/*if (rank <= Pets::PET_RANK::EPIC) { 
-		data.PetSkill = nullptr;
-	}*/
 }
 
 const Pets::PetData& Pet::GetPetData()
@@ -105,10 +87,7 @@ Elements::ELEMENT_TYPE Pet::GetSkillElement(unsigned index)
 
 void Pet::ClearPath()
 {
-	size_t temp{ path.size() }; //Dont put path.size() into loop.
-	for (unsigned i = 0; i < temp; i++) {
-		path.pop();
-	}
+	ResetPathfinder();
 }
 
 void Pet::Reset()
@@ -117,6 +96,42 @@ void Pet::Reset()
 	targetPos = {};
 	cooldownTimer = 0.f;
 	followPlayer = true;
+}
+
+void Pet::DoMovement(double dt)
+{
+	UpdatePathfinding((float)dt); //Timers
+
+	//If not following player, complete path.
+	if (!followPlayer) {
+		std::deque<AEVec2> const& path{ GetFoundPath() }; //Previous path
+		targetPos = path.empty() ? pos : path.front();
+		MoveToTarget(dt);
+		return;
+	}
+
+	GameObject const& player = PetManager::GetInstance()->GetPlayer();
+	AEVec2 playerPos = player.GetPos();
+	float sqrDistFromPlayer{ AEVec2SquareDistance(&pos, &playerPos) };
+	//Start pathfinding
+	bool isNearPlayer = sqrDistFromPlayer <= playerStopDist * playerStopDist;
+	if (!isNearPlayer && tilemap) {
+		Pathfinder::RESULT res = DoPathFinding(*tilemap, pos, playerPos);
+		std::deque<AEVec2> const& path{ GetFoundPath() };
+		//Pet too far from player (in terms of path nodes) - TP to player
+		if (res == Pathfinder::RESULT::FAILED || path.size() >= maxPathLength) {
+			SetPos(playerPos);
+			ResetPathfinder();
+		}
+		else {
+			//Follow the path created by the pathfinder
+			targetPos = path.empty() ? pos : path.front();
+			MoveToTarget(dt);
+		}
+	}
+	else { //No need to pathfind
+		ResetPathfinder(); //Clear path
+	}
 }
 
 void Pet::MoveToTarget(double dt)
@@ -130,5 +145,19 @@ void Pet::MoveToTarget(double dt)
 	pos.y += stepNorm.y * petMoveSpeed * static_cast<float>(dt);
 
 	//If near targetPos (reached path point), pop path point
-	if (!path.empty() && AEVec2SquareDistance(&pos, &targetPos) <= pointTolerance) path.pop();
+	//if (!path.empty() && AEVec2SquareDistance(&pos, &targetPos) <= pointTolerance) path.pop();
+	if (AEVec2SquareDistance(&pos, &targetPos) <= pointTolerance) PopPath();
+}
+
+void Pet::Setup(Player&)
+{
+}
+
+bool Pet::DoSkill(const Pets::SkillCastData&)
+{
+	return false;
+}
+
+void Pet::SkillUpdate(float)
+{
 }

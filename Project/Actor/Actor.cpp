@@ -59,6 +59,7 @@ void Actor::InitActorRuntime(const ActorStats& finalStats)
 {
     mStats = finalStats;
     mCurrentHP = mStats.maxHP;
+    mShieldValue = 0.f;
 }
 
 void Actor::Free()
@@ -166,7 +167,10 @@ void Actor::TakeDamage(DamageData const& data)
               << (data.attacker ? " from attacker" : " (no attacker)")
               << " after " << mStats.defense << " defense mitigation.\n";
 
-    mCurrentHP -= actualDmg;
+    //Dmg blocked by shield - extra dmg still goes to hp
+    float shieldMitigation{ min(mShieldValue, actualDmg) };
+    mCurrentHP -= actualDmg - shieldMitigation;
+    mShieldValue -= max(shieldMitigation, 0.f); //Deduct shield
 
     if (goType == GO_TYPE::PLAYER) {
         std::cout << "[Player] Took " << actualDmg << " damage. Current HP: " << mCurrentHP << "/" << mStats.maxHP << '\n';
@@ -175,7 +179,7 @@ void Actor::TakeDamage(DamageData const& data)
     // Alert on-hit subscribers (e.g., target's defensive reactive effects, or attacker's lifesteal)
     for (ActorOnHitSub* sub : onHitSubs) {
         if (!sub) continue;
-        sub->SubscriptionAlert({ data.attacker, this, data.weapon, data.dmgType, actualDmg });
+        sub->SubscriptionAlert({ data.attacker, this, data.weapon, data.dmgType, actualDmg, shieldMitigation });
     }
     PostOffice::GetInstance()->Send("WorldTextManager", new ShowWorldTextMsg{ std::to_string((int)actualDmg),
         pos + AEVec2{static_cast<float>(rand() % 20 - 10), static_cast<float>(rand() % 20 - 10)},
@@ -187,6 +191,11 @@ void Actor::TakeDamage(DamageData const& data)
         // Pass the attacker to OnDeath so we know who got the kill
         OnDeath(data.attacker);
     }
+}
+
+void Actor::AddShield(float value)
+{
+    mShieldValue += max(0, value);
 }
 
 /**
@@ -213,7 +222,12 @@ void Actor::ApplyStatusEffect(StatEffects::StatusEffect* eff, Actor* caster)
 {
     //Check if existing
     if (statusEffectsDict.find(eff->GetName()) != statusEffectsDict.end()) {
-        statusEffectsDict[eff->GetName()]->OnReapply();
+        statusEffectsDict[eff->GetName()]->OnReapply(eff->GetStackCount());
+
+        for (auto& sub : seGainedSubs) {
+            sub->SubscriptionAlert({true, eff->GetStackCount(), *statusEffectsDict[eff->GetName()]});
+        }
+
         delete eff;
     }
     else { //New, insert
@@ -223,6 +237,10 @@ void Actor::ApplyStatusEffect(StatEffects::StatusEffect* eff, Actor* caster)
         }
         statusEffectsDict.insert(std::pair<std::string, StatEffects::StatusEffect*>(eff->GetName(), eff));
         eff->OnApply(this, caster);
+
+        for (auto& sub : seGainedSubs) {
+            sub->SubscriptionAlert({ false, eff->GetStackCount(), *statusEffectsDict[eff->GetName()] });
+        }
     }
 }
 
@@ -412,4 +430,16 @@ void Actor::SubToBeforeDealingDmg(ActorBeforeDealingDmgSub* sub, bool remove)
     }
     if (remove) return;
     beforeDealingDmgSubs.push_back(sub);
+}
+
+void Actor::SubToSEGain(ActorGainedStatusEffectSub* sub, bool remove)
+{
+    for (auto it = seGainedSubs.begin(); it != seGainedSubs.end(); ++it) {
+        if (*it == sub) {
+            if (remove) seGainedSubs.erase(it);
+            return;
+        }
+    }
+    if (remove) return;
+    seGainedSubs.push_back(sub);
 }

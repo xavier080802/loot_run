@@ -8,16 +8,23 @@
 #include "../Actor/Player.h"
 class RenderingManager;
 class UIElement;
+class TileMap;
+
 class PetManager : public Singleton<PetManager>, public PostBox
 {
 	friend Singleton<PetManager>;
 public:
 	const unsigned MAX_PETS{ 1000 };
 	void Init();
-	void InitPetForGame();
+	//When game state inits, call to reset pet data
+	void InitPetForGame(TileMap const& tilemap);
+	//Place pet somewhere in world
 	void PlacePet(AEVec2 const& pos);
 	void LinkPlayer(Player* playerGO);
-	Player const& GetPlayer() { return *player; }
+	Player const& GetPlayer() const { return *player; }
+	Player& GetPlayer() { return *player; }
+
+	//Sets the pet based on the type.
 	void SetPet(Pets::PET_TYPE pet, Pets::PET_RANK rank);
 	Pet* GetEquippedPet() { return equippedPet; }
 	bool PetHasSkill() const;
@@ -43,10 +50,12 @@ public:
 
 private:
 	void LoadPetData();
+	void CreatePet();
 	PostOffice* po{};
 	RenderingManager* rm{};
 	std::map<Pets::PET_TYPE, Pets::PetData> petData{};
 	Pet* equippedPet{};
+	std::pair<Pets::PET_TYPE, Pets::PET_RANK> selectedPetInfo{};
 	Player* player{};
 	std::string extraDesc{};
 	std::map<int, std::map<int, int>> ownedPets{};

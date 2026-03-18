@@ -1,13 +1,20 @@
 #include "GameObjectManager.h"
 #include "GameObject.h"
 #include "../helpers/CollisionUtils.h"
+#include "../TileMap.h"
+#include "../Helpers/Vec2Utils.h"
+#include "../Helpers/RenderUtils.h"
 #include "Projectile.h"
 #include "LootChest.h"
 #include "../Drops/PickupGO.h"
 #include "AttackHitboxGO.h"
-#include "../TileMap.h"
-#include "../Helpers/Vec2Utils.h"
-#include "../Helpers/RenderUtils.h"
+#include "../Pets/Pet.h"
+#include "../Pets/Pet_1.h"
+#include "../Pets/Pet_2.h"
+#include "../Pets/Pet_3.h"
+#include "../Pets/Pet_4.h"
+#include "../Pets/Pet_5.h"
+#include "../Pets/Whirlpool.h"
 #include <iostream>
 
 void GameObjectManager::RegisterGO(GameObject* go)
@@ -143,6 +150,26 @@ void GameObjectManager::DisableAllGOs()
 	}
 }
 
+GameObject* GameObjectManager::QueryOnMouse()
+{
+	//Find cell of mouse
+	AEVec2 mouse{ GetMouseWorldVec() };
+	AEVec2 inds{ grid.GetCell(mouse) };
+	size_t i{ static_cast<size_t>(inds.y * grid.partitions + inds.x) };
+	if (i >= grid.cells.size()) return nullptr; //Out of bounds
+	//Find gameobject on mouse
+	for (GOCollision::Element const& e : grid.cells.at(i).elements) {
+		GameObject& go{ *goList.at(e.index) };
+		if ((go.colShape == Collision::COL_RECT && IsCursorOverWorld(go.GetPos(), go.GetScale()))
+			|| (go.colShape == Collision::COL_CIRCLE && IsCursorOverOvalWorld(go.GetPos(), go.GetScale(), 0))) {
+			//Collision
+			return &go;
+		}
+	}
+	return nullptr;
+}
+
+//BROKEN
 GameObject* GameObjectManager::Clone(GameObject* const original)
 {
 	GameObject* newGo = new GameObject(*original);
@@ -180,6 +207,20 @@ GameObject* GameObjectManager::FetchGO(GO_TYPE type)
 		return new PickupGO{};
 	case GO_TYPE::ATTACK_HITBOX:
 		return new AttackHitboxGO{};
+	case GO_TYPE::PET_1:
+		return new Pet_1{};
+	case GO_TYPE::PET_2:
+		return new Pet_2{};
+	case GO_TYPE::PET_3:
+		return new Pet_3{};
+	case GO_TYPE::PET_4:
+		return new Pet_4{};
+	case GO_TYPE::PET_5:
+		return new Pet_5{};
+	case GO_TYPE::PET_6:
+		return new Pet{};
+	case GO_TYPE::WHIRLPOOL:
+		return new Whirlpool{};
 	default:
 		std::cout << "WARNING: FetchGO implementation not done for GO_TYPE " << (int)type << '\n';
 		return nullptr;
@@ -249,8 +290,9 @@ void GOCollision::SpatialGrid::SortObjects(GameObject** gos, size_t count)
 	for (unsigned i = 0;i < count; i++) {
 		if (!gos[i]->CanCollide()) continue;
 		AEVec2 pos = gos[i]->GetPos();
-		int cellX = static_cast<int>((pos.x + worldHalfWidth) / (float)cellWidth);
-		int cellY = static_cast<int>(std::abs(pos.y - worldhalfHeight) / (float)cellHeight);
+		AEVec2 ind{ GetCell(pos) };
+		int cellX = static_cast<int>(ind.x);
+		int cellY = static_cast<int>(ind.y);
 
 		gos[i]->cellIndexes.clear();
 
@@ -277,6 +319,13 @@ void GOCollision::SpatialGrid::SortObjects(GameObject** gos, size_t count)
 			InsertToCell(gos[i], i, (cellY + 1) * partitions + cellX);
 		}
 	}
+}
+
+AEVec2 GOCollision::SpatialGrid::GetCell(AEVec2 const& pos) const
+{
+	int cellX = static_cast<int>((pos.x + worldHalfWidth) / (float)cellWidth);
+	int cellY = static_cast<int>(std::abs(pos.y - worldhalfHeight) / (float)cellHeight);
+	return AEVec2{(float)cellX, (float)cellY};
 }
 
 void GOCollision::SpatialGrid::InsertToCell(GameObject* go, unsigned ind, unsigned cellInd)

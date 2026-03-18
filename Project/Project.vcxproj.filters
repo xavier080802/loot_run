@@ -79,6 +79,18 @@
     <Filter Include="Source Files\UI">
       <UniqueIdentifier>{2742a0c9-014b-4e39-b3a8-87b29394e26f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Pets\Derived">
+      <UniqueIdentifier>{ee49c824-3f0e-4c5f-8f8a-905a094b89bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Pets\Derived">
+      <UniqueIdentifier>{92d64180-0dec-4650-9387-4af58bce9523}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Pets\Props">
+      <UniqueIdentifier>{b6806e39-a7f5-4adc-950f-69886945bad7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Pets\Props">
+      <UniqueIdentifier>{c5a6b18d-eea9-4e8a-921d-45fbe9b0fe8d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -145,9 +157,6 @@
       <Filter>Source Files\Pets</Filter>
     </ClCompile>
     <ClCompile Include="Pets\PetManager.cpp">
-      <Filter>Source Files\Pets</Filter>
-    </ClCompile>
-    <ClCompile Include="Pets\PetSkills.cpp">
       <Filter>Source Files\Pets</Filter>
     </ClCompile>
     <ClCompile Include="Actor\Actor.cpp">
@@ -269,6 +278,26 @@
     </ClCompile>
     <ClCompile Include="GameStates\CreditState.cpp">
       <Filter>Source Files\GameStates</Filter>
+    <ClCompile Include="Pets\Pet_1.cpp">
+      <Filter>Source Files\Pets\Derived</Filter>
+    </ClCompile>
+    <ClCompile Include="Pets\Pet_2.cpp">
+      <Filter>Source Files\Pets\Derived</Filter>
+    </ClCompile>
+    <ClCompile Include="Pets\Pet_5.cpp">
+      <Filter>Source Files\Pets\Derived</Filter>
+    </ClCompile>
+    <ClCompile Include="Pets\Pet_4.cpp">
+      <Filter>Source Files\Pets\Derived</Filter>
+    </ClCompile>
+    <ClCompile Include="Pets\Whirlpool.cpp">
+      <Filter>Source Files\Pets\Props</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObjects\Pathfinder.cpp">
+      <Filter>Source Files\GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="Pets\Pet_3.cpp">
+      <Filter>Source Files\Pets\Derived</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -354,9 +383,6 @@
       <Filter>Header Files\Pets</Filter>
     </ClInclude>
     <ClInclude Include="Pets\PetConsts.h">
-      <Filter>Header Files\Pets</Filter>
-    </ClInclude>
-    <ClInclude Include="Pets\PetSkills.h">
       <Filter>Header Files\Pets</Filter>
     </ClInclude>
     <ClInclude Include="GameObjects\LootChest.h">
@@ -496,6 +522,26 @@
     </ClInclude>
     <ClInclude Include="GameStates\CreditState.h">
       <Filter>Header Files\GameStates</Filter>
+    <ClInclude Include="Pets\Pet_1.h">
+      <Filter>Header Files\Pets\Derived</Filter>
+    </ClInclude>
+    <ClInclude Include="Pets\Pet_2.h">
+      <Filter>Header Files\Pets\Derived</Filter>
+    </ClInclude>
+    <ClInclude Include="Pets\Pet_5.h">
+      <Filter>Header Files\Pets\Derived</Filter>
+    </ClInclude>
+    <ClInclude Include="Pets\Pet_4.h">
+      <Filter>Header Files\Pets\Derived</Filter>
+    </ClInclude>
+    <ClInclude Include="Pets\Whirlpool.h">
+      <Filter>Header Files\Pets\Props</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjects\Pathfinder.h">
+      <Filter>Header Files\GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="Pets\Pet_3.h">
+      <Filter>Header Files\Pets\Derived</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -43,6 +43,10 @@ public:
 	// Called when this actor receives damage.
 	virtual void TakeDamage(DamageData const& data);
 
+	//Grant the actor a shield of the given value.
+	void AddShield(float value);
+	float GetShieldVal() const { return mShieldValue; }
+
 	virtual bool IsInvulnerable() { return false; }
 	
 	// Restores the actor's HP by the specified amount, clamping at maxHP.
@@ -84,6 +88,8 @@ public:
 	void SubToOnHit(ActorOnHitSub* sub, bool remove = false);
 	//Subscribe to be alerted BEFORE actor deals damage
 	void SubToBeforeDealingDmg(ActorBeforeDealingDmgSub* sub, bool remove = false);
+	//Sub to be alerted when this actor is inflicted with a status effect
+	void SubToSEGain(ActorGainedStatusEffectSub* sub, bool remove = false);
 
 protected:
 	// Override point for Player/Enemy-specific death behavior
@@ -97,6 +103,7 @@ protected:
 
 	ActorStats mStats{};
 	float mCurrentHP = 0.0f;
+	float mShieldValue{}; //Blocks post-mitigation damage from affecting hp. 
 	std::map<std::string, StatEffects::StatusEffect*> statusEffectsDict;
 
 private:
@@ -105,4 +112,5 @@ private:
 	std::vector<ActorBeforeCastSub*> beforeCastSubs;
 	std::vector<ActorOnHitSub*> onHitSubs;
 	std::vector<ActorBeforeDealingDmgSub*> beforeDealingDmgSubs;
+	std::vector<ActorGainedStatusEffectSub*> seGainedSubs;
 };
