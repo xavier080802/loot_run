@@ -4,6 +4,7 @@
 
 Projectile* Projectile::Fire(Actor* const caster, AEVec2 fireDir, float radius, float spd, float lifetime, void (*onHitCallback)(CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float knockback), Elements::ELEMENT_TYPE elem, float kb)
 {
+	hasHitList.clear();
 	Init(caster->GetPos(), { radius * 2.f, radius * 2.f }, caster->GetZ(),
 		MESH_CIRCLE, Collision::COL_CIRCLE, { radius * 2.f, radius * 2.f },
 		caster->GetCollisionLayers(), caster->GetColliderLayer());
@@ -35,14 +36,37 @@ void Projectile::Update(double dt)
 
 void Projectile::OnCollide(CollisionData& other)
 {
+	//Stop rule makes it so proj wont disable on hit with GO
+	if (stopRule != STOP_RULE::ON_FIRST) {
+		//Check if has hit this go before
+		for (GameObject* go : hasHitList) {
+			if (go == &other.other) {
+				return; //Yes, don't hit again
+			}
+		}
+		//No, continue but add to list
+		hasHitList.push_back(&other.other);
+	}
 	//Send callback
 	if (OnHit) OnHit(other, owner, element, knockback);
-	//Disable self
-	isEnabled = false;
+	//Disable self if stop rule says so
+	if (stopRule == STOP_RULE::ON_FIRST) {
+		isEnabled = false;
+	}
 }
 
 void Projectile::OnCollideTile(std::pair<TileMap::Tile const&, AEVec2> /*tile*/)
 {
+	if (stopRule == STOP_RULE::ON_FIRST || stopRule == STOP_RULE::FIRST_TILE) {
+		return;
+	}
 	//Disable self
 	isEnabled = false;
+}
+
+Projectile& Projectile::SetStopRule(STOP_RULE rule)
+{
+	hasHitList.reserve(10);
+	stopRule = rule;
+	return *this;
 }

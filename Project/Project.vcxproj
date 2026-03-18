@@ -152,6 +152,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="Pets\Pet_3.cpp" />
     <ClCompile Include="Pets\Pet_4.cpp" />
     <ClCompile Include="Pets\Pet_5.cpp" />
+    <ClCompile Include="Pets\Pet_6.cpp" />
     <ClCompile Include="Pets\Whirlpool.cpp" />
     <ClCompile Include="RenderingManager.cpp" />
     <ClCompile Include="Music.cpp" />
@@ -231,6 +232,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="Pets\Pet_3.h" />
     <ClInclude Include="Pets\Pet_4.h" />
     <ClInclude Include="Pets\Pet_5.h" />
+    <ClInclude Include="Pets\Pet_6.h" />
     <ClInclude Include="Pets\Whirlpool.h" />
     <ClInclude Include="RenderingManager.h" />
     <ClInclude Include="Music.h" />
