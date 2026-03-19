@@ -1,5 +1,6 @@
 #include "Vec2Utils.h"
 #include "CoordUtils.h"
+#include "../camera.h"
 
 AEVec2 ToVec2(f32 x, f32 y)
 {
@@ -23,7 +24,7 @@ AEVec2 GetMouseWorldVec(bool inHUDSpace)
 {
     s32 mouseX = 0, mouseY = 0;
     AEInputGetCursorPosition(&mouseX, &mouseY);
-    return !inHUDSpace ? ScreenToCameraWorld(ToVec2((float)mouseX, (float)mouseY)) : ScreenToWorld(AEVec2{ (float)mouseX, (float)mouseY });
+    return !inHUDSpace ? ScreenToCameraWorld(AEVec2{(float)mouseX, (float)mouseY}) : ScreenToWorld(AEVec2{ (float)mouseX, (float)mouseY });
 }
 
 AEVec2 GetMouseScreenVec()

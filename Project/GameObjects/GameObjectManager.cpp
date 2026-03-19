@@ -11,10 +11,13 @@
 #include "../Pets/Pet.h"
 #include "../Pets/Pet_1.h"
 #include "../Pets/Pet_2.h"
+#include "../Pets/Pet_3.h"
 #include "../Pets/Pet_4.h"
 #include "../Pets/Pet_5.h"
+#include "../Pets/Pet_6.h"
 #include "../Pets/Whirlpool.h"
 #include <iostream>
+#include <limits>
 
 void GameObjectManager::RegisterGO(GameObject* go)
 {
@@ -139,7 +142,7 @@ void GameObjectManager::DrawObjects()
 
 void GameObjectManager::InitCollisionGrid(unsigned width, unsigned height)
 {
-	grid.Init(width, height, 5);
+	grid.Init(width, height, 10);
 }
 
 void GameObjectManager::DisableAllGOs()
@@ -147,6 +150,80 @@ void GameObjectManager::DisableAllGOs()
 	for (GameObject* go : goList) {
 		go->SetEnabled(false);
 	}
+}
+
+GameObject* GameObjectManager::QueryOnMouse()
+{
+	//Find cell of mouse
+	AEVec2 mouse{ GetMouseWorldVec() };
+	AEVec2 inds{ grid.GetCell(mouse) };
+	size_t i{ static_cast<size_t>(inds.y * grid.partitions + inds.x) };
+	if (i >= grid.cells.size()) return nullptr; //Out of bounds
+	//Find gameobject on mouse
+	for (GOCollision::Element const& e : grid.cells.at(i).elements) {
+		GameObject& go{ *goList.at(e.index) };
+		if (!go.IsEnabled()) continue;
+		if ((go.colShape == Collision::COL_RECT && IsCursorOverWorld(go.GetPos(), go.GetColSize(), false))
+			|| (go.colShape == Collision::COL_CIRCLE && IsCursorOverOvalWorld(go.GetPos(), go.GetColSize(),0, false))) {
+			//Collision
+			return &go;
+		}
+	}
+	return nullptr;
+}
+
+GameObject* GameObjectManager::FindClosestGO(AEVec2 pos, float range, GO_TYPE type)
+{
+	static const std::array<AEVec2, 8> Directions{
+		AEVec2{-1, 1}, //Top-left
+		AEVec2{0,1}, //Top
+		AEVec2{1, 1}, //Top-right
+		AEVec2{-1,0}, //Left
+		AEVec2{1,0}, //Right
+		AEVec2{-1, -1},//Bottom-left
+		AEVec2{0,-1}, //Bottom
+		AEVec2{1, -1}, //Bottom-right
+	};
+	//Cell of pos
+	AEVec2 inds{ grid.GetCell(pos) };
+	unsigned cellX{ (unsigned)inds.x };
+	unsigned cellY{ (unsigned)inds.y };
+	std::vector<unsigned> cells{};
+	unsigned sz{ (unsigned)(std::ceilf(range / max(grid.cellHeight, grid.cellWidth)) + 1) }; //Should be min 2 for range < cell size
+	unsigned numCells{ sz *sz};
+	cells.reserve(numCells);
+	cells.push_back(cellY * grid.partitions + cellX);
+
+	for (unsigned i{1}; i <= sz; ++i) {
+		for (size_t dir{}; dir < Directions.size(); ++dir) {
+			unsigned _x{ cellX + (int)Directions[dir].x * sz };
+			unsigned _y{ cellY + (int)Directions[dir].y * sz };
+			if (_y * grid.partitions + _x >= grid.cells.size()) {
+				continue;
+			}
+			cells.push_back(_y * grid.partitions + _x);
+		}
+	}
+	//Check each cell
+	GameObject* nearest = nullptr;
+	float nearestDist{ };
+	for (unsigned c : cells) {
+		for (GOCollision::Element const& e : grid.cells.at(c).elements) {
+			GameObject& go{ *goList.at(e.index) };
+			if (go.GetGOType() != type) continue;
+
+			AEVec2 goPos{ go.GetPos() };
+			float dist{ AEVec2SquareDistance(&goPos, &pos) };
+			if (dist > range * range) continue; //Out of range
+			//Check if nearer than prev
+			if (!nearest || dist < nearestDist) {
+				nearest = &go;
+				nearestDist = dist;
+			}
+		}
+	}
+
+	return nearest;
 }
 
 //BROKEN
@@ -191,13 +268,14 @@ GameObject* GameObjectManager::FetchGO(GO_TYPE type)
 		return new Pet_1{};
 	case GO_TYPE::PET_2:
 		return new Pet_2{};
-	case GO_TYPE::PET_5:
-		return new Pet_5{};
+	case GO_TYPE::PET_3:
+		return new Pet_3{};
 	case GO_TYPE::PET_4:
 		return new Pet_4{};
-	case GO_TYPE::PET_3:
+	case GO_TYPE::PET_5:
+		return new Pet_5{};
 	case GO_TYPE::PET_6:
-		return new Pet{};
+		return new Pet_6{};
 	case GO_TYPE::WHIRLPOOL:
 		return new Whirlpool{};
 	default:
@@ -269,8 +347,9 @@ void GOCollision::SpatialGrid::SortObjects(GameObject** gos, size_t count)
 	for (unsigned i = 0;i < count; i++) {
 		if (!gos[i]->CanCollide()) continue;
 		AEVec2 pos = gos[i]->GetPos();
-		int cellX = static_cast<int>((pos.x + worldHalfWidth) / (float)cellWidth);
-		int cellY = static_cast<int>(std::abs(pos.y - worldhalfHeight) / (float)cellHeight);
+		AEVec2 ind{ GetCell(pos) };
+		int cellX = static_cast<int>(ind.x);
+		int cellY = static_cast<int>(ind.y);
 
 		gos[i]->cellIndexes.clear();
 
@@ -297,6 +376,13 @@ void GOCollision::SpatialGrid::SortObjects(GameObject** gos, size_t count)
 			InsertToCell(gos[i], i, (cellY + 1) * partitions + cellX);
 		}
 	}
+}
+
+AEVec2 GOCollision::SpatialGrid::GetCell(AEVec2 const& pos) const
+{
+	int cellX = static_cast<int>((pos.x + worldHalfWidth) / (float)cellWidth);
+	int cellY = static_cast<int>(std::abs(pos.y - worldhalfHeight) / (float)cellHeight);
+	return AEVec2{(float)cellX, (float)cellY};
 }
 
 void GOCollision::SpatialGrid::InsertToCell(GameObject* go, unsigned ind, unsigned cellInd)

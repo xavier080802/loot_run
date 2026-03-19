@@ -275,6 +275,9 @@
     </ClCompile>
     <ClCompile Include="Debug.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStates\CreditState.cpp">
+      <Filter>Source Files\GameStates</Filter>
     <ClCompile Include="Pets\Pet_1.cpp">
       <Filter>Source Files\Pets\Derived</Filter>
     </ClCompile>
@@ -291,6 +294,15 @@
     </ClCompile>
     <ClCompile Include="Pets\Whirlpool.cpp">
       <Filter>Source Files\Pets\Props</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObjects\Pathfinder.cpp">
+      <Filter>Source Files\GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="Pets\Pet_3.cpp">
+      <Filter>Source Files\Pets\Derived</Filter>
+    </ClCompile>
+    <ClCompile Include="Pets\Pet_6.cpp">
+      <Filter>Source Files\Pets\Derived</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -512,6 +524,9 @@
     </ClInclude>
     <ClInclude Include="Debug.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStates\CreditState.h">
+      <Filter>Header Files\GameStates</Filter>
     <ClInclude Include="Pets\Pet_1.h">
       <Filter>Header Files\Pets\Derived</Filter>
     </ClInclude>
@@ -528,6 +543,15 @@
     </ClInclude>
     <ClInclude Include="Pets\Whirlpool.h">
       <Filter>Header Files\Pets\Props</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjects\Pathfinder.h">
+      <Filter>Header Files\GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="Pets\Pet_3.h">
+      <Filter>Header Files\Pets\Derived</Filter>
+    </ClInclude>
+    <ClInclude Include="Pets\Pet_6.h">
+      <Filter>Header Files\Pets\Derived</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

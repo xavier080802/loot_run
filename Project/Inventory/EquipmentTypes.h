@@ -58,6 +58,7 @@ enum class Rarity : uint8_t
     Epic = 3,
     Legendary = 4,
     Mythical = 5,
+    Unique = 6,
 };
 
 // Represents the static properties of an equippable item.

@@ -47,9 +47,14 @@ AEVec2 WorldToScreen(AEVec2 worldCoords)
 
 AEVec2 ScreenToCameraWorld(AEVec2 screenCoords)
 {
-    AEVec2 out = ScreenToWorld(screenCoords);
     AEVec2 cam = GetCameraTranslation();
+    AEVec2 out = ScreenToWorld(screenCoords);
     out.x += cam.x;
     out.y += cam.y;
+    //Mouse screen-to-world coords is the offset from "origin"
+    AEVec2 originScale{ GetCameraZoom(), GetCameraZoom() };
+    //Divide by cam zoom to negate it (Based on GetObjViewFromCamera)
+    out.x = cam.x + (out.x - cam.x) / originScale.x;
+    out.y = cam.y + (out.y - cam.y) / originScale.y;
     return out;
 }

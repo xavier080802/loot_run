@@ -410,7 +410,7 @@ void GameState::InitState()
         AEVec2{ playerRadius * 2.f, playerRadius * 2.f },
         collideMask, Collision::LAYER::PLAYER
     );
-    PetManager::GetInstance()->InitPetForGame();
+    PetManager::GetInstance()->InitPetForGame(*map);
 
     ActorStats base{};
     base.maxHP = 100.0f;
@@ -562,6 +562,8 @@ void GameState::Update(double dt)
             teleportCooldown = 2.f;
             SpawnProceduralEnemies(*nextMap);
             minimap->Reset();
+
+            PetManager::GetInstance()->SetTilemap(*nextMap);
         }
         else if (inProceduralMap && nextMap->IsConnector(gPlayer->GetPos())) {
             nextMap->GenerateProcedural(50, 50, rand());

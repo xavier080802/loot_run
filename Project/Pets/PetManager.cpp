@@ -12,6 +12,7 @@
 #include "../Helpers/MatrixUtils.h"
 #include "../Helpers/CoordUtils.h"
 #include "../Helpers/Vec2Utils.h"
+#include "../TileMap.h"
 
 /* Flow
 1. App executes, loading pet manager and game state -> LinkPlayer
@@ -58,7 +59,7 @@ void PetManager::Init() {
 	skillUI->SetHoverCallback([this](bool) {showTooltip = true; });
 }
 
-void PetManager::InitPetForGame()
+void PetManager::InitPetForGame(TileMap const& tilemap)
 {
 	CreatePet();
 
@@ -74,6 +75,7 @@ void PetManager::InitPetForGame()
 	}
 	PlacePet(player->GetPos());
 	equippedPet->Setup(*player);
+	equippedPet->SetTilemap(tilemap);
 	//Apply passive
 	player->ApplyStatusEffect(new StatEffects::StatusEffect{ equippedPet->GetPetData().passive }, player);
 
@@ -103,6 +105,12 @@ void PetManager::InitPetForGame()
 	extraDesc = s.str();
 }
 
+void PetManager::SetTilemap(TileMap const& tilemap) {
+	if (equippedPet) {
+		equippedPet->SetTilemap(tilemap);
+	}
+}
+
 void PetManager::LinkPlayer(Player* playerGO)
 {
 	player = playerGO;
@@ -112,6 +120,7 @@ void PetManager::PlacePet(AEVec2 const& pos)
 {
 	if (!equippedPet) return;
 	equippedPet->SetPos(pos);
+	equippedPet->ResetPathfinder();
 }
 
 //Call when selecting pet in main menu
@@ -177,6 +186,8 @@ void PetManager::DrawUI()
 		ShowPetTooltip();
 		showTooltip = false;
 	}
+
+	//equippedPet->DrawPath();
 }
 
 void PetManager::ShowPetTooltip()

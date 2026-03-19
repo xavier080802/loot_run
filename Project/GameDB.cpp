@@ -377,6 +377,7 @@ namespace GameDB
             else if (rarityStr == "Epic") e.rarity = Rarity::Epic;
             else if (rarityStr == "Legendary") e.rarity = Rarity::Legendary;
             else if (rarityStr == "Mythical") e.rarity = Rarity::Mythical;
+            else if (rarityStr == "Unique") e.rarity = Rarity::Unique;
             else e.rarity = Rarity::Common;
 
             e.sellPrice = item.get("sellPrice", 10).asInt();
@@ -534,6 +535,7 @@ namespace GameDB
 		case Rarity::Epic: return 10;
 		case Rarity::Legendary: return 4;
 		case Rarity::Mythical: return 1;
+        case Rarity::Unique: return 0;
 		default: return 100;
 		}
 	}

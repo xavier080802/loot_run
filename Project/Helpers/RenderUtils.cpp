@@ -357,7 +357,7 @@ AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 bo
 	if (bgCfg.haveBg) { //Draw background box
 		//Reset edge calc to render bg correctly
 		edge = { pos.x + norm.x * AEGfxGetWinMaxX(), pos.y - norm.y * AEGfxGetWinMaxY() };
-		DrawTintedMesh(GetTransformMtx({ edge.x + acBoxSize.x * 0.5f, edge.y - acBoxSize.y * 0.5f }, 0, acBoxSize + NormToWorld(bgCfg.padding)),
+		DrawTintedMesh(GetTransformMtx({ edge.x + acBoxSize.x * 0.5f, edge.y - acBoxSize.y * 0.5f }, 0, acBoxSize + NormToWorld(bgCfg.padding)*2.f),
 			bgCfg.mesh, bgCfg.texture, bgCfg.col, bgCfg.alpha);
 	}
 	//Write text

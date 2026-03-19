@@ -8,13 +8,19 @@
 #include "../Actor/Player.h"
 class RenderingManager;
 class UIElement;
+class TileMap;
+
 class PetManager : public Singleton<PetManager>, public PostBox
 {
 	friend Singleton<PetManager>;
 public:
 	const unsigned MAX_PETS{ 1000 };
 	void Init();
-	void InitPetForGame();
+	//When game state inits, call to reset pet data
+	void InitPetForGame(TileMap const& tilemap);
+	//Call when changing tilemap
+	void SetTilemap(TileMap const& tilemap);
+	//Place pet somewhere in world
 	void PlacePet(AEVec2 const& pos);
 	void LinkPlayer(Player* playerGO);
 	Player const& GetPlayer() const { return *player; }
