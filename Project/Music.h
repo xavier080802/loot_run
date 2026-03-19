@@ -8,6 +8,7 @@ struct BGMManager {
     AEAudio eliteTrack;
     AEAudio bossTrack;
     AEAudio gachaTrack;
+    AEAudio creditsTrack;
 
     void Init();
     void PlayNormal();
@@ -16,6 +17,8 @@ struct BGMManager {
     void StopGameplayBGM();  
     void PlayGacha();
     void StopGacha(float fadeTimeSec);
+    void PlayCredits();
+    void StopCredits();
     void Exit();
 };
 

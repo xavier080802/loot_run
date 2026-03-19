@@ -200,6 +200,10 @@ namespace {
         if (killFraction < bossSpawnThreshold) return;
 
         AEVec2 bossPos = tilemap.GetSpawnPoint();
+        if (gPlayer) {
+            bossPos = { gPlayer->GetPos().x + playerDir.x * 250.0f,
+                        gPlayer->GetPos().y + playerDir.y * 250.0f };
+        }
         boss = SpawnRandomBossEnemy(bossPos);
         if (!boss) return;
 
@@ -315,7 +319,7 @@ void GameState::LoadState() {
     if (!GameDB::LoadPlayerInventory("Assets/Data/Player/inventory.json"))
         std::cout << "WARNING: inventory.json failed to load.\n";
 
-    bgm.Init(); bgm.PlayNormal();
+    bgm.Init(); 
     halfMapWidth = mapWidth * 0.5f;
     halfMapHeight = mapHeight * 0.5f;
     circleMesh = RenderingManager::GetInstance()->GetMesh(MESH_CIRCLE);
@@ -367,7 +371,7 @@ void GameState::LoadState() {
 // =============================================================
 void GameState::InitState()
 {
-    // =============================================================
+    bgm.PlayNormal();
     InitTutorial(currentLevel);
 
     unsigned csvCols = map->GetMapSize().first;
@@ -679,6 +683,7 @@ void GameState::HandleTutorialDialogueRender()
 }
 
 void GameState::ExitState() {
+    bgm.StopGameplayBGM();
     gPlayer->ClearStatusEffects();
     inProceduralMap = false;
     teleportCooldown = 0.f;

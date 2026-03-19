@@ -12,6 +12,9 @@ void BGMManager::Init() {
     gachaTrack = AEAudioLoadMusic(
         "Assets/Audio/MagicCartoon CTE01_93.3.wav"
     );
+    creditsTrack = AEAudioLoadMusic(
+        "Assets/Audio/PROSPECTUS - Corporate MSCCRP1_50.wav"
+    );
 }
 
 void BGMManager::PlayNormal() {
@@ -42,12 +45,21 @@ void BGMManager::StopGacha(float) {
     AEAudioStopGroup(gachaGroup);
 }
 
+void BGMManager::PlayCredits() {
+    AEAudioStopGroup(group);
+    AEAudioPlay(creditsTrack, group, 1.0f, 1.0f, -1);
+}
+
+void BGMManager::StopCredits() {
+    AEAudioStopGroup(group);
+}
+
 void BGMManager::Exit() {
     AEAudioUnloadAudio(normalTrack);
     AEAudioUnloadAudio(eliteTrack);
     AEAudioUnloadAudio(bossTrack);
     AEAudioUnloadAudio(gachaTrack);
-
+    AEAudioUnloadAudio(creditsTrack);
     AEAudioUnloadAudioGroup(group);
     AEAudioUnloadAudioGroup(gachaGroup);
 }
