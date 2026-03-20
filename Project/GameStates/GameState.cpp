@@ -46,27 +46,23 @@ namespace {
     }
 
     // --- BOSS / ENEMY TRACKING ---
-    bool              bossAlive = true;
-    bool              bossSpawned = false;
-    float             bossRadius = 60.0f;
+    bool  bossAlive = true;
+    bool  bossSpawned = false;
+    float bossRadius = 60.0f;
     Enemy* boss = nullptr;
-    std::vector<Enemy*> csvEnemies;
-    std::vector<Enemy*> procEnemies;      // enemies in the current room only
-    std::vector<Enemy*> allProcEnemies;   // ALL proc enemies ever spawned — never cleared between rooms
+
+    std::vector<Enemy*> csvEnemies;   // currently alive CSV enemies
+    std::vector<Enemy*> procEnemies;  // currently alive procedural enemies
 
     int   enemiesKilledInRoom = 0;
     int   enemiesRequiredForBoss = 0;
 
-    // Persistent kill totals that accumulate across all procedural rooms.
-    // These are never reset between rooms — only on a full state exit.
+    // Persistent kill totals — accumulate across all rooms, reset on ExitState only
     int   totalEnemiesKilled = 0;
     int   totalEnemiesRequired = 0;
+    int   previousRoomsKilled = 0;   // kills from all completed rooms, never reset on transition
 
     float bossSpawnThreshold = 1.0f;
-
-    // Tracks which procEnemies were already counted as dead so we don't double-count.
-    // Using the pointer as a unique ID — once an enemy is counted dead it's added here.
-    std::vector<Enemy*> countedDeadEnemies;
 
     // --- CAMERA DATA ---
     AEVec2 camPos, camVel;
@@ -95,20 +91,14 @@ namespace {
     float bossHPProgressBar = 100.f;
     float bossMaxHPProgressBar = 100.f;
 
-    // =========================================================
     // --- DEBUG MODE ---
-    // =========================================================
-    bool debugMode = false;  // master toggle — TAB key
-    bool showDebugOverlay = false;  // TAB also shows the debug help overlay
-    bool showKeybindOverlay = false; // K — shows all in-game keybinds overlay
+    bool debugMode = false;
+    bool showDebugOverlay = false;
+    bool showKeybindOverlay = false;
+    bool debugGodMode = false;
+    // debugShowStats removed — enemy stats always draw, no toggle needed
+    bool debugFreezeEnemies = false;
 
-    // Individual debug feature toggles
-    bool debugGodMode = false; // F5 — invincible
-    bool debugShowStats = false; // F6 — live enemy HP labels
-    bool debugFreezeEnemies = false; // F7 — enemies stop moving
-
-    // Builds a DebugContext from the current anonymous-namespace state.
-    // Pass this to every Debug.h function instead of raw globals.
     DebugContext MakeDebugCtx()
     {
         DebugContext ctx;
@@ -118,7 +108,7 @@ namespace {
         ctx.showDebugOverlay = showDebugOverlay;
         ctx.showKeybindOverlay = showKeybindOverlay;
         ctx.debugGodMode = debugGodMode;
-        ctx.debugShowStats = debugShowStats;
+        ctx.debugShowStats = true;   // always on
         ctx.debugFreezeEnemies = debugFreezeEnemies;
         ctx.inProceduralMap = inProceduralMap;
         ctx.bossSpawned = bossSpawned;
@@ -127,61 +117,44 @@ namespace {
         return ctx;
     }
 
-    // --- SPAWN HELPERS ---
+    // =========================================================
+    // SPAWN HELPERS
+    // =========================================================
 
-    std::vector<AEVec2> FindSafeSpawnPositions(TileMap const& tilemap, int maxCount, bool strictWallCheck = false)
+    std::vector<AEVec2> FindSafeSpawnPositions(TileMap const& tilemap, int maxCount)
     {
         std::vector<AEVec2> positions;
         auto mapSz = tilemap.GetMapSize();
         unsigned cols = mapSz.first;
         unsigned rows = mapSz.second;
-        int midR = (int)rows / 2;
-        int midC = (int)cols / 2;
 
-        // Pass 1: designer-placed TILE_ENEMY markers — use all of them directly
+        // Pass 1: designer-placed TILE_ENEMY markers.
+        // No clearance check — hand-placed so trust the designer.
+        // Only skip markers that are literally on a solid tile.
         for (unsigned r = 0; r < rows; ++r) {
             for (unsigned c = 0; c < cols; ++c) {
                 const TileMap::Tile* t = tilemap.QueryTile(r, c);
                 if (!t || t->type != TileMap::TILE_ENEMY) continue;
-
-                if (strictWallCheck) {
-                    if (r < 2 || r >= rows - 2 || c < 2 || c >= cols - 2) continue;
-                    bool nearWall = false;
-                    for (int dr2 = -2; dr2 <= 2 && !nearWall; ++dr2)
-                        for (int dc2 = -2; dc2 <= 2 && !nearWall; ++dc2) {
-                            const TileMap::Tile* n = tilemap.QueryTile(r + dr2, c + dc2);
-                            if (!n || n->isSolid) nearWall = true;
-                        }
-                    if (nearWall) continue;
-                }
-
-                AEVec2 candidate = tilemap.GetTilePosition(r, c);
-                bool tooClose = false;
-                for (AEVec2 const& existing : positions) {
-                    float dx = candidate.x - existing.x;
-                    float dy = candidate.y - existing.y;
-                    if ((dx * dx + dy * dy) < (MIN_SPACING * MIN_SPACING)) { tooClose = true; break; }
-                }
-                if (!tooClose) positions.push_back(candidate);
+                positions.push_back(tilemap.GetTilePosition(r, c));
+                std::cout << "[FindSafe] TILE_ENEMY at (" << r << "," << c << ") accepted.\n";
             }
         }
         if (!positions.empty()) return positions;
 
-        // Pass 2: procedural fallback — spaced open tiles only
+        std::cout << "[FindSafe] No TILE_ENEMY markers found — falling back to procedural pass.\n";
+
+        // Pass 2: procedural fallback — spaced open tiles with 2-tile clearance.
+        // Clearance check kept here since procedural tiles are not hand-verified.
+        int midR = (int)rows / 2;
+        int midC = (int)cols / 2;
         const float MIN_SPACING = 115.0f * 3.0f;
+
         for (unsigned r = 3; r < rows - 3 && (int)positions.size() < maxCount; ++r) {
             for (unsigned c = 3; c < cols - 3 && (int)positions.size() < maxCount; ++c) {
                 const TileMap::Tile* t = tilemap.QueryTile(r, c);
                 if (!t || t->type != TileMap::TILE_NONE || t->isSolid) continue;
 
-                // Check all 8 neighbours AND a 2-tile buffer — reject if any nearby tile is solid
-                bool nearWall = false;
-                for (int dr2 = -2; dr2 <= 2 && !nearWall; ++dr2)
-                    for (int dc2 = -2; dc2 <= 2 && !nearWall; ++dc2) {
-                        const TileMap::Tile* n = tilemap.QueryTile(r + dr2, c + dc2);
-                        if (!n || n->isSolid) nearWall = true;
-                    }
-                if (nearWall) continue;
+                if (!tilemap.HasClearance(r, c, 2)) continue;
 
                 int dr = (int)r - midR, dc = (int)c - midC;
                 if (dr >= -3 && dr <= 3 && dc >= -3 && dc <= 3) continue;
@@ -192,7 +165,9 @@ namespace {
                 for (AEVec2 const& existing : positions) {
                     float dx = candidate.x - existing.x;
                     float dy = candidate.y - existing.y;
-                    if ((dx * dx + dy * dy) < (MIN_SPACING * MIN_SPACING)) { tooClose = true; break; }
+                    if ((dx * dx + dy * dy) < (MIN_SPACING * MIN_SPACING)) {
+                        tooClose = true; break;
+                    }
                 }
                 if (tooClose) continue;
                 positions.push_back(candidate);
@@ -203,43 +178,23 @@ namespace {
 
     void SpawnProceduralEnemies(TileMap const& tilemap)
     {
-        int spawnCount = 8 + rand() % 5;  // 8-12 enemies per room
-        std::vector<AEVec2> spawnPositions = FindSafeSpawnPositions(tilemap, spawnCount, true);
+        int spawnCount = 5 + rand() % 6;
+        std::vector<AEVec2> spawnPositions = FindSafeSpawnPositions(tilemap, spawnCount);
 
-        // Don't reset enemiesKilledInRoom or countedDeadEnemies — kills carry over between rooms.
-        // Only clear the live enemy list for this room.
         procEnemies.clear();
         enemiesKilledInRoom = 0;
 
-        // Add this room's enemies to the persistent total required count.
-        // enemiesKilledInRoom still tracks this room only (for CountDeadProcEnemies),
-        // but the progress bar uses totalEnemiesKilled / totalEnemiesRequired.
         totalEnemiesRequired += (int)spawnPositions.size();
 
         bossSpawned = false;
 
         for (AEVec2 const& pos : spawnPositions) {
             Enemy* e = SpawnWeightedEnemy(pos, 0.70f, 0.30f);
-            if (e) {
-                procEnemies.push_back(e);
-                allProcEnemies.push_back(e); // track across all rooms for kill counting
-            }
+            if (e) procEnemies.push_back(e);
         }
-
-        // Spawn a chest near the map centre as a reward for clearing the room
-        AEVec2 chestPos = tilemap.GetSpawnPoint();
-        chestPos.x += 150.0f;
-        LootChest* chest = dynamic_cast<LootChest*>(
-            GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
-        if (chest) {
-            chest->Init(chestPos, { 35,35 }, 0, MESH_SQUARE, Collision::COL_RECT, { 35,35 },
-                CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE)
-                ->GetRenderData().tint = CreateColor(255, 0.84f * 255.f, 0, 255);
-        }
-
         std::cout << "[ProcRoom] Spawned " << procEnemies.size()
-            << " enemies. Need " << enemiesRequiredForBoss << " kills for boss."
-            << " (Total progress: " << totalEnemiesKilled << "/" << totalEnemiesRequired << ")\n";
+            << " enemies. (Total progress: "
+            << totalEnemiesKilled << "/" << totalEnemiesRequired << ")\n";
     }
 
     void TrySpawnBoss(TileMap const& tilemap)
@@ -264,22 +219,21 @@ namespace {
         std::cout << "[Boss] Spawned " << boss->GetDefinition().name << "!\n";
     }
 
-    // Counts proc enemy kills using a one-way ratchet — once an enemy is counted
-    // as dead it is recorded in countedDeadEnemies and never counted again.
-    // This prevents the count dropping when GO pool recycles a dead enemy slot.
-    void CountDeadProcEnemies()
+    // Counts dead enemies from BOTH csvEnemies and procEnemies each frame
+    // and updates totalEnemiesKilled so the progress bar is always accurate.
+    void CountAllDeadEnemies()
     {
-        int deadThisRoom = 0;
+        int dead = 0;
+        for (Enemy* e : csvEnemies)
+            if (e && (!e->IsEnabled() || e->GetHP() <= 0.f)) ++dead;
         for (Enemy* e : procEnemies)
-            if (e && (!e->IsEnabled() || e->GetHP() <= 0.f)) ++deadThisRoom;
+            if (e && (!e->IsEnabled() || e->GetHP() <= 0.f)) ++dead;
 
-        // totalEnemiesKilled is rebuilt each frame as:
-        // (all kills from previous rooms) + (kills so far in current room).
-        // previousRoomsKills is totalEnemiesRequired minus this room's enemies,
-        // plus deadThisRoom gives us the running total.
-        int previousRoomsKills = totalEnemiesKilled - enemiesKilledInRoom;
-        enemiesKilledInRoom = deadThisRoom;
-        totalEnemiesKilled = previousRoomsKills + deadThisRoom;
+        // dead is the count from current lists only (resets when lists clear).
+        // previousRoomsKilled preserves kills from all cleared rooms so the
+        // bar always carries forward across transitions.
+        totalEnemiesKilled = previousRoomsKilled + dead;
+        enemiesKilledInRoom = dead;   // keep legacy field in sync
     }
 
     // --- CAMERA ---
@@ -295,25 +249,29 @@ namespace {
         float omega = 2.0f / camSmoothTime, xd = omega * dt;
         float expK = 1.0f / (1.0f + xd + 0.48f * xd * xd + 0.235f * xd * xd * xd);
         AEVec2 change = { camPos.x - camTarget.x, camPos.y - camTarget.y };
-        AEVec2 temp = { (camVel.x + omega * change.x) * dt, (camVel.y + omega * change.y) * dt };
+        AEVec2 temp = { (camVel.x + omega * change.x) * dt,
+                          (camVel.y + omega * change.y) * dt };
         camVel.x = (camVel.x - omega * temp.x) * expK;
         camVel.y = (camVel.y - omega * temp.y) * expK;
         camPos.x = camTarget.x + (change.x + temp.x) * expK;
         camPos.y = camTarget.y + (change.y + temp.y) * expK;
-        SetCameraPos(camPos); SetCamZoom(camZoom);
+        SetCameraPos(camPos);
+        SetCamZoom(camZoom);
     }
 
     void RenderWorldMap() {
         if (!bossAlive) {
-            DrawTintedMesh(GetTransformMtx({ currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y }, 0, { 45,125 }),
+            DrawTintedMesh(
+                GetTransformMtx({ currentLevel.doorPos.x - 335.0f, currentLevel.doorPos.y },
+                    0, { 45, 125 }),
                 wallMesh, nullptr, { 0, 0.8f * 255, 0, 255 }, 255);
         }
         if (inProceduralMap) { if (nextMap) nextMap->Render(); }
         else { map->Render(); }
     }
 
-    // GREEN  = kill progress (before boss spawns)
-    // RED    = boss HP bar (after boss spawns)
+    // GREEN  = kill progress  (before boss spawns)
+    // RED    = boss HP bar    (after boss spawns)
     // GREY   = boss dead
     void DrawBossHPProgressBar()
     {
@@ -325,7 +283,6 @@ namespace {
         float barY = (float)AEGfxGetWinMaxY() - bossHPProgressBarHeight * 0.5f;
         float bhpbMargin = 4.f;
 
-        // Use persistent totals so the bar never resets when entering a new room
         float killFraction = (totalEnemiesRequired > 0)
             ? AEClamp((float)totalEnemiesKilled / (float)totalEnemiesRequired, 0.f, 1.f)
             : 0.f;
@@ -335,7 +292,8 @@ namespace {
         float fillRatio = bossSpawned ? hpRatio : killFraction;
 
         AEVec2 bgSize = ToVec2(bossHPProgressBarWidth, bossHPProgressBarHeight);
-        AEVec2 bhpbSize = ToVec2((bossHPProgressBarWidth - bhpbMargin) * fillRatio, bossHPProgressBarHeight - bhpbMargin);
+        AEVec2 bhpbSize = ToVec2((bossHPProgressBarWidth - bhpbMargin) * fillRatio,
+            bossHPProgressBarHeight - bhpbMargin);
         AEVec2 bgPos = ToVec2(barX + bossHPProgressBarWidth * 0.5f, barY);
         AEVec2 bhpbPos = ToVec2(AEGfxGetWinMinX() + bhpbSize.x / 2 + bhpbMargin / 2, barY);
 
@@ -358,8 +316,8 @@ namespace {
 }
 
 // =============================================================
-void GameState::LoadState() {
-    // =============================================================
+void GameState::LoadState()
+{
     if (!GameDB::LoadEnemyDefs("Assets/Data/enemies.json"))
         std::cout << "WARNING: enemies.json failed to load.\n";
 
@@ -379,7 +337,10 @@ void GameState::LoadState() {
     if (!GameDB::LoadPlayerInventory("Assets/Data/Player/inventory.json"))
         std::cout << "WARNING: inventory.json failed to load.\n";
 
+    // Init BGM but do NOT play here — PlayNormal() is called in InitState
+    // so music only starts when the state actually becomes active, not during load.
     bgm.Init();
+
     halfMapWidth = mapWidth * 0.5f;
     halfMapHeight = mapHeight * 0.5f;
     circleMesh = RenderingManager::GetInstance()->GetMesh(MESH_CIRCLE);
@@ -431,8 +392,10 @@ void GameState::LoadState() {
 // =============================================================
 void GameState::InitState()
 {
-    // =============================================================
+    // Start music now — the state is live, so this is the correct moment.
+    // StopGameplayBGM() in ExitState ensures it won't bleed into MainMenu.
     bgm.PlayNormal();
+
     InitTutorial(currentLevel);
 
     unsigned csvCols = map->GetMapSize().first;
@@ -486,38 +449,47 @@ void GameState::InitState()
     gPlayer->ApplyShopUpgrades();
     gPlayer->Heal(gPlayer->GetMaxHP());
 
-    // --- CSV chest (unchanged) ---
-    LootChest* chest = dynamic_cast<LootChest*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
+    LootChest* chest = dynamic_cast<LootChest*>(
+        GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
     chest->Init(chestTilePos, { 35,35 }, 0, MESH_SQUARE, Collision::COL_RECT, { 35,35 },
         CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE)
         ->GetRenderData().tint = CreateColor(255, 0.84f * 255.f, 0, 255);
 
-    // --- CSV enemies (unchanged) ---
-    std::vector<AEVec2> csvSpawns = FindSafeSpawnPositions(*map, 0);
+    // Spawn all CSV enemies immediately — hand-placed by designer so trust all positions.
+    std::vector<AEVec2> csvSpawnPool = FindSafeSpawnPositions(*map, 0);
     csvEnemies.clear();
-    for (AEVec2 const& pos : csvSpawns) {
+
+    std::cout << "[InitState] csvSpawnPool has " << csvSpawnPool.size()
+        << " valid positions from TILE_ENEMY markers.\n";
+
+    for (AEVec2 const& pos : csvSpawnPool) {
         Enemy* e = SpawnWeightedEnemy(pos, 0.70f, 0.30f);
-        if (e) {
-            const char* tier = (e->GetDefinition().category == EnemyCategory::Elite) ? "Elite" : "Normal";
-            std::cout << "[CSV] " << e->GetDefinition().name << " (" << tier << ")\n";
-            csvEnemies.push_back(e);
+        if (!e) {
+            std::cout << "[InitState] SpawnWeightedEnemy returned null at ("
+                << pos.x << ", " << pos.y << ")\n";
+            continue;
         }
+        csvEnemies.push_back(e);
+        ++totalEnemiesRequired;
+        ++enemiesRequiredForBoss;
+        const char* tier = (e->GetDefinition().category == EnemyCategory::Elite)
+            ? "Elite" : "Normal";
+        std::cout << "[InitState] Spawned " << e->GetDefinition().name
+            << " (" << tier << ") at (" << pos.x << ", " << pos.y << ")\n";
     }
+    std::cout << "[InitState] Spawned " << csvEnemies.size() << " CSV enemies total.\n";
 
     boss = nullptr;
     bossSpawned = false;
     bossAlive = true;
-    enemiesRequiredForBoss = (int)csvEnemies.size();
     enemiesKilledInRoom = 0;
-    enemiesRequiredForBoss = (int)csvEnemies.size();
-    bossMaxHPProgressBar = (float)enemiesRequiredForBoss;
-    bossHPProgressBar = 0.f;
-    countedDeadEnemies.clear();
-    allProcEnemies.clear();
-
-    // Reset persistent progress counters for a fresh game session
+    enemiesRequiredForBoss = 0;
     totalEnemiesKilled = 0;
     totalEnemiesRequired = 0;
+    previousRoomsKilled = 0;
+
+    bossMaxHPProgressBar = 100.f;
+    bossHPProgressBar = 0.f;
 
     camPos = safeSpawnPos;
     camVel = { 0, 0 };
@@ -530,7 +502,6 @@ void GameState::InitState()
 // =============================================================
 void GameState::Update(double dt)
 {
-    // =============================================================
     if (AEInputCheckTriggered(AEVK_M)) {
         GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
         return;
@@ -543,16 +514,21 @@ void GameState::Update(double dt)
         std::cout << "[Debug] Mode " << (debugMode ? "ON" : "OFF") << "\n";
     }
 
-    // K — toggle the in-game keybind reference overlay (works in and out of debug mode)
-    if (AEInputCheckTriggered(AEVK_K)) {
+    if (AEInputCheckTriggered(AEVK_K))
         showKeybindOverlay = !showKeybindOverlay;
-    }
 
     if (debugMode) {
-        if (AEInputCheckTriggered(AEVK_F5)) { debugGodMode = !debugGodMode;       std::cout << "[Debug] God mode " << (debugGodMode ? "ON" : "OFF") << "\n"; }
-        if (AEInputCheckTriggered(AEVK_F6)) { debugShowStats = !debugShowStats;     std::cout << "[Debug] Live stats " << (debugShowStats ? "ON" : "OFF") << "\n"; }
-        if (AEInputCheckTriggered(AEVK_F7)) { debugFreezeEnemies = !debugFreezeEnemies; std::cout << "[Debug] Freeze AI " << (debugFreezeEnemies ? "ON" : "OFF") << "\n"; }
-
+        if (AEInputCheckTriggered(AEVK_F5)) {
+            debugGodMode = !debugGodMode;
+            std::cout << "[Debug] God mode " << (debugGodMode ? "ON" : "OFF") << "\n";
+        }
+        if (AEInputCheckTriggered(AEVK_F6)) {
+            std::cout << "[Debug] Live stats always on — F6 has no effect.\n";
+        }
+        if (AEInputCheckTriggered(AEVK_F7)) {
+            debugFreezeEnemies = !debugFreezeEnemies;
+            std::cout << "[Debug] Freeze AI " << (debugFreezeEnemies ? "ON" : "OFF") << "\n";
+        }
         if (AEInputCheckTriggered(AEVK_F1)) {
             for (Enemy* e : procEnemies) if (e && e->IsEnabled()) e->TakeDamage({ 99999.f, nullptr, DAMAGE_TYPE::TRUE_DAMAGE, nullptr });
             for (Enemy* e : csvEnemies)  if (e && e->IsEnabled()) e->TakeDamage({ 99999.f, nullptr, DAMAGE_TYPE::TRUE_DAMAGE, nullptr });
@@ -560,7 +536,7 @@ void GameState::Update(double dt)
         }
         if (AEInputCheckTriggered(AEVK_F2)) {
             if (!bossSpawned && inProceduralMap && nextMap) {
-                totalEnemiesKilled = totalEnemiesRequired; // fake the threshold
+                totalEnemiesKilled = totalEnemiesRequired;
                 TrySpawnBoss(*nextMap);
                 std::cout << "[Debug] Boss force-spawned.\n";
             }
@@ -581,14 +557,15 @@ void GameState::Update(double dt)
 
 #pragma region inputs_for_testing
     if (AEInputCheckTriggered(AEVK_L)) {
-        LootChest* chest = dynamic_cast<LootChest*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
+        LootChest* chest = dynamic_cast<LootChest*>(
+            GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
         AEVec2 m = GetMouseWorldVec();
         chest->Init(m, { 75,75 }, 1, MESH_SQUARE, Collision::COL_RECT, { 75,75 },
             CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE);
     }
-    if (AEInputCheckTriggered(AEVK_R)) {
+    if (AEInputCheckTriggered(AEVK_R))
         PostOffice::GetInstance()->Send("PetManager", new PetSkillMsg(PetSkillMsg::CAST_SKILL));
-    }
+
     if (AEInputCheckTriggered(AEVK_N)) {
         AEVec2 m = GetMouseWorldVec();
         Enemy* e = SpawnWeightedEnemy(m, 0.70f, 0.30f);
@@ -605,8 +582,7 @@ void GameState::Update(double dt)
 
     if (!gPlayer) return;
 
-    // Apply god mode — keep HP at max every frame
-    if (debugMode && debugGodMode && gPlayer)
+    if (debugMode && debugGodMode)
         gPlayer->Heal(gPlayer->GetMaxHP());
 
     if (teleportCooldown > 0.f) teleportCooldown -= (float)dt;
@@ -624,12 +600,9 @@ void GameState::Update(double dt)
             SetCameraPos(camPos);
             inProceduralMap = true;
             teleportCooldown = 2.f;
-            // Fresh start for procedural kill tracking
-            enemiesKilledInRoom = 0;
-            enemiesRequiredForBoss = 0;
-            bossMaxHPProgressBar = 1.f;
-            countedDeadEnemies.clear();
-            allProcEnemies.clear();
+            // Snapshot kills before clearing so the bar carries forward
+            previousRoomsKilled = totalEnemiesKilled;
+            csvEnemies.clear();
             SpawnProceduralEnemies(*nextMap);
             minimap->Reset();
             PetManager::GetInstance()->SetTilemap(*nextMap);
@@ -645,7 +618,9 @@ void GameState::Update(double dt)
             halfMapHeight = nextMap->GetFullMapSize().y * 0.5f;
             SetCameraPos(camPos);
             teleportCooldown = 2.f;
-            // Keep enemiesKilledInRoom and countedDeadEnemies — kills carry over
+            // Snapshot kills before clearing so the bar carries forward
+            previousRoomsKilled = totalEnemiesKilled;
+            procEnemies.clear();
             SpawnProceduralEnemies(*nextMap);
             minimap->Reset();
         }
@@ -658,19 +633,12 @@ void GameState::Update(double dt)
     if (len > 0 || gPlayer->HasForceApplied())
         playerDir = gPlayer->GetMoveDirNorm();
 
-    if (inProceduralMap) {
-        if (!(debugMode && debugFreezeEnemies)) CountDeadProcEnemies();
+    // Count every dead enemy each frame so the bar updates in real-time
+    if (!(debugMode && debugFreezeEnemies))
+        CountAllDeadEnemies();
+
+    if (inProceduralMap)
         TrySpawnBoss(*nextMap);
-    }
-    else {
-        // CSV kill counting — unchanged
-        if (!(debugMode && debugFreezeEnemies)) {
-            int dead = 0;
-            for (Enemy* e : csvEnemies)
-                if (e && (!e->IsEnabled() || e->GetHP() <= 0.f)) ++dead;
-            enemiesKilledInRoom = dead;
-        }
-    }
 
     if (boss && bossSpawned) {
         bossHPProgressBar = (boss->GetHP() / boss->GetMaxHP()) * bossMaxHPProgressBar;
@@ -688,8 +656,6 @@ void GameState::Update(double dt)
     minimap->Update(dt, *currentMap, *gPlayer);
     UpdateWorldMap((float)dt);
 
-    // Freeze AI save positions, run full update so damage/death/projectiles work,
-    // then snap living enemies back so only movement is blocked
     if (debugMode && debugFreezeEnemies) {
         auto& gameObjects = GameObjectManager::GetInstance()->GetGameObjects();
         std::vector<std::pair<GameObject*, AEVec2>> frozenEnemies;
@@ -715,8 +681,8 @@ void GameState::Update(double dt)
 }
 
 // =============================================================
-void GameState::Draw() {
-    // =============================================================
+void GameState::Draw()
+{
     RenderWorldMap();
     GameObjectManager::GetInstance()->DrawObjects();
     DrawBossHPProgressBar();
@@ -724,15 +690,16 @@ void GameState::Draw() {
     TileMap* currentMap = inProceduralMap ? nextMap : map;
     minimap->Render(*currentMap, *gPlayer);
 
-    // Debug visuals — drawn on top of everything
+    // Enemy stats always drawn — no debug toggle needed
+    DrawEnemyStats(MakeDebugCtx());
+    AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+
     if (debugMode) {
         DebugContext dbg = MakeDebugCtx();
-        if (debugShowStats)   DrawEnemyStats(dbg);
         AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
         if (showDebugOverlay) DrawDebugOverlay(dbg);
     }
 
-    // Keybind overlay — available always, independent of debug mode
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
     if (showKeybindOverlay) DrawKeybindOverlay(MakeDebugCtx());
 
@@ -749,8 +716,13 @@ void GameState::HandleTutorialDialogueRender()
         CreateColor(238, 128, 238, 255), TEXT_MIDDLE, 1);
 }
 
-void GameState::ExitState() {
+// =============================================================
+void GameState::ExitState()
+{
+    // Stop ALL gameplay music here so nothing bleeds into MainMenu or any
+    // other state. Each state starts its own music in its own InitState.
     bgm.StopGameplayBGM();
+
     gPlayer->ClearStatusEffects();
     inProceduralMap = false;
     teleportCooldown = 0.f;
@@ -760,16 +732,18 @@ void GameState::ExitState() {
     enemiesRequiredForBoss = 0;
     totalEnemiesKilled = 0;
     totalEnemiesRequired = 0;
-    // Reset all debug toggles on exit so they don't bleed into next session
+    previousRoomsKilled = 0;
+
     debugMode = false;
     showDebugOverlay = false;
     showKeybindOverlay = false;
     debugGodMode = false;
-    debugShowStats = false;
     debugFreezeEnemies = false;
 }
 
-void GameState::UnloadState() {
+// =============================================================
+void GameState::UnloadState()
+{
     if (wallMesh) AEGfxMeshFree(wallMesh);
 
     delete map;     map = nullptr;
@@ -780,8 +754,6 @@ void GameState::UnloadState() {
     boss = nullptr;
     csvEnemies.clear();
     procEnemies.clear();
-    allProcEnemies.clear();
-    countedDeadEnemies.clear();
 
     if (doTutorial && fairy) { delete fairy; fairy = nullptr; }
 
@@ -789,8 +761,8 @@ void GameState::UnloadState() {
     if (font >= 0) { AEGfxDestroyFont(font); font = -1; }
 }
 
-bool getBossAlive() { return bossAlive; }
+bool  getBossAlive() { return bossAlive; }
 float getBossHPProgressBar() { return bossHPProgressBar; }
-void setBossHPProgressBar(float current) { bossHPProgressBar = current; }
+void  setBossHPProgressBar(float v) { bossHPProgressBar = v; }
 float getBossMaxHPProgressBar() { return bossMaxHPProgressBar; }
-void setBossMaxHPProgressBar(float max) { bossMaxHPProgressBar = max; }
+void  setBossMaxHPProgressBar(float v) { bossMaxHPProgressBar = v; }

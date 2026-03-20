@@ -363,10 +363,21 @@ void PetManager::CreatePet()
 		break;
 	}
 
-	equippedPet->Init({}, { 25,25 }, 0, MESH_SQUARE, Collision::COL_CIRCLE, { 25,25 }, CreateBitmask(1, Collision::LAYER::ENEMIES), Collision::LAYER::PET);
 	Pets::PetData const& data{ it->second };
+
+	// Read size from extra["size"], fallback to 25 if missing
+	float petSize = 25.f;
+	auto sizeIt = data.extra.find("size");
+	if (sizeIt != data.extra.end() && !sizeIt->second.empty()) {
+		try { petSize = std::stof(sizeIt->second); }
+		catch (...) { petSize = 25.f; }
+	}
+
+	equippedPet->Init({}, { petSize, petSize }, 0, MESH_SQUARE, Collision::COL_CIRCLE, { petSize, petSize }, CreateBitmask(1, Collision::LAYER::ENEMIES), Collision::LAYER::PET);
 	equippedPet->SetData(data, selectedPetInfo.second);
-	equippedPet->GetRenderData().ReplaceTexture(data.texture.c_str(), 0);
+	// Pet_3 (Lycan) loads its own textures in Setup(), skip here to avoid overwriting them
+	if (selectedPetInfo.first != Pets::PET_3)
+		equippedPet->GetRenderData().ReplaceTexture(data.texture.c_str(), 0);
 	equippedPet->isSet = true;
 	equippedPet->SetEnabled(true);
 }

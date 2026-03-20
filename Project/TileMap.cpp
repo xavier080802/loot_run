@@ -12,24 +12,13 @@ std::map<TileMap::TILE_TYPE, AEGfxTexture*> TileMap::textureMap{};
 std::map<TileMap::TILE_TYPE, TileMap::Tile> TileMap::tileMap{};
 AEGfxVertexList* TileMap::pMesh{};
 
-// Shortcut aliases to keep the insert calls below readable
 using TileTex = std::pair<TileMap::TILE_TYPE, AEGfxTexture*>;
 using TilePair = std::pair<TileMap::TILE_TYPE, TileMap::Tile>;
 
-
-// ============================================================
-//  Constructor for CSV-based map
-//  Reads a CSV file where each cell is an integer tile type.
-//  offset shifts the whole map in world space.
-//  tileX / tileY are the pixel dimensions of a single tile.
-// ============================================================
 TileMap::TileMap(std::string filename, AEVec2 offset, float tileX, float tileY)
     : tileSize{ AEVec2{tileX, tileY} }, posOffset(offset)
 {
-    // only runs once no matter how many maps create
-    if (!textureMap.size()) {
-        LoadStatics();
-    }
+    if (!textureMap.size()) LoadStatics();
 
     CSV file{ filename };
     rows = file.GetRows();
@@ -37,23 +26,13 @@ TileMap::TileMap(std::string filename, AEVec2 offset, float tileX, float tileY)
     mapSize = { cols * tileX, rows * tileY };
 
     tiles.reserve(rows);
-
-    // Walk every cell in the CSV and build the 2D tile grid
     for (unsigned r{}; r < rows; ++r) {
         tiles.push_back({});
         tiles[r].reserve(cols);
-
         for (unsigned c{}; c < cols; ++c) {
             std::string data{ file.GetData(r, c) };
-
-            // Empty cells default to TILE_NONE (passable, no texture)
-            if (data == "") {
-                tiles[r].push_back(tileMap[TILE_NONE]);
-                continue;
-            }
-
+            if (data == "") { tiles[r].push_back(tileMap[TILE_NONE]); continue; }
             int v = std::stoi(data);
-            // Out-of-range values are clamped to TILE_NONE so bad CSV data doesn't crash
             tiles[r].push_back(tileMap[(v >= TILE_NUM ? TILE_NONE : static_cast<TILE_TYPE>(v))]);
         }
     }
@@ -62,17 +41,31 @@ TileMap::TileMap(std::string filename, AEVec2 offset, float tileX, float tileY)
 TileMap::TileMap(AEVec2 offset, float tileX, float tileY)
     : tileSize{ AEVec2{tileX, tileY} }, posOffset(offset), rows{ 0 }, cols{ 0 }
 {
-    if (!textureMap.size()) {
-        LoadStatics();
-    }
+    if (!textureMap.size()) LoadStatics();
 }
 
+// ============================================================
+//  HasClearance
+//  Returns true only when EVERY tile within 'radius' steps of
+//  (row, col) exists and is non-solid.  Out-of-bounds counts
+//  as solid so spawn points can never be placed near the edge.
+// ============================================================
+bool TileMap::HasClearance(unsigned row, unsigned col, int radius) const
+{
+    for (int dr = -radius; dr <= radius; ++dr) {
+        for (int dc = -radius; dc <= radius; ++dc) {
+            int r = (int)row + dr;
+            int c = (int)col + dc;
+            // Treat anything outside the map as solid
+            if (r < 0 || r >= (int)rows || c < 0 || c >= (int)cols) return false;
+            if (tiles[r][c].isSolid) return false;
+        }
+    }
+    return true;
+}
 
 // ============================================================
 //  GenerateProcedural
-//  Builds a randomised dungeon room using cellular automata.
-//  The same seed always produces the same map, which allow
-//  recreation of a room without storing the full tile data.
 // ============================================================
 void TileMap::GenerateProcedural(unsigned int r, unsigned int c, int seed)
 {
@@ -82,86 +75,65 @@ void TileMap::GenerateProcedural(unsigned int r, unsigned int c, int seed)
 
     srand(seed);
 
-    // Start with all walls, then carve out open space
     tiles.clear();
     tiles.resize(rows, std::vector<Tile>(cols, tileMap[TILE_WALL]));
 
     // --- Step 1: Random fill ---
-    // Border tiles stay as walls permanently; only inner tiles are randomised
-    for (unsigned int i = 1; i < rows - 1; ++i) {
-        for (unsigned int j = 1; j < cols - 1; ++j) {
+    for (unsigned int i = 1; i < rows - 1; ++i)
+        for (unsigned int j = 1; j < cols - 1; ++j)
             tiles[i][j] = (rand() % 100 < 55) ? tileMap[TILE_NONE] : tileMap[TILE_WALL];
-        }
-    }
 
-    // --- Step 2: Smooth the map ---
-// Each tile checks its 8 neighbours if 5+ are walls, it becomes a wall.
-// Running this 3 times turns random noise into proper cave rooms.
+    // --- Step 2: Smooth (3 passes of cellular automata) ---
     for (int pass = 0; pass < 3; ++pass) {
-        std::vector<std::vector<Tile>> next = tiles; // copy so reads don't see this pass's writes
+        std::vector<std::vector<Tile>> next = tiles;
         for (unsigned int i = 1; i < rows - 1; ++i) {
             for (unsigned int j = 1; j < cols - 1; ++j) {
                 int wallCount = 0;
                 for (int di = -1; di <= 1; ++di)
                     for (int dj = -1; dj <= 1; ++dj)
                         if (tiles[i + di][j + dj].type == TILE_WALL) ++wallCount;
-
-                // majority walls = become a wall, otherwise stay open
                 next[i][j] = (wallCount >= 5) ? tileMap[TILE_WALL] : tileMap[TILE_NONE];
             }
         }
         tiles = next;
     }
 
-    // map centre - used as anchor for everything below
     int midR = rows / 2;
     int midC = cols / 2;
 
-    // --- Step 3: Guaranteed 5x5 open center ---
-    // Ensure the player always has somewhere safe to spawn regardless of the random seed
+    // --- Step 3: Guaranteed 5x5 open centre ---
     for (int dr = -2; dr <= 2; ++dr)
         for (int dc = -2; dc <= 2; ++dc) {
             int rr = midR + dr, cc = midC + dc;
-            // Clamp to inner tiles only so we never overwrite the border wall
             if (rr > 0 && rr < (int)rows - 1 && cc > 0 && cc < (int)cols - 1)
                 tiles[rr][cc] = tileMap[TILE_NONE];
         }
 
     // --- Step 4: Cross corridors ---
-    // A horizontal + vertical corridor through the map centre guarantees that
-    // the connectors on each edge are always reachable from the spawn point.
-    // Only carve walls - already-open tiles are left alone.
     for (unsigned int j = 1; j < cols - 1; ++j)
-        if (tiles[midR][j].type == TILE_WALL)
-            tiles[midR][j] = tileMap[TILE_NONE];
-
+        if (tiles[midR][j].type == TILE_WALL) tiles[midR][j] = tileMap[TILE_NONE];
     for (unsigned int i = 1; i < rows - 1; ++i)
-        if (tiles[i][midC].type == TILE_WALL)
-            tiles[i][midC] = tileMap[TILE_NONE];
+        if (tiles[i][midC].type == TILE_WALL) tiles[i][midC] = tileMap[TILE_NONE];
 
     // --- Step 5: Edge connectors ---
-    // Two connector tiles + one open buffer tile on each of the four edges.
-    // The double connector acts as a thick doorway so it's hard to miss.
-    tiles[midR][0] = tileMap[TILE_CONNECTOR]; // left edge
+    tiles[midR][0] = tileMap[TILE_CONNECTOR];
     tiles[midR][1] = tileMap[TILE_CONNECTOR];
-    tiles[midR][2] = tileMap[TILE_NONE];       // open buffer
-    tiles[midR][cols - 1] = tileMap[TILE_CONNECTOR]; // right edge
+    tiles[midR][2] = tileMap[TILE_NONE];
+    tiles[midR][cols - 1] = tileMap[TILE_CONNECTOR];
     tiles[midR][cols - 2] = tileMap[TILE_CONNECTOR];
     tiles[midR][cols - 3] = tileMap[TILE_NONE];
-    tiles[0][midC] = tileMap[TILE_CONNECTOR]; // top edge
+    tiles[0][midC] = tileMap[TILE_CONNECTOR];
     tiles[1][midC] = tileMap[TILE_CONNECTOR];
     tiles[2][midC] = tileMap[TILE_NONE];
-    tiles[rows - 1][midC] = tileMap[TILE_CONNECTOR]; // bottom edge
+    tiles[rows - 1][midC] = tileMap[TILE_CONNECTOR];
     tiles[rows - 2][midC] = tileMap[TILE_CONNECTOR];
     tiles[rows - 3][midC] = tileMap[TILE_NONE];
 
     // --- Step 6: Enemy and chest placement ---
-    // Only scatter into open tiles that aren't on the corridors or the safe center.
-    // ~4% chance of enemy, ~3% chance of chest per qualifying tile.
-    // Start at i=3/j=3 so the 2-tile clearance check never reads out of bounds.
-    // Enemy collision bodies are up to 60px and tiles are 115px — a 1-tile
-    // gap isn't enough clearance, so we require all tiles within a 2-tile box
-    // around the candidate to be non-solid.
+    // Clearance radius expanded to 3 tiles (~345 px on 115 px tiles).
+    // This guarantees a full enemy body-width gap from every wall so
+    // enemies never clip into geometry on spawn.
+    // HasClearance() also bounds-checks, so no out-of-bounds reads.
     for (unsigned int i = 3; i < rows - 3; ++i) {
         for (unsigned int j = 3; j < cols - 3; ++j) {
             if (tiles[i][j].type != TILE_NONE) continue;
@@ -171,12 +143,8 @@ void TileMap::GenerateProcedural(unsigned int r, unsigned int c, int seed)
             bool inCenter = (dr >= -2 && dr <= 2 && dc >= -2 && dc <= 2);
             if (onCorridor || inCenter) continue;
 
-            // 2-tile clearance box — reject if any tile within 2 steps is solid
-            bool nearWall = false;
-            for (int cr = -2; cr <= 2 && !nearWall; ++cr)
-                for (int cc2 = -2; cc2 <= 2 && !nearWall; ++cc2)
-                    if (tiles[i + cr][j + cc2].isSolid) nearWall = true;
-            if (nearWall) continue;
+            // Use HasClearance with radius 3 instead of the old hand-rolled loop
+            if (!HasClearance(i, j, 3)) continue;
 
             int chance = rand() % 100;
             if (chance < 4) tiles[i][j] = tileMap[TILE_ENEMY];
@@ -185,34 +153,26 @@ void TileMap::GenerateProcedural(unsigned int r, unsigned int c, int seed)
     }
 }
 
-
 // ============================================================
-//  Render (world-space version)
-//  Draws every non-empty tile transformed through the camera.
-//  TILE_NONE and tiles with no texture are skipped silently.
+//  Render
 // ============================================================
 void TileMap::Render() const
 {
     for (unsigned int r = 0; r < rows; r++) {
         for (unsigned int c = 0; c < cols; c++) {
             if (tiles[r][c].type == TILE_NONE) continue;
-
             auto it = textureMap.find(tiles[r][c].type);
             if (it == textureMap.end() || it->second == nullptr) continue;
 
             f32    rot = 0;
             AEVec2 pos{ GetTilePosition(r, c) };
             AEVec2 scale = tileSize;
-
-            // Apply camera transform so the tile moves with the world view
             GetObjViewFromCamera(&pos, &rot, &scale);
             DrawTintedMesh(GetTransformMtx(pos, rot, scale), pMesh, it->second, { 255,255,255,255 }, 255);
         }
     }
 }
-// Minimap render - draws the tilemap scaled down into the minimap box.
-// offsetPos = minimap centre on screen, scale = shrink factor to fit the box.
-// isHud = true skips camera correction since the minimap is fixed to the screen.
+
 void TileMap::Render(AEVec2 offsetPos, float rotOffset, AEVec2 scale, bool isHud) const
 {
     for (unsigned int r = 0; r < rows; r++) {
@@ -224,36 +184,25 @@ void TileMap::Render(AEVec2 offsetPos, float rotOffset, AEVec2 scale, bool isHud
             f32    rot = rotOffset;
             AEVec2 pos{ GetTilePosition(r, c) * scale };
             AEVec2 tileScale = tileSize;
-
-            if (!isHud) GetObjViewFromCamera(&pos, &rot, &tileScale); // world render only
+            if (!isHud) GetObjViewFromCamera(&pos, &rot, &tileScale);
             DrawTintedMesh(GetTransformMtx(pos + offsetPos, rot, tileScale * scale),
                 pMesh, it->second, { 255,255,255,255 }, 255);
         }
     }
 }
 
-
-// Converts a (row, col) index to a world-space position.
-// Tiles are anchored at their centre, and row 0 is at the top
-// of the map (y increases downward in tile space but the world
-// y-axis points up, so we flip with (rows - 1 - rowInd)).
 AEVec2 TileMap::GetTilePosition(unsigned rowInd, unsigned colInd) const
 {
     AEVec2 out{
-        colInd * tileSize.x + tileSize.x * 0.5f,          // centre of column
-        (rows - 1 - rowInd) * tileSize.y                  // flip row so row 0 = top
+        colInd * tileSize.x + tileSize.x * 0.5f,
+        (rows - 1 - rowInd) * tileSize.y
     };
-    return out - mapSize * 0.5f + posOffset; // shift so the map is centred at posOffset
+    return out - mapSize * 0.5f + posOffset;
 }
 
-// Converts a world-space position back to a (col, row) float index.
-// The returned x = column index, y = row index.
-// Fractional values indicate a position inside a tile - callers that
-// want the actual tile should cast to int.
-// x = column index, y = row index.
 AEVec2 TileMap::GetTileIndFromPos(AEVec2 pos) const
 {
-    AEVec2 p{ pos + mapSize * 0.5f - posOffset }; // shift into local tile space
+    AEVec2 p{ pos + mapSize * 0.5f - posOffset };
     AEVec2 out{
         (f32)((int)(p.x / tileSize.x)),
         (f32)((int)(-(p.y - tileSize.y * 0.5f) / tileSize.y + (rows - 1)))
@@ -261,8 +210,6 @@ AEVec2 TileMap::GetTileIndFromPos(AEVec2 pos) const
     return out;
 }
 
-// Given a world position, returns the tile sitting there.
-// Returns nullptr if the position is outside the map.
 TileMap::Tile const* TileMap::QueryTile(AEVec2 pos) const
 {
     AEVec2 inds{ GetTileIndFromPos(pos) };
@@ -270,20 +217,19 @@ TileMap::Tile const* TileMap::QueryTile(AEVec2 pos) const
     return &tiles[(unsigned)inds.y][(unsigned)inds.x];
 }
 
-// Same but takes a row/col index directly instead of a world position.
 TileMap::Tile const* TileMap::QueryTile(unsigned rowInd, unsigned colInd) const
 {
     if (colInd < 0 || colInd >= cols || rowInd < 0 || rowInd >= rows) return nullptr;
     return &tiles[rowInd][colInd];
 }
 
-// Same as QueryTile(pos) but also hands back the row/col index,
-// so the caller doesn't need to calculate it separately.
 std::pair<TileMap::Tile const*, AEVec2> TileMap::QueryTileAndInd(AEVec2 pos) const
 {
     AEVec2 inds{ GetTileIndFromPos(pos) };
-    //If Index out of bounds, tile should be nullptr
-    return std::make_pair((inds.x < 0 || inds.x >= cols || inds.y < 0 || inds.y >= rows) ? nullptr : &tiles[(unsigned)inds.y][(unsigned)inds.x], inds);
+    return std::make_pair(
+        (inds.x < 0 || inds.x >= cols || inds.y < 0 || inds.y >= rows)
+        ? nullptr : &tiles[(unsigned)inds.y][(unsigned)inds.x],
+        inds);
 }
 
 AEVec2 TileMap::SnapPosToTile(AEVec2 pos) const
@@ -292,8 +238,6 @@ AEVec2 TileMap::SnapPosToTile(AEVec2 pos) const
     return GetTilePosition((unsigned)inds.y, (unsigned)inds.x);
 }
 
-// Swaps the tile at (row, col) to a new type.
-// Returns nullptr if the indices are out of bounds.
 TileMap::Tile const* TileMap::ChangeTile(unsigned row, unsigned col, TILE_TYPE newType)
 {
     if (col < 0 || col >= cols || row < 0 || row >= rows) return nullptr;
@@ -301,10 +245,6 @@ TileMap::Tile const* TileMap::ChangeTile(unsigned row, unsigned col, TILE_TYPE n
     return &tiles[row][col];
 }
 
-
-
-// Returns true if the world position falls on a wall tile or outside the map.
-// Treating out-of-bounds as solid stops entities from walking off the edge.
 bool TileMap::IsWall(AEVec2 worldPos) const
 {
     AEVec2 inds = GetTileIndFromPos(worldPos);
@@ -312,7 +252,6 @@ bool TileMap::IsWall(AEVec2 worldPos) const
     return tiles[(unsigned)inds.y][(unsigned)inds.x].type == TILE_WALL;
 }
 
-// Returns true if the world position is a connector tile (a room exit/entry portal).
 bool TileMap::IsConnector(AEVec2 worldPos) const
 {
     AEVec2 inds = GetTileIndFromPos(worldPos);
@@ -320,25 +259,14 @@ bool TileMap::IsConnector(AEVec2 worldPos) const
     return tiles[(unsigned)inds.y][(unsigned)inds.x].type == TILE_CONNECTOR;
 }
 
-
-// Returns the world position of the first open tile in row 1 (second row from top).
-// Used for rooms where the player enters from the top connector.
-// Falls back to (row 1, col 0) if no open tile exists in that row.
 AEVec2 TileMap::GetSecondRowSpawn() const
 {
     if (rows < 2) return { 0, 0 };
-
-    for (unsigned col = 0; col < cols; ++col) {
-        if (tiles[1][col].type == TILE_NONE)
-            return GetTilePosition(1, col);
-    }
-
-    return GetTilePosition(1, 0); // fallback
+    for (unsigned col = 0; col < cols; ++col)
+        if (tiles[1][col].type == TILE_NONE) return GetTilePosition(1, col);
+    return GetTilePosition(1, 0);
 }
 
-// Finds the best open spawn point near the map centre by spiralling outward.
-// Prefers tiles with at least 2 open orthogonal neighbours so the player
-// isn't spawned in a dead-end pocket.
 AEVec2 TileMap::GetSpawnPoint() const
 {
     int midR = (int)rows / 2;
@@ -347,67 +275,41 @@ AEVec2 TileMap::GetSpawnPoint() const
     for (int radius = 0; radius < (int)rows; ++radius) {
         for (int dr = -radius; dr <= radius; ++dr) {
             for (int dc = -radius; dc <= radius; ++dc) {
-                // Only check the shell of the current radius, not the interior
                 if (abs(dr) != radius && abs(dc) != radius) continue;
-
                 int r = midR + dr;
                 int c = midC + dc;
-
-                // Stay away from the border walls
                 if (r < 1 || r >= (int)rows - 1 || c < 1 || c >= (int)cols - 1) continue;
                 if (tiles[r][c].type != TILE_NONE) continue;
 
-                // Count how many orthogonal neighbours are open
                 int openNeighbors = 0;
                 if (tiles[r - 1][c].type == TILE_NONE) ++openNeighbors;
                 if (tiles[r + 1][c].type == TILE_NONE) ++openNeighbors;
                 if (tiles[r][c - 1].type == TILE_NONE) ++openNeighbors;
                 if (tiles[r][c + 1].type == TILE_NONE) ++openNeighbors;
-
                 if (openNeighbors >= 2)
                     return GetTilePosition((unsigned)r, (unsigned)c);
             }
         }
     }
-
-    return posOffset; // fallback
+    return posOffset;
 }
 
-
-// ============================================================
-//  LoadStatics
-//  Called once the first time any TileMap is constructed.
-//  Sets up the shared mesh, default collision properties for
-//  every tile type, and loads all tile textures.
-//
-//  Collision defaults: every tile type starts as an OBSTACLE.
-//  then explicitly mark the non-solid types (NONE, ENEMY,
-//  CHEST, CONNECTOR) as passable.
-// ============================================================
 void TileMap::LoadStatics()
 {
     RenderingManager* rm = RenderingManager::GetInstance();
     pMesh = rm->GetMesh(MESH_SQUARE);
 
-    // Default all types to solid obstacles first
-    for (int i{}; i < TILE_NUM; ++i) {
-        tileMap.insert(TilePair(
-            static_cast<TILE_TYPE>(i),
-            { static_cast<TILE_TYPE>(i), Collision::OBSTACLE }
-        ));
-    }
+    for (int i{}; i < TILE_NUM; ++i)
+        tileMap.insert(TilePair(static_cast<TILE_TYPE>(i),
+            { static_cast<TILE_TYPE>(i), Collision::OBSTACLE }));
 
-    // Mark non-solid tile types as passable
     tileMap[TILE_NONE].layer = Collision::NONE;
     tileMap[TILE_NONE].isSolid = false;
-
-    tileMap[TILE_ENEMY].layer = Collision::NONE;  // spawn marker, not a physical wall
+    tileMap[TILE_ENEMY].layer = Collision::NONE;
     tileMap[TILE_ENEMY].isSolid = false;
-
-    tileMap[TILE_CHEST].layer = Collision::NONE;  // chest is handled by game logic, not tile collision
+    tileMap[TILE_CHEST].layer = Collision::NONE;
     tileMap[TILE_CHEST].isSolid = false;
-
-    tileMap[TILE_CONNECTOR].layer = Collision::NONE; // player walks through connectors to change rooms
+    tileMap[TILE_CONNECTOR].layer = Collision::NONE;
     tileMap[TILE_CONNECTOR].isSolid = false;
 
     textureMap.insert(TileTex(TILE_NONE, nullptr));
