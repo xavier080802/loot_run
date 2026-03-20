@@ -91,7 +91,6 @@ void PetState::InitState() {
 	selectedRank = Pets::COMMON;
 
 	// Restore highlight if a pet was already equipped from a previous visit.
-	// We only need the manager's public API — no Pet member needed.
 	auto const& inventory = PetManager::GetInstance()->GetInventory();
 	int idx = 0;
 	for (auto const& outer : inventory) {
@@ -100,7 +99,7 @@ void PetState::InitState() {
 			Pets::PET_TYPE t = static_cast<Pets::PET_TYPE>(outer.first);
 			Pets::PET_RANK rk = static_cast<Pets::PET_RANK>(inner.first);
 			// PetManager::GetEquippedType() returns the id stored in equippedPet->GetPetData()
-			// only when isSet is true — compare type and rank directly
+			// only when isSet is true compare type and rank directly
 			if (PetManager::GetInstance()->GetEquippedType() == t &&
 				PetManager::GetInstance()->GetEquippedRank() == rk)
 			{
@@ -206,7 +205,7 @@ void PetState::Draw() {
 				AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 			}
 
-			// Slot background — brighter when hovered or selected
+			// Slot background ï¿½ brighter when hovered or selected
 			GetTransformMtx(mtx, worldPos, 0.0f, worldSize);
 			AEGfxSetTransform(mtx.m);
 			if (isSelected)

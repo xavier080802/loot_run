@@ -151,7 +151,7 @@
         "multipliers": [],
         "rarityScaling": [ 1, 1.25, 1.5, 1.75, 2, 2.5 ],
         "skillCooldown": 5,
-        "skillDesc": "Placeholder Wolf Skill",
+        "skillDesc": "Calls upon the Lycan’s primal instinct to pursue your marked target.\nThe creature charges forward and strikes relentlessly once in range.\nRecast to bind its focus to another foe.",
         "texture": "Assets/lycan_default.png",
         "extra": {
           "attackCooldown": "1.0",
@@ -226,7 +226,7 @@
             "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
             "skillCooldown": 7,
             "skillDesc": "Trigger a burning aura that applies Sun.\nHitting enemies with Sun or gaining Glow stacks a certain number of times heals and cleanses a debuff.",
-            "dmgType": "ele",
+            "dmgTypes": "ele",
             "extra": { //Required to be strings
                 "auraDuration": "5",
                 "auraSize": "200",

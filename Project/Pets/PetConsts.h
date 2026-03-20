@@ -24,9 +24,9 @@ namespace Pets {
 		NONE,
 		PET_1, // Rock
 		PET_2, // Slime
-		PET_3, // Wolf
-		PET_4, // Whale
-		PET_5, // Garuda
+		PET_3, // Lycan
+		PET_4, // Scaylla
+		PET_5, // Phoenix
 		PET_6, // Dragon
 		NUM_PETS // Last
 	};

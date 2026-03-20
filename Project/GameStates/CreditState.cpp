@@ -33,10 +33,20 @@ namespace {
     ScrollState state = STATE_WAITING;
 
     float scrollBodyHeight = 0.0f;
+    const float SCROLL_FULL_HEIGHT = 680.0f;
+    const float SCROLL_UNROLL_SPEED = 10.0f;
+    const float SCROLL_W = 580.0f;
 
-    const float SCROLL_FULL_HEIGHT = 680.0f;  // world-unit height of the fully open scroll
-    const float SCROLL_UNROLL_SPEED = 10.0f;   // how fast the scroll opens — bigger is faster
-    const float SCROLL_W = 580.0f;  // world-unit width of the scroll
+    // Sprite is 35x75px.
+    // SPRITE_CAP_TOP  â€” pixels from top of sprite to where parchment starts
+    // SPRITE_CAP_BOT  â€” pixels from bottom of sprite to where parchment ends
+    // Only edit these two numbers to move the clip boundaries independently.
+    const float SPRITE_H = 75.0f;
+    const float SPRITE_CAP_TOP = 14.0f;
+    const float SPRITE_CAP_BOT = 14.0f;
+    // Extra world-unit padding pulled inward from the bottom clip â€” increase to
+    // make text disappear higher, decrease to let it go lower.
+    const float BOTTOM_PADDING = 50.0f;
 
     // -------------------------------------------------------
     // SCROLL SPRITE CLIP SETTINGS
@@ -50,20 +60,15 @@ namespace {
     const float SPRITE_CAP_BOT = 14.0f;
     float BOTTOM_PADDING = 87.0f;   // base extra gap at the bottom
 
-    float CAP_H = SCROLL_FULL_HEIGHT * (SPRITE_CAP_TOP / SPRITE_H);
-
-    // -------------------------------------------------------
-    // TEXT SETTINGS
-    // -------------------------------------------------------
     float yPos_credits = 0.0f;
-    const float LINE_H = 58.0f;   // gap between lines — increase for more spacing
-    const float SCROLL_SPEED = 1.0f;    // how fast text moves upward — bigger is faster
+    const float LINE_H = 58.0f;
+    const float SCROLL_SPEED = 1.0f;
 
     float flashTimer = 0.0f;
 
     // -------------------------------------------------------
     // CREDITS CONTENT
-    // Written TOP TO BOTTOM — first entry appears at the top
+    // Written TOP TO BOTTOM first entry appears at the top
     // of the scroll first as text scrolls upward.
     // All-caps lines are auto-coloured gold as section headers.
     // Use " " for blank spacing lines between sections.
@@ -77,7 +82,7 @@ namespace {
         "Xavier Lim",
         "TEAM LEAD and PROGRAMMER",
         " ",
-        "Edna",
+        "Edna Sim",
         "TECH LEAD and PROGRAMMER",
         " ",
         "Hong Teck",
@@ -94,7 +99,7 @@ namespace {
         "DR Soroor",
         " ",
         "SPECIAL THANKS TO",
-        "Placeholder",
+        "NParks falcon chicks cam",
         " ",
         "Created at",
         "DigiPen Institute of Technology Singapore",
@@ -151,50 +156,35 @@ namespace {
         DrawTintedMesh(GetTransformMtx(pos, 0.0f, size), squareMesh, texOpen, { 255, 255, 255, 255 }, 255);
     }
 
-    /**
-     * @brief Draws the closed scroll sprite.
-     *
-     * Shown during STATE_WAITING before the player clicks to reveal the credits.
-     *
-     * @param cx  World-space centre X. Passed by VALUE.
-     * @param cy  World-space centre Y. Passed by VALUE.
-     */
-    void DrawScrollClosed(float cx, float cy) {
+    void DrawScrollClosed(float cx, float cy)
+    {
         AEVec2 pos = { cx, cy };
         AEVec2 size = { SCROLL_W * scale, (SCROLL_W * 0.5f) * scale };
         DrawTintedMesh(GetTransformMtx(pos, 0.0f, size), squareMesh, texClosed, { 255, 255, 255, 255 }, 255);
     }
 }
 
-/**
- * @brief Loads all assets needed by the credits screen.
- *
- * Loads scroll sprites, font, click sound, and initialises the BGM manager.
- *
- * @note Called by:
- *   - GameStateManager - once when the state is first entered.
- */
-void CreditState::LoadState() {
+// =============================================================
+void CreditState::LoadState()
+{
+    // =============================================================
     squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
     Font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 28);
     texClosed = RenderingManager::GetInstance()->LoadTexture("Assets/scroll_closed.png");
     texOpen = RenderingManager::GetInstance()->LoadTexture("Assets/scroll_open.png");
+    std::cout << "[CreditState] scroll_closed: " << (texClosed ? "OK" : "FAILED") << "\n";
+    std::cout << "[CreditState] scroll_open:   " << (texOpen ? "OK" : "FAILED") << "\n";
     audioGroup = AEAudioCreateGroup();
     clickSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17766.wav");
-    creditsBGM.Init();
+    bgMusic = AEAudioLoadSound("Assets/Audio/PROSPECTUS - Corporate MSCCRP1_50.wav");
 }
 
-/**
- * @brief Resets all state variables and starts the credits music.
- *
- * Recalculates window scale so the scroll stays centred at any resolution.
- *
- * @note Called by:
- *   - GameStateManager - every time the player navigates to the credits screen.
- */
-void CreditState::InitState() {
-    winW = (float)AEGfxGetWinMaxX();
-    winH = (float)AEGfxGetWinMaxY();
+// =============================================================
+void CreditState::InitState()
+{
+    // =============================================================
+    winW = static_cast<float>(AEGfxGetWinMaxX());
+    winH = static_cast<float>(AEGfxGetWinMaxY());
     scale = (winW * 2.0f / DEFAULT_W) < (winH * 2.0f / DEFAULT_H)
         ? (winW * 2.0f / DEFAULT_W) : (winH * 2.0f / DEFAULT_H);
 
@@ -203,30 +193,21 @@ void CreditState::InitState() {
     flashTimer = 0.0f;
     yPos_credits = 0.0f;
 
-    creditsBGM.PlayCredits();
+    AEAudioPlay(bgMusic, audioGroup, 1.0f, 1.0f, -1);
 }
 
-/**
- * @brief Drives the credits state machine and advances animations each frame.
- *
- * WAITING   -> ticks flash timer, listens for any input to start unrolling.
- * UNROLLING -> grows scroll each frame until fully open, then switches to scrolling.
- * SCROLLING -> moves text upward each frame.
- * ESC always returns to the main menu regardless of state.
- *
- * @param dt  Delta time in seconds. Passed by VALUE.
- *
- * @note Called by:
- *   - GameStateManager - every frame while this state is active.
- */
-void CreditState::Update(double dt) {
-    // ESC always goes back to main menu
+// =============================================================
+void CreditState::Update(double dt)
+{
+    // =============================================================
+    (void)dt;
+
     if (AEInputCheckTriggered(AEVK_ESCAPE)) {
         GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
         return;
     }
 
-    // WAITING — tick flash timer, start unroll on any input
+    // WAITING ï¿½ tick flash timer, start unroll on any input
     if (state == STATE_WAITING) {
         flashTimer += static_cast<float>(dt);
         if (AEInputCheckTriggered(AEVK_LBUTTON) ||
@@ -234,52 +215,36 @@ void CreditState::Update(double dt) {
             AEInputCheckTriggered(AEVK_RETURN)) {
             AEAudioPlay(clickSound, audioGroup, 0.6f, 0.6f, 0);
             state = STATE_UNROLLING;
+            scrollBodyHeight = 0.0f;
         }
         return;
     }
 
-    // UNROLLING — grow scroll downward until fully open, then start scrolling
+    // UNROLLING grow scroll downward until fully open, then start scrolling
     if (state == STATE_UNROLLING) {
         scrollBodyHeight += SCROLL_UNROLL_SPEED * scale;
         float fullH = SCROLL_FULL_HEIGHT * scale;
         if (scrollBodyHeight >= fullH) {
             scrollBodyHeight = fullH;
             state = STATE_SCROLLING;
-
-            // Start text just below the bottom clip boundary so it scrolls upward into view.
-            // bottomSafety must match the value used in Draw() so the start position
-            // is exactly at the bottom edge where text is allowed to appear.
             float cy = 0.0f;
-            float bottomSafety = 120.0f * scale;
-            yPos_credits = cy + (fullH * 0.5f) - (CAP_H * scale) - BOTTOM_PADDING - bottomSafety;
+            yPos_credits = cy + fullH * 0.5f - CAP_H * scale;
         }
         return;
     }
 
-    // SCROLLING — move text upward each frame
+    // SCROLLING ï¿½ move text upward each frame
     if (state == STATE_SCROLLING) {
         yPos_credits -= SCROLL_SPEED * scale;
     }
 }
 
-/**
- * @brief Renders the credits screen based on the current state.
- *
- * WAITING   -> closed scroll + flashing "Touch to reveal" prompt.
- * UNROLLING -> open scroll growing downward, no text yet.
- * SCROLLING -> open scroll at full size with credits text clipped inside the parchment.
- *
- * Text is clipped manually since AE has no built-in scissor rect —
- * any line outside clipWorldTop / clipWorldBottom is skipped.
- *
- * @note Called by:
- *   - GameStateManager - every frame after Update().
- */
-void CreditState::Draw() {
+void CreditState::Draw()
+{
     AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
     float cx = 0.0f, cy = 0.0f;
 
-    // WAITING — closed scroll + flashing prompt
+    // WAITING ï¿½ closed scroll + flashing prompt
     if (state == STATE_WAITING) {
         DrawScrollClosed(cx, cy);
         AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
@@ -292,23 +257,16 @@ void CreditState::Draw() {
     else {
         float fullH = SCROLL_FULL_HEIGHT * scale;
 
-        // UNROLLING — draw growing scroll only, no text yet
-        // SCROLLING — draw fully open scroll then clip and draw text
+        // UNROLLING ï¿½ draw growing scroll only, no text yet
+        // SCROLLING ï¿½ draw fully open scroll then clip and draw text
         DrawScroll(cx, cy, (state == STATE_UNROLLING) ? scrollBodyHeight : fullH);
 
-        if (state == STATE_SCROLLING) {
-            // Clip boundaries — text outside these is skipped so it never draws over the curl rods.
-            // topSafety    = extra inset from the top curl rod
-            // bottomSafety = extra inset from the bottom curl rod (must match Update's value)
-            float topSafety = 40.0f * scale;
-            float bottomSafety = 120.0f * scale;  // keep in sync with Update()
-            float clipWorldTop = cy - (fullH * 0.5f) + (CAP_H * scale) + topSafety;
-            float clipWorldBottom = cy + (fullH * 0.5f) - (CAP_H * scale) - BOTTOM_PADDING - bottomSafety;
+    float fullH = SCROLL_FULL_HEIGHT * scale;
+    float scaledW = SCROLL_W * scale;
 
-            AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-
-            int totalLines = 0;
-            while (credits[totalLines] != nullptr) totalLines++;
+    DrawScroll(cx, cy, fullH);
+    float clipWorldTop = cy - fullH * 0.5f + SCROLL_FULL_HEIGHT * (SPRITE_CAP_TOP / SPRITE_H) * scale;
+    float clipWorldBottom = cy + fullH * 0.5f - SCROLL_FULL_HEIGHT * (SPRITE_CAP_BOT / SPRITE_H) * scale - BOTTOM_PADDING;
 
             // Draw each line, skipping anything outside the parchment area
             for (int i = 0; i < totalLines; ++i) {
@@ -316,17 +274,9 @@ void CreditState::Draw() {
 
                 if (y < clipWorldTop || y > clipWorldBottom) continue;
 
-                if (IsHeader(credits[i])) {
-                    // Section headers — dark gold
-                    DrawAEText(Font, credits[i], { cx, y }, scale * 0.85f,
-                        CreateColor(160, 110, 10, 255), TEXT_MIDDLE);
-                }
-                else {
-                    // Names and regular lines — dark brown
-                    DrawAEText(Font, credits[i], { cx, y }, scale * 0.7f,
-                        CreateColor(40, 25, 10, 255), TEXT_MIDDLE);
-                }
-            }
+    for (int i = totalLines - 1; i >= 0; --i) {
+        int   reversedIdx = (totalLines - 1) - i;
+        float y = yPos_credits + reversedIdx * LINE_H * scale;
 
             // Once the last line scrolls above the top edge, loop back to the bottom
             float lastLineY = yPos_credits + ((totalLines - 1) * LINE_H * scale);
@@ -336,32 +286,23 @@ void CreditState::Draw() {
         }
     }
 
-    // ESC hint — always visible in the bottom corner
+    // ESC hint  always visible in the bottom corner
     AEVec2 hintPos = DefaultToWorld(80.0f, DEFAULT_H - 40.0f);
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
     DrawAEText(Font, "[ESC] Back", hintPos, scale * 0.75f,
         CreateColor(140, 140, 140, 255), TEXT_MIDDLE);
 }
 
-/**
- * @brief Stops the credits music when leaving the screen.
- *
- * @note Called by:
- *   - GameStateManager - when the player presses ESC or the state changes.
- */
-void CreditState::ExitState() {
-    creditsBGM.StopCredits();
+void CreditState::ExitState()
+{
+    AEAudioStopGroup(audioGroup);
 }
 
-/**
- * @brief Frees all assets loaded in LoadState.
- *
- * @note Called by:
- *   - GameStateManager - when unloading the credits screen.
- */
-void CreditState::UnloadState() {
+void CreditState::UnloadState()
+{
     if (Font >= 0) AEGfxDestroyFont(Font);
     AEAudioUnloadAudio(clickSound);
+    AEAudioUnloadAudio(bgMusic);
     AEAudioUnloadAudioGroup(audioGroup);
     creditsBGM.Exit();
 }

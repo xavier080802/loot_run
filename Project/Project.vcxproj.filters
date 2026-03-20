@@ -287,6 +287,8 @@
     <ClCompile Include="Pets\Pet_5.cpp">
       <Filter>Source Files\Pets\Derived</Filter>
     </ClCompile>
+    <ClCompile Include="GameStates\CreditState.cpp">
+      <Filter>Source Files\GameStates</Filter>
     <ClCompile Include="Pets\Pet_4.cpp">
       <Filter>Source Files\Pets\Derived</Filter>
     </ClCompile>
@@ -534,6 +536,8 @@
     <ClInclude Include="Pets\Pet_5.h">
       <Filter>Header Files\Pets\Derived</Filter>
     </ClInclude>
+    <ClInclude Include="GameStates\CreditState.h">
+      <Filter>Header Files\GameStates</Filter>
     <ClInclude Include="Pets\Pet_4.h">
       <Filter>Header Files\Pets\Derived</Filter>
     </ClInclude>
