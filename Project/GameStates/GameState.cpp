@@ -26,7 +26,7 @@
 #include "../UI/Minimap.h"
 #include "../Drops/DropSystem.h"
 #include "../Debug.h"
-#include <ctime>
+
 namespace {
     // --- GLOBAL SYSTEMS ---
     AEGfxVertexList* circleMesh = nullptr;
@@ -55,6 +55,12 @@ namespace {
 
     int   enemiesKilledInRoom = 0;
     int   enemiesRequiredForBoss = 0;
+
+    // Persistent kill totals that accumulate across all procedural rooms.
+    // These are never reset between rooms — only on a full state exit.
+    int   totalEnemiesKilled = 0;
+    int   totalEnemiesRequired = 0;
+
     float bossSpawnThreshold = 1.0f;
 
     // --- CAMERA DATA ---
@@ -89,14 +95,14 @@ namespace {
     // Toggle with TAB. While active, additional keys are live.
     // Press TAB again (or F3) to show the command list overlay.
     // =========================================================
-    bool debugMode = false;  // master toggle � TAB key
+    bool debugMode = false;  // master toggle — TAB key
     bool showDebugOverlay = false;  // TAB also shows the debug help overlay
-    bool showKeybindOverlay = false; // K � shows all in-game keybinds overlay
+    bool showKeybindOverlay = false; // K — shows all in-game keybinds overlay
 
     // Individual debug feature toggles
-    bool debugGodMode = false; // F5 � invincible
-    bool debugShowStats = false; // F6 � live enemy HP labels
-    bool debugFreezeEnemies = false; // F7 � enemies stop moving
+    bool debugGodMode = false; // F5 — invincible
+    bool debugShowStats = false; // F6 — live enemy HP labels
+    bool debugFreezeEnemies = false; // F7 — enemies stop moving
 
     // Builds a DebugContext from the current anonymous-namespace state.
     // Pass this to every Debug.h function instead of raw globals.
@@ -129,7 +135,7 @@ namespace {
         int midR = (int)rows / 2;
         int midC = (int)cols / 2;
 
-        // Pass 1: designer-placed TILE_ENEMY markers � use all of them directly
+        // Pass 1: designer-placed TILE_ENEMY markers — use all of them directly
         for (unsigned r = 0; r < rows; ++r) {
             for (unsigned c = 0; c < cols; ++c) {
                 const TileMap::Tile* t = tilemap.QueryTile(r, c);
@@ -139,14 +145,14 @@ namespace {
         }
         if (!positions.empty()) return positions;
 
-        // Pass 2: procedural fallback � spaced open tiles only
+        // Pass 2: procedural fallback — spaced open tiles only
         const float MIN_SPACING = 115.0f * 3.0f;
         for (unsigned r = 3; r < rows - 3 && (int)positions.size() < maxCount; ++r) {
             for (unsigned c = 3; c < cols - 3 && (int)positions.size() < maxCount; ++c) {
                 const TileMap::Tile* t = tilemap.QueryTile(r, c);
                 if (!t || t->type != TileMap::TILE_NONE || t->isSolid) continue;
 
-                // Check all 8 neighbours AND a 2-tile buffer � reject if any nearby tile is solid
+                // Check all 8 neighbours AND a 2-tile buffer — reject if any nearby tile is solid
                 bool nearWall = false;
                 for (int dr2 = -2; dr2 <= 2 && !nearWall; ++dr2) {
                     for (int dc2 = -2; dc2 <= 2 && !nearWall; ++dc2) {
@@ -181,7 +187,12 @@ namespace {
 
         procEnemies.clear();
         enemiesKilledInRoom = 0;
-        enemiesRequiredForBoss = (int)spawnPositions.size();
+
+        // Add this room's enemies to the persistent total required count.
+        // enemiesKilledInRoom still tracks this room only (for CountDeadProcEnemies),
+        // but the progress bar uses totalEnemiesKilled / totalEnemiesRequired.
+        totalEnemiesRequired += (int)spawnPositions.size();
+
         bossSpawned = false;
 
         for (AEVec2 const& pos : spawnPositions) {
@@ -189,17 +200,22 @@ namespace {
             if (e) procEnemies.push_back(e);
         }
         std::cout << "[ProcRoom] Spawned " << procEnemies.size()
-            << " enemies. Need " << enemiesRequiredForBoss << " kills for boss.\n";
+            << " enemies. Need " << enemiesRequiredForBoss << " kills for boss."
+            << " (Total progress: " << totalEnemiesKilled << "/" << totalEnemiesRequired << ")\n";
     }
 
     void TrySpawnBoss(TileMap const& tilemap)
     {
         if (bossSpawned || !inProceduralMap) return;
-        if (enemiesRequiredForBoss <= 0) return;
-        float killFraction = (float)enemiesKilledInRoom / (float)enemiesRequiredForBoss;
+        if (totalEnemiesRequired <= 0) return;
+        float killFraction = (float)totalEnemiesKilled / (float)totalEnemiesRequired;
         if (killFraction < bossSpawnThreshold) return;
 
         AEVec2 bossPos = tilemap.GetSpawnPoint();
+        if (gPlayer) {
+            bossPos = { gPlayer->GetPos().x + playerDir.x * 250.0f,
+                        gPlayer->GetPos().y + playerDir.y * 250.0f };
+        }
         boss = SpawnRandomBossEnemy(bossPos);
         if (!boss) return;
 
@@ -212,10 +228,17 @@ namespace {
 
     void CountDeadProcEnemies()
     {
-        int dead = 0;
+        int deadThisRoom = 0;
         for (Enemy* e : procEnemies)
-            if (e && (!e->IsEnabled() || e->GetHP() <= 0.f)) ++dead;
-        enemiesKilledInRoom = dead;
+            if (e && (!e->IsEnabled() || e->GetHP() <= 0.f)) ++deadThisRoom;
+
+        // totalEnemiesKilled is rebuilt each frame as:
+        // (all kills from previous rooms) + (kills so far in current room).
+        // previousRoomsKills is totalEnemiesRequired minus this room's enemies,
+        // plus deadThisRoom gives us the running total.
+        int previousRoomsKills = totalEnemiesKilled - enemiesKilledInRoom;
+        enemiesKilledInRoom = deadThisRoom;
+        totalEnemiesKilled = previousRoomsKills + deadThisRoom;
     }
 
     // --- CAMERA ---
@@ -261,8 +284,9 @@ namespace {
         float barY = (float)AEGfxGetWinMaxY() - bossHPProgressBarHeight * 0.5f;
         float bhpbMargin = 4.f;
 
-        float killFraction = (enemiesRequiredForBoss > 0)
-            ? AEClamp((float)enemiesKilledInRoom / (float)enemiesRequiredForBoss, 0.f, 1.f)
+        // Use persistent totals so the bar never resets when entering a new room
+        float killFraction = (totalEnemiesRequired > 0)
+            ? AEClamp((float)totalEnemiesKilled / (float)totalEnemiesRequired, 0.f, 1.f)
             : 0.f;
         float hpRatio = (bossSpawned && bossMaxHPProgressBar > 0)
             ? AEClamp(bossHPProgressBar / bossMaxHPProgressBar, 0.f, 1.f)
@@ -326,8 +350,8 @@ void GameState::LoadState() {
     float    procTileSize = 115.f;
     unsigned procRows = 50, procCols = 50;
     nextMap = new TileMap({ 0.f, 0.f }, procTileSize, procTileSize);
-    srand((unsigned int)time(nullptr));
-    nextMap->GenerateProcedural(procRows, procCols, rand());
+    srand(1234);
+    nextMap->GenerateProcedural(procRows, procCols, 1234);
 
     unsigned csvCols = map->GetMapSize().first;
     unsigned csvRows = map->GetMapSize().second;
@@ -440,11 +464,15 @@ void GameState::InitState()
 
     boss = nullptr;
     bossSpawned = false;
-    bossAlive = true;  // no boss yet, but enemies are alive
+    bossAlive = true;
     enemiesRequiredForBoss = (int)csvEnemies.size();
     enemiesKilledInRoom = 0;
     bossMaxHPProgressBar = (float)enemiesRequiredForBoss;
     bossHPProgressBar = 0.f;
+
+    // Reset persistent progress counters for a fresh game session
+    totalEnemiesKilled = 0;
+    totalEnemiesRequired = 0;
 
     camPos = safeSpawnPos;
     camVel = { 0, 0 };
@@ -463,14 +491,14 @@ void GameState::Update(double dt)
         return;
     }
 
-    // TAB � toggle debug mode and overlay
+    // TAB — toggle debug mode and overlay
     if (AEInputCheckTriggered(AEVK_TAB)) {
         debugMode = !debugMode;
         showDebugOverlay = debugMode;
         std::cout << "[Debug] Mode " << (debugMode ? "ON" : "OFF") << "\n";
     }
 
-    // K � toggle the in-game keybind reference overlay (works in and out of debug mode)
+    // K — toggle the in-game keybind reference overlay (works in and out of debug mode)
     if (AEInputCheckTriggered(AEVK_K)) {
         showKeybindOverlay = !showKeybindOverlay;
     }
@@ -495,7 +523,7 @@ void GameState::Update(double dt)
         if (AEInputCheckTriggered(AEVK_F2)) {
             // Force-spawn boss immediately regardless of kill count
             if (!bossSpawned && inProceduralMap && nextMap) {
-                enemiesKilledInRoom = enemiesRequiredForBoss; // fake the threshold
+                totalEnemiesKilled = totalEnemiesRequired; // fake the threshold
                 TrySpawnBoss(*nextMap);
                 std::cout << "[Debug] Boss force-spawned.\n";
             }
@@ -535,13 +563,14 @@ void GameState::Update(double dt)
             if (inProceduralMap) procEnemies.push_back(e);
             else                 csvEnemies.push_back(e);
             ++enemiesRequiredForBoss;
+            ++totalEnemiesRequired;
         }
     }
 #pragma endregion
 
     if (!gPlayer) return;
 
-    // Apply god mode � keep HP at max every frame
+    // Apply god mode — keep HP at max every frame
     if (debugMode && debugGodMode && gPlayer)
         gPlayer->Heal(gPlayer->GetMaxHP());
 
@@ -617,7 +646,7 @@ void GameState::Update(double dt)
     minimap->Update(dt, *currentMap, *gPlayer);
     UpdateWorldMap((float)dt);
 
-    // Freeze AI � save positions, run full update so damage/death/projectiles work,
+    // Freeze AI — save positions, run full update so damage/death/projectiles work,
     // then snap living enemies back so only movement is blocked
     if (debugMode && debugFreezeEnemies) {
         auto& gameObjects = GameObjectManager::GetInstance()->GetGameObjects();
@@ -653,7 +682,7 @@ void GameState::Draw() {
     TileMap* currentMap = inProceduralMap ? nextMap : map;
     minimap->Render(*currentMap, *gPlayer);
 
-    // Debug visuals � drawn on top of everything
+    // Debug visuals — drawn on top of everything
     if (debugMode) {
         DebugContext dbg = MakeDebugCtx();
         if (debugShowStats)   DrawEnemyStats(dbg);
@@ -661,7 +690,7 @@ void GameState::Draw() {
         if (showDebugOverlay) DrawDebugOverlay(dbg);
     }
 
-    // Keybind overlay � available always, independent of debug mode
+    // Keybind overlay — available always, independent of debug mode
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
     if (showKeybindOverlay) DrawKeybindOverlay(MakeDebugCtx());
 
@@ -686,6 +715,8 @@ void GameState::ExitState() {
     bossAlive = true;
     enemiesKilledInRoom = 0;
     enemiesRequiredForBoss = 0;
+    totalEnemiesKilled = 0;
+    totalEnemiesRequired = 0;
     // Reset all debug toggles on exit so they don't bleed into next session
     debugMode = false;
     showDebugOverlay = false;
