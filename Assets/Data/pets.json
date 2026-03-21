@@ -34,8 +34,8 @@
         "rarityScaling": [ 1, 2, 3, 4, 5, 6 ], // Must have 6 entries, 1 for each rarity. COMMON first, to LEGENDARY
         "skillCooldown": 0,
         "skillDesc": "",
+        "textures": [""], // Array of Filepath to texture
         "skillElements": [ ], //Elements the skill may inflict. ELEMENT_TYPE
-        "texture": [""], // Array of Filepath to texture
         "extra": {} //OPTIONAL Object with whatever keys and STRING values
     }
 
@@ -82,7 +82,7 @@
             "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
             "skillCooldown": 6,
             "skillDesc": "Yeet the rock",
-            "texture": [""]
+            "textures": [""]
         },
         {
             "id": 2,
@@ -123,6 +123,7 @@
             "rarityScaling": [ 1, 1.5, 2, 2.5, 3.5, 5 ],
             "skillCooldown": 6,
             "skillDesc": "Grants a shield that slows attackers.\nWhen shield value exceeds a certain amount, damages attackers as well",
+            "textures": [ "" ],
             "effects": [ // On-hit debuff
                 {
                     "name": "Gooey",
@@ -183,6 +184,7 @@
             "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
             "skillCooldown": 10,
             "skillDesc": "Forms a whirlpool at the mouse position.\nWhirlpool pulls enemies in and damages them at the end of its duration.\nWhile the pool is active, recast to end it early.",
+            "textures": [""],
             "extra": {
                 "pull": "100",
                 "duration": "7",
@@ -234,7 +236,7 @@
                 "auraColor": "200 60 0 200", //Format: r g b a
                 "sunRequired": "5" //Number of times to hit enemies with sun stacks for bonus effect
             },
-            "texture": ["Assets/finn.png"]
+            "textures": ["Assets/finn.png"]
         },
         {
             "id": 6,
@@ -265,6 +267,7 @@
             "rarityScaling": [ 1, 1, 1, 1, 1, 1 ],
             "skillCooldown": 8,
             "skillDesc": "Passively fires piercing shots at nearby enemies.\nCast skill to knock back enemies in range.",
+            "textures": [ "" ],
             "dmgTypes": [ "mag" ],
             "extra": {
                 "knockback": "600",
