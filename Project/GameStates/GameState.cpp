@@ -28,22 +28,23 @@
 #include "../Debug.h"
 
 namespace {
-    // --- GLOBAL SYSTEMS ---
-    AEGfxVertexList* circleMesh = nullptr;
-    AEGfxVertexList* wallMesh = nullptr;
-    AEGfxVertexList* squareMesh = nullptr;
+	// --- GLOBAL SYSTEMS ---
+	AEGfxVertexList* circleMesh = nullptr;   // Used for Player, Enemies, Boss
+	AEGfxVertexList* wallMesh = nullptr;    // Used for Walls, Doors, Chests
+	AEGfxVertexList* squareMesh = nullptr;
 
-    // --- PLAYER DATA ---
-    AEVec2  playerPos;
-    AEVec2  playerDir = { 1.0f, 0.0f };
-    Player* gPlayer = nullptr;
-    float   playerRadius = 15.0f;
-    float   playerSpeed = 300.0f;
+	// Player state
+	AEVec2 playerPos;
+	AEVec2 playerDir = { 1.0f, 0.0f };   // last non-zero movement direction
+	// --- PLAYER DATA ---
+	Player* gPlayer = nullptr;
+	float playerRadius = 15.0f;
+	float playerSpeed = 300.0f;
 
-    static AEVec2 GetPlayerPos()
-    {
-        return gPlayer ? gPlayer->GetPos() : AEVec2{ 0.0f, 0.0f };
-    }
+	static AEVec2 GetPlayerPos()
+	{
+		return gPlayer ? gPlayer->GetPos() : AEVec2{ 0.0f, 0.0f };
+	}
 
     // --- BOSS / ENEMY TRACKING ---
     bool   bossAlive = true;
@@ -413,7 +414,24 @@ void GameState::LoadState()
     circleMesh = RenderingManager::GetInstance()->GetMesh(MESH_CIRCLE);
     squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
 
-    map = new TileMap("Assets/Dungeon.csv", { 0,0 }, 115.f, 115.f);
+	if (!gPlayer) gPlayer = new Player();
+	PetManager::GetInstance()->LinkPlayer(gPlayer);
+
+	minimap = new Minimap();
+
+	boss = new Enemy();
+
+	if (doTutorial) {
+		fairy = new Tutorial::TutorialFairy();
+	}
+}
+
+// =============================================================
+void GameState::InitState()
+{
+    // =============================================================
+    InitTutorial(currentLevel);
+    map = new TileMap(mapSelected, { 0,0 }, 115.f, 115.f);
 
     float    procTileSize = 115.f;
     unsigned procRows = 50, procCols = 50;
@@ -421,19 +439,9 @@ void GameState::LoadState()
     srand(1234);
     nextMap->GenerateProcedural(procRows, procCols, 1234);
 
-    unsigned csvCols = map->GetMapSize().first;
-    unsigned csvRows = map->GetMapSize().second;
-    playerPos = map->GetTilePosition(1, 1);
-    bool foundSpawn = false;
-    for (unsigned r = 1; r < csvRows - 1 && !foundSpawn; ++r) {
-        for (unsigned c = 1; c < csvCols - 1 && !foundSpawn; ++c) {
-            const TileMap::Tile* t = map->QueryTile(r, c);
-            if (t && !t->isSolid && t->type == TileMap::TILE_NONE) {
-                playerPos = map->GetTilePosition(r, c);
-                foundSpawn = true;
-            }
-        }
-    }
+	unsigned csvCols = map->GetMapSize().first;
+	unsigned csvRows = map->GetMapSize().second;
+	playerPos = map->GetTilePosition(1, 1);
 
     camPos = playerPos;
     minimap = new Minimap{};
@@ -442,10 +450,10 @@ void GameState::LoadState()
     mapHeight = (map->GetFullMapSize().y > nextMap->GetFullMapSize().y)
         ? map->GetFullMapSize().y : nextMap->GetFullMapSize().y;
 
-    GameObjectManager::GetInstance()->InitCollisionGrid(
-        static_cast<unsigned>(mapWidth),
-        static_cast<unsigned>(mapHeight)
-    );
+	GameObjectManager::GetInstance()->InitCollisionGrid(
+		static_cast<unsigned>(mapWidth),
+		static_cast<unsigned>(mapHeight)
+	);
 
     if (!gPlayer) gPlayer = new Player();
     PetManager::GetInstance()->LinkPlayer(gPlayer);
@@ -466,19 +474,20 @@ void GameState::InitState()
     unsigned csvCols = map->GetMapSize().first;
     unsigned csvRows = map->GetMapSize().second;
     AEVec2 safeSpawnPos = map->GetTilePosition(1, 1);
-    bool found = false;
-    for (unsigned r = 1; r < csvRows - 1 && !found; ++r) {
-        for (unsigned c = 1; c < csvCols - 1 && !found; ++c) {
+    bool foundSpawn = false;
+    for (unsigned r = 1; r < csvRows - 1 && !foundSpawn; ++r) {
+        for (unsigned c = 1; c < csvCols - 1 && !foundSpawn; ++c) {
             const TileMap::Tile* t = map->QueryTile(r, c);
             if (t && !t->isSolid && t->type == TileMap::TILE_NONE) {
                 safeSpawnPos = map->GetTilePosition(r, c);
-                found = true;
+                foundSpawn = true;
             }
         }
     }
 
+    // Find chest position
     AEVec2 chestTilePos = currentLevel.chestPos;
-    bool   foundChest = false;
+    bool foundChest = false;
     for (unsigned r = 0; r < csvRows; ++r) {
         for (unsigned c = 0; c < csvCols; ++c) {
             const TileMap::Tile* t = map->QueryTile(r, c);
@@ -490,12 +499,28 @@ void GameState::InitState()
         }
     }
 
+    camPos = safeSpawnPos;
+    camVel = { 0, 0 };
+    minimap = new Minimap{};
+
+    mapWidth = map->GetFullMapSize().x + nextMap->GetFullMapSize().x;
+    mapHeight = (map->GetFullMapSize().y > nextMap->GetFullMapSize().y)
+        ? map->GetFullMapSize().y : nextMap->GetFullMapSize().y;
+
+    GameObjectManager::GetInstance()->InitCollisionGrid(
+        static_cast<unsigned>(mapWidth),
+        static_cast<unsigned>(mapHeight)
+    );
+
+    // Player init
+    if (!gPlayer) gPlayer = new Player();
+    PetManager::GetInstance()->LinkPlayer(gPlayer);
+
     Bitmask collideMask = CreateBitmask(3,
         Collision::LAYER::ENEMIES,
         Collision::LAYER::INTERACTABLE,
         Collision::LAYER::OBSTACLE
     );
-
     gPlayer->Init(
         safeSpawnPos,
         AEVec2{ playerRadius * 2.f, playerRadius * 2.f },
@@ -565,10 +590,10 @@ void GameState::InitState()
     camVel = { 0, 0 };
     minimap->Reset();
 
+    // Tutorial
     if (doTutorial)
         fairy->InitTutorial(gPlayer, &currentLevel);
 }
-
 // =============================================================
 void GameState::Update(double dt)
 {
@@ -646,7 +671,7 @@ void GameState::Update(double dt)
     }
 #pragma endregion
 
-    if (!gPlayer) return;
+		if (!gPlayer) return;
 
     if (debugMode && debugGodMode)
         gPlayer->Heal(gPlayer->GetMaxHP());
@@ -706,7 +731,7 @@ void GameState::Update(double dt)
         }
     }
 
-    TileMap* currentMap = inProceduralMap ? nextMap : map;
+		TileMap* currentMap = inProceduralMap ? nextMap : map;
 
     AEVec2 move = gPlayer->GetMoveDirNorm();
     f32 len = AEVec2Length(&move);
@@ -732,8 +757,8 @@ void GameState::Update(double dt)
         std::cout << "BOSS SLAYED\n";
     }
 
-    minimap->Update(dt, *currentMap, *gPlayer);
-    UpdateWorldMap((float)dt);
+		minimap->Update(dt, *currentMap, *gPlayer);
+		UpdateWorldMap((float)dt);
 
     if (debugMode && debugFreezeEnemies) {
         auto& gameObjects = GameObjectManager::GetInstance()->GetGameObjects();
@@ -756,8 +781,8 @@ void GameState::Update(double dt)
         GameObjectManager::GetInstance()->UpdateObjects(dt, currentMap);
     }
 
-    DropSystem::PrintPickupDisplay(static_cast<float>(dt));
-}
+		DropSystem::PrintPickupDisplay(static_cast<float>(dt));
+	}
 
 // =============================================================
 void GameState::Draw()
@@ -766,8 +791,8 @@ void GameState::Draw()
     GameObjectManager::GetInstance()->DrawObjects();
     DrawBossHPProgressBar();
 
-    TileMap* currentMap = inProceduralMap ? nextMap : map;
-    minimap->Render(*currentMap, *gPlayer);
+		TileMap* currentMap = inProceduralMap ? nextMap : map;
+		minimap->Render(*currentMap, *gPlayer);
 
     DrawEnemyStats(MakeDebugCtx());
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);

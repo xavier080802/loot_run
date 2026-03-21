@@ -1,4 +1,5 @@
-#include "MainMenuState.h"
+#include "LevelSelectState.h"
+#include "GameState.h"
 #include "../Helpers/Vec2Utils.h"
 #include "../helpers/CoordUtils.h"
 #include "../Helpers/CollisionUtils.h"
@@ -9,8 +10,11 @@
 #include "../main.h"
 #include <iostream>
 
-//helpers
+std::string mapSelected = "Assets/TutorialMap.csv";
+
 namespace {
+	float winW = static_cast<float>(AEGfxGetWinMaxX());
+	float winH = static_cast<float>(AEGfxGetWinMaxY());
 
 	AEGfxVertexList* squareMesh = nullptr;
 	s8 Font = -1, BigFont = -1;
@@ -29,21 +33,20 @@ namespace {
 		AEVec2 size;
 		const char* label;
 	};
-	Button menuButtons[] =
+	Button levelButtons[] =
 	{
-		{{ 200.f, 300.f }, { 235.f, 67.f }, "New Run"},
-		{{ 200.f, 400.f }, { 235.f, 67.f }, "Pets"},
-		{{ 200.f, 500.f }, { 235.f, 67.f }, "Shop"},
-		{{ 200.f, 600.f }, { 235.f, 67.f }, "Settings"},
-		{{ 200.f, 700.f }, { 235.f, 67.f }, "Credits"},
-		{{ 200.f, 800.f }, { 235.f, 67.f }, "Exit Game"}
+		{{ 800.f, 250.f }, { 235.f, 67.f }, "Tutorial"},
+		{{ 800.f, 350.f }, { 235.f, 67.f }, "Dungeon 1"},
+		{{ 800.f, 450.f }, { 235.f, 67.f }, "Dungeon 2"},
+		{{ 800.f, 550.f }, { 235.f, 67.f }, "Dungeon 3"},
+		{{ 800.f, 650.f }, { 235.f, 67.f }, "Openworld"},
+		{{ 800.f, 800.f }, { 400.f, 80.f }, "Start game" }
 	};
-	Title title = { { DEFAULT_W / 2, 100.f }, { 675.f, 110.f }, "LOOT RUN" };
 
-	constexpr int MENU_BTN_COUNT = sizeof(menuButtons) / sizeof(Button);
+	Title title = { { DEFAULT_W / 2, 100.f }, { 675.f, 110.f }, "LEVEL SELECT" };
 
-	float winW;
-	float winH;
+	constexpr int LEVEL_BTN_COUNT = sizeof(levelButtons) / sizeof(Button);
+
 	float scale;
 
 	AEVec2 DefaultToWorld(float x, float y)
@@ -61,36 +64,32 @@ namespace {
 	AEAudio clickSound;
 
 	// Track previous hover state
-	bool btnHoverStates[MENU_BTN_COUNT] = { false };
+	bool btnHoverStates[LEVEL_BTN_COUNT] = { false };
+	int selectedBtn = -1;
 }
 
-void MainMenuState::LoadState()
-{
+void LevelSelectState::LoadState() {
 	squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
 
 	buttonGroup = AEAudioCreateGroup();
 	hoverSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17767.wav");
 	clickSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17766.wav");
+	
+}
+
+void LevelSelectState::InitState() {
+	std::cout << "Shop state enter\n";
+	AEGfxFontSystemStart();
 	Font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 38);
 	BigFont = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 75);
-}
-
-void MainMenuState::InitState()
-{
 	winW = static_cast<float>(AEGfxGetWinMaxX());
 	winH = static_cast<float>(AEGfxGetWinMaxY());
-	scale = (winW * 2 / DEFAULT_W) < (winH * 2 / DEFAULT_H) ? (winW * 2 / DEFAULT_W) : (winH * 2 / DEFAULT_H); //scale of window compared to default
-
-	// Reset hover tracking when entering state
-	for (int i = 0; i < MENU_BTN_COUNT; ++i) btnHoverStates[i] = false;
+	scale = (winW * 2 / DEFAULT_W) < (winH * 2 / DEFAULT_H) ? (winW * 2 / DEFAULT_W) : (winH * 2 / DEFAULT_H);
 }
 
-void MainMenuState::ExitState()
-{
-}
+void LevelSelectState::ExitState() {}
 
-void MainMenuState::UnloadState()
-{
+void LevelSelectState::UnloadState() {
 	//unload fonts
 	if (Font >= 0)
 		AEGfxDestroyFont(Font);
@@ -103,24 +102,22 @@ void MainMenuState::UnloadState()
 	AEAudioUnloadAudioGroup(buttonGroup);
 }
 
-void MainMenuState::Update(double dt)
-{
-	(void)dt;
+void LevelSelectState::Update(double dt) {
 	if (AEInputCheckTriggered(AEVK_ESCAPE))
 	{
 		Terminate();
 		return;
 	}
-	for (int i = 0; i < MENU_BTN_COUNT; ++i)
+	for (int i = 0; i < LEVEL_BTN_COUNT; ++i)
 	{
 		AEVec2 worldPos = DefaultToWorld(
-			menuButtons[i].pos.x,
-			menuButtons[i].pos.y
+			levelButtons[i].pos.x,
+			levelButtons[i].pos.y
 		);
 
 		AEVec2 worldSize = {
-			menuButtons[i].size.x * scale,
-			menuButtons[i].size.y * scale
+			levelButtons[i].size.x * scale,
+			levelButtons[i].size.y * scale
 		};
 
 		// boolean check names reserved for input/hover checks
@@ -143,28 +140,38 @@ void MainMenuState::Update(double dt)
 
 				switch (i)
 				{
-				case 0: //new game
+				case 0: //tutorial
+					mapSelected = "Assets/TutorialMap.csv";
+					selectedBtn = i;
+					std::cout << "tutorial: " << mapSelected << std::endl;
+					break;
+				case 1: //level1
+					mapSelected = "Assets/Dungeon.csv";
+					selectedBtn = i;
+					std::cout << "level1: " << mapSelected << std::endl;
+					break;
+				case 2: //level2
+					mapSelected = "Assets/Dungeon.csv";
+					selectedBtn = i;
+					std::cout << "level2: " << mapSelected << std::endl;
+					break;
+				case 3: //level3
+					mapSelected = "Assets/Dungeon.csv";
+					selectedBtn = i;
+					std::cout << "level3: " << mapSelected << std::endl;
+					break;
+				case 4: //endless
+					mapSelected = "Assets/Openworld.csv";
+					selectedBtn = i;
+					std::cout << "endless: " << mapSelected << std::endl;
+					break;
+				case 5: //start
+					if (selectedBtn == -1) {
+						mapSelected = "Assets/TutorialMap.csv";
+						selectedBtn = 0;
+					}
 					GameStateManager::GetInstance()
-						->SetNextGameState("LevelSelectState", true, true);
-					
-					break;
-				case 1: // pet button
-					GameStateManager::GetInstance()->SetNextGameState("PetState", true, true);
-					break;
-				case 2: // shop
-					GameStateManager::GetInstance()
-						->SetNextGameState("ShopState", true, true);
-					break;
-				case 3: //settings
-					/*GameStateManager::GetInstance()
-						->SetNextGameState("SettingsState", true, true);*/
-					break;
-				case 4: //credits
-					GameStateManager::GetInstance()
-						->SetNextGameState("CreditState", true, true);
-					break;
-				case 5: //exit game
-					Terminate();
+						->SetNextGameState("GameState", true, true);
 					break;
 				}
 			}
@@ -172,8 +179,7 @@ void MainMenuState::Update(double dt)
 	}
 }
 
-void MainMenuState::Draw()
-{
+void LevelSelectState::Draw() {
 	AEGfxSetBackgroundColor(0.2f, 0.2f, 0.2f);
 	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
 	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
@@ -214,35 +220,38 @@ void MainMenuState::Draw()
 	// Draw Buttons
 	// ----------------
 
-	for (int i = 0; i < MENU_BTN_COUNT; ++i)
+	for (int i = 0; i < LEVEL_BTN_COUNT; ++i)
 	{
 		AEVec2 worldPos = DefaultToWorld(
-			menuButtons[i].pos.x,
-			menuButtons[i].pos.y
+			levelButtons[i].pos.x,
+			levelButtons[i].pos.y
 		);
 
 		AEVec2 worldSize = MultVec2(
-			menuButtons[i].size,
+			levelButtons[i].size,
 			ToVec2(scale, scale)
 		);
 
 		bool hover = IsCursorOverWorld(worldPos, worldSize.x, worldSize.y, true);
+		bool selected = (i == selectedBtn);
 
-		AEMtx33 _mtx;
-		GetTransformMtx(_mtx, worldPos, 0.0f, worldSize);
-		AEGfxSetTransform(_mtx.m);
+		AEMtx33 mtx;
+		GetTransformMtx(mtx, worldPos, 0.0f, worldSize);
+		AEGfxSetTransform(mtx.m);
 
+		// Selected has strongest highlight. Hover still shows a lighter highlight.
+		float tint = selected ? 1.0f : (hover ? 0.9f : 0.75f);
 		AEGfxSetColorToMultiply(
-			hover ? 0.9f : 0.75f,
-			hover ? 0.9f : 0.75f,
-			hover ? 0.9f : 0.75f,
+			tint,
+			tint,
+			tint,
 			1.0f
 		);
 
 		AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 
 		DrawAEText(
-			Font, menuButtons[i]. label, worldPos, scale,
+			Font, levelButtons[i].label, worldPos, scale,
 			CreateColor(10, 10, 10, 255),
 			TEXT_MIDDLE
 		);
