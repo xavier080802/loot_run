@@ -6,7 +6,7 @@
 #include "../Actor/Actor.h"
 #include "../Actor/Combat.h"
 #include "../GameDB.h"
-#include "../RenderingManager.h"
+
 void Pet_3::Setup(Player& _player)
 {
     player = &_player;
@@ -20,18 +20,6 @@ void Pet_3::Setup(Player& _player)
     attackAnimTimer = 0.f;
 }
 
-    // Load both textures
-    RenderingManager* rm = RenderingManager::GetInstance();
-    if (!data.texture.empty())
-        texIdle = rm->LoadTexture(data.texture.c_str());
-    auto it = data.extra.find("attackTexture");
-    if (it != data.extra.end() && !it->second.empty())
-        texAttack = rm->LoadTexture(it->second.c_str());
-
-    // Start on idle sprite
-    if (texIdle)
-        GetRenderData().ReplaceTexture(data.texture.c_str(), 0);
-}
 bool Pet_3::DoSkill(const Pets::SkillCastData& _data)
 {
     if (!weap) {
@@ -52,6 +40,7 @@ bool Pet_3::DoSkill(const Pets::SkillCastData& _data)
     SetPathRefreshTime(0.5f); //Chase more accurately
     return true;
 }
+
 void Pet_3::SkillUpdate(float dt)
 {
     if (target && attackTimer > 0.f) {
@@ -65,13 +54,6 @@ void Pet_3::SkillUpdate(float dt)
     }
 }
 
-    // Revert to idle sprite after attack frame duration
-    if (attackSpriteTimer > 0.f) {
-        attackSpriteTimer -= dt;
-        if (attackSpriteTimer <= 0.f && texIdle)
-            GetRenderData().ReplaceTexture(data.texture.c_str(), 0);
-    }
-}
 void Pet_3::DoMovement(double dt)
 {
     if (!target) {
@@ -96,23 +78,17 @@ void Pet_3::DoMovement(double dt)
             MoveToTarget(dt);
         }
     }
+
     //Check if target dead
     if (target->IsDead() || !target->IsEnabled()) {
         target = nullptr;
     }
 }
+
 void Pet_3::Attack()
 {
     if (attackTimer > 0 || !player || !weap || !target) return;
     attackTimer = attackCooldown;
     attackAnimTimer = attImgTime;
     Combat::ExecuteAttack(player, pos, weap, target->GetPos());
-
-    // Switch to attack sprite
-    if (texAttack) {
-        auto it = data.extra.find("attackTexture");
-        if (it != data.extra.end())
-            GetRenderData().ReplaceTexture(it->second.c_str(), 0);
-        attackSpriteTimer = ATTACK_SPRITE_DURATION;
-    }
 }

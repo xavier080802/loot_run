@@ -128,7 +128,7 @@ void DrawDebugOverlay(const DebugContext& ctx)
     s8    fnt = RenderingManager::GetInstance()->GetFont();
     float pad = 12.f;
     float x = panelX + pad;
-    float valOffset = 120.f;
+    float valOffset = 200.f;
     float y = panelY - pad;
     float lineH = 30.f;
     float secGapTop = 7.f;
@@ -151,7 +151,7 @@ void DrawDebugOverlay(const DebugContext& ctx)
     auto Toggle = [&](const char* key, const char* label, bool state) {
         std::ostringstream lbl;
         lbl << key << "  " << label;
-        DrawAEText(fnt, lbl.str().c_str(), { x,        y }, sz, CreateColor(176, 176, 176, 255), TEXT_MIDDLE_LEFT);
+        DrawAEText(fnt, lbl.str().c_str(), { x,          y }, sz, CreateColor(176, 176, 176, 255), TEXT_MIDDLE_LEFT);
         DrawAEText(fnt, state ? "[ON]" : "[off]", { x + 200.f, y }, sz,
             CreateColor(state ? 80 : 102, state ? 238 : 102, state ? 80 : 102, 255), TEXT_MIDDLE_LEFT);
         y -= lineH;
@@ -167,7 +167,7 @@ void DrawDebugOverlay(const DebugContext& ctx)
         CreateColor(255, 172, 0, 255), TEXT_MIDDLE_LEFT);
     y -= lineH + 6.f;
 
-    // Live stats
+    // ?? Live stats ????????????????????????????????????????????
     std::ostringstream oss;
     AEVec2 pp = ctx.gPlayer->GetPos();
     oss << (int)pp.x << ", " << (int)pp.y;
@@ -179,21 +179,32 @@ void DrawDebugOverlay(const DebugContext& ctx)
 
     KV("Map:", ctx.inProceduralMap ? "Procedural" : "CSV");
 
-    oss.str(""); oss << ctx.enemiesKilledInRoom << " / " << ctx.enemiesRequiredForBoss;
-    KV("Kills:", oss.str().c_str());
+    // ?? Enemy spawn counts ????????????????????????????????????
+    SecHeader("--- Enemy Counts ---");
+
+    oss.str(""); oss << ctx.csvEnemyCount;
+    KV("CSV spawned:", oss.str().c_str());
+
+    oss.str(""); oss << ctx.procEnemyCount;
+    KV("Proc spawned:", oss.str().c_str());
+
+    oss.str(""); oss << ctx.totalEnemiesKilled << " / " << ctx.totalKillTarget;
+    KV("Kills/Target:", oss.str().c_str(),
+        ctx.totalEnemiesKilled >= ctx.totalKillTarget ? 0.2f : 0.4f,
+        ctx.totalEnemiesKilled >= ctx.totalKillTarget ? 1.0f : 1.0f,
+        0.4f);
 
     KV("Boss:", ctx.bossSpawned ? "SPAWNED" : "waiting",
         ctx.bossSpawned ? 1.f : 0.6f,
         ctx.bossSpawned ? 0.4f : 0.8f,
         0.4f);
 
-    // Toggles
+    // ?? Toggles ???????????????????????????????????????????????
     SecHeader("--- Toggles ---");
     Toggle("[F5]", "God mode", ctx.debugGodMode);
-    Toggle("[F6]", "Live stats", ctx.debugShowStats);
-    Toggle("[F7]", "Freeze AI", ctx.debugFreezeEnemies);
+    Toggle("[F6]", "Freeze AI", ctx.debugFreezeEnemies);
 
-    // Actions
+    // ?? Actions ???????????????????????????????????????????????
     SecHeader("--- Actions ---");
     ActKV("[F1]", "Kill all enemies");
     ActKV("[F2]", "Force-spawn boss");
@@ -202,7 +213,7 @@ void DrawDebugOverlay(const DebugContext& ctx)
     ActKV("[N]", "Spawn enemy at cursor");
 }
 
-// Shows live HP above each enemy's head — toggle with F8
+// Shows live HP above each enemy's head — always on
 void DrawEnemyStats(const DebugContext& ctx)
 {
     if (ctx.font < 0) return;

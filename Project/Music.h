@@ -2,24 +2,38 @@
 #include "AEAudio.h"
 
 struct BGMManager {
-    AEAudioGroup group;      
-    AEAudioGroup gachaGroup;  
+    // Audio Groups
+    AEAudioGroup group;
+    AEAudioGroup gachaGroup;
+    AEAudioGroup sfxGroup;
+
+    // Background Music Tracks
     AEAudio normalTrack;
-    AEAudio eliteTrack;
     AEAudio bossTrack;
     AEAudio gachaTrack;
     AEAudio creditsTrack;
 
+    // Sound Effects Tracks
+    AEAudio attackSound;
+    AEAudio uiClickSound;
+    AEAudio explosionSound;
+
     void Init();
+    void Exit();
+
+    // BGM Methods
     void PlayNormal();
-    void PlayElite();
     void PlayBoss();
-    void StopGameplayBGM();  
+    void StopGameplayBGM();
     void PlayGacha();
     void StopGacha(float fadeTimeSec);
     void PlayCredits();
     void StopCredits();
-    void Exit();
+
+    // SFX Methods
+    void PlayAttack();
+    void PlayUIClick();
+    void PlayExplosion();
 };
 
 extern BGMManager bgm;

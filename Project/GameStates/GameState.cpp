@@ -46,23 +46,39 @@ namespace {
     }
 
     // --- BOSS / ENEMY TRACKING ---
-    bool  bossAlive = true;
-    bool  bossSpawned = false;
-    float bossRadius = 60.0f;
+    bool   bossAlive = true;
+    bool   bossSpawned = false;
+    float  bossRadius = 60.0f;
     Enemy* boss = nullptr;
 
-    std::vector<Enemy*> csvEnemies;   // currently alive CSV enemies
-    std::vector<Enemy*> procEnemies;  // currently alive procedural enemies
+    std::vector<Enemy*> csvEnemies;
+    std::vector<Enemy*> procEnemies;
 
     int   enemiesKilledInRoom = 0;
     int   enemiesRequiredForBoss = 0;
 
-    // Persistent kill totals — accumulate across all rooms, reset on ExitState only
+    // -------------------------------------------------------
+    // PROGRESS BAR — shared across the whole run.
+    // totalKillTarget      : random value 20-50, set once at InitState.
+    // totalEnemiesKilled   : running kill count, carries forward.
+    // previousRoomsKilled  : snapshot taken before list clears.
+    // -------------------------------------------------------
     int   totalEnemiesKilled = 0;
     int   totalEnemiesRequired = 0;
-    int   previousRoomsKilled = 0;   // kills from all completed rooms, never reset on transition
+    int   previousRoomsKilled = 0;
+    int   totalKillTarget = 0;
 
     float bossSpawnThreshold = 1.0f;
+
+    // -------------------------------------------------------
+    // PROCEDURAL WAVE SPAWNING
+    // Wave 0 (spawned immediately on room entry) = 8 enemies.
+    // All subsequent waves = 2 enemies every PROC_WAVE_INTERVAL seconds.
+    // Timer starts at 0 after wave 0 so next wave waits full interval.
+    // -------------------------------------------------------
+    float procWaveTimer = 0.0f;
+    int   procWaveNumber = 0;
+    const float PROC_WAVE_INTERVAL = 8.0f;
 
     // --- CAMERA DATA ---
     AEVec2 camPos, camVel;
@@ -96,7 +112,6 @@ namespace {
     bool showDebugOverlay = false;
     bool showKeybindOverlay = false;
     bool debugGodMode = false;
-    // debugShowStats removed — enemy stats always draw, no toggle needed
     bool debugFreezeEnemies = false;
 
     DebugContext MakeDebugCtx()
@@ -108,12 +123,15 @@ namespace {
         ctx.showDebugOverlay = showDebugOverlay;
         ctx.showKeybindOverlay = showKeybindOverlay;
         ctx.debugGodMode = debugGodMode;
-        ctx.debugShowStats = true;   // always on
         ctx.debugFreezeEnemies = debugFreezeEnemies;
         ctx.inProceduralMap = inProceduralMap;
         ctx.bossSpawned = bossSpawned;
         ctx.enemiesKilledInRoom = enemiesKilledInRoom;
         ctx.enemiesRequiredForBoss = enemiesRequiredForBoss;
+        ctx.totalEnemiesKilled = totalEnemiesKilled;
+        ctx.totalKillTarget = totalKillTarget;
+        ctx.csvEnemyCount = (int)csvEnemies.size();
+        ctx.procEnemyCount = (int)procEnemies.size();
         return ctx;
     }
 
@@ -121,30 +139,30 @@ namespace {
     // SPAWN HELPERS
     // =========================================================
 
-    std::vector<AEVec2> FindSafeSpawnPositions(TileMap const& tilemap, int maxCount)
+    // trustMarkers = true  -> CSV map, designer-placed, no clearance check
+    // trustMarkers = false -> proc map, generated markers, check clearance
+    std::vector<AEVec2> FindSafeSpawnPositions(TileMap const& tilemap, int maxCount, bool trustMarkers = true)
     {
         std::vector<AEVec2> positions;
         auto mapSz = tilemap.GetMapSize();
         unsigned cols = mapSz.first;
         unsigned rows = mapSz.second;
 
-        // Pass 1: designer-placed TILE_ENEMY markers.
-        // No clearance check — hand-placed so trust the designer.
-        // Only skip markers that are literally on a solid tile.
+        // Pass 1: TILE_ENEMY markers
         for (unsigned r = 0; r < rows; ++r) {
             for (unsigned c = 0; c < cols; ++c) {
                 const TileMap::Tile* t = tilemap.QueryTile(r, c);
                 if (!t || t->type != TileMap::TILE_ENEMY) continue;
+                if (!trustMarkers && !tilemap.HasClearance(r, c, 2)) continue;
                 positions.push_back(tilemap.GetTilePosition(r, c));
                 std::cout << "[FindSafe] TILE_ENEMY at (" << r << "," << c << ") accepted.\n";
             }
         }
         if (!positions.empty()) return positions;
 
-        std::cout << "[FindSafe] No TILE_ENEMY markers found — falling back to procedural pass.\n";
+        std::cout << "[FindSafe] No TILE_ENEMY markers — falling back to procedural pass.\n";
 
-        // Pass 2: procedural fallback — spaced open tiles with 2-tile clearance.
-        // Clearance check kept here since procedural tiles are not hand-verified.
+        // Pass 2: procedural fallback
         int midR = (int)rows / 2;
         int midC = (int)cols / 2;
         const float MIN_SPACING = 115.0f * 3.0f;
@@ -153,7 +171,6 @@ namespace {
             for (unsigned c = 3; c < cols - 3 && (int)positions.size() < maxCount; ++c) {
                 const TileMap::Tile* t = tilemap.QueryTile(r, c);
                 if (!t || t->type != TileMap::TILE_NONE || t->isSolid) continue;
-
                 if (!tilemap.HasClearance(r, c, 2)) continue;
 
                 int dr = (int)r - midR, dc = (int)c - midC;
@@ -176,32 +193,93 @@ namespace {
         return positions;
     }
 
-    void SpawnProceduralEnemies(TileMap const& tilemap)
+    // Collects open tiles in the proc map guaranteed to be wall-free.
+    // Uses HasClearance(4) — stricter than placement radius (3) — so the
+    // enemy body never clips a wall even after physics nudging.
+    // All 4 orthogonal neighbours must also be open to avoid narrow corridors.
+    std::vector<AEVec2> CollectProcSafePositions(TileMap const& tilemap)
     {
-        int spawnCount = 5 + rand() % 6;
-        std::vector<AEVec2> spawnPositions = FindSafeSpawnPositions(tilemap, spawnCount);
+        std::vector<AEVec2> positions;
+        auto mapSz = tilemap.GetMapSize();
+        unsigned cols = mapSz.first;
+        unsigned rows = mapSz.second;
+        int midR = (int)rows / 2;
+        int midC = (int)cols / 2;
 
-        procEnemies.clear();
-        enemiesKilledInRoom = 0;
+        for (unsigned r = 6; r < rows - 6; ++r) {
+            for (unsigned c = 6; c < cols - 6; ++c) {
+                const TileMap::Tile* t = tilemap.QueryTile(r, c);
+                if (!t || t->type != TileMap::TILE_NONE || t->isSolid) continue;
 
-        totalEnemiesRequired += (int)spawnPositions.size();
+                // Radius 4 clearance — one tile stricter than placement
+                if (!tilemap.HasClearance(r, c, 4)) continue;
 
-        bossSpawned = false;
+                // All 4 orthogonal neighbours must be open
+                const TileMap::Tile* tn = tilemap.QueryTile(r - 1, c);
+                const TileMap::Tile* ts = tilemap.QueryTile(r + 1, c);
+                const TileMap::Tile* tw = tilemap.QueryTile(r, c - 1);
+                const TileMap::Tile* te = tilemap.QueryTile(r, c + 1);
+                if (!tn || tn->isSolid) continue;
+                if (!ts || ts->isSolid) continue;
+                if (!tw || tw->isSolid) continue;
+                if (!te || te->isSolid) continue;
 
-        for (AEVec2 const& pos : spawnPositions) {
-            Enemy* e = SpawnWeightedEnemy(pos, 0.70f, 0.30f);
-            if (e) procEnemies.push_back(e);
+                // Avoid player spawn centre
+                int dr = (int)r - midR, dc = (int)c - midC;
+                if (dr >= -5 && dr <= 5 && dc >= -5 && dc <= 5) continue;
+
+                // Avoid cross corridors
+                if ((int)r == midR || (int)c == midC) continue;
+
+                positions.push_back(tilemap.GetTilePosition(r, c));
+            }
         }
-        std::cout << "[ProcRoom] Spawned " << procEnemies.size()
-            << " enemies. (Total progress: "
-            << totalEnemiesKilled << "/" << totalEnemiesRequired << ")\n";
+        return positions;
+    }
+
+    // Disables all enemies in a list then clears it so they vanish from
+    // the world cleanly and don't bleed into the next map.
+    void DisableAndClearEnemies(std::vector<Enemy*>& enemies)
+    {
+        for (Enemy* e : enemies)
+            if (e && e->IsEnabled()) e->SetEnabled(false);
+        enemies.clear();
+    }
+
+    // Wave 0 = 8 enemies (called directly on room entry, not by timer).
+    // Wave 1+ = 2 enemies, fired by the wave timer every PROC_WAVE_INTERVAL.
+    // All positions from CollectProcSafePositions — no wall spawns.
+    void SpawnProcWave(TileMap const& tilemap)
+    {
+        int waveSize = (procWaveNumber == 0) ? 8 : 2;
+        ++procWaveNumber;
+
+        std::vector<AEVec2> safePool = CollectProcSafePositions(tilemap);
+        if (safePool.empty()) {
+            std::cout << "[ProcWave] No safe positions found!\n";
+            return;
+        }
+
+        int spawned = 0;
+        for (int i = 0; i < waveSize && !safePool.empty(); ++i) {
+            int    idx = rand() % (int)safePool.size();
+            AEVec2 pos = safePool[idx];
+            safePool.erase(safePool.begin() + idx);
+
+            Enemy* e = SpawnWeightedEnemy(pos, 0.70f, 0.30f);
+            if (!e) continue;
+            procEnemies.push_back(e);
+            ++spawned;
+        }
+        std::cout << "[ProcWave " << procWaveNumber << "] Spawned "
+            << spawned << " enemies (wave size " << waveSize << ").\n";
     }
 
     void TrySpawnBoss(TileMap const& tilemap)
     {
         if (bossSpawned || !inProceduralMap) return;
-        if (totalEnemiesRequired <= 0) return;
-        float killFraction = (float)totalEnemiesKilled / (float)totalEnemiesRequired;
+        if (totalKillTarget <= 0) return;
+        float killFraction = (float)totalEnemiesKilled / (float)totalKillTarget;
         if (killFraction < bossSpawnThreshold) return;
 
         AEVec2 bossPos = tilemap.GetSpawnPoint();
@@ -216,11 +294,13 @@ namespace {
         bossAlive = true;
         bossMaxHPProgressBar = boss->GetDefinition().baseStats.maxHP;
         bossHPProgressBar = bossMaxHPProgressBar;
-        std::cout << "[Boss] Spawned " << boss->GetDefinition().name << "!\n";
+        std::cout << "[Boss] Spawned " << boss->GetDefinition().name
+            << "! (kill target was " << totalKillTarget << ")\n";
     }
 
-    // Counts dead enemies from BOTH csvEnemies and procEnemies each frame
-    // and updates totalEnemiesKilled so the progress bar is always accurate.
+    // Counts dead enemies from BOTH lists.
+    // previousRoomsKilled preserves kills from cleared rooms so the bar
+    // never drops when lists are wiped on room transition.
     void CountAllDeadEnemies()
     {
         int dead = 0;
@@ -229,11 +309,8 @@ namespace {
         for (Enemy* e : procEnemies)
             if (e && (!e->IsEnabled() || e->GetHP() <= 0.f)) ++dead;
 
-        // dead is the count from current lists only (resets when lists clear).
-        // previousRoomsKilled preserves kills from all cleared rooms so the
-        // bar always carries forward across transitions.
         totalEnemiesKilled = previousRoomsKilled + dead;
-        enemiesKilledInRoom = dead;   // keep legacy field in sync
+        enemiesKilledInRoom = dead;
     }
 
     // --- CAMERA ---
@@ -283,8 +360,8 @@ namespace {
         float barY = (float)AEGfxGetWinMaxY() - bossHPProgressBarHeight * 0.5f;
         float bhpbMargin = 4.f;
 
-        float killFraction = (totalEnemiesRequired > 0)
-            ? AEClamp((float)totalEnemiesKilled / (float)totalEnemiesRequired, 0.f, 1.f)
+        float killFraction = (totalKillTarget > 0)
+            ? AEClamp((float)totalEnemiesKilled / (float)totalKillTarget, 0.f, 1.f)
             : 0.f;
         float hpRatio = (bossSpawned && bossMaxHPProgressBar > 0)
             ? AEClamp(bossHPProgressBar / bossMaxHPProgressBar, 0.f, 1.f)
@@ -337,8 +414,6 @@ void GameState::LoadState()
     if (!GameDB::LoadPlayerInventory("Assets/Data/Player/inventory.json"))
         std::cout << "WARNING: inventory.json failed to load.\n";
 
-    // Init BGM but do NOT play here — PlayNormal() is called in InitState
-    // so music only starts when the state actually becomes active, not during load.
     bgm.Init();
 
     halfMapWidth = mapWidth * 0.5f;
@@ -392,8 +467,6 @@ void GameState::LoadState()
 // =============================================================
 void GameState::InitState()
 {
-    // Start music now — the state is live, so this is the correct moment.
-    // StopGameplayBGM() in ExitState ensures it won't bleed into MainMenu.
     bgm.PlayNormal();
 
     InitTutorial(currentLevel);
@@ -455,8 +528,27 @@ void GameState::InitState()
         CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE)
         ->GetRenderData().tint = CreateColor(255, 0.84f * 255.f, 0, 255);
 
-    // Spawn all CSV enemies immediately — hand-placed by designer so trust all positions.
-    std::vector<AEVec2> csvSpawnPool = FindSafeSpawnPositions(*map, 0);
+    // ── Reset ALL counters FIRST ──────────────────────────────
+    boss = nullptr;
+    bossSpawned = false;
+    bossAlive = true;
+    enemiesKilledInRoom = 0;
+    enemiesRequiredForBoss = 0;
+    totalEnemiesKilled = 0;
+    totalEnemiesRequired = 0;
+    previousRoomsKilled = 0;
+    procWaveTimer = 0.0f;
+    procWaveNumber = 0;
+    bossMaxHPProgressBar = 100.f;
+    bossHPProgressBar = 0.f;
+
+    // ── Random kill target ────────────────────────────────────
+    totalKillTarget = 20 + rand() % 31;
+    totalEnemiesRequired = totalKillTarget;
+    std::cout << "[InitState] Kill target this run: " << totalKillTarget << "\n";
+
+    // ── Spawn all CSV enemies immediately ────────────────────
+    std::vector<AEVec2> csvSpawnPool = FindSafeSpawnPositions(*map, 0, true);
     csvEnemies.clear();
 
     std::cout << "[InitState] csvSpawnPool has " << csvSpawnPool.size()
@@ -470,26 +562,12 @@ void GameState::InitState()
             continue;
         }
         csvEnemies.push_back(e);
-        ++totalEnemiesRequired;
-        ++enemiesRequiredForBoss;
         const char* tier = (e->GetDefinition().category == EnemyCategory::Elite)
             ? "Elite" : "Normal";
         std::cout << "[InitState] Spawned " << e->GetDefinition().name
             << " (" << tier << ") at (" << pos.x << ", " << pos.y << ")\n";
     }
     std::cout << "[InitState] Spawned " << csvEnemies.size() << " CSV enemies total.\n";
-
-    boss = nullptr;
-    bossSpawned = false;
-    bossAlive = true;
-    enemiesKilledInRoom = 0;
-    enemiesRequiredForBoss = 0;
-    totalEnemiesKilled = 0;
-    totalEnemiesRequired = 0;
-    previousRoomsKilled = 0;
-
-    bossMaxHPProgressBar = 100.f;
-    bossHPProgressBar = 0.f;
 
     camPos = safeSpawnPos;
     camVel = { 0, 0 };
@@ -523,9 +601,6 @@ void GameState::Update(double dt)
             std::cout << "[Debug] God mode " << (debugGodMode ? "ON" : "OFF") << "\n";
         }
         if (AEInputCheckTriggered(AEVK_F6)) {
-            std::cout << "[Debug] Live stats always on — F6 has no effect.\n";
-        }
-        if (AEInputCheckTriggered(AEVK_F7)) {
             debugFreezeEnemies = !debugFreezeEnemies;
             std::cout << "[Debug] Freeze AI " << (debugFreezeEnemies ? "ON" : "OFF") << "\n";
         }
@@ -536,7 +611,7 @@ void GameState::Update(double dt)
         }
         if (AEInputCheckTriggered(AEVK_F2)) {
             if (!bossSpawned && inProceduralMap && nextMap) {
-                totalEnemiesKilled = totalEnemiesRequired;
+                totalEnemiesKilled = totalKillTarget;
                 TrySpawnBoss(*nextMap);
                 std::cout << "[Debug] Boss force-spawned.\n";
             }
@@ -575,7 +650,6 @@ void GameState::Update(double dt)
             if (inProceduralMap) procEnemies.push_back(e);
             else                 csvEnemies.push_back(e);
             ++enemiesRequiredForBoss;
-            ++totalEnemiesRequired;
         }
     }
 #pragma endregion
@@ -586,6 +660,17 @@ void GameState::Update(double dt)
         gPlayer->Heal(gPlayer->GetMaxHP());
 
     if (teleportCooldown > 0.f) teleportCooldown -= (float)dt;
+
+    // ── Procedural wave timer ─────────────────────────────────
+    // Wave 0 (8 enemies) is spawned directly in the room transition block.
+    // This timer only handles wave 1+ (2 enemies each, every 8 seconds).
+    if (inProceduralMap && !bossSpawned && nextMap) {
+        procWaveTimer += (float)dt;
+        if (procWaveTimer >= PROC_WAVE_INTERVAL) {
+            procWaveTimer = 0.0f;
+            SpawnProcWave(*nextMap);
+        }
+    }
 
     if (teleportCooldown <= 0.f && nextMap) {
         if (!inProceduralMap && map->IsConnector(gPlayer->GetPos())) {
@@ -600,10 +685,15 @@ void GameState::Update(double dt)
             SetCameraPos(camPos);
             inProceduralMap = true;
             teleportCooldown = 2.f;
-            // Snapshot kills before clearing so the bar carries forward
             previousRoomsKilled = totalEnemiesKilled;
-            csvEnemies.clear();
-            SpawnProceduralEnemies(*nextMap);
+            // Disable and clear all enemies so they don't bleed into proc map
+            DisableAndClearEnemies(csvEnemies);
+            DisableAndClearEnemies(procEnemies);
+            procWaveNumber = 0;
+            // Spawn wave 0 (8 enemies) immediately on room entry
+            SpawnProcWave(*nextMap);
+            // Timer reset to 0 — next wave fires after full 8 seconds
+            procWaveTimer = 0.0f;
             minimap->Reset();
             PetManager::GetInstance()->SetTilemap(*nextMap);
         }
@@ -618,10 +708,14 @@ void GameState::Update(double dt)
             halfMapHeight = nextMap->GetFullMapSize().y * 0.5f;
             SetCameraPos(camPos);
             teleportCooldown = 2.f;
-            // Snapshot kills before clearing so the bar carries forward
             previousRoomsKilled = totalEnemiesKilled;
-            procEnemies.clear();
-            SpawnProceduralEnemies(*nextMap);
+            // Disable and clear proc enemies so they don't bleed into next proc map
+            DisableAndClearEnemies(procEnemies);
+            procWaveNumber = 0;
+            // Spawn wave 0 (8 enemies) immediately on room entry
+            SpawnProcWave(*nextMap);
+            // Timer reset to 0 — next wave fires after full 8 seconds
+            procWaveTimer = 0.0f;
             minimap->Reset();
         }
     }
@@ -719,8 +813,6 @@ void GameState::HandleTutorialDialogueRender()
 // =============================================================
 void GameState::ExitState()
 {
-    // Stop ALL gameplay music here so nothing bleeds into MainMenu or any
-    // other state. Each state starts its own music in its own InitState.
     bgm.StopGameplayBGM();
 
     gPlayer->ClearStatusEffects();
@@ -733,6 +825,9 @@ void GameState::ExitState()
     totalEnemiesKilled = 0;
     totalEnemiesRequired = 0;
     previousRoomsKilled = 0;
+    totalKillTarget = 0;
+    procWaveTimer = 0.0f;
+    procWaveNumber = 0;
 
     debugMode = false;
     showDebugOverlay = false;
@@ -752,8 +847,8 @@ void GameState::UnloadState()
 
     gPlayer = nullptr;
     boss = nullptr;
-    csvEnemies.clear();
-    procEnemies.clear();
+    DisableAndClearEnemies(csvEnemies);
+    DisableAndClearEnemies(procEnemies);
 
     if (doTutorial && fairy) { delete fairy; fairy = nullptr; }
 

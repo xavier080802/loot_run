@@ -157,7 +157,7 @@
                 "attackCooldown": "1.0",
                 "attImgTime": "0.2" // Time to show the attacking texture
             },
-            "textures": [ "", "Assets/finn.png" ] //2nd tex is attack img
+            "textures": [ "Assets/lycan_default.png", "Assets/lycan_attack.png" ] //2nd tex is attack img
         },
         {
             "id": 4,

@@ -318,7 +318,7 @@ void PetManager::LoadPetData()
 
 		if (v.isMember("extra")) {
 			Json::Value const& extras{ v["extra"] };
-			Json::Value::Members extra_members{extras.getMemberNames()};
+			Json::Value::Members extra_members{ extras.getMemberNames() };
 			for (Json::Value::Members::iterator it = extra_members.begin(); it != extra_members.end(); ++it) {
 				const std::string& key = *it;
 				Json::Value const& value = extras[key];
@@ -370,17 +370,8 @@ void PetManager::CreatePet()
 		break;
 	}
 
+	equippedPet->Init({}, { 25,25 }, 0, MESH_SQUARE, Collision::COL_CIRCLE, { 25,25 }, CreateBitmask(1, Collision::LAYER::ENEMIES), Collision::LAYER::PET);
 	Pets::PetData const& data{ it->second };
-
-	// Read size from extra["size"], fallback to 25 if missing
-	float petSize = 25.f;
-	auto sizeIt = data.extra.find("size");
-	if (sizeIt != data.extra.end() && !sizeIt->second.empty()) {
-		try { petSize = std::stof(sizeIt->second); }
-		catch (...) { petSize = 25.f; }
-	}
-
-	equippedPet->Init({}, { petSize, petSize }, 0, MESH_SQUARE, Collision::COL_CIRCLE, { petSize, petSize }, CreateBitmask(1, Collision::LAYER::ENEMIES), Collision::LAYER::PET);
 	equippedPet->SetData(data, selectedPetInfo.second);
 	//equippedPet->GetRenderData().ReplaceTexture(data.textures.at(0).c_str(), 0);
 	size_t i{};
