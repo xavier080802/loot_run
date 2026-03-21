@@ -12,9 +12,12 @@ void Pet_3::Setup(Player& _player)
     player = &_player;
     weap = GameDB::GetEquipmentData(EquipmentCategory::Melee, 7);
     attackCooldown = std::stof(data.extra.at("attackCooldown"));
+    attImgTime = std::stof(data.extra.at("attImgTime"));
 
     //Skill cooldown scales with rank
     data.skillCooldown /= (int)rank;
+
+    attackAnimTimer = 0.f;
 }
 
 bool Pet_3::DoSkill(const Pets::SkillCastData& _data)
@@ -42,6 +45,12 @@ void Pet_3::SkillUpdate(float dt)
 {
     if (target && attackTimer > 0.f) {
         attackTimer -= dt;
+    }
+
+    //Change texture when attacking
+    renderingData->SetActiveTexture(attackAnimTimer > 0.f ? 1 : 0);
+    if (attackAnimTimer > 0.f) {
+        attackAnimTimer -= dt;
     }
 }
 
@@ -80,5 +89,6 @@ void Pet_3::Attack()
 {
     if (attackTimer > 0 || !player || !weap || !target) return;
     attackTimer = attackCooldown;
+    attackAnimTimer = attImgTime;
     Combat::ExecuteAttack(player, pos, weap, target->GetPos());
 }

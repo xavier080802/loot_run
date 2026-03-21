@@ -35,7 +35,7 @@
         "skillCooldown": 0,
         "skillDesc": "",
         "skillElements": [ ], //Elements the skill may inflict. ELEMENT_TYPE
-        "texture": "", // Filepath to texture
+        "texture": [""], // Array of Filepath to texture
         "extra": {} //OPTIONAL Object with whatever keys and STRING values
     }
 
@@ -82,7 +82,7 @@
             "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
             "skillCooldown": 6,
             "skillDesc": "Yeet the rock",
-            "texture": ""
+            "texture": [""]
         },
         {
             "id": 2,
@@ -153,8 +153,10 @@
             "skillCooldown": 5,
             "skillDesc": "Placeholder Wolf Skill",
             "extra": {
-                "attackCooldown": "1.0"
-            }
+                "attackCooldown": "1.0",
+                "attImgTime": "0.2"
+            },
+            "textures": [ "", "Assets/finn.png" ] //2nd tex is attack img
         },
         {
             "id": 4,
@@ -232,7 +234,7 @@
                 "auraColor": "200 60 0 200", //Format: r g b a
                 "sunRequired": "5" //Number of times to hit enemies with sun stacks for bonus effect
             },
-            "texture": "Assets/finn.png"
+            "texture": ["Assets/finn.png"]
         },
         {
             "id": 6,
