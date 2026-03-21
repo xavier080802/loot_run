@@ -427,13 +427,16 @@ void GameState::InitState()
         Collision::LAYER::OBSTACLE
     );
 
+    float r = GameDB::GetPlayerRadius();
     gPlayer->Init(
         safeSpawnPos,
-        AEVec2{ playerRadius * 2.f, playerRadius * 2.f },
-        0, MESH_CIRCLE, Collision::SHAPE::COL_CIRCLE,
-        AEVec2{ playerRadius * 2.f, playerRadius * 2.f },
+        AEVec2{ r * 2.f, r * 2.f },
+        0, MESH_SQUARE, Collision::SHAPE::COL_CIRCLE,
+        AEVec2{ r * 2.f, r * 2.f },
         collideMask, Collision::LAYER::PLAYER
     );
+    gPlayer->GetRenderData().AddTexture(GameDB::GetPlayerTexturePath());
+    gPlayer->GetRenderData().SetActiveTexture(0);
     PetManager::GetInstance()->InitPetForGame(*map);
 
     ActorStats base{};

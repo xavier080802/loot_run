@@ -3,6 +3,7 @@
 #include <string>
 #include "../Actor/StatsTypes.h"
 #include "../Elements/Element.h"
+#include "../Helpers/ColorUtils.h"
 
 enum class EquipSlot : uint8_t
 {
@@ -60,6 +61,21 @@ enum class Rarity : uint8_t
     Mythical = 5,
     Unique = 6,
 };
+
+/// Returns the display tint colour associated with a given rarity tier.
+inline Color GetRarityColor(Rarity r)
+{
+    switch (r) {
+    case Rarity::Common:    return Color{ 200, 200, 200, 255 }; // Light grey
+    case Rarity::Uncommon:  return Color{ 100, 220, 100, 255 }; // Green
+    case Rarity::Rare:      return Color{ 100, 150, 255, 255 }; // Blue
+    case Rarity::Epic:      return Color{ 180,  80, 255, 255 }; // Purple
+    case Rarity::Legendary: return Color{ 255, 165,   0, 255 }; // Orange
+    case Rarity::Mythical:  return Color{ 255, 215,   0, 255 }; // Gold
+    case Rarity::Unique:    return Color{ 255, 100, 180, 255 }; // Pink
+    default:                return Color{ 255, 255, 255, 255 }; // White fallback
+    }
+}
 
 // Represents the static properties of an equippable item.
 // Often instantiated once in a database and referenced by pointer.

@@ -198,6 +198,7 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 
 			Bitmask bm{ caster->GetCollisionLayers() };
 			ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
+			ResetFlagAtPos(&bm, Collision::LAYER::OBSTACLE);
 			hb->SetCollisionLayers(bm);
 
 			std::cout << "[Combat] Enemy/Player spawned a melee hitbox!\n";
@@ -226,17 +227,20 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 			cfg.lifetime = 0.15f;
 			cfg.zIndex = caster->GetZ() - 1;
 
-			cfg.colliderShape = Collision::COL_RECT;
+			cfg.colliderShape = Collision::COL_CIRCLE;
 			cfg.colliderSize = { weapon->attackSize * 3.0f, weapon->attackSize * 3.0f };
-			cfg.renderScale = { weapon->attackSize * 3.0f, weapon->attackSize * 3.0f };
+			cfg.meshShape = MESH_SQUARE;
+			cfg.renderScale = { weapon->attackSize * 6.0f, weapon->attackSize * 1.5f };
 			cfg.offset = { dir.x * (weapon->attackSize * 4.0f), dir.y * (weapon->attackSize * 4.0f) };
 			cfg.onHit = &OnMeleeHit;
 			cfg.disableOnHit = false;
 
 			hb->Start(cfg);
+			hb->SetRotation(AERadToDeg(atan2(dir.y, dir.x)));
 
 			Bitmask bm{ caster->GetCollisionLayers() };
 			ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
+			ResetFlagAtPos(&bm, Collision::LAYER::OBSTACLE);
 			hb->SetCollisionLayers(bm);
 
 			std::cout << "[Combat] Enemy/Player performed a Stab!\n";
@@ -270,6 +274,7 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 
 			Bitmask bm{ caster->GetCollisionLayers() };
 			ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
+			ResetFlagAtPos(&bm, Collision::LAYER::OBSTACLE);
 			hb->SetCollisionLayers(bm);
 
 			std::cout << "[Combat] Enemy/Player casted a Circle AOE!\n";

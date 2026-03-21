@@ -195,7 +195,7 @@ void TileMap::Render() const
 {
     for (unsigned int r = 0; r < rows; r++) {
         for (unsigned int c = 0; c < cols; c++) {
-            if (tiles[r][c].type == TILE_NONE) continue;
+            //if (tiles[r][c].type == TILE_NONE) continue;
 
             auto it = textureMap.find(tiles[r][c].type);
             if (it == textureMap.end() || it->second == nullptr) continue;
@@ -217,7 +217,7 @@ void TileMap::Render(AEVec2 offsetPos, float rotOffset, AEVec2 scale, bool isHud
 {
     for (unsigned int r = 0; r < rows; r++) {
         for (unsigned int c = 0; c < cols; c++) {
-            if (tiles[r][c].type == TILE_NONE) continue;
+            //if (tiles[r][c].type == TILE_NONE) continue;
             auto it = textureMap.find(tiles[r][c].type);
             if (it == textureMap.end() || it->second == nullptr) continue;
 
@@ -410,10 +410,10 @@ void TileMap::LoadStatics()
     tileMap[TILE_CONNECTOR].layer = Collision::NONE; // player walks through connectors to change rooms
     tileMap[TILE_CONNECTOR].isSolid = false;
 
-    textureMap.insert(TileTex(TILE_NONE, nullptr));
-    textureMap.insert(TileTex(TILE_WALL, rm->LoadTexture("Assets/finn.png")));
+    textureMap.insert(TileTex(TILE_NONE, rm->LoadTexture("Assets/sprites/tiles/floor.png")));
+    textureMap.insert(TileTex(TILE_WALL, rm->LoadTexture("Assets/sprites/tiles/wall.png")));
     textureMap.insert(TileTex(TILE_DOOR, rm->LoadTexture("Assets/tiny.png")));
-    textureMap.insert(TileTex(TILE_ENEMY, nullptr));
-    textureMap.insert(TileTex(TILE_CHEST, nullptr));
-    textureMap.insert(TileTex(TILE_CONNECTOR, rm->LoadTexture("Assets/connector.png")));
+    textureMap.insert(TileTex(TILE_ENEMY, rm->LoadTexture("Assets/sprites/tiles/floor.png")));
+    textureMap.insert(TileTex(TILE_CHEST, rm->LoadTexture("Assets/sprites/tiles/floor.png")));
+    textureMap.insert(TileTex(TILE_CONNECTOR, rm->LoadTexture("Assets/sprites/tiles/connector.png")));
 }

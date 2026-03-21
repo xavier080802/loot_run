@@ -4,5 +4,9 @@
         "attack": 10.0,
         "attackSpeed": 1.0,
         "moveSpeed": 350.0
+    },
+    "render": {
+        "texturePath": "Assets/sprites/player/player.png",
+        "radius": 30.0
     }
 }
