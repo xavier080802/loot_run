@@ -151,10 +151,10 @@
             "multipliers": [],
             "rarityScaling": [ 1, 1.25, 1.5, 1.75, 2, 2.5 ],
             "skillCooldown": 5,
-            "skillDesc": "Placeholder Wolf Skill",
+            "skillDesc": "Cast while cursor is over an enemy to lock onto them.\nThe Lycan will hunt the target down and attack them periodically.",
             "extra": {
                 "attackCooldown": "1.0",
-                "attImgTime": "0.2"
+                "attImgTime": "0.2" // Time to show the attacking texture
             },
             "textures": [ "", "Assets/finn.png" ] //2nd tex is attack img
         },
