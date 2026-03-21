@@ -6,20 +6,21 @@ class EquipmentData;
 
 /*  Lycan
 
-    When skill is cast, one enemy that is under the cursor
-    will become the target.
-    Pet goes over to the target to smack them.
-    Damage is based on player's attack.
-    extra:
-        attackCooldown  - (float) Time between attacks
-        attackTexture   - (string) Path to attack sprite
-        size            - (float) Display size of the pet
-    Pet's attack data is in melee.json, the unique weapon with id 7
-     - Attack size
-     - Element
-     - Knockback
-     - Etc
-    Using a melee weapon to reuse Combat code
+	extra:
+		attackCooldown - (float) Time between attacks
+		attImgTime - (float) Time to show the attack texture
+
+	Pet's attack data is in melee.json, the unique weapon with id 7
+	 - Attack size
+	 - Element
+	 - Knockback
+	 - Etc
+
+	Using a melee weapon to reuse Combat code
+
+	textures
+		0: Base texture
+		1: Attack texture that appears when attacking
 */
 class Pet_3 : public Pet
 {
@@ -34,13 +35,11 @@ class Pet_3 : public Pet
     Actor* target{ nullptr };
     EquipmentData const* weap{ nullptr };
 
-    float attackTimer{};
-    float attackCooldown{};
+	Player* player{ nullptr };
+	Actor* target{ nullptr };
+	EquipmentData const* weap{ nullptr };
+	float attackTimer{}, attackCooldown{};
 
-    // Sprite switching
-    AEGfxTexture* texIdle{ nullptr };
-    AEGfxTexture* texAttack{ nullptr };
-    float         attackSpriteTimer{ 0.f };
-    const float   ATTACK_SPRITE_DURATION{ 0.25f };
+	float attackAnimTimer{}, attImgTime{};
 };
 #endif // !_PET_3_

@@ -173,7 +173,7 @@ void PetManager::DrawUI()
 	if (!equippedPet || !equippedPet->isSet || !PetHasSkill()) return;
 
 	DrawTintedMesh(GetTransformMtx(skillUI->GetPos(), 0, skillUI->GetSize()),
-		rm->GetMesh(MESH_SQUARE), rm->LoadTexture(equippedPet->GetPetData().texture),
+		rm->GetMesh(MESH_SQUARE), rm->LoadTexture(equippedPet->GetPetData().textures.at(0)),
 		equippedPet->IsOnCooldown() ? onCooldownCol : Color{ 255,255,255,255 }, 255);
 
 	//Write cooldown
@@ -291,8 +291,15 @@ void PetManager::LoadPetData()
 		}
 		pd.skillCooldown = v.get("skillCooldown", 0).asFloat();
 		pd.skillDesc = v.get("skillDesc", "").asString();
-		pd.texture = v.get("texture", "").asString();
-		pd.passive.SetIcon(pd.texture); //Set passive icon to same tex as pet
+		if (v.findArray("textures") && v["textures"].size()) {
+			for (Json::Value const& m : v["textures"]) {
+				pd.textures.push_back(m.asString());
+			}
+		}
+		else {
+			pd.textures.push_back("");
+		}
+		pd.passive.SetIcon(pd.textures.at(0)); //Set passive icon to same tex as pet
 		if (v.findArray("skillElements")) {
 			for (Json::Value const& m : v["skillElements"]) {
 				pd.skillElements.push_back(static_cast<Elements::ELEMENT_TYPE>(m.asInt()));
@@ -375,9 +382,12 @@ void PetManager::CreatePet()
 
 	equippedPet->Init({}, { petSize, petSize }, 0, MESH_SQUARE, Collision::COL_CIRCLE, { petSize, petSize }, CreateBitmask(1, Collision::LAYER::ENEMIES), Collision::LAYER::PET);
 	equippedPet->SetData(data, selectedPetInfo.second);
-	// Pet_3 (Lycan) loads its own textures in Setup(), skip here to avoid overwriting them
-	if (selectedPetInfo.first != Pets::PET_3)
-		equippedPet->GetRenderData().ReplaceTexture(data.texture.c_str(), 0);
+	//equippedPet->GetRenderData().ReplaceTexture(data.textures.at(0).c_str(), 0);
+	size_t i{};
+	for (std::string const& tex : data.textures) {
+		equippedPet->GetRenderData().ReplaceTexture(tex.c_str(), i);
+		++i;
+	}
 	equippedPet->isSet = true;
 	equippedPet->SetEnabled(true);
 }
