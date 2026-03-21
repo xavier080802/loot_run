@@ -4,6 +4,7 @@
 #include "./Helpers/CollisionUtils.h"
 #include "./DesignPatterns/PostOffice.h"
 #include <iostream>
+#include "./GameStateManager.h"
 
 namespace {
 	const float roomSize = 700.f;
@@ -24,7 +25,7 @@ namespace Tutorial {
 		SetEnabled(true);
 		ChangeStage(START);
 		LootChest::SubToChestOpened(this);
-		SetPos({ map->startPos.x + roomSize/2.f, map->startPos.y });
+		SetPos({ map->startPos.x + roomSize / 2.f, map->startPos.y });
 		targetPos = pos;
 	}
 
@@ -53,11 +54,11 @@ namespace Tutorial {
 				}
 				break;
 			}
-			
+
 			//Check input
 			if (AEInputCheckCurr(AEVK_W) && data.checks[0] != 'w') {
 				data.checks[0] = 'w';
-				std::cout << data.checks<<'\n';
+				std::cout << data.checks << '\n';
 			}
 			if (AEInputCheckCurr(AEVK_A) && data.checks[1] != 'a') {
 				data.checks[1] = 'a';
@@ -113,7 +114,7 @@ namespace Tutorial {
 				break;
 			}
 			if (data.playDialogue) {
-				if (DoDialogue(fdt)){
+				if (DoDialogue(fdt)) {
 					data.playDialogue = false;
 					data.isFollowing = true;
 				}
@@ -137,7 +138,7 @@ namespace Tutorial {
 				break;
 			}
 			if (data.playDialogue) {
-				if (DoDialogue(fdt)){
+				if (DoDialogue(fdt)) {
 					data.playDialogue = false;
 					data.isFollowing = true;
 				}
@@ -162,7 +163,7 @@ namespace Tutorial {
 				break;
 			}
 			if (data.playDialogue) {
-				if (DoDialogue(fdt)){
+				if (DoDialogue(fdt)) {
 					data.playDialogue = false;
 					data.isFollowing = true;
 				}
@@ -186,7 +187,7 @@ namespace Tutorial {
 				break;
 			}
 			if (data.playDialogue) {
-				if (DoDialogue(fdt)){
+				if (DoDialogue(fdt)) {
 					data.playDialogue = false;
 					data.isFollowing = true;
 				}
@@ -196,7 +197,21 @@ namespace Tutorial {
 			break;
 		}
 		case Tutorial::END: {
-
+			if (data.playDialogue) {
+				if (DoDialogue(fdt)) {
+					data.playDialogue = false;
+					data.isFollowing = false;
+				}
+				break;
+			}
+			// Walk through the TILE_DOOR tile to exit to main menu.
+			// tilemap is set by GameState after InitTutorial so it is
+			// always valid by the time END stage is reached.
+			if (tilemap && tilemap->IsDoor(pPos)) {
+				std::cout << "[Tutorial] Player walked through door — going to main menu.\n";
+				GameStateManager::GetInstance()
+					->SetNextGameState("MainMenuState", true, true);
+			}
 			break;
 		}
 		default:
@@ -229,7 +244,7 @@ namespace Tutorial {
 			data.playDialogue = true;
 			break;
 		case Tutorial::DODGE:
-			data.dialogueLines = { "DODGE 1/3", "DODGE dialogue line 2/3", "DODGE line 3/3"};
+			data.dialogueLines = { "DODGE 1/3", "DODGE dialogue line 2/3", "DODGE line 3/3" };
 			SetPath({ {0,600} });
 			break;
 		case Tutorial::MELEE:
@@ -282,7 +297,7 @@ namespace Tutorial {
 		case Tutorial::DODGE:
 			return { barrierOffset, 600 };
 		case Tutorial::MELEE:
-			return { 800, 600 - barrierOffset};
+			return { 800, 600 - barrierOffset };
 		case Tutorial::LOOT:
 			return { 800 - barrierOffset, -600 };
 		case Tutorial::RANGE:
@@ -290,9 +305,9 @@ namespace Tutorial {
 
 		case Tutorial::BOSS:
 		case Tutorial::END:
-			
+
 		default:
-			return {2000,2000}; //arbitrary large number
+			return { 2000,2000 }; //arbitrary large number
 		}
 	}
 
@@ -306,7 +321,7 @@ namespace Tutorial {
 			//Line over
 			data.timer = 0.f;
 			std::cout << "Line " << data.currDialogueLine + 1 << "/" << data.dialogueLines.size() << " done\n";
-			if (data.currDialogueLine == data.dialogueLines.size()-1) {
+			if (data.currDialogueLine == data.dialogueLines.size() - 1) {
 				//End of last line - Dialogue done
 				return true;
 			}

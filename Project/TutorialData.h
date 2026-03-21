@@ -41,6 +41,7 @@ namespace Tutorial {
 		TutorialData data{};
 		Player* player{};
 		MapData* map{};
+		TileMap const* tilemap{ nullptr };   
 		void ChangeStage(TUT_STAGE next);
 
 		//Subscription

@@ -259,6 +259,13 @@ bool TileMap::IsConnector(AEVec2 worldPos) const
     return tiles[(unsigned)inds.y][(unsigned)inds.x].type == TILE_CONNECTOR;
 }
 
+bool TileMap::IsDoor(AEVec2 worldPos) const
+{
+    AEVec2 inds = GetTileIndFromPos(worldPos);
+    if (inds.x < 0 || inds.x >= cols || inds.y < 0 || inds.y >= rows) return false;
+    return tiles[(unsigned)inds.y][(unsigned)inds.x].type == TILE_DOOR;
+}
+
 AEVec2 TileMap::GetSecondRowSpawn() const
 {
     if (rows < 2) return { 0, 0 };
@@ -311,6 +318,8 @@ void TileMap::LoadStatics()
     tileMap[TILE_CHEST].isSolid = false;
     tileMap[TILE_CONNECTOR].layer = Collision::NONE;
     tileMap[TILE_CONNECTOR].isSolid = false;
+    tileMap[TILE_DOOR].layer = Collision::NONE;
+    tileMap[TILE_DOOR].isSolid = false;
 
     textureMap.insert(TileTex(TILE_NONE, nullptr));
     textureMap.insert(TileTex(TILE_WALL, rm->LoadTexture("Assets/finn.png")));

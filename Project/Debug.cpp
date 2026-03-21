@@ -101,6 +101,7 @@ void DrawKeybindOverlay(const DebugContext& ctx)
     Header("--- Dev / Testing ---");
     KV("[N]", "Spawn enemy");
     KV("[L]", "Move chest here");
+    KV("[F7]", "Highlight chests");
 }
 
 // Debug overlay — shown when TAB is pressed in debug mode
@@ -167,7 +168,7 @@ void DrawDebugOverlay(const DebugContext& ctx)
         CreateColor(255, 172, 0, 255), TEXT_MIDDLE_LEFT);
     y -= lineH + 6.f;
 
-    // ?? Live stats ????????????????????????????????????????????
+    // Live stats
     std::ostringstream oss;
     AEVec2 pp = ctx.gPlayer->GetPos();
     oss << (int)pp.x << ", " << (int)pp.y;
@@ -179,7 +180,7 @@ void DrawDebugOverlay(const DebugContext& ctx)
 
     KV("Map:", ctx.inProceduralMap ? "Procedural" : "CSV");
 
-    // ?? Enemy spawn counts ????????????????????????????????????
+    // Enemy spawn counts
     SecHeader("--- Enemy Counts ---");
 
     oss.str(""); oss << ctx.csvEnemyCount;
@@ -199,12 +200,13 @@ void DrawDebugOverlay(const DebugContext& ctx)
         ctx.bossSpawned ? 0.4f : 0.8f,
         0.4f);
 
-    // ?? Toggles ???????????????????????????????????????????????
+    // Toggles
     SecHeader("--- Toggles ---");
     Toggle("[F5]", "God mode", ctx.debugGodMode);
     Toggle("[F6]", "Freeze AI", ctx.debugFreezeEnemies);
+    Toggle("[F7]", "Show chests", ctx.debugShowChests);
 
-    // ?? Actions ???????????????????????????????????????????????
+    // Actions
     SecHeader("--- Actions ---");
     ActKV("[F1]", "Kill all enemies");
     ActKV("[F2]", "Force-spawn boss");
@@ -229,5 +231,31 @@ void DrawEnemyStats(const DebugContext& ctx)
             << " HP:" << (int)e->GetHP() << "/" << (int)e->GetMaxHP();
         DrawAEText(ctx.font, oss.str().c_str(), pos, 0.45f,
             CreateColor(255, 255, 100, 255), TEXT_MIDDLE, 0);
+    }
+}
+
+void DrawChestHighlights(const DebugContext& ctx)
+{
+    if (!ctx.debugShowChests || ctx.font < 0) return;
+    auto& gos = GameObjectManager::GetInstance()->GetGameObjects();
+    for (GameObject* go : gos) {
+        if (!go || !go->IsEnabled() || go->GetGOType() != GO_TYPE::LOOT_CHEST) continue;
+
+        AEVec2 pos = go->GetPos();
+        AEVec2 size = { 80.f, 80.f };
+
+        AEMtx33 mtx;
+        GetTransformMtx(mtx, pos, 0, size);
+        AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+        AEGfxTextureSet(nullptr, 0, 0);
+        AEGfxSetTransform(mtx.m);
+        AEGfxSetColorToMultiply(1.0f, 0.85f, 0.0f, 0.6f);
+        AEGfxMeshDraw(ctx.squareMesh, AE_GFX_MDM_TRIANGLES);
+
+        AEVec2 labelPos = { pos.x, pos.y + 55.f };
+        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        // Use float literals to avoid C4244 conversion warnings
+        DrawAEText(ctx.font, "CHEST", labelPos, 0.4f,
+            CreateColor(255.f, 220.f, 0.f, 255.f), TEXT_MIDDLE, 0);
     }
 }

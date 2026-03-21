@@ -7,6 +7,7 @@
 #include "../RenderingManager.h"
 #include "../Helpers/RenderUtils.h"
 #include "../Helpers/ColorUtils.h"
+#include "../Music.h"
 #include "../main.h"
 #include <iostream>
 
@@ -35,12 +36,10 @@ namespace {
 	};
 	Button levelButtons[] =
 	{
-		{{ 800.f, 250.f }, { 235.f, 67.f }, "Tutorial"},
-		{{ 800.f, 350.f }, { 235.f, 67.f }, "Dungeon 1"},
-		{{ 800.f, 450.f }, { 235.f, 67.f }, "Dungeon 2"},
-		{{ 800.f, 550.f }, { 235.f, 67.f }, "Dungeon 3"},
-		{{ 800.f, 650.f }, { 235.f, 67.f }, "Openworld"},
-		{{ 800.f, 800.f }, { 400.f, 80.f }, "Start game" }
+		{{ 800.f, 300.f }, { 235.f, 67.f }, "Tutorial"  },
+		{{ 800.f, 420.f }, { 235.f, 67.f }, "Normal"    },
+		{{ 800.f, 540.f }, { 235.f, 67.f }, "Endless"   },
+		{{ 800.f, 720.f }, { 400.f, 80.f }, "Start game"}
 	};
 
 	Title title = { { DEFAULT_W / 2, 100.f }, { 675.f, 110.f }, "LEVEL SELECT" };
@@ -57,24 +56,15 @@ namespace {
 		};
 	}
 
-
-	AEAudioGroup buttonGroup;
-	AEAudio hoverSound;
-
-	AEAudio clickSound;
-
 	// Track previous hover state
 	bool btnHoverStates[LEVEL_BTN_COUNT] = { false };
 	int selectedBtn = -1;
 }
 
 void LevelSelectState::LoadState() {
+	std::cout << "[LevelSelect::InitState] mapSelected = " << mapSelected << "\n";
 	squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
-
-	buttonGroup = AEAudioCreateGroup();
-	hoverSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17767.wav");
-	clickSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17766.wav");
-	
+	// All audio handled by bgm — no local audio groups needed
 }
 
 void LevelSelectState::InitState() {
@@ -85,6 +75,10 @@ void LevelSelectState::InitState() {
 	winW = static_cast<float>(AEGfxGetWinMaxX());
 	winH = static_cast<float>(AEGfxGetWinMaxY());
 	scale = (winW * 2 / DEFAULT_W) < (winH * 2 / DEFAULT_H) ? (winW * 2 / DEFAULT_W) : (winH * 2 / DEFAULT_H);
+	if (mapSelected == "Assets/TutorialMap.csv")      selectedBtn = 0;
+	else if (mapSelected == "Assets/Dungeon.csv")     selectedBtn = 1;
+	else if (mapSelected == "Assets/Endless.csv")     selectedBtn = 2;
+	else                                              selectedBtn = 0;
 }
 
 void LevelSelectState::ExitState() {}
@@ -95,11 +89,6 @@ void LevelSelectState::UnloadState() {
 		AEGfxDestroyFont(Font);
 	if (BigFont >= 0)
 		AEGfxDestroyFont(BigFont);
-
-	// Unload button audio
-	AEAudioUnloadAudio(hoverSound);
-	AEAudioUnloadAudio(clickSound);
-	AEAudioUnloadAudioGroup(buttonGroup);
 }
 
 void LevelSelectState::Update(double dt) {
@@ -127,7 +116,7 @@ void LevelSelectState::Update(double dt) {
 		// Play hover sound only when pointer enters button
 		if (buttonHover && !btnHoverStates[i])
 		{
-			AEAudioPlay(hoverSound, buttonGroup, 0.2f, 0.7f, 0);
+			bgm.PlayUIClick();
 		}
 		btnHoverStates[i] = buttonHover;
 
@@ -136,7 +125,7 @@ void LevelSelectState::Update(double dt) {
 			buttonClick = AEInputCheckTriggered(AEVK_LBUTTON);
 			if (buttonClick)
 			{
-				AEAudioPlay(clickSound, buttonGroup, 0.6f, 0.6f, 0);
+				bgm.PlayUIClick();
 
 				switch (i)
 				{
@@ -145,27 +134,17 @@ void LevelSelectState::Update(double dt) {
 					selectedBtn = i;
 					std::cout << "tutorial: " << mapSelected << std::endl;
 					break;
-				case 1: //level1
+				case 1: //normal — CSV dungeon + procedural rooms
 					mapSelected = "Assets/Dungeon.csv";
 					selectedBtn = i;
-					std::cout << "level1: " << mapSelected << std::endl;
+					std::cout << "normal: " << mapSelected << std::endl;
 					break;
-				case 2: //level2
-					mapSelected = "Assets/Dungeon.csv";
-					selectedBtn = i;
-					std::cout << "level2: " << mapSelected << std::endl;
-					break;
-				case 3: //level3
-					mapSelected = "Assets/Dungeon.csv";
-					selectedBtn = i;
-					std::cout << "level3: " << mapSelected << std::endl;
-					break;
-				case 4: //endless
-					mapSelected = "Assets/Openworld.csv";
+				case 2: //endless — procedural only, no CSV map
+					mapSelected = "Assets/Endless.csv";
 					selectedBtn = i;
 					std::cout << "endless: " << mapSelected << std::endl;
 					break;
-				case 5: //start
+				case 3: //start
 					if (selectedBtn == -1) {
 						mapSelected = "Assets/TutorialMap.csv";
 						selectedBtn = 0;
@@ -215,6 +194,20 @@ void LevelSelectState::Draw() {
 		CreateColor(10, 10, 10, 255),
 		TEXT_MIDDLE
 	);
+
+	// ----------------
+	// Draw mode description under selected button
+	// ----------------
+	const char* modeDesc = "";
+	if (selectedBtn == 0) modeDesc = "Play the tutorial";
+	else if (selectedBtn == 1) modeDesc = "Play the normal dungeon mode";
+	else if (selectedBtn == 2) modeDesc = "Play the endless mode";
+
+	AEVec2 descPos = DefaultToWorld(DEFAULT_W / 2, 635.f);
+	AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+	DrawAEText(Font, modeDesc, descPos, scale * 0.6f,
+		CreateColor(200, 200, 200, 255), TEXT_MIDDLE);
+	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
 	// ----------------
 	// Draw Buttons

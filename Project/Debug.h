@@ -12,17 +12,19 @@ struct DebugContext
     bool    showKeybindOverlay = false;
     bool    debugGodMode = false;
     bool    debugFreezeEnemies = false;
+    bool    debugShowChests = false;
     bool    inProceduralMap = false;
     bool    bossSpawned = false;
     int     enemiesKilledInRoom = 0;
     int     enemiesRequiredForBoss = 0;
     int     totalEnemiesKilled = 0;
     int     totalKillTarget = 0;
-    int     csvEnemyCount = 0;   
-    int     procEnemyCount = 0;   
+    int     csvEnemyCount = 0;
+    int     procEnemyCount = 0;
 };
 
 void DrawPanel(const DebugContext& ctx, float screenX, float screenY, float w, float h);
 void DrawKeybindOverlay(const DebugContext& ctx);
 void DrawDebugOverlay(const DebugContext& ctx);
 void DrawEnemyStats(const DebugContext& ctx);
+void DrawChestHighlights(const DebugContext& ctx);

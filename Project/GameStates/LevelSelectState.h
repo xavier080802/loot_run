@@ -2,6 +2,8 @@
 #define _LEVEL_SELECT_STATE_H
 #include "../GameStateManager.h"
 
+extern std::string mapSelected;
+
 //Level Selection state
 class LevelSelectState : public State {
 public:

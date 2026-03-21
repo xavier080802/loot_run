@@ -70,6 +70,7 @@ public:
 	void SetOffset(AEVec2 newOffset) { posOffset = newOffset; }
 	bool IsWall(AEVec2 worldPos) const;
 	bool IsConnector(AEVec2 worldPos) const;
+	bool IsDoor(AEVec2 worldPos) const;
 	AEVec2 GetSecondRowSpawn() const;
 	std::vector<std::vector<Tile>>& GetMutableTileData() { return tiles; } // For GameState modification
 	std::vector<std::vector<Tile>> const& GetTileData() const { return tiles; }
