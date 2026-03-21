@@ -139,8 +139,6 @@ namespace {
     // SPAWN HELPERS
     // =========================================================
 
-    // trustMarkers = true  -> CSV map, designer-placed, no clearance check
-    // trustMarkers = false -> proc map, generated markers, check clearance
     std::vector<AEVec2> FindSafeSpawnPositions(TileMap const& tilemap, int maxCount, bool trustMarkers = true)
     {
         std::vector<AEVec2> positions;
@@ -237,8 +235,6 @@ namespace {
         return positions;
     }
 
-    // Disables all enemies in a list then clears it so they vanish from
-    // the world cleanly and don't bleed into the next map.
     void DisableAndClearEnemies(std::vector<Enemy*>& enemies)
     {
         for (Enemy* e : enemies)
@@ -246,12 +242,11 @@ namespace {
         enemies.clear();
     }
 
-    // Wave 0 = 8 enemies (called directly on room entry, not by timer).
-    // Wave 1+ = 2 enemies, fired by the wave timer every PROC_WAVE_INTERVAL.
-    // All positions from CollectProcSafePositions — no wall spawns.
+    // Wave 1 = 2 enemies, Wave 2 = 3, Wave 3 = 4, ... (grows by 1 each wave).
+    // All positions picked randomly from CollectProcSafePositions — no wall spawns.
     void SpawnProcWave(TileMap const& tilemap)
     {
-        int waveSize = (procWaveNumber == 0) ? 8 : 2;
+        int waveSize = (procWaveNumber == 0) ? 8 : (1 + procWaveNumber);
         ++procWaveNumber;
 
         std::vector<AEVec2> safePool = CollectProcSafePositions(tilemap);
@@ -298,9 +293,6 @@ namespace {
             << "! (kill target was " << totalKillTarget << ")\n";
     }
 
-    // Counts dead enemies from BOTH lists.
-    // previousRoomsKilled preserves kills from cleared rooms so the bar
-    // never drops when lists are wiped on room transition.
     void CountAllDeadEnemies()
     {
         int dead = 0;
@@ -543,7 +535,7 @@ void GameState::InitState()
     bossHPProgressBar = 0.f;
 
     // ── Random kill target ────────────────────────────────────
-    totalKillTarget = 20 + rand() % 31;
+    totalKillTarget = 20 + rand() % 31;    //random number from 20 - 50 for kill count
     totalEnemiesRequired = totalKillTarget;
     std::cout << "[InitState] Kill target this run: " << totalKillTarget << "\n";
 
@@ -661,9 +653,6 @@ void GameState::Update(double dt)
 
     if (teleportCooldown > 0.f) teleportCooldown -= (float)dt;
 
-    // ── Procedural wave timer ─────────────────────────────────
-    // Wave 0 (8 enemies) is spawned directly in the room transition block.
-    // This timer only handles wave 1+ (2 enemies each, every 8 seconds).
     if (inProceduralMap && !bossSpawned && nextMap) {
         procWaveTimer += (float)dt;
         if (procWaveTimer >= PROC_WAVE_INTERVAL) {
@@ -709,12 +698,9 @@ void GameState::Update(double dt)
             SetCameraPos(camPos);
             teleportCooldown = 2.f;
             previousRoomsKilled = totalEnemiesKilled;
-            // Disable and clear proc enemies so they don't bleed into next proc map
             DisableAndClearEnemies(procEnemies);
             procWaveNumber = 0;
-            // Spawn wave 0 (8 enemies) immediately on room entry
             SpawnProcWave(*nextMap);
-            // Timer reset to 0 — next wave fires after full 8 seconds
             procWaveTimer = 0.0f;
             minimap->Reset();
         }
@@ -727,7 +713,6 @@ void GameState::Update(double dt)
     if (len > 0 || gPlayer->HasForceApplied())
         playerDir = gPlayer->GetMoveDirNorm();
 
-    // Count every dead enemy each frame so the bar updates in real-time
     if (!(debugMode && debugFreezeEnemies))
         CountAllDeadEnemies();
 
@@ -784,7 +769,6 @@ void GameState::Draw()
     TileMap* currentMap = inProceduralMap ? nextMap : map;
     minimap->Render(*currentMap, *gPlayer);
 
-    // Enemy stats always drawn — no debug toggle needed
     DrawEnemyStats(MakeDebugCtx());
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
 
