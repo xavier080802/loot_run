@@ -254,8 +254,7 @@ namespace {
                 if (!chest) continue;
 
                 chest->Init(pos, { 35,35 }, 0, MESH_SQUARE, Collision::COL_RECT, { 35,35 },
-                    CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE)
-                    ->GetRenderData().tint = CreateColor(255, 0.84f * 255.f, 0, 255);
+                    CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE);
                 std::cout << "[SpawnCsvChests] Chest at (" << pos.x << ", " << pos.y << ")\n";
             }
         }
@@ -269,7 +268,7 @@ namespace {
         std::vector<AEVec2> safePool = CollectProcSafePositions(tilemap);
         if (safePool.empty()) return;
 
-        int chestCount = 3 + rand() % 3;   
+        int chestCount = 3 + rand() % 3;
         int spawned = 0;
 
         for (int i = 0; i < chestCount && !safePool.empty(); ++i) {
@@ -282,8 +281,7 @@ namespace {
             if (!chest) continue;
 
             chest->Init(pos, { 35,35 }, 0, MESH_SQUARE, Collision::COL_RECT, { 35,35 },
-                CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE)
-                ->GetRenderData().tint = CreateColor(255, 0.84f * 255.f, 0, 255);
+                CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE);
             ++spawned;
         }
         std::cout << "[SpawnProcChests] Spawned " << spawned << " chests.\n";
@@ -766,7 +764,10 @@ void GameState::InitState()
         }
         std::cout << "[Tutorial] Spawned " << csvEnemies.size() << " enemies total.\n";
 
-        if (doTutorial) fairy->InitTutorial(gPlayer, &currentLevel);
+        if (doTutorial) {
+            fairy->InitTutorial(gPlayer, &currentLevel);
+            fairy->tilemap = map;   // give fairy access to tilemap for door detection
+        }
         return;
     }
 
@@ -976,20 +977,47 @@ void GameState::Update(double dt)
     if (doTutorial && fairy->data.stage == Tutorial::BOSS && !bossAlive)
         fairy->ChangeStage(Tutorial::END);
 
-    if (endlessTimerActive) {
-        endlessRunTimer += (float)dt;
-    }
+    // Non-tutorial: return to main menu when boss is slain.
+    if (!doTutorial && bossSpawned && !bossAlive) {
+        if (mapSelected != "Assets/Endless.csv") {
+            GameStateManager::GetInstance()->SetNextGameState("MainMenuState");
+            std::cout << "BOSS SLAYED\n";
+        }
+        else {
+            // Endless — reset boss state and spawn a new proc room to continue
+            std::cout << "BOSS SLAYED — Endless continues!\n";
+            bossSpawned = false;
+            bossAlive = true;
+            boss = nullptr;
+            bossHPProgressBar = 0.f;
+            bossMaxHPProgressBar = 100.f;
 
-    // --- END OF RUN HANDLING (DEATH OR VICTORY) ---
-    // 1. Player died
-    if (gPlayer && gPlayer->GetHP() <= 0.f) {
-        GameStateManager::GetInstance()->SetNextGameState("MainMenuState"); // Todo: add DeathState when it exists
+            // Reset kill target and all counters for the next boss cycle
+            totalKillTarget = 20 + rand() % 31;
+            totalEnemiesRequired = totalKillTarget;
+            previousRoomsKilled = 0;
+            totalEnemiesKilled = 0;
+            enemiesKilledInRoom = 0;
+            // Clear dead enemies so they don't count toward the new cycle
+            DisableAndClearEnemies(procEnemies);
+            std::cout << "[Endless] New kill target: " << totalKillTarget << "\n";
+
+            teleportCooldown = 2.f;
+            if (nextMap) {
+                nextMap->GenerateProcedural(50, 50, rand());
+                procWaveNumber = 0;
+                SpawnProcWave(*nextMap);
+                SpawnProcChests(*nextMap);
+                procWaveTimer = 0.0f;
+                minimap->Reset();
+                PetManager::GetInstance()->SetTilemap(*nextMap);
+            }
+        }
     }
-    // 2. Boss slain (Non-tutorial victory)
-    else if (!doTutorial && bossSpawned && !bossAlive) {
+    if (mapSelected == "Assets/Endless.csv" && gPlayer && gPlayer->GetHP() <= 0.f) {
         GameStateManager::GetInstance()->SetNextGameState("MainMenuState");
+        std::cout << "PLAYER DIED — Endless over.\n";
     }
-
     minimap->Update(dt, *currentMap, *gPlayer);
     UpdateWorldMap((float)dt);
 
@@ -1152,6 +1180,12 @@ void GameState::ExitState()
     loadingTimer = 0.f;
     procWaveTimer = 0.0f;
     procWaveNumber = 0;
+    bossHPProgressBar = 0.f;
+    bossMaxHPProgressBar = 100.f;
+    doTutorial = false;
+    boss = nullptr;
+    DisableAndClearEnemies(csvEnemies);
+    DisableAndClearEnemies(procEnemies);
 
     debugMode = false;
     showDebugOverlay = false;

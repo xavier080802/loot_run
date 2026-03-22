@@ -605,12 +605,32 @@ void DrawGachaOverlay(GachaAnimation& anim, s8 fontId) {
     }
 
     // --- Chest (Rolling phase only) ---
-    // Shows as a glowing yellow rectangle with a subtle idle pulse before being opened.
-    // Once opened it snaps to full brightness and the bounce offset kicks in.
+    // Shows the closed sprite with a subtle idle glow pulse before opening.
+    // Once opened swaps to the open sprite with a bounce offset.
     if (anim.phase == GachaPhase::Rolling) {
-        float glow = 0.25f + 0.15f * sinf(s_idleGlowTimer * 2.0f); // idle breathe
-        DrawSolidRect(I, 0.0f, -110.0f + s_chestBounceOffset, 400.0f, 300.0f,
-            1.0f, 1.0f, 0.0f, s_chestOpened ? 1.0f : glow);
+        // Load textures once
+        static AEGfxTexture* texClosed = RenderingManager::GetInstance()->LoadTexture("Assets/gacha.png");
+        static AEGfxTexture* texOpen = RenderingManager::GetInstance()->LoadTexture("Assets/gacha_open.png");
+        static AEGfxVertexList* chestMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
+
+        AEGfxTexture* currentTex = s_chestOpened ? texOpen : texClosed;
+
+        // Idle glow pulse — only shown on closed chest
+        float alpha = s_chestOpened ? 1.0f : (0.75f + 0.25f * sinf(s_idleGlowTimer * 2.0f));
+
+        AEMtx33 S, T, M;
+        AEMtx33Scale(&S, 400.0f, 300.0f);
+        AEMtx33Trans(&T, 0.0f, -110.0f + s_chestBounceOffset);
+        AEMtx33Concat(&M, &T, &S);
+        AEMtx33Concat(&M, &I, &M);
+
+        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        AEGfxTextureSet(currentTex, 0.0f, 0.0f);
+        AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+        AEGfxSetTransparency(alpha);
+        AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, alpha);
+        AEGfxSetTransform(M.m);
+        AEGfxMeshDraw(chestMesh, AE_GFX_MDM_TRIANGLES);
 
         if (!s_chestOpened)
             AEGfxPrint(fontId, "[O]: Open Chest           [ESC]: Quit", -0.20f, -0.75f, 0.85f, 1, 1, 1, 1);
