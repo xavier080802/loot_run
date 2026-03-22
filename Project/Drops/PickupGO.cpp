@@ -45,15 +45,6 @@ PickupGO* PickupGO::Spawn(const AEVec2& worldPos, const PickupPayload& payload)
     p->goType = GO_TYPE::ITEM;
     p->InitPickup(payload);
 
-    // Apply sprite + rarity tint for equipment drops
-    if (payload.type == DropType::Equipment && payload.equipment) {
-        const EquipmentData* eq = payload.equipment;
-        if (eq->texturePath && eq->texturePath[0] != '\0') {
-            p->GetRenderData().AddTexture(eq->texturePath);
-        }
-        p->GetRenderData().tint = GetRarityColor(eq->rarity);
-    }
-
     return p;
 }
 
@@ -68,6 +59,24 @@ PickupGO* PickupGO::Spawn(const AEVec2& worldPos, const PickupPayload& payload)
 void PickupGO::InitPickup(const PickupPayload& payload)
 {
     mPayload = payload;
+
+    // Apply sprite + rarity tint for equipment drops
+    if (payload.type == DropType::Equipment && payload.equipment) {
+        const EquipmentData* eq = payload.equipment;
+        if (eq->texturePath && eq->texturePath[0] != '\0') {
+            GetRenderData().AddTexture(eq->texturePath);
+        }
+        GetRenderData().tint = GetRarityColor(eq->rarity);
+    }
+    else if (payload.type == DropType::Coin) {
+        GetRenderData().AddTexture("Assets/sprites/items/coin.png");
+    }
+    else if (payload.type == DropType::Heal) {
+        GetRenderData().AddTexture("Assets/sprites/items/heal.png");
+    }
+    else if (payload.type == DropType::Ammo) {
+        GetRenderData().AddTexture("Assets/sprites/attacks/arrows.png");
+    }
 }
 
 void PickupGO::Update(double dt)

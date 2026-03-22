@@ -66,7 +66,7 @@ enum class Rarity : uint8_t
 inline Color GetRarityColor(Rarity r)
 {
     switch (r) {
-    case Rarity::Common:    return Color{ 200, 200, 200, 255 }; // Light grey
+    case Rarity::Common:    return Color{ 139, 69, 19, 255 }; // Brown
     case Rarity::Uncommon:  return Color{ 100, 220, 100, 255 }; // Green
     case Rarity::Rare:      return Color{ 100, 150, 255, 255 }; // Blue
     case Rarity::Epic:      return Color{ 180,  80, 255, 255 }; // Purple

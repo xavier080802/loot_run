@@ -514,6 +514,7 @@ namespace GameDB
     const char* GetPlayerTexturePath() { return sPlayerTexturePath.c_str(); }
 
     float GetPlayerRadius() { return sPlayerRadius; }
+    float GetPlayerSpeed() { return sPlayerBaseStats.moveSpeed; }
 
 	/**
 	 * @brief Searches the equipment registry for a specific item by category and ID.

@@ -136,7 +136,7 @@ void TileMap::GenerateProcedural(unsigned int r, unsigned int c, int seed)
     // HasClearance() also bounds-checks, so no out-of-bounds reads.
     for (unsigned int i = 3; i < rows - 3; ++i) {
         for (unsigned int j = 3; j < cols - 3; ++j) {
-            if (tiles[i][j].type != TILE_NONE) continue;
+            //if (tiles[i][j].type != TILE_NONE) continue;
 
             bool onCorridor = ((int)i == midR || (int)j == midC);
             int  dr = (int)i - midR, dc = (int)j - midC;
@@ -160,7 +160,7 @@ void TileMap::Render() const
 {
     for (unsigned int r = 0; r < rows; r++) {
         for (unsigned int c = 0; c < cols; c++) {
-            if (tiles[r][c].type == TILE_NONE) continue;
+            //if (tiles[r][c].type == TILE_NONE) continue;
             auto it = textureMap.find(tiles[r][c].type);
             if (it == textureMap.end() || it->second == nullptr) continue;
 

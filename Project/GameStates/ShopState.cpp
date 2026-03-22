@@ -296,6 +296,29 @@ void ShopState::Draw()
 		DrawAEText(BigFont, title.label, titlePos, scale, CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
 
 		// ----------------
+		// Draw Coins
+		// ----------------
+		AEVec2 coinLabelPos = DefaultToWorld(1500.f, 50.f);
+		DrawAEText(Font, "COINS:", coinLabelPos, scale, CreateColor(255, 215, 0, 255), TEXT_MIDDLE);
+
+		char coinAmount[64];
+		snprintf(coinAmount, sizeof(coinAmount), "%d", ShopFunctions::GetInstance()->getMoney());
+		AEVec2 coinAmtPos = DefaultToWorld(1500.f, 95.f);
+		DrawAEText(Font, coinAmount, coinAmtPos, scale, CreateColor(255, 215, 0, 255), TEXT_MIDDLE);
+
+		// ----------------
+		// Draw Endless Best 
+		// (I'm putting it here to show you how to draw it. put it in the defeat screen for endless)
+		// ----------------
+		//char bestText[64];
+		// int totalSecs = (int)ShopFunctions::GetInstance()->getEndlessHighScore();
+		// int m = totalSecs / 60;
+		// int s = totalSecs % 60;
+		// snprintf(bestText, sizeof(bestText), "BEST: %02d:%02d", m, s);
+		// AEVec2 bestPos = DefaultToWorld(200.f, 50.f);
+		// DrawAEText(Font, bestText, bestPos, scale, CreateColor(200, 200, 200, 255), TEXT_MIDDLE);
+
+		// ----------------
 		// Draw Buttons
 		// ----------------
 
@@ -326,6 +349,25 @@ void ShopState::Draw()
 					currentSideHover = PLUS;
 				}
 				DrawSideButtons(shopButtons[i], currentSideHover);
+				
+				// Draw Level and Cost underneath the button for stat upgrades (0-4)
+				if (i >= 0 && i <= 4) {
+					STAT_TYPE currentStat =
+						(i == 0) ? STAT_TYPE::ATT :
+						(i == 1) ? STAT_TYPE::ATT_SPD :
+						(i == 2) ? STAT_TYPE::MOVE_SPD :
+						(i == 3) ? STAT_TYPE::MAX_HP : STAT_TYPE::DEF;
+
+					int lvl = ShopFunctions::GetInstance()->getUpgradeLevel(currentStat);
+					int cost = ShopFunctions::GetInstance()->calculatePrice(currentStat);
+
+					char infoText[64];
+					snprintf(infoText, sizeof(infoText), "Lv.%d | Cost: %d", lvl, cost);
+					
+					// position text right below the button
+					AEVec2 textPos = { worldPos.x, worldPos.y - (shopButtons[i].size.y / 2.0f + 25.0f) * scale };
+					DrawAEText(Font, infoText, textPos, scale * 0.8f, CreateColor(220, 220, 220, 255), TEXT_MIDDLE);
+				}
 			}
 		}
 	}
