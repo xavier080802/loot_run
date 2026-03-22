@@ -1,4 +1,6 @@
 #include "MainMenuState.h"
+#include "../Settings.h"
+#include "../Music.h"
 #include "../Helpers/Vec2Utils.h"
 #include "../helpers/CoordUtils.h"
 #include "../Helpers/CollisionUtils.h"
@@ -55,10 +57,7 @@ namespace {
 		};
 	}
 
-
-	AEAudioGroup buttonGroup;
 	AEAudio hoverSound;
-
 	AEAudio clickSound;
 
 	// Track previous hover state
@@ -69,7 +68,6 @@ void MainMenuState::LoadState()
 {
 	squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
 
-	buttonGroup = AEAudioCreateGroup();
 	hoverSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17767.wav");
 	clickSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17766.wav");
 	Font = AEGfxCreateFont(PRIMARY_FONT_PATH, 38);
@@ -101,28 +99,28 @@ void MainMenuState::UnloadState()
 	// Unload button audio
 	AEAudioUnloadAudio(hoverSound);
 	AEAudioUnloadAudio(clickSound);
-	AEAudioUnloadAudioGroup(buttonGroup);
 }
 
 void MainMenuState::Update(double dt)
 {
 	(void)dt;
+
+	// Settings popup gets first dibs on input.
+	// Returns true if it is open and consumed the frame.
+	if (Settings::Update(scale, bgm.uiGroup, clickSound, hoverSound))
+		return;
+
+	// ESC quits when popup is not open
 	if (AEInputCheckTriggered(AEVK_ESCAPE))
 	{
 		Terminate();
 		return;
 	}
+
 	for (int i = 0; i < MENU_BTN_COUNT; ++i)
 	{
-		AEVec2 worldPos = DefaultToWorld(
-			menuButtons[i].pos.x,
-			menuButtons[i].pos.y
-		);
-
-		AEVec2 worldSize = {
-			menuButtons[i].size.x * scale,
-			menuButtons[i].size.y * scale
-		};
+		AEVec2 worldPos = DefaultToWorld(menuButtons[i].pos.x, menuButtons[i].pos.y);
+		AEVec2 worldSize = { menuButtons[i].size.x * scale, menuButtons[i].size.y * scale };
 
 		// boolean check names reserved for input/hover checks
 		bool buttonHover = IsCursorOverWorld(worldPos, worldSize.x, worldSize.y, true);
@@ -130,9 +128,7 @@ void MainMenuState::Update(double dt)
 
 		// Play hover sound only when pointer enters button
 		if (buttonHover && !btnHoverStates[i])
-		{
-			AEAudioPlay(hoverSound, buttonGroup, 0.2f, 0.7f, 0);
-		}
+			AEAudioPlay(hoverSound, bgm.uiGroup, 0.2f, 0.7f, 0);
 		btnHoverStates[i] = buttonHover;
 
 		if (buttonHover)
@@ -140,33 +136,16 @@ void MainMenuState::Update(double dt)
 			buttonClick = AEInputCheckTriggered(AEVK_LBUTTON);
 			if (buttonClick)
 			{
-				AEAudioPlay(clickSound, buttonGroup, 0.6f, 0.6f, 0);
+				AEAudioPlay(clickSound, bgm.uiGroup, 0.6f, 0.6f, 0);
 
 				switch (i)
 				{
-				case 0: //new game
-					GameStateManager::GetInstance()
-						->SetNextGameState("LevelSelectState", true, true);
-					
-					break;
-				case 1: // pet button
-					GameStateManager::GetInstance()->SetNextGameState("PetState", true, true);
-					break;
-				case 2: // shop
-					GameStateManager::GetInstance()
-						->SetNextGameState("ShopState", true, true);
-					break;
-				case 3: //settings
-					/*GameStateManager::GetInstance()
-						->SetNextGameState("SettingsState", true, true);*/
-					break;
-				case 4: //credits
-					GameStateManager::GetInstance()
-						->SetNextGameState("CreditState", true, true);
-					break;
-				case 5: //exit game
-					Terminate();
-					break;
+				case 0: GameStateManager::GetInstance()->SetNextGameState("LevelSelectState", true, true); break;
+				case 1: GameStateManager::GetInstance()->SetNextGameState("PetState", true, true); break;
+				case 2: GameStateManager::GetInstance()->SetNextGameState("ShopState", true, true); break;
+				case 3: Settings::Open(); break;
+				case 4: GameStateManager::GetInstance()->SetNextGameState("CreditState", true, true); break;
+				case 5: Terminate(); break;
 				}
 			}
 		}
@@ -193,28 +172,18 @@ void MainMenuState::Draw()
 	};
 
 	AEMtx33 mtx;
-	GetTransformMtx(mtx, titlePos, 0.0f, labelSize);
+	GetTransformMtx(mtx, titlePos, 0.f, labelSize);
 	AEGfxSetTransform(mtx.m);
-
-	AEGfxSetColorToMultiply(
-		0.75f,
-		0.75f,
-		0.75f,
-		1.0f
-	);
-
+	AEGfxSetColorToMultiply(0.75f, 0.75f, 0.75f, 1.f);
 	AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 
-	DrawAEText(
-		BigFont, title.label, titlePos, scale,
-		CreateColor(10, 10, 10, 255),
-		TEXT_MIDDLE
-	);
-
+	DrawAEText(BigFont, title.label, titlePos, scale,
+		CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
 	// ----------------
 	// Draw Buttons
 	// ----------------
 
+	//  Menu Buttons
 	for (int i = 0; i < MENU_BTN_COUNT; ++i)
 	{
 		AEVec2 worldPos = DefaultToWorld(
@@ -230,7 +199,7 @@ void MainMenuState::Draw()
 		bool hover = IsCursorOverWorld(worldPos, worldSize.x, worldSize.y, true);
 
 		AEMtx33 _mtx;
-		GetTransformMtx(_mtx, worldPos, 0.0f, worldSize);
+		GetTransformMtx(_mtx, worldPos, 0.f, worldSize);
 		AEGfxSetTransform(_mtx.m);
 
 		AEGfxSetColorToMultiply(
@@ -248,4 +217,7 @@ void MainMenuState::Draw()
 			TEXT_MIDDLE
 		);
 	}
+
+	// Settings popup (drawn on top of everything)
+	Settings::Draw(Font, BigFont, scale);
 }

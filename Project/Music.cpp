@@ -3,87 +3,107 @@
 BGMManager bgm;
 
 void BGMManager::Init() {
-    // Groups for background music
-    group = AEAudioCreateGroup();
-    gachaGroup = AEAudioCreateGroup();
+	// Background Music groups
+	bgmGroup = AEAudioCreateGroup();
+	gachaGroup = AEAudioCreateGroup();
 
-    // Load background music
-    normalTrack = AEAudioLoadMusic(
-        "Assets/Audio/Musical, Loop, Epic, Ambient, Woodwind, Voice, Dune SND115714.wav"
-    );
-    bossTrack = AEAudioLoadMusic(
-        ""
-    );
-    gachaTrack = AEAudioLoadMusic(
-        "Assets/Audio/MagicCartoon CTE01_93.3.wav"
-    );
-    creditsTrack = AEAudioLoadMusic(
-        "Assets/Audio/PROSPECTUS - Corporate MSCCRP1_50.wav"
-    );
+	// UI group
+	uiGroup = AEAudioCreateGroup();
 
-    // Create a separate group for sound effects
-    sfxGroup = AEAudioCreateGroup();
+	// SFX group
+	sfxGroup = AEAudioCreateGroup();
 
-    // Load sound effects
-    attackSound = AEAudioLoadMusic("");
-    uiClickSound = AEAudioLoadMusic("");
+	// Load music tracks
+	normalTrack = AEAudioLoadMusic("Assets/Audio/Musical, Loop, Epic, Ambient, Woodwind, Voice, Dune SND115714.wav");
+	bossTrack = AEAudioLoadMusic("");
+	gachaTrack = AEAudioLoadMusic("Assets/Audio/MagicCartoon CTE01_93.3.wav");
+	creditsTrack = AEAudioLoadMusic("Assets/Audio/PROSPECTUS - Corporate MSCCRP1_50.wav");
+
+	// Load UI sounds
+	uiClickSound = AEAudioLoadMusic("");
+
+	// Load SFX
+	attackSound = AEAudioLoadMusic("");
 }
 
+// --- Music methods ---
 void BGMManager::PlayNormal() {
-    AEAudioStopGroup(group);
-    AEAudioPlay(normalTrack, group, 1.0f, 1.0f, -1);
+	AEAudioStopGroup(bgmGroup);
+	AEAudioPlay(normalTrack, bgmGroup, 1.0f, 1.0f, -1);
 }
 
 void BGMManager::PlayBoss() {
-    AEAudioStopGroup(group);
-    AEAudioPlay(bossTrack, group, 1.0f, 1.0f, -1);
+	AEAudioStopGroup(bgmGroup);
+	AEAudioPlay(bossTrack, bgmGroup, 1.0f, 1.0f, -1);
 }
 
 void BGMManager::StopGameplayBGM() {
-    AEAudioStopGroup(group);
+	AEAudioStopGroup(bgmGroup);
 }
 
 void BGMManager::PlayGacha() {
-    AEAudioStopGroup(gachaGroup);
-    AEAudioPlay(gachaTrack, gachaGroup, 1.0f, 1.0f, -1);
+	AEAudioStopGroup(gachaGroup);
+	AEAudioPlay(gachaTrack, gachaGroup, 1.0f, 1.0f, -1);
 }
 
 void BGMManager::StopGacha(float) {
-    AEAudioStopGroup(gachaGroup);
+	AEAudioStopGroup(gachaGroup);
 }
 
 void BGMManager::PlayCredits() {
-    AEAudioStopGroup(group);
-    AEAudioPlay(creditsTrack, group, 1.0f, 1.0f, -1);
+	AEAudioStopGroup(bgmGroup);
+	AEAudioPlay(creditsTrack, bgmGroup, 1.0f, 1.0f, -1);
 }
 
 void BGMManager::StopCredits() {
-    AEAudioStopGroup(group);
+	AEAudioStopGroup(bgmGroup);
 }
 
-// --- Sound effect methods ---
-void BGMManager::PlayAttack() {
-    AEAudioPlay(attackSound, sfxGroup, 1.0f, 1.0f, 0);
-}
-
-
+// --- UI methods ---
 void BGMManager::PlayUIClick() {
-    AEAudioPlay(uiClickSound, sfxGroup, 1.0f, 1.0f, 0);
+	AEAudioPlay(uiClickSound, uiGroup, 1.0f, 1.0f, 0);
+}
+
+// --- SFX methods ---
+void BGMManager::PlayAttack() {
+	AEAudioPlay(attackSound, sfxGroup, 1.0f, 1.0f, 0);
+}
+
+void BGMManager::PlayExplosion() {
+	// AEAudioPlay(explosionSound, sfxGroup, 1.0f, 1.0f, 0);
+}
+
+// --- Volume control ---
+// Music controls both bgmGroup and gachaGroup so all music tracks scale together
+void BGMManager::SetBGMVolume(float v) {
+	AEAudioSetGroupVolume(bgmGroup, v);
+	AEAudioSetGroupVolume(gachaGroup, v);
+}
+
+void BGMManager::SetUIVolume(float v) {
+	AEAudioSetGroupVolume(uiGroup, v);
+}
+
+void BGMManager::SetSFXVolume(float v) {
+	AEAudioSetGroupVolume(sfxGroup, v);
 }
 
 void BGMManager::Exit() {
-    // Unload BGM
-    AEAudioUnloadAudio(normalTrack);
-    AEAudioUnloadAudio(bossTrack);
-    AEAudioUnloadAudio(gachaTrack);
-    AEAudioUnloadAudio(creditsTrack);
+	// Unload music
+	AEAudioUnloadAudio(normalTrack);
+	AEAudioUnloadAudio(bossTrack);
+	AEAudioUnloadAudio(gachaTrack);
+	AEAudioUnloadAudio(creditsTrack);
 
-    // Unload SFX
-    AEAudioUnloadAudio(attackSound);
-    AEAudioUnloadAudio(uiClickSound);
+	// Unload UI sounds
+	AEAudioUnloadAudio(uiClickSound);
 
-    // Unload groups
-    AEAudioUnloadAudioGroup(group);
-    AEAudioUnloadAudioGroup(gachaGroup);
-    AEAudioUnloadAudioGroup(sfxGroup);
+	// Unload SFX
+	AEAudioUnloadAudio(attackSound);
+
+	// Unload groups
+	AEAudioUnloadAudioGroup(bgmGroup);
+	AEAudioUnloadAudioGroup(gachaGroup);
+	AEAudioUnloadAudioGroup(uiGroup);
+	AEAudioUnloadAudioGroup(sfxGroup);
 }
