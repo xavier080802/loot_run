@@ -7,6 +7,7 @@
 #include "../RenderingManager.h"
 #include "../Helpers/RenderUtils.h"
 #include "../Helpers/ColorUtils.h"
+#include "../UIConfig.h"
 #include <iostream>
 
 namespace {
@@ -134,7 +135,7 @@ void CreditState::LoadState()
 {
     // =============================================================
     squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
-    Font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 28);
+    Font = AEGfxCreateFont(PRIMARY_FONT_PATH, 28);
     texClosed = RenderingManager::GetInstance()->LoadTexture("Assets/scroll_closed.png");
     texOpen = RenderingManager::GetInstance()->LoadTexture("Assets/scroll_open.png");
     std::cout << "[CreditState] scroll_closed: " << (texClosed ? "OK" : "FAILED") << "\n";

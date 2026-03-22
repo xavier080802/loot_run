@@ -12,6 +12,7 @@
 #include "../gacha.h"
 #include "../Music.h"
 #include "../Pets/PetManager.h"
+#include "../UIConfig.h"
 
 //helpers
 namespace {
@@ -121,7 +122,7 @@ void ShopState::LoadState()
 	buttonGroup = AEAudioCreateGroup();
 	hoverSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17767.wav");
 	clickSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17766.wav");
-	gachaFont = AEGfxCreateFont("Assets/Exo2/Exo2-SemiBoldItalic.ttf", 32);
+	gachaFont = AEGfxCreateFont(SECONDARY_FONT_PATH, 32);
 	EnsureOverlayMesh();
 }
 
@@ -129,8 +130,8 @@ void ShopState::InitState()
 {
 	std::cout << "Shop state enter\n";
 	AEGfxFontSystemStart();
-	Font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 38);
-	BigFont = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 75);
+	Font = AEGfxCreateFont(PRIMARY_FONT_PATH, 38);
+	BigFont = AEGfxCreateFont(PRIMARY_FONT_PATH, 75);
 	winW = static_cast<float>(AEGfxGetWinMaxX());
 	winH = static_cast<float>(AEGfxGetWinMaxY());
 	scale = (winW * 2 / DEFAULT_W) < (winH * 2 / DEFAULT_H) ? (winW * 2 / DEFAULT_W) : (winH * 2 / DEFAULT_H);
