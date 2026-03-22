@@ -1,5 +1,5 @@
 #ifndef _SHOP_STATE_H
-#define _Shop_STATE_H
+#define _SHOP_STATE_H
 #include "../GameStateManager.h"
 
 //The shop menu

@@ -42,7 +42,7 @@ namespace {
 		{{ 500.f, 500.f }, { 450.f, 144.f }, "Attack Speed", true},
 		{{ 500.f, 700.f }, { 450.f, 144.f }, "Move Speed", true},
 		{{ 1100.f, 300.f }, { 450.f, 144.f }, "Health", true},
-		{{ 1100.f, 500.f }, { 450.f, 144.f }, "Dodge", true},
+		{{ 1100.f, 500.f }, { 450.f, 144.f }, "Defense", true},
 		{{ 1100.f, 700.f }, { 450.f, 144.f }, "Enter Gacha", false},
 		{{ 300.f, 100.f }, { 225.f, 110.f }, "back", false},
 		{{ 1300.f, 100.f }, { 225.f, 110.f }, "REFUND", false},
@@ -199,7 +199,7 @@ void ShopState::Update(double dt)
 						break;
 					case 3: // Health
 						break;
-					case 4: // Dodge (assuming DEF for now)
+					case 4: // Defense
 						break;
 					case 5: // Gacha Trigger
 						isGachaActive = true;

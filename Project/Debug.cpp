@@ -101,6 +101,7 @@ void DrawKeybindOverlay(const DebugContext& ctx)
     Header("--- Dev / Testing ---");
     KV("[N]", "Spawn enemy");
     KV("[L]", "Move chest here");
+    KV("[F7]", "Highlight chests");
 }
 
 // Debug overlay — shown when TAB is pressed in debug mode
@@ -128,7 +129,7 @@ void DrawDebugOverlay(const DebugContext& ctx)
     s8    fnt = RenderingManager::GetInstance()->GetFont();
     float pad = 12.f;
     float x = panelX + pad;
-    float valOffset = 120.f;
+    float valOffset = 200.f;
     float y = panelY - pad;
     float lineH = 30.f;
     float secGapTop = 7.f;
@@ -151,7 +152,7 @@ void DrawDebugOverlay(const DebugContext& ctx)
     auto Toggle = [&](const char* key, const char* label, bool state) {
         std::ostringstream lbl;
         lbl << key << "  " << label;
-        DrawAEText(fnt, lbl.str().c_str(), { x,        y }, sz, CreateColor(176, 176, 176, 255), TEXT_MIDDLE_LEFT);
+        DrawAEText(fnt, lbl.str().c_str(), { x,          y }, sz, CreateColor(176, 176, 176, 255), TEXT_MIDDLE_LEFT);
         DrawAEText(fnt, state ? "[ON]" : "[off]", { x + 200.f, y }, sz,
             CreateColor(state ? 80 : 102, state ? 238 : 102, state ? 80 : 102, 255), TEXT_MIDDLE_LEFT);
         y -= lineH;
@@ -179,8 +180,20 @@ void DrawDebugOverlay(const DebugContext& ctx)
 
     KV("Map:", ctx.inProceduralMap ? "Procedural" : "CSV");
 
-    oss.str(""); oss << ctx.enemiesKilledInRoom << " / " << ctx.enemiesRequiredForBoss;
-    KV("Kills:", oss.str().c_str());
+    // Enemy spawn counts
+    SecHeader("--- Enemy Counts ---");
+
+    oss.str(""); oss << ctx.csvEnemyCount;
+    KV("CSV spawned:", oss.str().c_str());
+
+    oss.str(""); oss << ctx.procEnemyCount;
+    KV("Proc spawned:", oss.str().c_str());
+
+    oss.str(""); oss << ctx.totalEnemiesKilled << " / " << ctx.totalKillTarget;
+    KV("Kills/Target:", oss.str().c_str(),
+        ctx.totalEnemiesKilled >= ctx.totalKillTarget ? 0.2f : 0.4f,
+        ctx.totalEnemiesKilled >= ctx.totalKillTarget ? 1.0f : 1.0f,
+        0.4f);
 
     KV("Boss:", ctx.bossSpawned ? "SPAWNED" : "waiting",
         ctx.bossSpawned ? 1.f : 0.6f,
@@ -190,8 +203,8 @@ void DrawDebugOverlay(const DebugContext& ctx)
     // Toggles
     SecHeader("--- Toggles ---");
     Toggle("[F5]", "God mode", ctx.debugGodMode);
-    Toggle("[F6]", "Live stats", ctx.debugShowStats);
-    Toggle("[F7]", "Freeze AI", ctx.debugFreezeEnemies);
+    Toggle("[F6]", "Freeze AI", ctx.debugFreezeEnemies);
+    Toggle("[F7]", "Show chests", ctx.debugShowChests);
 
     // Actions
     SecHeader("--- Actions ---");
@@ -202,7 +215,7 @@ void DrawDebugOverlay(const DebugContext& ctx)
     ActKV("[N]", "Spawn enemy at cursor");
 }
 
-// Shows live HP above each enemy's head — toggle with F8
+// Shows live HP above each enemy's head — always on
 void DrawEnemyStats(const DebugContext& ctx)
 {
     if (ctx.font < 0) return;
@@ -218,5 +231,31 @@ void DrawEnemyStats(const DebugContext& ctx)
             << " HP:" << (int)e->GetHP() << "/" << (int)e->GetMaxHP();
         DrawAEText(ctx.font, oss.str().c_str(), pos, 0.45f,
             CreateColor(255, 255, 100, 255), TEXT_MIDDLE, 0);
+    }
+}
+
+void DrawChestHighlights(const DebugContext& ctx)
+{
+    if (!ctx.debugShowChests || ctx.font < 0) return;
+    auto& gos = GameObjectManager::GetInstance()->GetGameObjects();
+    for (GameObject* go : gos) {
+        if (!go || !go->IsEnabled() || go->GetGOType() != GO_TYPE::LOOT_CHEST) continue;
+
+        AEVec2 pos = go->GetPos();
+        AEVec2 size = { 80.f, 80.f };
+
+        AEMtx33 mtx;
+        GetTransformMtx(mtx, pos, 0, size);
+        AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+        AEGfxTextureSet(nullptr, 0, 0);
+        AEGfxSetTransform(mtx.m);
+        AEGfxSetColorToMultiply(1.0f, 0.85f, 0.0f, 0.6f);
+        AEGfxMeshDraw(ctx.squareMesh, AE_GFX_MDM_TRIANGLES);
+
+        AEVec2 labelPos = { pos.x, pos.y + 55.f };
+        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        // Use float literals to avoid C4244 conversion warnings
+        DrawAEText(ctx.font, "CHEST", labelPos, 0.4f,
+            CreateColor(255.f, 220.f, 0.f, 255.f), TEXT_MIDDLE, 0);
     }
 }

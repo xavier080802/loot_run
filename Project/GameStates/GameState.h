@@ -3,6 +3,8 @@
 #include "../GameStateManager.h"
 #include "AEEngine.h"
 
+extern std::string mapSelected;
+
 //State for the game scene
 class GameState : public State {
 public:
@@ -12,6 +14,8 @@ public:
 	void UnloadState() override;
 	void Update(double dt) override; 
 	void Draw() override;
+
+
 
 private:
 	void HandleTutorialDialogueRender();

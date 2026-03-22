@@ -5,7 +5,7 @@ class Actor;
 class EquipmentData;
 
 /*	Lycan
-	
+
 	When skill is cast, one enemy that is under the cursor
 	will become the target.
 	Pet goes over to the target to smack them.
@@ -13,6 +13,7 @@ class EquipmentData;
 
 	extra:
 		attackCooldown - (float) Time between attacks
+		attImgTime - (float) Time to show the attack texture
 
 	Pet's attack data is in melee.json, the unique weapon with id 7
 	 - Attack size
@@ -21,6 +22,10 @@ class EquipmentData;
 	 - Etc
 
 	Using a melee weapon to reuse Combat code
+
+	textures
+		0: Base texture
+		1: Attack texture that appears when attacking
 */
 class Pet_3 : public Pet
 {
@@ -36,6 +41,8 @@ class Pet_3 : public Pet
 	Actor* target{ nullptr };
 	EquipmentData const* weap{ nullptr };
 	float attackTimer{}, attackCooldown{};
+
+	float attackAnimTimer{}, attImgTime{};
 };
 
 #endif // !_PET_3_
