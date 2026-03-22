@@ -28,6 +28,7 @@
 #include "../Debug.h"
 #include "../GameStates/LevelSelectState.h"
 #include "../ShopFunctions.h"
+#include "../Pause.h"
 
 namespace {
     // --- GLOBAL SYSTEMS ---
@@ -710,7 +711,7 @@ void GameState::InitState()
         }
     }
 
-    
+
 
     gPlayer->Init(safeSpawnPos,
         AEVec2{ playerRadius * 2.f, playerRadius * 2.f },
@@ -720,7 +721,7 @@ void GameState::InitState()
 
     gPlayer->GetRenderData().AddTexture(GameDB::GetPlayerTexturePath());
     gPlayer->GetRenderData().SetActiveTexture(0);
-    
+
     PetManager::GetInstance()->InitPetForGame(*map);
     gPlayer->InitPlayerRuntime(base);
     gPlayer->ApplyShopUpgrades();
@@ -803,10 +804,16 @@ void GameState::InitState()
 // =============================================================
 void GameState::Update(double dt)
 {
-    if (AEInputCheckTriggered(AEVK_M)) {
-        GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
+    // ESC or M toggles the pause menu
+    if (loadingTimer <= 0.f &&
+        (AEInputCheckTriggered(AEVK_M) || AEInputCheckTriggered(AEVK_ESCAPE)))
+    {
+        Pause::Toggle();
         return;
     }
+
+    // Pause menu consumes all game logic while open
+    if (Pause::Update()) return;
 
     // Show loading screen — skip all game logic until timer expires
     if (loadingTimer > 0.f) {
@@ -1066,7 +1073,7 @@ void GameState::Draw()
         float barW = winW * 0.5f, barH = 24.f;
         float filled = (1.f - loadingTimer / LOADING_DURATION) * barW;
         AEMtx33 barBgMtx, barFillMtx;
-        GetTransformMtx(barBgMtx,   { 0.f, -60.f }, 0, { barW, barH });
+        GetTransformMtx(barBgMtx, { 0.f, -60.f }, 0, { barW, barH });
         GetTransformMtx(barFillMtx, { -barW * 0.5f + filled * 0.5f, -60.f }, 0, { filled, barH });
         AEGfxSetTransform(barBgMtx.m);
         AEGfxSetColorToMultiply(0.2f, 0.2f, 0.2f, 1.f);
@@ -1141,6 +1148,9 @@ void GameState::Draw()
 
     HandleTutorialDialogueRender();
     PetManager::GetInstance()->DrawUI();
+
+    // Pause menu drawn on top of everything
+    Pause::Draw();
 }
 
 void GameState::HandleTutorialDialogueRender()

@@ -147,6 +147,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Inventory\Inventory.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Pause.cpp" />
     <ClCompile Include="Pets\Pet.cpp" />
     <ClCompile Include="Pets\PetInventory.cpp" />
     <ClCompile Include="Pets\PetManager.cpp" />
@@ -230,6 +231,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="Inventory\EquipmentTypes.h" />
     <ClInclude Include="Inventory\Inventory.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="Pause.h" />
     <ClInclude Include="Pets\Pet.h" />
     <ClInclude Include="Pets\PetConsts.h" />
     <ClInclude Include="Pets\PetInventory.h" />
