@@ -96,22 +96,22 @@ namespace
         DrawAEText(font, buf, D2W(POP_CX, rowY, scale), scale,
                    CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
 
-        // Minus button (red tones)
+        // Minus button (red)
         DrawRect(POP_CX - SIDE_OFFSET, rowY, SIDE_W, SIDE_H, scale,
                  hoverMinus ? 0.9f : 0.75f,
                  hoverMinus ? 0.3f : 0.2f,
                  hoverMinus ? 0.3f : 0.2f);
         DrawAEText(font, "-",
-                   D2W(POP_CX - SIDE_OFFSET, rowY, scale), scale,
+                   D2W(POP_CX - SIDE_OFFSET, rowY+10, scale), scale,
                    CreateColor(255, 255, 255, 255), TEXT_MIDDLE);
 
-        // Plus button (green tones)
+        // Plus button (green)
         DrawRect(POP_CX + SIDE_OFFSET, rowY, SIDE_W, SIDE_H, scale,
                  hoverPlus ? 0.3f : 0.2f,
                  hoverPlus ? 0.9f : 0.75f,
                  hoverPlus ? 0.3f : 0.2f);
         DrawAEText(font, "+",
-                   D2W(POP_CX + SIDE_OFFSET, rowY, scale), scale,
+                   D2W(POP_CX + SIDE_OFFSET, rowY+5, scale), scale,
                    CreateColor(255, 255, 255, 255), TEXT_MIDDLE);
 
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);

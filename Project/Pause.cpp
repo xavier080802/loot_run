@@ -18,16 +18,16 @@ namespace
     // Popup dimensions (default-space)
     constexpr float POP_CX = DEFAULT_W / 2.f;
     constexpr float POP_CY = DEFAULT_H / 2.f;
-    constexpr float POP_W  = 450.f;
-    constexpr float POP_H  = 400.f;
+    constexpr float POP_W  = 500.f;
+    constexpr float POP_H  = 450.f;
 
     constexpr float POP_TOP = POP_CY - POP_H / 2.f;
 
     // Row Y positions inside the popup
-    constexpr float ROW_TITLE    = POP_TOP + 55.f;
-    constexpr float ROW_RESUME   = POP_TOP + 145.f;
-    constexpr float ROW_SETTINGS = POP_TOP + 230.f;
-    constexpr float ROW_MAINMENU = POP_TOP + 315.f;
+    constexpr float ROW_TITLE    = POP_TOP + 50.f;
+    constexpr float ROW_RESUME   = POP_TOP + 165.f;
+    constexpr float ROW_SETTINGS = POP_TOP + 265.f;
+    constexpr float ROW_MAINMENU = POP_TOP + 365.f;
 
     // Button dimensions -- slightly wider than Settings close button (235)
     constexpr float BTN_W = 300.f;
@@ -164,10 +164,10 @@ namespace Pause
         DrawRect(POP_CX, POP_CY, POP_W, POP_H, scale, 0.25f, 0.25f, 0.25f);
 
         // Title bar
-        DrawRect(POP_CX, ROW_TITLE, POP_W - 20.f, 70.f, scale, 0.75f, 0.75f, 0.75f);
+        DrawRect(POP_CX, ROW_TITLE, POP_W, 100.f, scale, 0.75f, 0.75f, 0.75f);
         AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
         DrawAEText(font, "PAUSED",
-                   D2W(POP_CX, ROW_TITLE, scale), scale * 0.65f,
+                   D2W(POP_CX, ROW_TITLE, scale), scale * 0.85f,
                    CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
@@ -176,7 +176,7 @@ namespace Pause
         DrawRect(POP_CX, ROW_RESUME, BTN_W, BTN_H, scale, rTint, rTint, rTint);
         AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
         DrawAEText(font, "Resume",
-                   D2W(POP_CX, ROW_RESUME, scale), scale,
+                   D2W(POP_CX, ROW_RESUME, scale), scale * 0.7f,
                    CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
@@ -185,7 +185,7 @@ namespace Pause
         DrawRect(POP_CX, ROW_SETTINGS, BTN_W, BTN_H, scale, sTint, sTint, sTint);
         AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
         DrawAEText(font, "Settings",
-                   D2W(POP_CX, ROW_SETTINGS, scale), scale,
+                   D2W(POP_CX, ROW_SETTINGS, scale), scale * 0.7f,
                    CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
@@ -194,7 +194,7 @@ namespace Pause
         DrawRect(POP_CX, ROW_MAINMENU, BTN_W, BTN_H, scale, mTint, mTint, mTint);
         AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
         DrawAEText(font, "Main Menu",
-                   D2W(POP_CX, ROW_MAINMENU, scale), scale,
+                   D2W(POP_CX, ROW_MAINMENU, scale), scale * 0.7f,
                    CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
