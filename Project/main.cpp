@@ -60,7 +60,6 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	goManager = GameObjectManager::GetInstance();
 	renderManager = RenderingManager::GetInstance();
 	petManager = PetManager::GetInstance();
-	PetManager::GetInstance()->SaveInventoryToJSON();
 	worldTextManager = WorldTextManager::GetInstance();
 	inputManager->Init();
 	uiManager->Init();
