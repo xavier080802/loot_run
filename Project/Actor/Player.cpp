@@ -508,7 +508,7 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 			}
 
 
-			float dropDist = 40.0f;
+			float dropDist = 50.0f;
 
 			AEVec2 dropPos = GetPos();
 			dropPos.x += dropDir.x * dropDist;

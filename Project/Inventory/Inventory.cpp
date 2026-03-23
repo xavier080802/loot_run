@@ -398,7 +398,8 @@ void Inventory::SetUpgradeMultipliers(const UpgradeMultipliers& u) { mUpgrades =
 UpgradeMultipliers Inventory::GetUpgradeMultipliers() const { return mUpgrades; }
 
 /**
- * @brief Adds arrows (or other ranged ammo) to the player's current stash.
+ * @brief Adds 
+ s (or other ranged ammo) to the player's current stash.
  *
  * The player can hold any amount of ammo. If amount is 0 or negative, it's ignored.
  *

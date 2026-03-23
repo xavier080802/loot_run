@@ -27,6 +27,7 @@
 #include "../Drops/DropSystem.h"
 #include "../Debug.h"
 #include "../GameStates/LevelSelectState.h"
+#include "../ShopFunctions.h"
 
 namespace {
     // --- GLOBAL SYSTEMS ---
@@ -38,7 +39,7 @@ namespace {
     AEVec2  playerPos;
     AEVec2  playerDir = { 1.0f, 0.0f };
     Player* gPlayer = nullptr;
-    float   playerRadius = 15.0f;
+    //float   playerRadius = 15.0f;
     float   playerSpeed = 300.0f;
 
     static AEVec2 GetPlayerPos()
@@ -115,6 +116,15 @@ namespace {
     bool debugGodMode = false;
     bool debugFreezeEnemies = false;
     bool debugShowChests = false;   // F7 — highlight all chest positions
+
+    // --- LOADING SCREEN ---
+    // > 0 while the loading screen is visible.  Counts down in seconds.
+    float loadingTimer = 0.f;
+    const float LOADING_DURATION = 7.f;
+
+    // --- ENDLESS SURVIVAL TIMER ---
+    float endlessRunTimer = 0.f;
+    bool endlessTimerActive = false;
 
     DebugContext MakeDebugCtx()
     {
@@ -289,11 +299,31 @@ namespace {
     // Wave 0 = 8 enemies, fired immediately when entering a proc room.
     // Wave 1 = 2, wave 2 = 3, wave 3 = 4, ... growing by 1 each time.
     // All positions come from CollectProcSafePositions so no wall spawns.
+    // Min spacing of 3 tiles between picks prevents enemies from overlapping.
+    // Hard cap of MAX_LIVE_ENEMIES
     void SpawnProcWave(TileMap const& tilemap)
     {
+        // Hard cap: ever let more than this many enemies be active at once
+        const int MAX_LIVE_ENEMIES = 30;
+        // Minimum world-space gap between two spawn positions (~3 tiles at 32 px)
+        const float MIN_SPAWN_SPACING = 32.f * 3.f;
+
+        // Count currently live enemies before spawning
+        int liveCount = 0;
+        for (Enemy* e : procEnemies)
+            if (e && e->IsEnabled() && e->GetHP() > 0.f) ++liveCount;
+
+        int canSpawn = MAX_LIVE_ENEMIES - liveCount;
+        if (canSpawn <= 0) {
+            std::cout << "[ProcWave] Live enemy cap hit (" << liveCount << "), skipping wave.\n";
+            ++procWaveNumber; // still advance so timer doesn't keep firing immediately
+            return;
+        }
+
         int waveSize = (procWaveNumber == 0) ? 8 : (1 + procWaveNumber);
+        waveSize = (waveSize < canSpawn) ? waveSize : canSpawn; // don't exceed cap
         std::cout << "[ProcWave] procWaveNumber=" << procWaveNumber
-            << " waveSize=" << waveSize << "\n";
+            << " waveSize=" << waveSize << " (live=" << liveCount << ")\n";
         ++procWaveNumber;
 
         std::vector<AEVec2> safePool = CollectProcSafePositions(tilemap);
@@ -302,16 +332,39 @@ namespace {
             return;
         }
 
+        // Track already-chosen positions and enforce min spacing between them
+        std::vector<AEVec2> chosen;
         int spawned = 0;
-        for (int i = 0; i < waveSize && !safePool.empty(); ++i) {
-            int    idx = rand() % (int)safePool.size();
-            AEVec2 pos = safePool[idx];
-            safePool.erase(safePool.begin() + idx);
 
-            Enemy* e = SpawnWeightedEnemy(pos, 0.70f, 0.30f);
-            if (!e) continue;
-            procEnemies.push_back(e);
-            ++spawned;
+        for (int i = 0; i < waveSize && !safePool.empty(); ++i) {
+            // Try up to 20 random picks looking for a well-spaced slot
+            bool placed = false;
+            for (int attempt = 0; attempt < 20 && !safePool.empty(); ++attempt) {
+                int    idx = rand() % (int)safePool.size();
+                AEVec2 pos = safePool[idx];
+
+                // Reject if too close to an already-chosen position this wave
+                bool tooClose = false;
+                for (AEVec2 const& c : chosen) {
+                    float dx = pos.x - c.x, dy = pos.y - c.y;
+                    if ((dx * dx + dy * dy) < MIN_SPAWN_SPACING * MIN_SPAWN_SPACING) {
+                        tooClose = true;
+                        break;
+                    }
+                }
+
+                safePool.erase(safePool.begin() + idx);
+                if (tooClose) continue;
+
+                Enemy* e = SpawnWeightedEnemy(pos, 0.70f, 0.30f);
+                if (!e) continue;
+                procEnemies.push_back(e);
+                chosen.push_back(pos);
+                ++spawned;
+                placed = true;
+                break;
+            }
+            if (!placed) break; // pool exhausted or no spaced slot found
         }
         std::cout << "[ProcWave " << procWaveNumber << "] Spawned "
             << spawned << " enemies (wave size " << waveSize << ").\n";
@@ -571,6 +624,9 @@ void GameState::InitState()
         Collision::LAYER::INTERACTABLE,
         Collision::LAYER::OBSTACLE
     );
+
+    float playerRadius = GameDB::GetPlayerRadius();
+
     ActorStats base{};
     base.maxHP = 100.0f;
     base.attack = 10.0f;
@@ -595,6 +651,10 @@ void GameState::InitState()
             0, MESH_CIRCLE, Collision::SHAPE::COL_CIRCLE,
             AEVec2{ playerRadius * 2.f, playerRadius * 2.f },
             collideMask, Collision::LAYER::PLAYER);
+
+        gPlayer->GetRenderData().AddTexture(GameDB::GetPlayerTexturePath());
+        gPlayer->GetRenderData().SetActiveTexture(0);
+
         PetManager::GetInstance()->InitPetForGame(*nextMap);
         gPlayer->InitPlayerRuntime(base);
         gPlayer->ApplyShopUpgrades();
@@ -611,6 +671,9 @@ void GameState::InitState()
         SpawnProcWave(*nextMap);
         SpawnProcChests(*nextMap);   // random 1-3 chests in the proc room
         procWaveTimer = 0.0f;
+        loadingTimer = LOADING_DURATION; // show loading screen while assets settle
+        endlessRunTimer = 0.f;
+        endlessTimerActive = true;
 
         PetManager::GetInstance()->SetTilemap(*nextMap);
         minimap->Reset();
@@ -634,11 +697,30 @@ void GameState::InitState()
         }
     }
 
+    AEVec2 chestTilePos = currentLevel.chestPos;
+    bool   foundChest = false;
+    for (unsigned r = 0; r < csvRows; ++r) {
+        for (unsigned c = 0; c < csvCols; ++c) {
+            const TileMap::Tile* t = map->QueryTile(r, c);
+            if (!t) continue;
+            if (t->type == TileMap::TILE_CHEST && !foundChest) {
+                chestTilePos = map->GetTilePosition(r, c);
+                foundChest = true;
+            }
+        }
+    }
+
+    
+
     gPlayer->Init(safeSpawnPos,
         AEVec2{ playerRadius * 2.f, playerRadius * 2.f },
         0, MESH_CIRCLE, Collision::SHAPE::COL_CIRCLE,
         AEVec2{ playerRadius * 2.f, playerRadius * 2.f },
         collideMask, Collision::LAYER::PLAYER);
+
+    gPlayer->GetRenderData().AddTexture(GameDB::GetPlayerTexturePath());
+    gPlayer->GetRenderData().SetActiveTexture(0);
+    
     PetManager::GetInstance()->InitPetForGame(*map);
     gPlayer->InitPlayerRuntime(base);
     gPlayer->ApplyShopUpgrades();
@@ -724,6 +806,13 @@ void GameState::Update(double dt)
     if (AEInputCheckTriggered(AEVK_M)) {
         GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
         return;
+    }
+
+    // Show loading screen — skip all game logic until timer expires
+    if (loadingTimer > 0.f) {
+        loadingTimer -= (float)dt;
+        if (loadingTimer < 0.f) loadingTimer = 0.f;
+        return; // don't process any gameplay input or updates
     }
 
     // TAB — toggle debug mode and overlay
@@ -959,6 +1048,41 @@ void GameState::Update(double dt)
 // =============================================================
 void GameState::Draw()
 {
+    // Loading screen overlay — drawn instead of the game world during load
+    if (loadingTimer > 0.f) {
+        float winW = (float)(AEGfxGetWinMaxX() - AEGfxGetWinMinX());
+        float winH = (float)(AEGfxGetWinMaxY() - AEGfxGetWinMinY());
+
+        // Full-screen black background
+        AEMtx33 bgMtx;
+        GetTransformMtx(bgMtx, { 0, 0 }, 0, { winW, winH });
+        AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+        AEGfxTextureSet(nullptr, 0, 0);
+        AEGfxSetTransform(bgMtx.m);
+        AEGfxSetColorToMultiply(0.f, 0.f, 0.f, 1.f);
+        AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
+
+        // Progress bar background (dark grey, centered)
+        float barW = winW * 0.5f, barH = 24.f;
+        float filled = (1.f - loadingTimer / LOADING_DURATION) * barW;
+        AEMtx33 barBgMtx, barFillMtx;
+        GetTransformMtx(barBgMtx,   { 0.f, -60.f }, 0, { barW, barH });
+        GetTransformMtx(barFillMtx, { -barW * 0.5f + filled * 0.5f, -60.f }, 0, { filled, barH });
+        AEGfxSetTransform(barBgMtx.m);
+        AEGfxSetColorToMultiply(0.2f, 0.2f, 0.2f, 1.f);
+        AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
+        AEGfxSetTransform(barFillMtx.m);
+        AEGfxSetColorToMultiply(0.2f, 0.7f, 1.f, 1.f);
+        AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
+
+        // "LOADING..." text
+        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        if (font >= 0)
+            AEGfxPrint(font, "LOADING...", -0.12f, 0.05f, 1.2f, 1.f, 1.f, 1.f, 1.f);
+
+        return; // skip all other rendering while loading
+    }
+
     RenderWorldMap();
     GameObjectManager::GetInstance()->DrawObjects();
     DrawBossHPProgressBar();
@@ -1004,6 +1128,17 @@ void GameState::Draw()
     if (showKeybindOverlay) DrawKeybindOverlay(MakeDebugCtx());
 
     if (gPlayer) gPlayer->DrawUI();
+
+    // Draw the Endless mode survival timer at the top center
+    if (endlessTimerActive && font >= 0) {
+        int minutes = (int)endlessRunTimer / 60;
+        int seconds = (int)endlessRunTimer % 60;
+        char timeText[64];
+        snprintf(timeText, sizeof(timeText), "SURVIVED: %02d:%02d", minutes, seconds);
+        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        AEGfxPrint(font, timeText, -0.4f, 0.75f, 1.0f, 1.f, 1.f, 1.f, 1.f);
+    }
+
     HandleTutorialDialogueRender();
     PetManager::GetInstance()->DrawUI();
 }
@@ -1019,6 +1154,16 @@ void GameState::HandleTutorialDialogueRender()
 // =============================================================
 void GameState::ExitState()
 {
+    // Flush coins and endless timer before destroying things
+    if (gPlayer) {
+        ShopFunctions::GetInstance()->addMoney(gPlayer->GetInventory().GetCoins());
+        gPlayer->GetInventory().Clear(); // clear to prevent any weird persistence issues later
+    }
+    if (endlessTimerActive) {
+        ShopFunctions::GetInstance()->updateEndlessHighScore(endlessRunTimer);
+        endlessTimerActive = false;
+    }
+
     bgm.StopGameplayBGM();
 
     gPlayer->ClearStatusEffects();
@@ -1032,6 +1177,7 @@ void GameState::ExitState()
     totalEnemiesRequired = 0;
     previousRoomsKilled = 0;
     totalKillTarget = 0;
+    loadingTimer = 0.f;
     procWaveTimer = 0.0f;
     procWaveNumber = 0;
     bossHPProgressBar = 0.f;

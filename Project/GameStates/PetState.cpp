@@ -9,6 +9,7 @@
 #include "../Helpers/RenderUtils.h"
 #include "../Helpers/ColorUtils.h"
 #include "../main.h"
+#include "../UIConfig.h"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -73,7 +74,7 @@ void PetState::LoadState() {
 	petAudioGroup = AEAudioCreateGroup();
 	hoverSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17767.wav");
 	clickSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17766.wav");
-	Font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 20);
+	Font = AEGfxCreateFont(PRIMARY_FONT_PATH, 20);
 }
 
 void PetState::InitState() {

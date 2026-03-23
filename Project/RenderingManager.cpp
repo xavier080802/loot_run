@@ -1,11 +1,12 @@
 #include "RenderingManager.h"
 #include "./Helpers/RenderUtils.h"
+#include "UIConfig.h"
 #include <iostream>
 
 void RenderingManager::Init()
 {
 	//Font
-	fontId = AEGfxCreateFont("Assets/placeholder.ttf", fontSize);
+	fontId = AEGfxCreateFont(PRIMARY_FONT_PATH, fontSize);
 	f32 tmp{};
 	AEGfxGetPrintSize(fontId, "P", 1.f, &tmp, &fontHeight); //Get height of some char
 

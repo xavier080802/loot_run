@@ -59,6 +59,8 @@ namespace GameDB
     bool LoadPlayerInventory(const char* path);
     const ActorStats& GetPlayerBaseStats();
     const PlayerInventoryDef& GetPlayerStarterInventory();
+    const char* GetPlayerTexturePath();
+    float GetPlayerRadius();
 
     // runtime owned flags not used yet ignore
     void InitEquipmentRuntime();

@@ -7,6 +7,7 @@
 #include "../Helpers/RenderUtils.h"
 #include "../Helpers/ColorUtils.h"
 #include "../main.h"
+#include "../UIConfig.h"
 #include <iostream>
 
 //helpers
@@ -71,8 +72,8 @@ void MainMenuState::LoadState()
 	buttonGroup = AEAudioCreateGroup();
 	hoverSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17767.wav");
 	clickSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17766.wav");
-	Font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 38);
-	BigFont = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 75);
+	Font = AEGfxCreateFont(PRIMARY_FONT_PATH, 38);
+	BigFont = AEGfxCreateFont(PRIMARY_FONT_PATH, 75);
 }
 
 void MainMenuState::InitState()

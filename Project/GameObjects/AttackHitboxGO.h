@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "GameObject.h"
 #include "../Actor/Actor.h"
 #include <vector>
@@ -21,7 +21,8 @@ struct AttackHitboxConfig
     Collision::SHAPE colliderShape = Collision::SHAPE::COL_CIRCLE;
     AEVec2 colliderSize = { 30.0f, 30.0f };
 
-    // Visual size
+    // Visual size and shape
+    MESH_SHAPE meshShape = MESH_CIRCLE;
     AEVec2 renderScale = { 30.0f, 30.0f };
 
     // Offset from owner position (world-space offset supplied by caller)

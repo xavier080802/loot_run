@@ -248,6 +248,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="ShopFunctions.h" />
     <ClInclude Include="TileMap.h" />
     <ClInclude Include="TutorialData.h" />
+    <ClInclude Include="UIConfig.h" />
     <ClInclude Include="UI\Minimap.h" />
     <ClInclude Include="UI\UIElement.h" />
     <ClInclude Include="UI\UIManager.h" />

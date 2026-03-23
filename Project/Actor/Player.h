@@ -46,6 +46,7 @@ public:
 
     GO_TYPE GetGOType()const override { return GO_TYPE::PLAYER; }
     const ActorStats& GetBaseStats() const override { return mBaseStats; }
+    Inventory& GetInventory() { return mInventory; }
 
     void SubscriptionAlert(Input::InputKeyData content) override;
 
