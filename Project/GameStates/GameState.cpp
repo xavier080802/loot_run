@@ -753,6 +753,25 @@ void GameState::InitState()
                 }
             }
         }
+        
+        // Boss spawn in tutorial 
+        for (unsigned r = 0; r < csvRows; ++r) {
+            for (unsigned c = 0; c < csvCols; ++c) {
+                const TileMap::Tile* t = map->QueryTile(r, c);
+                if (t && t->type == TileMap::TILE_BOSS) {
+                    AEVec2 bossSpawnPos = map->GetTilePosition(r, c);
+                    boss = SpawnRandomBossEnemy(bossSpawnPos);
+                    if (boss) {
+                        bossSpawned = true;
+                        bossAlive = true;
+                        bossMaxHPProgressBar = boss->GetDefinition().baseStats.maxHP;
+                        bossHPProgressBar = bossMaxHPProgressBar;
+                        boss->SetEnabled(false); // hidden until fairy reaches BOSS stage
+                    }
+                    break;
+                }
+            }
+        }
 
         std::vector<AEVec2> csvSpawnPool = FindSafeSpawnPositions(*map, 0, true);
         csvEnemies.clear();
@@ -764,7 +783,6 @@ void GameState::InitState()
                 << " at (" << pos.x << ", " << pos.y << ")\n";
         }
         std::cout << "[Tutorial] Spawned " << csvEnemies.size() << " enemies total.\n";
-
         if (doTutorial) {
             fairy->InitTutorial(gPlayer, &currentLevel);
             fairy->tilemap = map;   // give fairy access to tilemap for door detection
@@ -981,8 +999,12 @@ void GameState::Update(double dt)
         bossAlive = !boss->IsDead();
     }
 
-    if (doTutorial && fairy->data.stage == Tutorial::BOSS && !bossAlive)
-        fairy->ChangeStage(Tutorial::END);
+    if (doTutorial && fairy->data.stage == Tutorial::BOSS) {
+        if (boss && !boss->IsEnabled())
+            boss->SetEnabled(true);
+        if (!bossAlive)
+            fairy->ChangeStage(Tutorial::END);
+    }
 
     if (endlessTimerActive) {
         endlessRunTimer += (float)dt;

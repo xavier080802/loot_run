@@ -233,7 +233,7 @@ namespace Tutorial {
 		switch (next)
 		{
 		case Tutorial::START:
-			data.dialogueLines = { "START dialogue line 1/2", "START dialogue line 2/2" };
+			data.dialogueLines = { "Welcome Adventurer to Pandora !", "Practsie withi" };
 			data.playDialogue = true;
 			break;
 		case Tutorial::MOVEMENT:

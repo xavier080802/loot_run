@@ -320,6 +320,8 @@ void TileMap::LoadStatics()
     tileMap[TILE_CONNECTOR].isSolid = false;
     tileMap[TILE_DOOR].layer = Collision::NONE;
     tileMap[TILE_DOOR].isSolid = false;
+    tileMap[TILE_BOSS] .layer = Collision::NONE;
+    tileMap[TILE_BOSS].isSolid = false;
 
     textureMap.insert(TileTex(TILE_NONE, rm->LoadTexture("Assets/sprites/tiles/floor.png")));
     textureMap.insert(TileTex(TILE_WALL, rm->LoadTexture("Assets/sprites/tiles/wall.png")));

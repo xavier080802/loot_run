@@ -16,6 +16,7 @@ public:
 		TILE_ENEMY,       // 3: Enemy Spawn Point
 		TILE_CHEST,       // 4: Loot Chest
 		TILE_CONNECTOR,	 //  5: Passage 
+		TILE_BOSS,		 //6: Boss
 
 		TILE_NUM, // Last, num of tile types
 	};
