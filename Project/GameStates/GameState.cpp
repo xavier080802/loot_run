@@ -257,6 +257,10 @@ namespace {
                 chest->Init(pos, { 35,35 }, 0, MESH_SQUARE, Collision::COL_RECT, { 35,35 },
                     CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE);
                 std::cout << "[SpawnCsvChests] Chest at (" << pos.x << ", " << pos.y << ")\n";
+
+                if (doTutorial) {
+                    chest->SetDropTable(2);
+                }
             }
         }
     }
@@ -536,6 +540,11 @@ void GameState::LoadState()
         std::cout << "[LoadState] Loaded map: " << mapSelected << "\n";
     }
 
+    if (mapSelected == "Assets/TutorialMap.csv") {
+        doTutorial = true;
+        fairy = new Tutorial::TutorialFairy();
+    }
+
     float    procTileSize = 115.f;
     unsigned procRows = 50, procCols = 50;
     nextMap = new TileMap({ 0.f, 0.f }, procTileSize, procTileSize);
@@ -575,9 +584,6 @@ void GameState::LoadState()
     PetManager::GetInstance()->LinkPlayer(gPlayer);
 
     boss = nullptr;
-
-    if (doTutorial)
-        fairy = new Tutorial::TutorialFairy();
 }
 
 // =============================================================
@@ -679,8 +685,6 @@ void GameState::InitState()
 
         PetManager::GetInstance()->SetTilemap(*nextMap);
         minimap->Reset();
-
-        if (doTutorial) fairy->InitTutorial(gPlayer, &currentLevel);
         return;
     }
 
@@ -737,7 +741,7 @@ void GameState::InitState()
 
     // ── TUTORIAL MODE ─────────────────────────────────────────
     // Spawn CSV enemies, find the door tile, no kill target or proc rooms
-    if (mapSelected == "Assets/TutorialMap.csv") {
+    if (doTutorial) {
         std::cout << "[InitState] Tutorial mode.\n";
 
         // Find the TILE_DOOR position so the fairy can guide to it
@@ -816,8 +820,6 @@ void GameState::InitState()
             << " (" << tier << ") at (" << pos.x << ", " << pos.y << ")\n";
     }
     std::cout << "[InitState] Spawned " << csvEnemies.size() << " CSV enemies total.\n";
-
-    if (doTutorial) fairy->InitTutorial(gPlayer, &currentLevel);
 }
 
 // =============================================================
@@ -1078,7 +1080,7 @@ void GameState::Update(double dt)
         GameObjectManager::GetInstance()->UpdateObjects(dt, currentMap);
     }
 
-    DropSystem::PrintPickupDisplay(static_cast<float>(dt));
+    DropSystem::UpdatePickupDisplay(static_cast<float>(dt));
 }
 
 // =============================================================
@@ -1178,6 +1180,7 @@ void GameState::Draw()
     HandleTutorialDialogueRender();
     PetManager::GetInstance()->DrawUI();
 
+    DropSystem::PrintPickupDisplay();
     // Pause menu drawn on top of everything
     Pause::Draw();
 }
@@ -1247,8 +1250,6 @@ void GameState::UnloadState()
     boss = nullptr;
     DisableAndClearEnemies(csvEnemies);
     DisableAndClearEnemies(procEnemies);
-
-    if (doTutorial && fairy) { delete fairy; fairy = nullptr; }
 
     bgm.Exit();
     if (font >= 0) { AEGfxDestroyFont(font); font = -1; }

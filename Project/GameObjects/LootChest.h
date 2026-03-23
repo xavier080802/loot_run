@@ -3,6 +3,7 @@
 #include "GameObject.h"
 #include "../DesignPatterns/Subscriber.h"
 #include <forward_list>
+#include "../Drops/DropTypes.h"
 
 struct LootChestSubContent;
 struct LootChestOpenedSub;
@@ -10,6 +11,8 @@ struct LootChestOpenedSub;
 class LootChest : public GameObject
 {
 public:
+	LootChest& SetDropTable(int id);
+	//Init and set a random drop table
 	GameObject* Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, Collision::LAYER _isInLayer) override;
 	void OnCollide(CollisionData& other) override;
 
@@ -23,7 +26,7 @@ private:
 
 	void DropLoot();
 
-	//TODO: Loot table
+	DropTable const* dropTable{nullptr};
 };
 
 //------------------------------------------------------------------

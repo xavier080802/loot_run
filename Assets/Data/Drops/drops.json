@@ -31,24 +31,45 @@
       ]
     },
     {
-      "id": 1,
-      "entries": [
-        {
-          "type": "Coin",
-          "chance": 1.0,
-          "minAmount": 100,
-          "maxAmount": 500
-        },
-        {
-          "type": "Equipment",
-          "category": "Any",
-          "chance": 1.0
-        },
-        {
-          "type": "Heal",
-          "chance": 1.0
-        }
-      ]
+        "id": 1,
+        "entries": [
+            {
+                "type": "Coin",
+                "chance": 1.0,
+                "minAmount": 100,
+                "maxAmount": 500
+            },
+            {
+                "type": "Equipment",
+                "category": "Any",
+                "chance": 1.0
+            },
+            {
+                "type": "Heal",
+                "chance": 1.0
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "entries": [
+            {
+                "type": "Equipment",
+                "category": "Ranged",
+                "chance": 1.0,
+                "itemId": 1
+            },
+            {
+                "type": "Heal",
+                "chance": 1.0
+            },
+            {
+                "type": "Ammo",
+                "chance": 1.0,
+                "minAmount": 20,
+                "maxAmount": 20
+            }
+        ]
     }
   ]
 }
