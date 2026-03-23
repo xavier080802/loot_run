@@ -234,7 +234,7 @@ namespace Tutorial {
 		switch (next)
 		{
 		case Tutorial::START:
-			data.dialogueLines = { "Welcome Adventurer to Pandora !", "Practsie withi" };
+			data.dialogueLines = { "Welcome Adventurer to Pandora !", "Battle through various dungeon and gain strength to defeat evil" };
 			data.playDialogue = true;
 			break;
 		case Tutorial::MOVEMENT:
