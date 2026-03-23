@@ -31,6 +31,8 @@ namespace {
 	AEAudio hoverSound, clickSound;
 	std::vector<bool> btnHoverStates;
 
+	PetManager* petManager;
+
 	// Tracks which inventory slot is currently equipped so we can highlight it
 	int selectedIndex = -1;
 	// Stores the type/rank of the currently selected pet so we can redraw the label
@@ -75,6 +77,7 @@ void PetState::LoadState() {
 	hoverSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17767.wav");
 	clickSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17766.wav");
 	Font = AEGfxCreateFont(PRIMARY_FONT_PATH, 20);
+	petManager = PetManager::GetInstance();
 }
 
 void PetState::InitState() {
@@ -153,14 +156,14 @@ void PetState::Update(double dt) {
 					selectedIndex = -1;
 					selectedType = Pets::PET_TYPE::NONE;
 					selectedRank = Pets::COMMON;
-					PetManager::GetInstance()->SetPet(Pets::PET_TYPE::NONE, Pets::COMMON);
+					petManager->SetPet(Pets::PET_TYPE::NONE, Pets::COMMON);
 					std::cout << "[PetState] Pet deselected.\n";
 				}
 				else {
 					selectedIndex = index;
 					selectedType = clickedType;
 					selectedRank = clickedRank;
-					PetManager::GetInstance()->SetPet(clickedType, clickedRank);
+					petManager->SetPet(clickedType, clickedRank);
 					std::cout << "[PetState] Selected pet id=" << outer.first
 						<< " rank=" << inner.first << "\n";
 				}
@@ -176,8 +179,8 @@ void PetState::Draw() {
 	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
 	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
-	auto const& inventory = PetManager::GetInstance()->GetInventory();
-	auto const& petDataMap = PetManager::GetInstance()->GetPetDataMap();
+	auto const& inventory = petManager->GetInventory();
+	auto const& petDataMap = petManager->GetPetDataMap();
 
 	int index = 0;
 	for (auto const& outer : inventory) {
@@ -241,6 +244,12 @@ void PetState::Draw() {
 		}
 	}
 
+	if (selectedIndex != -1) {
+		DrawAETextbox(Font, petManager->GetPetDataMap().at(selectedType).skillDesc,
+			AEVec2{ GRID_START.x + SLOT_SIZE, -DEFAULT_H * 0.5f }, 300.f, 1.5f, 0, Color{ 255,255,255,255 }, TextOriginPos::TEXT_MIDDLE_LEFT,
+			TextboxOriginPos::BOTTOM, TextboxBgCfg{ AEVec2{0.02f, 0}, Color{}, 255, nullptr, nullptr });
+	}
+
 	// Bottom hint bar
 	AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
 	AEVec2 hintPos = DefaultToWorld(DEFAULT_W * 0.5f, DEFAULT_H - 40.0f);
@@ -258,7 +267,7 @@ void PetState::Draw() {
 
 void PetState::ExitState() {
 	// Save inventory to disk on exit
-	Pets::SaveInventory(PetManager::GetInstance()->GetInventory());
+	Pets::SaveInventory(petManager->GetInventory());
 }
 
 void PetState::UnloadState() {
