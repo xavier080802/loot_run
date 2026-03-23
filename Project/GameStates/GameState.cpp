@@ -1003,7 +1003,7 @@ void GameState::Update(double dt)
     }
 
     if (doTutorial && fairy->data.stage == Tutorial::BOSS) {
-        if (boss && !boss->IsEnabled())
+        if (boss && !boss->IsDead())
             boss->SetEnabled(true);
         if (!bossAlive)
             fairy->ChangeStage(Tutorial::END);
