@@ -98,7 +98,7 @@ namespace {
     bool     inProceduralMap = false;
 
     // --- TUTORIAL ---
-    bool doTutorial{ false };
+    bool doTutorial{ true };
     Tutorial::TutorialFairy* fairy;
     s8 font{ -1 };
 
