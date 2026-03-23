@@ -788,7 +788,7 @@ void GameState::InitState()
         }
         std::cout << "[Tutorial] Spawned " << csvEnemies.size() << " enemies total.\n";
         if (doTutorial) {
-            fairy->InitTutorial(gPlayer, &currentLevel);
+            fairy->InitTutorial(gPlayer, *map, currentLevel);
             fairy->tilemap = map;   // give fairy access to tilemap for door detection
         }
         return;

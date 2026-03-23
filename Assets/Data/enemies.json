@@ -174,11 +174,11 @@
         "moveSpeed": 110,
         "attackSpeed": 0.5
       },
-      "render": {
-        "radius": 70,
-        "mesh": "circle",
-        "texturePath": "Assets/enemyplaceholder.png"
-      },
+        "render": {
+            "radius": 70,
+            "mesh": "circle",
+            "texturePath": "Assets/sprites/enemies/dragon.png"
+        },
       "attack": {
         "range": 150.0,
         "cooldown": 3.0,
