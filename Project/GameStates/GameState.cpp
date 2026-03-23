@@ -589,7 +589,7 @@ void GameState::LoadState()
 // =============================================================
 void GameState::InitState()
 {
-    doTutorial = (mapSelected == "Assets/TutorialMap.csv");
+	doTutorial = (mapSelected == "Assets/TutorialMap.csv");
     bgm.PlayNormal();
     InitTutorial(currentLevel);
 
