@@ -28,6 +28,7 @@
 #include "../Debug.h"
 #include "../GameStates/LevelSelectState.h"
 #include "../ShopFunctions.h"
+#include "../Pause.h"
 
 namespace {
     // --- GLOBAL SYSTEMS ---
@@ -99,7 +100,7 @@ namespace {
     bool     inProceduralMap = false;
 
     // --- TUTORIAL ---
-    bool doTutorial{ false };
+    bool doTutorial{ true };
     Tutorial::TutorialFairy* fairy;
     s8 font{ -1 };
 
@@ -714,7 +715,7 @@ void GameState::InitState()
         }
     }
 
-    
+
 
     gPlayer->Init(safeSpawnPos,
         AEVec2{ playerRadius * 2.f, playerRadius * 2.f },
@@ -724,7 +725,7 @@ void GameState::InitState()
 
     gPlayer->GetRenderData().AddTexture(GameDB::GetPlayerTexturePath());
     gPlayer->GetRenderData().SetActiveTexture(0);
-    
+
     PetManager::GetInstance()->InitPetForGame(*map);
     gPlayer->InitPlayerRuntime(base);
     gPlayer->ApplyShopUpgrades();
@@ -756,6 +757,25 @@ void GameState::InitState()
                 }
             }
         }
+        
+        // Boss spawn in tutorial 
+        for (unsigned r = 0; r < csvRows; ++r) {
+            for (unsigned c = 0; c < csvCols; ++c) {
+                const TileMap::Tile* t = map->QueryTile(r, c);
+                if (t && t->type == TileMap::TILE_BOSS) {
+                    AEVec2 bossSpawnPos = map->GetTilePosition(r, c);
+                    boss = SpawnRandomBossEnemy(bossSpawnPos);
+                    if (boss) {
+                        bossSpawned = true;
+                        bossAlive = true;
+                        bossMaxHPProgressBar = boss->GetDefinition().baseStats.maxHP;
+                        bossHPProgressBar = bossMaxHPProgressBar;
+                        boss->SetEnabled(false); // hidden until fairy reaches BOSS stage
+                    }
+                    break;
+                }
+            }
+        }
 
         std::vector<AEVec2> csvSpawnPool = FindSafeSpawnPositions(*map, 0, true);
         csvEnemies.clear();
@@ -767,9 +787,10 @@ void GameState::InitState()
                 << " at (" << pos.x << ", " << pos.y << ")\n";
         }
         std::cout << "[Tutorial] Spawned " << csvEnemies.size() << " enemies total.\n";
-
-        fairy->InitTutorial(gPlayer, *map, currentLevel);
-        fairy->tilemap = map;   // give fairy access to tilemap for door detection
+        if (doTutorial) {
+            fairy->InitTutorial(gPlayer, &currentLevel);
+            fairy->tilemap = map;   // give fairy access to tilemap for door detection
+        }
         return;
     }
 
@@ -803,10 +824,16 @@ void GameState::InitState()
 // =============================================================
 void GameState::Update(double dt)
 {
-    if (AEInputCheckTriggered(AEVK_M)) {
-        GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
+    // ESC or M toggles the pause menu
+    if (loadingTimer <= 0.f &&
+        (AEInputCheckTriggered(AEVK_M) || AEInputCheckTriggered(AEVK_ESCAPE)))
+    {
+        Pause::Toggle();
         return;
     }
+
+    // Pause menu consumes all game logic while open
+    if (Pause::Update()) return;
 
     // Show loading screen — skip all game logic until timer expires
     if (loadingTimer > 0.f) {
@@ -974,8 +1001,15 @@ void GameState::Update(double dt)
         bossAlive = !boss->IsDead();
     }
 
-    if (doTutorial && fairy->data.stage == Tutorial::BOSS && !bossAlive) {
-        fairy->ChangeStage(Tutorial::END);
+    if (doTutorial && fairy->data.stage == Tutorial::BOSS) {
+        if (boss && !boss->IsEnabled())
+            boss->SetEnabled(true);
+        if (!bossAlive)
+            fairy->ChangeStage(Tutorial::END);
+    }
+
+    if (endlessTimerActive) {
+        endlessRunTimer += (float)dt;
     }
 
     // Non-tutorial: return to main menu when boss is slain.
@@ -1067,7 +1101,7 @@ void GameState::Draw()
         float barW = winW * 0.5f, barH = 24.f;
         float filled = (1.f - loadingTimer / LOADING_DURATION) * barW;
         AEMtx33 barBgMtx, barFillMtx;
-        GetTransformMtx(barBgMtx,   { 0.f, -60.f }, 0, { barW, barH });
+        GetTransformMtx(barBgMtx, { 0.f, -60.f }, 0, { barW, barH });
         GetTransformMtx(barFillMtx, { -barW * 0.5f + filled * 0.5f, -60.f }, 0, { filled, barH });
         AEGfxSetTransform(barBgMtx.m);
         AEGfxSetColorToMultiply(0.2f, 0.2f, 0.2f, 1.f);
@@ -1144,6 +1178,8 @@ void GameState::Draw()
     PetManager::GetInstance()->DrawUI();
 
     DropSystem::PrintPickupDisplay();
+    // Pause menu drawn on top of everything
+    Pause::Draw();
 }
 
 void GameState::HandleTutorialDialogueRender()

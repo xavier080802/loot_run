@@ -16,7 +16,7 @@ namespace Tutorial {
 	void TutorialFairy::InitTutorial(Player* _player, TileMap& _map, MapData& _mapData)
 	{
 		Init({}, { 50,50 }, 1, MESH_SQUARE, Collision::COL_CIRCLE, {}, 0, Collision::LAYER::NONE)
-			->GetRenderData().AddTexture("Assets/finn.png");
+			->GetRenderData().AddTexture("Assets/fairy.png");
 
 		data.dialogueLines.reserve(4);
 		data.dialogueLines.clear();
@@ -206,10 +206,8 @@ namespace Tutorial {
 				break;
 			}
 			// Walk through the TILE_DOOR tile to exit to main menu.
-			// tilemap is set by GameState after InitTutorial so it is
-			// always valid by the time END stage is reached.
 			if (tilemap && tilemap->IsDoor(pPos)) {
-				std::cout << "[Tutorial] Player walked through door — going to main menu.\n";
+				std::cout << "[Tutorial] Player walked through door ï¿½ going to main menu.\n";
 				GameStateManager::GetInstance()
 					->SetNextGameState("MainMenuState", true, true);
 			}
@@ -236,7 +234,7 @@ namespace Tutorial {
 		switch (next)
 		{
 		case Tutorial::START:
-			data.dialogueLines = { "START dialogue line 1/2", "START dialogue line 2/2" };
+			data.dialogueLines = { "Welcome Adventurer to Pandora !", "Practsie withi" };
 			data.playDialogue = true;
 			break;
 		case Tutorial::MOVEMENT:

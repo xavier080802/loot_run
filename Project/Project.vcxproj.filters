@@ -309,6 +309,9 @@
     <ClCompile Include="GameStates\LevelSelectState.cpp">
       <Filter>Source Files\GameStates</Filter>
     </ClCompile>
+    <ClCompile Include="Settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -562,6 +565,12 @@
     </ClInclude>
     <ClInclude Include="Pets\Pet_6.h">
       <Filter>Header Files\Pets\Derived</Filter>
+    </ClInclude>
+    <ClInclude Include="UIConfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Settings.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
