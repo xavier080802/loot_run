@@ -13,7 +13,7 @@ namespace {
 }
 
 namespace Tutorial {
-	void TutorialFairy::InitTutorial(Player* _player, MapData* _map)
+	void TutorialFairy::InitTutorial(Player* _player, TileMap& _map, MapData& _mapData)
 	{
 		Init({}, { 50,50 }, 1, MESH_SQUARE, Collision::COL_CIRCLE, {}, 0, Collision::LAYER::NONE)
 			->GetRenderData().AddTexture("Assets/finn.png");
@@ -21,11 +21,12 @@ namespace Tutorial {
 		data.dialogueLines.reserve(4);
 		data.dialogueLines.clear();
 		player = _player;
-		map = _map;
+		tilemap = &_map;
+		mapData = &_mapData;
 		SetEnabled(true);
 		ChangeStage(START);
 		LootChest::SubToChestOpened(this);
-		SetPos({ map->startPos.x + roomSize / 2.f, map->startPos.y });
+		SetPos(_map.GetTilePosition(3, 4));
 		targetPos = pos;
 	}
 
@@ -245,34 +246,35 @@ namespace Tutorial {
 			break;
 		case Tutorial::DODGE:
 			data.dialogueLines = { "DODGE 1/3", "DODGE dialogue line 2/3", "DODGE line 3/3" };
-			SetPath({ {0,600} });
+			SetPath({ tilemap->GetTilePosition(3, 11) });
 			break;
 		case Tutorial::MELEE:
 			data.dialogueLines = { "MELEE dialogue line 1/2", "MELEE dialogue line 2/2" };
-			SetPath({ {700,600} });
+			SetPath({ tilemap->GetTilePosition(3, 18) });
 			break;
 		case Tutorial::LOOT:
 			data.dialogueLines = { "LOOT dialogue line 1/1" };
-			SetPath({ {800, -500} });
+			SetPath({ tilemap->GetTilePosition(5, 19), tilemap->GetTilePosition(10, 19) });
 			data.checks = "";
 			break;
 		case Tutorial::RANGE:
 			data.dialogueLines = { "RANGE dialogue line 1/2", "RANGE dialogue line 2/2" };
-			SetPath({ {100,-600} });
+			SetPath({ tilemap->GetTilePosition(11, 17), tilemap->GetTilePosition(11, 12) });
 			break;
 		case Tutorial::BOSS:
 			data.dialogueLines = { "BOSS dialogue line 1/2", "BOSS dialogue line 2/2" };
-			SetPath({ {-700,-600} });
+			SetPath({ tilemap->GetTilePosition(11, 5) });
 			break;
 		case Tutorial::END:
 			data.dialogueLines = { "END dialogue line 1/2", "END dialogue line 2/2" };
-			SetPath({ map->doorPos });
+			SetPath({ mapData->doorPos });
 			break;
 		default:
 			break;
 		}
 		std::cout << "CHANGE STAGE ->" << next << '\n';
 		data.stage = next;
+		SetTutBarrier();
 	}
 
 	void TutorialFairy::SubscriptionAlert(LootChestSubContent /*content*/)
@@ -287,27 +289,40 @@ namespace Tutorial {
 		ChangeStage(RANGE);
 	}
 
-	AEVec2 TutorialFairy::GetTutBarrier()
+	void TutorialFairy::SetTutBarrier()
 	{
+		if (!tilemap) return;
+
 		switch (data.stage)
 		{
 		case Tutorial::START:
+			tilemap->ChangeTile(3, 6, TileMap::TILE_WALL);
+			break;
 		case Tutorial::MOVEMENT:
-			return { -800 + barrierOffset, 600 };
+			break;
 		case Tutorial::DODGE:
-			return { barrierOffset, 600 };
+			tilemap->ChangeTile(3, 6, TileMap::TILE_NONE);
+			tilemap->ChangeTile(3, 14, TileMap::TILE_WALL);
+			break;
 		case Tutorial::MELEE:
-			return { 800, 600 - barrierOffset };
+			tilemap->ChangeTile(3, 14, TileMap::TILE_NONE);
+			tilemap->ChangeTile(6, 19, TileMap::TILE_WALL);
+			break;
 		case Tutorial::LOOT:
-			return { 800 - barrierOffset, -600 };
+			tilemap->ChangeTile(6, 19, TileMap::TILE_NONE);
+			tilemap->ChangeTile(11, 16, TileMap::TILE_WALL);
+			break;
 		case Tutorial::RANGE:
-			return { -barrierOffset, -600 };
-
+			tilemap->ChangeTile(11, 16, TileMap::TILE_NONE);
+			tilemap->ChangeTile(11, 8, TileMap::TILE_WALL);
+			break;
 		case Tutorial::BOSS:
+			tilemap->ChangeTile(11, 8, TileMap::TILE_NONE);
+			break;
 		case Tutorial::END:
 
 		default:
-			return { 2000,2000 }; //arbitrary large number
+			break;
 		}
 	}
 

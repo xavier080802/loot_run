@@ -535,6 +535,11 @@ void GameState::LoadState()
         std::cout << "[LoadState] Loaded map: " << mapSelected << "\n";
     }
 
+    if (mapSelected == "Assets/TutorialMap.csv") {
+        doTutorial = true;
+        fairy = new Tutorial::TutorialFairy();
+    }
+
     float    procTileSize = 115.f;
     unsigned procRows = 50, procCols = 50;
     nextMap = new TileMap({ 0.f, 0.f }, procTileSize, procTileSize);
@@ -574,9 +579,6 @@ void GameState::LoadState()
     PetManager::GetInstance()->LinkPlayer(gPlayer);
 
     boss = nullptr;
-
-    if (doTutorial)
-        fairy = new Tutorial::TutorialFairy();
 }
 
 // =============================================================
@@ -677,8 +679,6 @@ void GameState::InitState()
 
         PetManager::GetInstance()->SetTilemap(*nextMap);
         minimap->Reset();
-
-        if (doTutorial) fairy->InitTutorial(gPlayer, &currentLevel);
         return;
     }
 
@@ -735,7 +735,7 @@ void GameState::InitState()
 
     // ── TUTORIAL MODE ─────────────────────────────────────────
     // Spawn CSV enemies, find the door tile, no kill target or proc rooms
-    if (mapSelected == "Assets/TutorialMap.csv") {
+    if (doTutorial) {
         std::cout << "[InitState] Tutorial mode.\n";
 
         // Find the TILE_DOOR position so the fairy can guide to it
@@ -764,10 +764,8 @@ void GameState::InitState()
         }
         std::cout << "[Tutorial] Spawned " << csvEnemies.size() << " enemies total.\n";
 
-        if (doTutorial) {
-            fairy->InitTutorial(gPlayer, &currentLevel);
-            fairy->tilemap = map;   // give fairy access to tilemap for door detection
-        }
+        fairy->InitTutorial(gPlayer, *map, currentLevel);
+        fairy->tilemap = map;   // give fairy access to tilemap for door detection
         return;
     }
 
@@ -796,8 +794,6 @@ void GameState::InitState()
             << " (" << tier << ") at (" << pos.x << ", " << pos.y << ")\n";
     }
     std::cout << "[InitState] Spawned " << csvEnemies.size() << " CSV enemies total.\n";
-
-    if (doTutorial) fairy->InitTutorial(gPlayer, &currentLevel);
 }
 
 // =============================================================
@@ -1210,8 +1206,6 @@ void GameState::UnloadState()
     boss = nullptr;
     DisableAndClearEnemies(csvEnemies);
     DisableAndClearEnemies(procEnemies);
-
-    if (doTutorial && fairy) { delete fairy; fairy = nullptr; }
 
     bgm.Exit();
     if (font >= 0) { AEGfxDestroyFont(font); font = -1; }

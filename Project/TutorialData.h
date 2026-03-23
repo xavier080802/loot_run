@@ -1,8 +1,9 @@
 #ifndef _TUTORIAL_DATA_H_
 #define _TUTORIAL_DATA_H_
 #include "./Pets/Pet.h"
-#include "./Map.h"
 #include "./GameObjects/LootChest.h"
+#include "TileMap.h"
+#include "Map.h"
 
 namespace Tutorial {
 	enum TUT_STAGE {
@@ -35,20 +36,20 @@ namespace Tutorial {
 
 	class TutorialFairy : public Pet, LootChestOpenedSub {
 	public:
-		void InitTutorial(Player* _player, MapData* _map);
+		void InitTutorial(Player* _player, TileMap& _map, MapData& _mapData);
 		void Update(double dt) override;
 
 		TutorialData data{};
 		Player* player{};
-		MapData* map{};
-		TileMap const* tilemap{ nullptr };   
+		TileMap* tilemap{ nullptr }; 
+		MapData* mapData{ nullptr };
 		void ChangeStage(TUT_STAGE next);
 
 		//Subscription
 		void SubscriptionAlert(LootChestSubContent content) override;
 
 		//Barrier to keep player in the room
-		AEVec2 GetTutBarrier();
+		void SetTutBarrier();
 
 	private:
 		bool DoDialogue(float dt);
