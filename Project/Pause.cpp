@@ -18,8 +18,8 @@ namespace
     // Popup dimensions (default-space)
     constexpr float POP_CX = DEFAULT_W / 2.f;
     constexpr float POP_CY = DEFAULT_H / 2.f;
-    constexpr float POP_W  = 420.f;
-    constexpr float POP_H  = 380.f;
+    constexpr float POP_W  = 450.f;
+    constexpr float POP_H  = 400.f;
 
     constexpr float POP_TOP = POP_CY - POP_H / 2.f;
 
@@ -39,7 +39,6 @@ namespace
     // Hover tracking: [0]=resume  [1]=settings  [2]=mainmenu
     bool hoverStates[3] = { false };
 
-    // Compute scale the same way menu states do
     float GetScale()
     {
         float winW = static_cast<float>(AEGfxGetWinMaxX()) * 2.f;
