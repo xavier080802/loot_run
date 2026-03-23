@@ -256,6 +256,10 @@ namespace {
                 chest->Init(pos, { 35,35 }, 0, MESH_SQUARE, Collision::COL_RECT, { 35,35 },
                     CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE);
                 std::cout << "[SpawnCsvChests] Chest at (" << pos.x << ", " << pos.y << ")\n";
+
+                if (doTutorial) {
+                    chest->SetDropTable(2);
+                }
             }
         }
     }
@@ -970,8 +974,9 @@ void GameState::Update(double dt)
         bossAlive = !boss->IsDead();
     }
 
-    if (doTutorial && fairy->data.stage == Tutorial::BOSS && !bossAlive)
+    if (doTutorial && fairy->data.stage == Tutorial::BOSS && !bossAlive) {
         fairy->ChangeStage(Tutorial::END);
+    }
 
     // Non-tutorial: return to main menu when boss is slain.
     if (!doTutorial && bossSpawned && !bossAlive) {

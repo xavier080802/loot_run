@@ -24,7 +24,7 @@ namespace Tutorial {
 		tilemap = &_map;
 		mapData = &_mapData;
 		SetEnabled(true);
-		ChangeStage(START);
+		ChangeStage(LOOT);
 		LootChest::SubToChestOpened(this);
 		SetPos(_map.GetTilePosition(3, 4));
 		targetPos = pos;
