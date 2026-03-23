@@ -984,6 +984,10 @@ void GameState::Update(double dt)
     if (doTutorial && fairy->data.stage == Tutorial::BOSS && !bossAlive)
         fairy->ChangeStage(Tutorial::END);
 
+    if (endlessTimerActive) {
+        endlessRunTimer += (float)dt;
+    }
+
     // Non-tutorial: return to main menu when boss is slain.
     if (!doTutorial && bossSpawned && !bossAlive) {
         if (mapSelected != "Assets/Endless.csv") {
