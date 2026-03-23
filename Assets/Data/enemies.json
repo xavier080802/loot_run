@@ -177,7 +177,7 @@
       "render": {
         "radius": 70,
         "mesh": "circle",
-        "texturePath": "Assets/enemyplaceholder.png"
+        "texturePath": "Assets/sprites/enemies/dragon.png"
       },
       "attack": {
         "range": 150.0,
