@@ -3,9 +3,10 @@
 
 struct BGMManager {
     // Audio Groups
-    AEAudioGroup group;
-    AEAudioGroup gachaGroup;
-    AEAudioGroup sfxGroup;
+    AEAudioGroup bgmGroup;       // Music: normal, boss, credits
+    AEAudioGroup gachaGroup;  // Music: gacha track
+    AEAudioGroup uiGroup;     // UI: button clicks, hover sounds
+    AEAudioGroup sfxGroup;    // SFX: attack, explosion, gameplay sounds
 
     // Background Music Tracks
     AEAudio normalTrack;
@@ -13,9 +14,11 @@ struct BGMManager {
     AEAudio gachaTrack;
     AEAudio creditsTrack;
 
-    // Sound Effects Tracks
-    AEAudio attackSound;
+    // UI Sound Tracks
     AEAudio uiClickSound;
+
+    // SFX Tracks
+    AEAudio attackSound;
     AEAudio explosionSound;
 
     void Init();
@@ -30,10 +33,17 @@ struct BGMManager {
     void PlayCredits();
     void StopCredits();
 
+    // UI Methods
+    void PlayUIClick();
+
     // SFX Methods
     void PlayAttack();
-    void PlayUIClick();
     void PlayExplosion();
+
+    // Volume control (0.0f = silent, 1.0f = full)
+    void SetBGMVolume(float v);
+    void SetUIVolume(float v);
+    void SetSFXVolume(float v);
 };
 
 extern BGMManager bgm;

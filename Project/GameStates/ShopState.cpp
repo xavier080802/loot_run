@@ -12,6 +12,7 @@
 #include "../gacha.h"
 #include "../Music.h"
 #include "../Pets/PetManager.h"
+#include "../UIConfig.h"
 
 //helpers
 namespace {
@@ -103,7 +104,6 @@ namespace {
 		DrawAEText(Font, "+", plusPos, scale, CreateColor(255, 255, 255, 255), TEXT_MIDDLE);
 	}
 
-	AEAudioGroup buttonGroup;
 	AEAudio hoverSound;
 	AEAudio clickSound;
 
@@ -118,10 +118,9 @@ void ShopState::LoadState()
 {
 	squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
 
-	buttonGroup = AEAudioCreateGroup();
 	hoverSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17767.wav");
 	clickSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17766.wav");
-	gachaFont = AEGfxCreateFont("Assets/Exo2/Exo2-SemiBoldItalic.ttf", 32);
+	gachaFont = AEGfxCreateFont(SECONDARY_FONT_PATH, 32);
 	EnsureOverlayMesh();
 }
 
@@ -129,8 +128,8 @@ void ShopState::InitState()
 {
 	std::cout << "Shop state enter\n";
 	AEGfxFontSystemStart();
-	Font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 38);
-	BigFont = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 75);
+	Font = AEGfxCreateFont(PRIMARY_FONT_PATH, 38);
+	BigFont = AEGfxCreateFont(PRIMARY_FONT_PATH, 75);
 	winW = static_cast<float>(AEGfxGetWinMaxX());
 	winH = static_cast<float>(AEGfxGetWinMaxY());
 	scale = (winW * 2 / DEFAULT_W) < (winH * 2 / DEFAULT_H) ? (winW * 2 / DEFAULT_W) : (winH * 2 / DEFAULT_H);
@@ -180,7 +179,7 @@ void ShopState::Update(double dt)
 			// Play hover sound only when pointer enters button
 			if (buttonHover && !btnHoverStates[i])
 			{
-				AEAudioPlay(hoverSound, buttonGroup, 0.2f, 0.7f, 0);
+				AEAudioPlay(hoverSound, bgm.uiGroup, 0.2f, 0.7f, 0);
 			}
 			btnHoverStates[i] = buttonHover;
 
@@ -189,7 +188,7 @@ void ShopState::Update(double dt)
 				buttonClick = AEInputCheckTriggered(AEVK_LBUTTON);
 				if (buttonClick)
 				{
-					AEAudioPlay(clickSound, buttonGroup, 0.6f, 0.6f, 0);
+					AEAudioPlay(clickSound, bgm.uiGroup, 0.6f, 0.6f, 0);
 					switch (i) {
 					case 0: // Damage
 						break;
@@ -246,7 +245,7 @@ void ShopState::Update(double dt)
 				AEVec2 minusPos = { worldPos.x - sideOffset, worldPos.y };
 				if (IsCursorOverWorld(minusPos, sideBtnSize, sideBtnSize, true)) {
 					if (AEInputCheckTriggered(AEVK_LBUTTON)) {
-						AEAudioPlay(clickSound, buttonGroup, 0.6f, 0.6f, 0);
+						AEAudioPlay(clickSound, bgm.uiGroup, 0.6f, 0.6f, 0);
 						ShopFunctions::GetInstance()->sellShopUpgrade(currentStat);
 						std::cout << "Decreased " << shopButtons[i].label << " to " << ShopFunctions::GetInstance()->getStatBonus(currentStat) << std::endl;
 					}
@@ -256,7 +255,7 @@ void ShopState::Update(double dt)
 				AEVec2 plusPos = { worldPos.x + sideOffset, worldPos.y };
 				if (IsCursorOverWorld(plusPos, sideBtnSize, sideBtnSize, true)) {
 					if (AEInputCheckTriggered(AEVK_LBUTTON)) {
-						AEAudioPlay(clickSound, buttonGroup, 0.6f, 0.6f, 0);
+						AEAudioPlay(clickSound, bgm.uiGroup, 0.6f, 0.6f, 0);
 						ShopFunctions::GetInstance()->buyShopUpgrade(currentStat);
 						std::cout << "Increased " << shopButtons[i].label << " to " << ShopFunctions::GetInstance()->getStatBonus(currentStat) << std::endl;
 					}
@@ -296,6 +295,29 @@ void ShopState::Draw()
 		DrawAEText(BigFont, title.label, titlePos, scale, CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
 
 		// ----------------
+		// Draw Coins
+		// ----------------
+		AEVec2 coinLabelPos = DefaultToWorld(1500.f, 50.f);
+		DrawAEText(Font, "COINS:", coinLabelPos, scale, CreateColor(255, 215, 0, 255), TEXT_MIDDLE);
+
+		char coinAmount[64];
+		snprintf(coinAmount, sizeof(coinAmount), "%d", ShopFunctions::GetInstance()->getMoney());
+		AEVec2 coinAmtPos = DefaultToWorld(1500.f, 95.f);
+		DrawAEText(Font, coinAmount, coinAmtPos, scale, CreateColor(255, 215, 0, 255), TEXT_MIDDLE);
+
+		// ----------------
+		// Draw Endless Best 
+		// (I'm putting it here to show you how to draw it. put it in the defeat screen for endless)
+		// ----------------
+		//char bestText[64];
+		// int totalSecs = (int)ShopFunctions::GetInstance()->getEndlessHighScore();
+		// int m = totalSecs / 60;
+		// int s = totalSecs % 60;
+		// snprintf(bestText, sizeof(bestText), "BEST: %02d:%02d", m, s);
+		// AEVec2 bestPos = DefaultToWorld(200.f, 50.f);
+		// DrawAEText(Font, bestText, bestPos, scale, CreateColor(200, 200, 200, 255), TEXT_MIDDLE);
+
+		// ----------------
 		// Draw Buttons
 		// ----------------
 
@@ -326,6 +348,25 @@ void ShopState::Draw()
 					currentSideHover = PLUS;
 				}
 				DrawSideButtons(shopButtons[i], currentSideHover);
+				
+				// Draw Level and Cost underneath the button for stat upgrades (0-4)
+				if (i >= 0 && i <= 4) {
+					STAT_TYPE currentStat =
+						(i == 0) ? STAT_TYPE::ATT :
+						(i == 1) ? STAT_TYPE::ATT_SPD :
+						(i == 2) ? STAT_TYPE::MOVE_SPD :
+						(i == 3) ? STAT_TYPE::MAX_HP : STAT_TYPE::DEF;
+
+					int lvl = ShopFunctions::GetInstance()->getUpgradeLevel(currentStat);
+					int cost = ShopFunctions::GetInstance()->calculatePrice(currentStat);
+
+					char infoText[64];
+					snprintf(infoText, sizeof(infoText), "Lv.%d | Cost: %d", lvl, cost);
+					
+					// position text right below the button
+					AEVec2 textPos = { worldPos.x, worldPos.y - (shopButtons[i].size.y / 2.0f + 25.0f) * scale };
+					DrawAEText(Font, infoText, textPos, scale * 0.8f, CreateColor(220, 220, 220, 255), TEXT_MIDDLE);
+				}
 			}
 		}
 	}
@@ -346,7 +387,6 @@ void ShopState::UnloadState() {
 	// Unload button audio
 	AEAudioUnloadAudio(hoverSound);
 	AEAudioUnloadAudio(clickSound);
-	AEAudioUnloadAudioGroup(buttonGroup);
 
 	gachaFont = -1;
 	UnloadGacha();

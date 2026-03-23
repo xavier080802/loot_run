@@ -52,7 +52,7 @@ AttackHitboxGO* AttackHitboxGO::Start(const AttackHitboxConfig& cfg)
         spawnPos,
         cfg.renderScale,
         cfg.zIndex,
-        MESH_CIRCLE,
+        cfg.meshShape,
         cfg.colliderShape,
         cfg.colliderSize,
         owner->GetCollisionLayers(),

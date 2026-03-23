@@ -44,6 +44,7 @@ public:
 
 	void SetEnabled(bool enable);
 	void SetPos(AEVec2 nextPos);
+	void SetRotation(float deg);
 	void Move(AEVec2 moveAmt);
 	void SetCollision(bool enabled);
 	//Set what layers this GO can collide with.

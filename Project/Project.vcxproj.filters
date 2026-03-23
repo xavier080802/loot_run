@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -290,6 +290,7 @@
     </ClCompile>
     <ClCompile Include="GameStates\CreditState.cpp">
       <Filter>Source Files\GameStates</Filter>
+    </ClCompile>
     <ClCompile Include="Pets\Pet_4.cpp">
       <Filter>Source Files\Pets\Derived</Filter>
     </ClCompile>
@@ -304,8 +305,12 @@
     </ClCompile>
     <ClCompile Include="Pets\Pet_6.cpp">
       <Filter>Source Files\Pets\Derived</Filter>
+    </ClCompile>
     <ClCompile Include="GameStates\LevelSelectState.cpp">
       <Filter>Source Files\GameStates</Filter>
+    </ClCompile>
+    <ClCompile Include="Settings.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -545,6 +550,7 @@
     </ClInclude>
     <ClInclude Include="GameStates\CreditState.h">
       <Filter>Header Files\GameStates</Filter>
+    </ClInclude>
     <ClInclude Include="Pets\Pet_4.h">
       <Filter>Header Files\Pets\Derived</Filter>
     </ClInclude>
@@ -559,6 +565,12 @@
     </ClInclude>
     <ClInclude Include="Pets\Pet_6.h">
       <Filter>Header Files\Pets\Derived</Filter>
+    </ClInclude>
+    <ClInclude Include="UIConfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Settings.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

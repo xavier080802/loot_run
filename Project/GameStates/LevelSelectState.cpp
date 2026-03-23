@@ -1,4 +1,4 @@
-#include "LevelSelectState.h"
+ï»¿#include "LevelSelectState.h"
 #include "GameState.h"
 #include "../Helpers/Vec2Utils.h"
 #include "../helpers/CoordUtils.h"
@@ -9,6 +9,7 @@
 #include "../Helpers/ColorUtils.h"
 #include "../Music.h"
 #include "../main.h"
+#include "../UIConfig.h"
 #include <iostream>
 
 std::string mapSelected = "Assets/TutorialMap.csv";
@@ -64,14 +65,14 @@ namespace {
 void LevelSelectState::LoadState() {
 	std::cout << "[LevelSelect::InitState] mapSelected = " << mapSelected << "\n";
 	squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
-	// All audio handled by bgm — no local audio groups needed
+	// All audio handled by bgm - no local audio groups needed
 }
 
 void LevelSelectState::InitState() {
 	std::cout << "Shop state enter\n";
 	AEGfxFontSystemStart();
-	Font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 38);
-	BigFont = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 75);
+	Font = AEGfxCreateFont(PRIMARY_FONT_PATH, 38);
+	BigFont = AEGfxCreateFont(PRIMARY_FONT_PATH, 75);
 	winW = static_cast<float>(AEGfxGetWinMaxX());
 	winH = static_cast<float>(AEGfxGetWinMaxY());
 	scale = (winW * 2 / DEFAULT_W) < (winH * 2 / DEFAULT_H) ? (winW * 2 / DEFAULT_W) : (winH * 2 / DEFAULT_H);
@@ -134,12 +135,12 @@ void LevelSelectState::Update(double dt) {
 					selectedBtn = i;
 					std::cout << "tutorial: " << mapSelected << std::endl;
 					break;
-				case 1: //normal — CSV dungeon + procedural rooms
+				case 1: //normal - CSV dungeon + procedural rooms
 					mapSelected = "Assets/Dungeon.csv";
 					selectedBtn = i;
 					std::cout << "normal: " << mapSelected << std::endl;
 					break;
-				case 2: //endless — procedural only, no CSV map
+				case 2: //endless - procedural only, no CSV map
 					mapSelected = "Assets/Endless.csv";
 					selectedBtn = i;
 					std::cout << "endless: " << mapSelected << std::endl;

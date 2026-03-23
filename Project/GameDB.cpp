@@ -12,6 +12,8 @@ namespace
     static std::vector<EquipmentData> sEquipmentRegistry;
     static std::vector<DropTable> sDropTables;
     static ActorStats sPlayerBaseStats;
+    static std::string sPlayerTexturePath;
+    static float sPlayerRadius = 15.0f; // Default radius
     static GameDB::PlayerInventoryDef sPlayerInventory;
     static std::vector<int> sPlayerStarterEquipmentIds;
 
@@ -437,6 +439,12 @@ namespace GameDB
             sPlayerBaseStats.attackSpeed = s.get("attackSpeed", 1.0f).asFloat();
         }
 
+        if (root.isMember("render")) {
+            const auto& r = root["render"];
+            sPlayerTexturePath = r.get("texturePath", "Assets/sprites/player/player.png").asString();
+            sPlayerRadius = r.get("radius", 15.0f).asFloat();
+        }
+
         std::cout << "LoadPlayerDef: Successfully loaded player defaults from " << path << "\n";
         file.close();
         return true;
@@ -502,6 +510,11 @@ namespace GameDB
      *   - Player::InitPlayerRuntime() - to know what starter gear to give.
      */
     const PlayerInventoryDef& GetPlayerStarterInventory() { return sPlayerInventory; }
+
+    const char* GetPlayerTexturePath() { return sPlayerTexturePath.c_str(); }
+
+    float GetPlayerRadius() { return sPlayerRadius; }
+    float GetPlayerSpeed() { return sPlayerBaseStats.moveSpeed; }
 
 	/**
 	 * @brief Searches the equipment registry for a specific item by category and ID.

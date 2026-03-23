@@ -1,6 +1,7 @@
 #include "PickupGO.h"
 #include "../GameObjects/GameObjectManager.h"
-#include "../Helpers/BitmaskUtils.h"  // adjust include path to match your project
+#include "../Helpers/BitmaskUtils.h"
+#include "../Inventory/EquipmentTypes.h"
 
 static const GO_TYPE PICKUP_TYPE_FALLBACK = GO_TYPE::NONE;
 
@@ -33,7 +34,7 @@ PickupGO* PickupGO::Spawn(const AEVec2& worldPos, const PickupPayload& payload)
 
     p->Init(
         worldPos,
-        AEVec2{ 10.0f, 10.0f },
+        AEVec2{ 50.0f, 50.0f },
         0,
         MESH_SQUARE,
         Collision::SHAPE::COL_CIRCLE,
@@ -43,6 +44,7 @@ PickupGO* PickupGO::Spawn(const AEVec2& worldPos, const PickupPayload& payload)
     );
     p->goType = GO_TYPE::ITEM;
     p->InitPickup(payload);
+
     return p;
 }
 
@@ -57,6 +59,24 @@ PickupGO* PickupGO::Spawn(const AEVec2& worldPos, const PickupPayload& payload)
 void PickupGO::InitPickup(const PickupPayload& payload)
 {
     mPayload = payload;
+
+    // Apply sprite + rarity tint for equipment drops
+    if (payload.type == DropType::Equipment && payload.equipment) {
+        const EquipmentData* eq = payload.equipment;
+        if (eq->texturePath && eq->texturePath[0] != '\0') {
+            GetRenderData().AddTexture(eq->texturePath);
+        }
+        GetRenderData().tint = GetRarityColor(eq->rarity);
+    }
+    else if (payload.type == DropType::Coin) {
+        GetRenderData().AddTexture("Assets/sprites/items/coin.png");
+    }
+    else if (payload.type == DropType::Heal) {
+        GetRenderData().AddTexture("Assets/sprites/items/heal.png");
+    }
+    else if (payload.type == DropType::Ammo) {
+        GetRenderData().AddTexture("Assets/sprites/attacks/arrows.png");
+    }
 }
 
 void PickupGO::Update(double dt)

@@ -112,6 +112,11 @@ void GameObject::SetPos(AEVec2 nextPos)
 	pos = nextPos;
 }
 
+void GameObject::SetRotation(float deg)
+{
+	rotationDeg = deg;
+}
+
 void GameObject::Move(AEVec2 moveAmt)
 {
 	SetPos(pos + moveAmt);

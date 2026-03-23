@@ -12,7 +12,7 @@ public:
 	// Singleton access to ensure stats persist across states
 	static ShopFunctions* GetInstance();
 
-	// Load/Save logic (to be implemented with file I/O later)
+	// Load/Save from player_data.json
 	void loadPlayerShopUpgrades();
 	void savePlayerShopUpgrades();
 
@@ -36,6 +36,14 @@ public:
 
 	int getMoney() const { return money; }
 
+	// Adds coins to the persistent wallet and saves the file.
+	void addMoney(int amount);
+
+	// Endless mode high score (seconds survived)
+	float getEndlessHighScore() const { return endlessHighScore; }
+	// Only updates and saves if 'seconds' is a new best.
+	void updateEndlessHighScore(float seconds);
+
 	//calculate price
 	void CalcPrice();
 private:
@@ -53,7 +61,8 @@ private:
 	// Internal helper to define default shop constants
 	ShopStat getStatSettings(STAT_TYPE stat);
 
-	int money = 10000; //temp until currency system is created
+	int money = 0;
+	float endlessHighScore = 0.f;
 	int currentMultiplier = 1; // Default x1
 
 	std::string getStatName(STAT_TYPE stat)
@@ -68,6 +77,8 @@ private:
 		default:                  return "UNKNOWN";
 		}
 	}
+
+	static constexpr const char* PLAYER_DATA_PATH = "Assets/Data/Player/player_data.json";
 };
 
 #endif // !_SHOP_FUNCTIONS_H

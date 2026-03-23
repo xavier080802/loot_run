@@ -15,7 +15,7 @@
       "render": {
         "radius": 30,
         "mesh": "circle",
-        "texturePath": "Assets/enemyplaceholder.png"
+        "texturePath": "Assets/sprites/enemies/slime.png"
       },
       "attack": {
         "range": 5.0,
@@ -24,7 +24,7 @@
         "element": "NONE",
         "knockback": 10.0,
         "attackSize": 15.0,
-        "aggroRange": 200.0
+        "aggroRange": 400.0
       }
     },
     {
@@ -42,7 +42,7 @@
       "render": {
         "radius": 60,
         "mesh": "circle",
-        "texturePath": "Assets/enemyplaceholder.png"
+        "texturePath": "Assets/sprites/enemies/slimeking.png"
       },
       "attack": {
         "range": 100.0,
@@ -51,7 +51,7 @@
         "element": "BLOOD",
         "knockback": 100.0,
         "attackSize": 25.0,
-        "aggroRange": 200.0
+        "aggroRange": 400.0
       }
     },
     {
@@ -69,16 +69,16 @@
       "render": {
         "radius": 25,
         "mesh": "circle",
-        "texturePath": "Assets/enemyplaceholder.png"
+        "texturePath": "Assets/sprites/enemies/goblin.png"
       },
       "attack": {
         "range": 40.0,
         "cooldown": 1.2,
-        "attackType": "SwingArc",
+        "attackType": "Stab",
         "element": "NONE",
         "knockback": 15.0,
-        "attackSize": 20.0,
-        "aggroRange": 200.0
+        "attackSize": 15.0,
+        "aggroRange": 400.0
       }
     },
     {
@@ -96,7 +96,7 @@
       "render": {
         "radius": 28,
         "mesh": "circle",
-        "texturePath": "Assets/enemyplaceholder.png"
+        "texturePath": "Assets/sprites/enemies/skeleton.png"
       },
       "attack": {
         "range": 60.0,
@@ -105,7 +105,7 @@
         "element": "NONE",
         "knockback": 20.0,
         "attackSize": 18.0,
-        "aggroRange": 200.0
+        "aggroRange": 400.0
       }
     },
     {
@@ -123,7 +123,7 @@
       "render": {
         "radius": 40,
         "mesh": "circle",
-        "texturePath": "Assets/enemyplaceholder.png"
+        "texturePath": "Assets/sprites/enemies/orc.png"
       },
       "attack": {
         "range": 50.0,
@@ -132,12 +132,12 @@
         "element": "NONE",
         "knockback": 60.0,
         "attackSize": 20.0,
-        "aggroRange": 200.0
+        "aggroRange": 400.0
       }
     },
     {
       "id": 6,
-      "name": "Troll",
+      "name": "Yeti",
       "category": "Elite",
       "dropTableId": 0,
       "baseStats": {
@@ -150,7 +150,7 @@
       "render": {
         "radius": 50,
         "mesh": "circle",
-        "texturePath": "Assets/enemyplaceholder.png"
+        "texturePath": "Assets/sprites/enemies/yeti.png"
       },
       "attack": {
         "range": 55.0,
@@ -159,7 +159,7 @@
         "element": "NONE",
         "knockback": 80.0,
         "attackSize": 20.0,
-        "aggroRange": 200.0
+        "aggroRange": 400.0
       }
     },
     {
@@ -186,7 +186,7 @@
         "element": "SUN",
         "knockback": 150.0,
         "attackSize": 25.0,
-        "aggroRange": 200.0
+        "aggroRange": 400.0
       }
     }
   ]
