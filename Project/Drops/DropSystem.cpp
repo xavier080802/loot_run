@@ -247,7 +247,20 @@ void DropSystem::AddToPickupDisplay(const PickupPayload& payload)
  * @note Called by:
  *   - Player::DrawUI() or the main game draw each frame while the log has messages to show.
  */
-void DropSystem::PrintPickupDisplay(float dt)
+void DropSystem::PrintPickupDisplay()
+{
+    if (pickupLogQueue.empty()) return;
+
+    static RenderingManager* rm{ RenderingManager::GetInstance() };
+    size_t i{};
+    for (std::string const& str : pickupLogQueue) {
+        DrawAEText(rm->GetFont(), str.c_str(),
+            NormToWorld({ normDisplayPos.x, normDisplayPos.y + (rm->GetFontHeight() * fontSize)*i}), fontSize, displayTextCol, textAnchor);
+        ++i;
+    }
+}
+
+void DropSystem::UpdatePickupDisplay(float dt)
 {
     if (pickupLogQueue.empty()) return;
 
@@ -255,12 +268,5 @@ void DropSystem::PrintPickupDisplay(float dt)
     if (timer <= 0.f) {
         pickupLogQueue.pop_front();
         timer = timeTillPop;
-    }
-    static RenderingManager* rm{ RenderingManager::GetInstance() };
-    size_t i{};
-    for (std::string const& str : pickupLogQueue) {
-        DrawAEText(rm->GetFont(), str.c_str(),
-            NormToWorld({ normDisplayPos.x, normDisplayPos.y + (rm->GetFontHeight() * fontSize)*i}), fontSize, displayTextCol, textAnchor);
-        ++i;
     }
 }

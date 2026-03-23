@@ -1042,7 +1042,7 @@ void GameState::Update(double dt)
         GameObjectManager::GetInstance()->UpdateObjects(dt, currentMap);
     }
 
-    DropSystem::PrintPickupDisplay(static_cast<float>(dt));
+    DropSystem::UpdatePickupDisplay(static_cast<float>(dt));
 }
 
 // =============================================================
@@ -1141,6 +1141,8 @@ void GameState::Draw()
 
     HandleTutorialDialogueRender();
     PetManager::GetInstance()->DrawUI();
+
+    DropSystem::PrintPickupDisplay();
 }
 
 void GameState::HandleTutorialDialogueRender()

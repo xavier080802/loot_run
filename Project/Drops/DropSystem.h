@@ -16,5 +16,7 @@ namespace DropSystem
 
 	//Prints the recent items picked up
 	//Call in an update function
-	void PrintPickupDisplay(float dt);
+	void PrintPickupDisplay();
+
+	void UpdatePickupDisplay(float dt);
 }
