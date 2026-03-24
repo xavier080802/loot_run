@@ -587,7 +587,6 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 void Player::OnDeath(Actor* killer)
 {
 	Actor::OnDeath(killer);
-	GameStateManager::GetInstance()->SetNextGameState("MainMenuState");
 	Debug::stream << "PLAYER DIED\n";
 }
 

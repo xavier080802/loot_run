@@ -95,7 +95,7 @@ void LevelSelectState::UnloadState() {
 void LevelSelectState::Update(double dt) {
 	if (AEInputCheckTriggered(AEVK_ESCAPE))
 	{
-		Terminate();
+		GameStateManager::GetInstance()->SetNextGameState("MainMenuState");
 		return;
 	}
 	for (int i = 0; i < LEVEL_BTN_COUNT; ++i)

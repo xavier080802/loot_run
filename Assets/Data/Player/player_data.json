@@ -1,4 +1,12 @@
 {
-    "totalCoins": 0,
-    "endlessHighScore": 0.0
+    "endlessHighScore" : 0.0,
+    "totalCoins" : 0,
+    "upgrades" : 
+    {
+        "ATT" : 0,
+        "ATT_SPD" : 0,
+        "DEF" : 0,
+        "MAX_HP" : 0,
+        "MOVE_SPD" : 0
+    }
 }

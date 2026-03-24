@@ -306,18 +306,6 @@ void ShopState::Draw()
 		DrawAEText(Font, coinAmount, coinAmtPos, scale, CreateColor(255, 215, 0, 255), TEXT_MIDDLE);
 
 		// ----------------
-		// Draw Endless Best 
-		// (I'm putting it here to show you how to draw it. put it in the defeat screen for endless)
-		// ----------------
-		//char bestText[64];
-		// int totalSecs = (int)ShopFunctions::GetInstance()->getEndlessHighScore();
-		// int m = totalSecs / 60;
-		// int s = totalSecs % 60;
-		// snprintf(bestText, sizeof(bestText), "BEST: %02d:%02d", m, s);
-		// AEVec2 bestPos = DefaultToWorld(200.f, 50.f);
-		// DrawAEText(Font, bestText, bestPos, scale, CreateColor(200, 200, 200, 255), TEXT_MIDDLE);
-
-		// ----------------
 		// Draw Buttons
 		// ----------------
 

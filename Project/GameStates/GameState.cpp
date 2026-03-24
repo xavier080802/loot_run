@@ -29,6 +29,7 @@
 #include "../GameStates/LevelSelectState.h"
 #include "../ShopFunctions.h"
 #include "../Pause.h"
+#include "../GameEnd.h"
 
 namespace {
     // --- GLOBAL SYSTEMS ---
@@ -630,6 +631,7 @@ void GameState::InitState()
 	doTutorial = (mapSelected == "Assets/TutorialMap.csv");
     bgm.PlayNormal();
     InitTutorial(currentLevel);
+    GameEnd::Hide();
 
     // Reload the correct CSV map in case the player changed mode and came back
     if (map) { delete map; map = nullptr; }
@@ -863,6 +865,9 @@ void GameState::InitState()
 // =============================================================
 void GameState::Update(double dt)
 {
+    GameEnd::Update(dt);
+    if (GameEnd::IsOpen()) return;
+
     // ESC or M toggles the pause menu
     if (loadingTimer <= 0.f &&
         (AEInputCheckTriggered(AEVK_M) || AEInputCheckTriggered(AEVK_ESCAPE)))
@@ -1055,7 +1060,7 @@ void GameState::Update(double dt)
     // Non-tutorial: return to main menu when boss is slain.
     if (!doTutorial && bossSpawned && !bossAlive) {
         if (mapSelected != "Assets/Endless.csv") {
-            GameStateManager::GetInstance()->SetNextGameState("MainMenuState");
+            GameEnd::Show(true, false, 0.f, gPlayer->GetInventory().GetCoins(), totalEnemiesKilled);
             std::cout << "BOSS SLAYED\n";
         }
         else {
@@ -1090,8 +1095,12 @@ void GameState::Update(double dt)
             }
         }
     }
+    if (mapSelected != "Assets/Endless.csv" && gPlayer && gPlayer->GetHP() <= 0.f) {
+        GameEnd::Show(false, false, 0.f, gPlayer->GetInventory().GetCoins(), totalEnemiesKilled);
+        std::cout << "PLAYER DIED - not Endless. \n";
+    }
     if (mapSelected == "Assets/Endless.csv" && gPlayer && gPlayer->GetHP() <= 0.f) {
-        GameStateManager::GetInstance()->SetNextGameState("MainMenuState");
+        GameEnd::Show(false, true, endlessRunTimer, gPlayer->GetInventory().GetCoins(), totalEnemiesKilled);
         std::cout << "PLAYER DIED — Endless over.\n";
     }
     minimap->Update(dt, *currentMap, *gPlayer);
@@ -1220,6 +1229,7 @@ void GameState::Draw()
 
     // Pause menu drawn on top of everything
     Pause::Draw();
+    GameEnd::Draw();
 }
 
 void GameState::HandleTutorialDialogueRender()
