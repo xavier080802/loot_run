@@ -120,7 +120,6 @@ void Terminate(void)
 {
 	if (gameRunningFlag)
 	{
-		PetManager::GetInstance()->SaveInventoryToJSON();
 		gameRunningFlag = false;
 		stateManager->Destroy();
 		petManager->Destroy();
