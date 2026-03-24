@@ -327,6 +327,7 @@ void TileMap::LoadStatics()
     textureMap.insert(TileTex(TILE_WALL, rm->LoadTexture("Assets/sprites/tiles/wall.png")));
     textureMap.insert(TileTex(TILE_DOOR, rm->LoadTexture("Assets/tiny.png")));
     textureMap.insert(TileTex(TILE_ENEMY, rm->LoadTexture("Assets/sprites/tiles/floor.png")));
+    textureMap.insert(TileTex(TILE_BOSS, rm->LoadTexture("Assets/sprites/tiles/floor.png")));
     textureMap.insert(TileTex(TILE_CHEST, rm->LoadTexture("Assets/sprites/tiles/floor.png")));
     textureMap.insert(TileTex(TILE_CONNECTOR, rm->LoadTexture("Assets/sprites/tiles/connector.png")));
 }

@@ -589,7 +589,7 @@ void GameState::LoadState()
 // =============================================================
 void GameState::InitState()
 {
-    doTutorial = (mapSelected == "Assets/TutorialMap.csv");
+	doTutorial = (mapSelected == "Assets/TutorialMap.csv");
     bgm.PlayNormal();
     InitTutorial(currentLevel);
 
@@ -1003,7 +1003,7 @@ void GameState::Update(double dt)
     }
 
     if (doTutorial && fairy->data.stage == Tutorial::BOSS) {
-        if (boss && !boss->IsEnabled())
+        if (boss && !boss->IsDead())
             boss->SetEnabled(true);
         if (!bossAlive || (boss && (boss->IsDead() || boss->GetHP() <= 0.f))) {
             bossAlive = false;

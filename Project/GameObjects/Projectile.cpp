@@ -57,7 +57,7 @@ void Projectile::OnCollide(CollisionData& other)
 
 void Projectile::OnCollideTile(std::pair<TileMap::Tile const&, AEVec2> /*tile*/)
 {
-	if (stopRule == STOP_RULE::ON_FIRST || stopRule == STOP_RULE::FIRST_TILE) {
+	if (stopRule != STOP_RULE::ON_FIRST && stopRule != STOP_RULE::FIRST_TILE) {
 		return;
 	}
 	//Disable self
