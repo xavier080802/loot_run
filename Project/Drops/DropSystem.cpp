@@ -270,3 +270,24 @@ void DropSystem::UpdatePickupDisplay(float dt)
         timer = timeTillPop;
     }
 }
+
+/**
+ * @brief Disables and removes all active pickup GameObjects from the world.
+ *
+ * Called whenever the player transitions to a new map so ground loot from
+ * the previous room does not bleed into the next one.
+ *
+ * @note Called by:
+ *   - GameState::Update() at every connector transition (CSV?proc and proc?proc).
+ */
+void DropSystem::ClearAllPickups()
+{
+    auto& gos = GameObjectManager::GetInstance()->GetGameObjects();
+    for (GameObject* go : gos) {
+        if (!go || !go->IsEnabled()) continue;
+        if (go->GetGOType() == GO_TYPE::ITEM)
+            go->SetEnabled(false);
+    }
+    pickupLogQueue.clear();         
+    timer = timeTillPop;            
+}
