@@ -234,11 +234,11 @@ namespace Tutorial {
 		switch (next)
 		{
 		case Tutorial::START:
-			data.dialogueLines = { "Welcome Adventurer to Pandora !", "Battle through various dungeon and gain the strength to defeat evil" };
+			data.dialogueLines = { "Welcome Adventurer to Pandora !", "Battle through various dungeons and gain the strength to defeat evil." };
 			data.playDialogue = true;
 			break;
 		case Tutorial::MOVEMENT:
-			data.dialogueLines = { "This is where you learn how to move", "WASD to move up, down, left, right" };
+			data.dialogueLines = { "This is where you learn how to move", "WASD to move up, down, left, and right respectively" };
 			data.checks = "----";
 			data.playDialogue = true;
 			break;
@@ -251,12 +251,12 @@ namespace Tutorial {
 			SetPath({ tilemap->GetTilePosition(3, 18) });
 			break;
 		case Tutorial::LOOT:
-			data.dialogueLines = { "Go near the chest and press E to claim your loot", "Press X to swap to seocndary weapon, press Z to swap to main weapon"};
+			data.dialogueLines = { "Go near the chest and press E to claim your loot", "Press X to swap to secondary weapon, press Z to swap to main weapon"};
 			SetPath({ tilemap->GetTilePosition(5, 19), tilemap->GetTilePosition(10, 19) });
 			data.checks = "";
 			break;
 		case Tutorial::RANGE:
-			data.dialogueLines = { "Swap to bow from your current weapon by pressing Q", "Aim your mouse at the direction of enemy and press left mouse button to shoot" };
+			data.dialogueLines = { "Swap to bow from your current weapon by pressing Q", "Aim your mouse at the direction of the enemy and press left mouse button to shoot" };
 			SetPath({ tilemap->GetTilePosition(11, 17), tilemap->GetTilePosition(11, 12) });
 			break;
 		case Tutorial::BOSS:
