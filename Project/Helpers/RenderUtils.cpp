@@ -213,7 +213,7 @@ void DrawAEText(s8 const& font, std::string const& text, AEVec2 pos, f32 fontSiz
 	size_t i{}; //End of substr
 	size_t start{}; //Start of substr
 	size_t num{}; //Num of newlines
-	static const f32 fontH{ RenderingManager::GetInstance()->GetFontHeight() * fontSize };
+	static const f32 fontH{ RenderingManager::GetInstance()->GetFontHeight(font) * fontSize };
 	do {
 		i = text.find_first_of('\n', start);
 		//No newline, or last line might not have a newline char, check if theres more chars
@@ -239,7 +239,7 @@ void GetAEMultilineTextSize(s8 const& font, std::string const& text, f32 fontSiz
 	//Split string based on newlines
 	size_t i{}; //End of substr
 	size_t start{}; //Start of substr
-	static const f32 fontH{ RenderingManager::GetInstance()->GetFontHeight() * fontSize };
+	static const f32 fontH{ RenderingManager::GetInstance()->GetFontHeight(font) * fontSize };
 	do {
 		i = text.find_first_of('\n', start);
 		//No newline, or last line might not have a newline char, check if theres more chars
@@ -314,7 +314,7 @@ AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 bo
 	} while (i != std::string::npos);
 
 	//Offset to keep box on screen
-	static const f32 fontH{RenderingManager::GetInstance()->GetFontHeight() * fontSize};
+	static const f32 fontH{RenderingManager::GetInstance()->GetFontHeight(font) * fontSize};
 	AEVec2 acBoxSize{};
 	GetAEMultilineTextSize(font, wrapped.str(), fontSize, acBoxSize.x, acBoxSize.y, lineSpace);
 
