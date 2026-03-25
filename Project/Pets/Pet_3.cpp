@@ -15,7 +15,7 @@ void Pet_3::Setup(Player& _player)
     attImgTime = std::stof(data.extra.at("attImgTime"));
 
     //Skill cooldown scales with rank
-    data.skillCooldown /= (int)rank;
+    data.skillCooldown /= (int)rank ? (int)rank : 1;
 
     attackAnimTimer = 0.f;
 }
@@ -64,12 +64,17 @@ void Pet_3::DoMovement(double dt)
     //Chase down target instead
     UpdatePathfinding((float)dt); //Timers
     AEVec2 tpos{ target->GetPos() };
-    float sqrDist{ AEVec2SquareDistance(&pos, &tpos) };
-    if (sqrDist < weap->attackSize * weap->attackSize) {
+    //Attack when in range, including target collider size
+    AEVec2 v{ tpos - pos };
+    AEVec2Normalize(&v, &v);
+    AEVec2 outer{ tpos - v * target->GetColSize() * 0.5f };
+    float sqrAttDist{ AEVec2SquareDistance(&pos, &outer) };
+
+    if (sqrAttDist < weap->attackSize * weap->attackSize) {
         //Attack
         Attack();
     }
-    else { //Move closer to target
+    else{ //Move closer to target
         Pathfinder::RESULT res = DoPathFinding(*tilemap, pos, tpos);
         if (res != Pathfinder::RESULT::FAILED) {
             std::deque<AEVec2> const& path{ GetFoundPath() };

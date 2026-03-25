@@ -124,6 +124,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="File\CSV.cpp" />
     <ClCompile Include="gacha.cpp" />
     <ClCompile Include="GameDB.cpp" />
+    <ClCompile Include="GameEnd.cpp" />
     <ClCompile Include="GameObjects\AttackHitboxGO.cpp" />
     <ClCompile Include="GameObjects\GameObject.cpp" />
     <ClCompile Include="GameObjects\GameObjectManager.cpp" />
@@ -206,6 +207,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="File\CSV.h" />
     <ClInclude Include="gacha.h" />
     <ClInclude Include="GameDB.h" />
+    <ClInclude Include="GameEnd.h" />
     <ClInclude Include="GameObjects\AttackHitboxGO.h" />
     <ClInclude Include="GameObjects\GameObject.h" />
     <ClInclude Include="GameObjects\GameObjectManager.h" />

@@ -82,7 +82,7 @@
             "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
             "skillCooldown": 6,
             "skillDesc": "Yeet the rock",
-            "textures": [""]
+            "textures": ["Assets/sprites/pets/rock.png"]
         },
         {
             "id": 2,
@@ -123,7 +123,7 @@
             "rarityScaling": [ 1, 1.5, 2, 2.5, 3.5, 5 ],
             "skillCooldown": 6,
             "skillDesc": "Grants a shield that slows attackers.\nWhen shield value exceeds a certain amount, damages attackers as well",
-            "textures": [ "" ],
+            "textures": [ "Assets/sprites/pets/slime_pet.png" ],
             "effects": [ // On-hit debuff
                 {
                     "name": "Gooey",
@@ -155,9 +155,9 @@
             "skillDesc": "Cast while cursor is over an enemy to lock onto them.\nThe Lycan will hunt the target down and attack them periodically.",
             "extra": {
                 "attackCooldown": "1.0",
-                "attImgTime": "0.2" // Time to show the attacking texture
+                "attImgTime": "0.5" // Time to show the attacking texture
             },
-            "textures": [ "Assets/lycan_default.png", "Assets/lycan_attack.png" ] //2nd tex is attack img
+            "textures": [ "Assets/sprites/pets/lycan_default.png", "Assets/sprites/pets/lycan_attack.png" ] //2nd tex is attack img
         },
         {
             "id": 4,
@@ -184,7 +184,7 @@
             "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
             "skillCooldown": 10,
             "skillDesc": "Forms a whirlpool at the mouse position.\nWhirlpool pulls enemies in and damages them at the end of its duration.\nWhile the pool is active, recast to end it early.",
-            "textures": [""],
+          "textures": [ "Assets/sprites/pets/scylla.png" ],
             "extra": {
                 "pull": "100",
                 "duration": "7",
@@ -236,7 +236,7 @@
                 "auraColor": "200 60 0 200", //Format: r g b a
                 "sunRequired": "5" //Number of times to hit enemies with sun stacks for bonus effect
             },
-            "textures": ["Assets/finn.png"]
+            "textures": ["Assets/sprites/pets/pheonix.png"]
         },
         {
             "id": 6,
@@ -267,7 +267,7 @@
             "rarityScaling": [ 1, 1, 1, 1, 1, 1 ],
             "skillCooldown": 8,
             "skillDesc": "Passively fires piercing shots at nearby enemies.\nCast skill to knock back enemies in range.",
-            "textures": [ "" ],
+          "textures": [ "Assets/sprites/pets/winged_dragon.png" ],
             "dmgTypes": [ "mag" ],
             "extra": {
                 "knockback": "600",

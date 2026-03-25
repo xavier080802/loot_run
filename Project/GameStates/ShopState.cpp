@@ -143,9 +143,9 @@ void ShopState::Update(double dt)
 {
 	if (isGachaActive)
 	{
-		bool openPressed = AEInputCheckTriggered(AEVK_O) || AEInputCheckTriggered(0x4F);
+		bool openPressed = AEInputCheckTriggered(AEVK_LBUTTON) || AEInputCheckTriggered(0x4F);
 		bool skipPressed = AEInputCheckTriggered(AEVK_SPACE);
-		bool pull10 = AEInputCheckTriggered(AEVK_R) || AEInputCheckTriggered(0x52);
+		bool pull10 = AEInputCheckTriggered(AEVK_LBUTTON) || AEInputCheckTriggered(0x52);
 		bool pull100 = AEInputCheckTriggered(AEVK_T) || AEInputCheckTriggered(0x54);
 		bool exitPressed = AEInputCheckTriggered(AEVK_ESCAPE);
 
@@ -304,18 +304,6 @@ void ShopState::Draw()
 		snprintf(coinAmount, sizeof(coinAmount), "%d", ShopFunctions::GetInstance()->getMoney());
 		AEVec2 coinAmtPos = DefaultToWorld(1500.f, 95.f);
 		DrawAEText(Font, coinAmount, coinAmtPos, scale, CreateColor(255, 215, 0, 255), TEXT_MIDDLE);
-
-		// ----------------
-		// Draw Endless Best 
-		// (I'm putting it here to show you how to draw it. put it in the defeat screen for endless)
-		// ----------------
-		//char bestText[64];
-		// int totalSecs = (int)ShopFunctions::GetInstance()->getEndlessHighScore();
-		// int m = totalSecs / 60;
-		// int s = totalSecs % 60;
-		// snprintf(bestText, sizeof(bestText), "BEST: %02d:%02d", m, s);
-		// AEVec2 bestPos = DefaultToWorld(200.f, 50.f);
-		// DrawAEText(Font, bestText, bestPos, scale, CreateColor(200, 200, 200, 255), TEXT_MIDDLE);
 
 		// ----------------
 		// Draw Buttons

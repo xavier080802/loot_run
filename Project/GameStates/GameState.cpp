@@ -29,6 +29,7 @@
 #include "../GameStates/LevelSelectState.h"
 #include "../ShopFunctions.h"
 #include "../Pause.h"
+#include "../GameEnd.h"
 
 namespace {
     // --- GLOBAL SYSTEMS ---
@@ -168,7 +169,7 @@ namespace {
             for (unsigned c = 0; c < cols; ++c) {
                 const TileMap::Tile* t = tilemap.QueryTile(r, c);
                 if (!t || t->type != TileMap::TILE_ENEMY) continue;
-                if (!trustMarkers && !tilemap.HasClearance(r, c, 2)) continue;
+                if (!trustMarkers && !tilemap.HasClearance(r, c, 3)) continue;
                 positions.push_back(tilemap.GetTilePosition(r, c));
                 std::cout << "[FindSafe] TILE_ENEMY at (" << r << "," << c << ") accepted.\n";
             }
@@ -209,7 +210,7 @@ namespace {
     }
 
     // Collects wall-free open tiles from the proc map.
-    // Uses HasClearance(2) and avoids the player spawn centre and corridors.
+    // Uses HasClearance(3) and avoids the player spawn centre and corridors.
     std::vector<AEVec2> CollectProcSafePositions(TileMap const& tilemap)
     {
         std::vector<AEVec2> positions;
@@ -219,11 +220,11 @@ namespace {
         int midR = (int)rows / 2;
         int midC = (int)cols / 2;
 
-        for (unsigned r = 5; r < rows - 5; ++r) {
+        for (unsigned r = 6; r < rows - 6; ++r) {
             for (unsigned c = 5; c < cols - 5; ++c) {
                 const TileMap::Tile* t = tilemap.QueryTile(r, c);
                 if (!t || t->type != TileMap::TILE_NONE || t->isSolid) continue;
-                if (!tilemap.HasClearance(r, c, 2)) continue;
+                if (!tilemap.HasClearance(r, c, 3)) continue;
 
                 int dr = (int)r - midR, dc = (int)c - midC;
                 if (dr >= -5 && dr <= 5 && dc >= -5 && dc <= 5) continue;
@@ -265,7 +266,7 @@ namespace {
         }
     }
 
-    // Spawns 1-3 chests at random safe positions in a proc map.
+    // Spawns chests at random safe positions in a proc map.
     // Positions are picked the same way as enemy waves so chests
     // never appear inside walls.
     void SpawnProcChests(TileMap const& tilemap)
@@ -275,19 +276,57 @@ namespace {
 
         int chestCount = 3 + rand() % 3;
         int spawned = 0;
+        std::vector<AEVec2> chosen;
+        const float MIN_CHEST_SPACING = 115.f * 5.f;
 
         for (int i = 0; i < chestCount && !safePool.empty(); ++i) {
-            int    idx = rand() % (int)safePool.size();
-            AEVec2 pos = safePool[idx];
-            safePool.erase(safePool.begin() + idx);
+            bool placed = false;
+            for (int attempt = 0; attempt < 20 && !safePool.empty(); ++attempt) {
+                int    idx = rand() % (int)safePool.size();
+                AEVec2 pos = safePool[idx];
 
-            LootChest* chest = dynamic_cast<LootChest*>(
-                GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
-            if (!chest) continue;
+                AEVec2 gridInd = tilemap.GetTileIndFromPos(pos);
+                int r = (int)gridInd.y;
+                int c = (int)gridInd.x;
 
-            chest->Init(pos, { 35,35 }, 0, MESH_SQUARE, Collision::COL_RECT, { 35,35 },
-                CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE);
-            ++spawned;
+                bool strictlySafe = true;
+                for (int dr = -2; dr <= 2; ++dr) {
+                    for (int dc = -2; dc <= 2; ++dc) {
+                        TileMap::Tile const* neighbor = tilemap.QueryTile(r + dr, c + dc);
+                        if (!neighbor || neighbor->type != TileMap::TILE_NONE) {
+                            strictlySafe = false;
+                            break;
+                        }
+                    }
+                    if (!strictlySafe) break;
+                }
+
+                if (!strictlySafe) {
+                    safePool.erase(safePool.begin() + idx);
+                    continue;
+                }
+                bool tooClose = false;
+                for (AEVec2 const& c_pos : chosen) {
+                    float dx = pos.x - c_pos.x, dy = pos.y - c_pos.y;
+                    if ((dx * dx + dy * dy) < MIN_CHEST_SPACING * MIN_CHEST_SPACING) {
+                        tooClose = true; break;
+                    }
+                }
+                if (tooClose) continue;
+
+                LootChest* chest = dynamic_cast<LootChest*>(
+                    GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
+                if (!chest) continue;
+                chest->Init(pos, { 32.f, 32.f }, 0, MESH_SQUARE, Collision::COL_RECT, { 28.f, 28.f },
+                    CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE);
+
+                chosen.push_back(pos);
+                safePool.erase(safePool.begin() + idx);
+                ++spawned;
+                placed = true;
+                break;
+            }
+            if (!placed) break;
         }
         std::cout << "[SpawnProcChests] Spawned " << spawned << " chests.\n";
     }
@@ -592,6 +631,7 @@ void GameState::InitState()
 	doTutorial = (mapSelected == "Assets/TutorialMap.csv");
     bgm.PlayNormal();
     InitTutorial(currentLevel);
+    GameEnd::Hide();
 
     // Reload the correct CSV map in case the player changed mode and came back
     if (map) { delete map; map = nullptr; }
@@ -825,6 +865,9 @@ void GameState::InitState()
 // =============================================================
 void GameState::Update(double dt)
 {
+    GameEnd::Update(dt);
+    if (GameEnd::IsOpen()) return;
+
     // ESC or M toggles the pause menu
     if (loadingTimer <= 0.f &&
         (AEInputCheckTriggered(AEVK_M) || AEInputCheckTriggered(AEVK_ESCAPE)))
@@ -845,53 +888,50 @@ void GameState::Update(double dt)
 
     // TAB — toggle debug mode and overlay
     if (AEInputCheckTriggered(AEVK_TAB)) {
-        debugMode = !debugMode;
-        showDebugOverlay = debugMode;
-        std::cout << "[Debug] Mode " << (debugMode ? "ON" : "OFF") << "\n";
+        showDebugOverlay = !showDebugOverlay;
+        std::cout << "[Debug] Overlay " << (showDebugOverlay ? "ON" : "OFF") << "\n";
     }
 
     if (AEInputCheckTriggered(AEVK_K))
         showKeybindOverlay = !showKeybindOverlay;
 
-    if (debugMode) {
-        if (AEInputCheckTriggered(AEVK_F5)) {
-            debugGodMode = !debugGodMode;
-            std::cout << "[Debug] God mode " << (debugGodMode ? "ON" : "OFF") << "\n";
-        }
-        if (AEInputCheckTriggered(AEVK_F6)) {
-            debugFreezeEnemies = !debugFreezeEnemies;
-            std::cout << "[Debug] Freeze AI " << (debugFreezeEnemies ? "ON" : "OFF") << "\n";
-        }
-        if (AEInputCheckTriggered(AEVK_F7)) {
-            debugShowChests = !debugShowChests;
-            std::cout << "[Debug] Show chests " << (debugShowChests ? "ON" : "OFF") << "\n";
-        }
-        if (AEInputCheckTriggered(AEVK_F1)) {
-            for (Enemy* e : procEnemies) if (e && e->IsEnabled()) e->TakeDamage({ 99999.f, nullptr, DAMAGE_TYPE::TRUE_DAMAGE, nullptr });
-            for (Enemy* e : csvEnemies)  if (e && e->IsEnabled()) e->TakeDamage({ 99999.f, nullptr, DAMAGE_TYPE::TRUE_DAMAGE, nullptr });
-            std::cout << "[Debug] All enemies killed.\n";
-        }
-        if (AEInputCheckTriggered(AEVK_F2)) {
-            if (!bossSpawned && inProceduralMap && nextMap) {
-                totalEnemiesKilled = totalKillTarget;
-                TrySpawnBoss(*nextMap);
-                std::cout << "[Debug] Boss force-spawned.\n";
-            }
-        }
-        if (AEInputCheckTriggered(AEVK_F3)) {
-            if (gPlayer) {
-                TileMap* cur = inProceduralMap ? nextMap : map;
-                AEVec2 sp = cur ? cur->GetSpawnPoint() : AEVec2{ 0,0 };
-                gPlayer->SetPos(sp);
-                camPos = sp;
-                std::cout << "[Debug] Teleported to spawn.\n";
-            }
-        }
-        if (AEInputCheckTriggered(AEVK_F4)) {
-            if (gPlayer) { gPlayer->Heal(gPlayer->GetMaxHP()); std::cout << "[Debug] HP refilled.\n"; }
+    if (AEInputCheckTriggered(AEVK_F5)) {
+        debugGodMode = !debugGodMode;
+        std::cout << "[Debug] God mode " << (debugGodMode ? "ON" : "OFF") << "\n";
+    }
+    if (AEInputCheckTriggered(AEVK_F6)) {
+        debugFreezeEnemies = !debugFreezeEnemies;
+        std::cout << "[Debug] Freeze AI " << (debugFreezeEnemies ? "ON" : "OFF") << "\n";
+    }
+    if (AEInputCheckTriggered(AEVK_F7)) {
+        debugShowChests = !debugShowChests;
+        std::cout << "[Debug] Show chests " << (debugShowChests ? "ON" : "OFF") << "\n";
+    }
+    if (AEInputCheckTriggered(AEVK_F1)) {
+        for (Enemy* e : procEnemies) if (e && e->IsEnabled()) e->TakeDamage({ 99999.f, nullptr, DAMAGE_TYPE::TRUE_DAMAGE, nullptr });
+        for (Enemy* e : csvEnemies)  if (e && e->IsEnabled()) e->TakeDamage({ 99999.f, nullptr, DAMAGE_TYPE::TRUE_DAMAGE, nullptr });
+        std::cout << "[Debug] All enemies killed.\n";
+    }
+    if (AEInputCheckTriggered(AEVK_F2)) {
+        if (!bossSpawned && inProceduralMap && nextMap) {
+            totalEnemiesKilled = totalKillTarget;
+            TrySpawnBoss(*nextMap);
+            std::cout << "[Debug] Boss force-spawned.\n";
         }
     }
-
+    if (AEInputCheckTriggered(AEVK_F3)) {
+        if (gPlayer) {
+            TileMap* cur = inProceduralMap ? nextMap : map;
+            AEVec2 sp = cur ? cur->GetSpawnPoint() : AEVec2{ 0,0 };
+            gPlayer->SetPos(sp);
+            camPos = sp;
+            std::cout << "[Debug] Teleported to spawn.\n";
+        }
+    }
+    if (AEInputCheckTriggered(AEVK_F4)) {
+        if (gPlayer) { gPlayer->Heal(gPlayer->GetMaxHP()); std::cout << "[Debug] HP refilled.\n"; }
+    }
+    
 #pragma region inputs_for_testing
     if (AEInputCheckTriggered(AEVK_L)) {
         LootChest* chest = dynamic_cast<LootChest*>(
@@ -918,7 +958,7 @@ void GameState::Update(double dt)
 
     if (!gPlayer) return;
 
-    if (debugMode && debugGodMode)
+    if (debugGodMode)
         gPlayer->Heal(gPlayer->GetMaxHP());
 
     if (teleportCooldown > 0.f) teleportCooldown -= (float)dt;
@@ -950,6 +990,7 @@ void GameState::Update(double dt)
             // Clear CSV enemies so they don't bleed into the proc map
             DisableAndClearEnemies(csvEnemies);
             DisableAndClearEnemies(procEnemies);
+            DropSystem::ClearAllPickups();
             procWaveNumber = 0;
             // Wave 0 fires immediately — 8 enemies
             SpawnProcWave(*nextMap);
@@ -973,6 +1014,7 @@ void GameState::Update(double dt)
             previousRoomsKilled = totalEnemiesKilled;
             // Clear previous room's enemies before spawning new ones
             DisableAndClearEnemies(procEnemies);
+            DropSystem::ClearAllPickups();
             procWaveNumber = 0;
             // Wave 0 fires immediately — 8 enemies
             SpawnProcWave(*nextMap);
@@ -991,7 +1033,7 @@ void GameState::Update(double dt)
         playerDir = gPlayer->GetMoveDirNorm();
 
     // Count dead enemies every frame to keep the progress bar accurate
-    if (!(debugMode && debugFreezeEnemies))
+    if (!(debugFreezeEnemies))
         CountAllDeadEnemies();
 
     if (inProceduralMap)
@@ -1005,8 +1047,10 @@ void GameState::Update(double dt)
     if (doTutorial && fairy->data.stage == Tutorial::BOSS) {
         if (boss && !boss->IsDead())
             boss->SetEnabled(true);
-        if (!bossAlive)
+        if (!bossAlive || (boss && (boss->IsDead() || boss->GetHP() <= 0.f))) {
+            bossAlive = false;
             fairy->ChangeStage(Tutorial::END);
+        }
     }
 
     if (endlessTimerActive) {
@@ -1016,7 +1060,7 @@ void GameState::Update(double dt)
     // Non-tutorial: return to main menu when boss is slain.
     if (!doTutorial && bossSpawned && !bossAlive) {
         if (mapSelected != "Assets/Endless.csv") {
-            GameStateManager::GetInstance()->SetNextGameState("MainMenuState");
+            GameEnd::Show(true, false, 0.f, gPlayer->GetInventory().GetCoins(), totalEnemiesKilled);
             std::cout << "BOSS SLAYED\n";
         }
         else {
@@ -1036,6 +1080,7 @@ void GameState::Update(double dt)
             enemiesKilledInRoom = 0;
             // Clear dead enemies so they don't count toward the new cycle
             DisableAndClearEnemies(procEnemies);
+            DropSystem::ClearAllPickups();
             std::cout << "[Endless] New kill target: " << totalKillTarget << "\n";
 
             teleportCooldown = 2.f;
@@ -1050,14 +1095,18 @@ void GameState::Update(double dt)
             }
         }
     }
+    if (mapSelected != "Assets/Endless.csv" && gPlayer && gPlayer->GetHP() <= 0.f) {
+        GameEnd::Show(false, false, 0.f, gPlayer->GetInventory().GetCoins(), totalEnemiesKilled);
+        std::cout << "PLAYER DIED - not Endless. \n";
+    }
     if (mapSelected == "Assets/Endless.csv" && gPlayer && gPlayer->GetHP() <= 0.f) {
-        GameStateManager::GetInstance()->SetNextGameState("MainMenuState");
+        GameEnd::Show(false, true, endlessRunTimer, gPlayer->GetInventory().GetCoins(), totalEnemiesKilled);
         std::cout << "PLAYER DIED — Endless over.\n";
     }
     minimap->Update(dt, *currentMap, *gPlayer);
     UpdateWorldMap((float)dt);
 
-    if (debugMode && debugFreezeEnemies) {
+    if (debugFreezeEnemies) {
         auto& gameObjects = GameObjectManager::GetInstance()->GetGameObjects();
         std::vector<std::pair<GameObject*, AEVec2>> frozenEnemies;
         for (int i = 0; i < (int)gameObjects.size(); ++i) {
@@ -1119,6 +1168,7 @@ void GameState::Draw()
         return; // skip all other rendering while loading
     }
 
+    // --- World Rendering ---
     RenderWorldMap();
     GameObjectManager::GetInstance()->DrawObjects();
     DrawBossHPProgressBar();
@@ -1126,42 +1176,40 @@ void GameState::Draw()
     TileMap* currentMap = inProceduralMap ? nextMap : map;
     minimap->Render(*currentMap, *gPlayer);
 
-    // Enemy HP labels always visible
+    // Enemy HP labels
     DrawEnemyStats(MakeDebugCtx());
-    AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
 
-    if (debugMode) {
-        DebugContext dbg = MakeDebugCtx();
-        // Draw chest locations as yellow dots on the minimap
-        if (dbg.debugShowChests) {
-            TileMap* currentMapForChests = inProceduralMap ? nextMap : map;
-            AEVec2 const& mapSize = currentMapForChests->GetFullMapSize();
-            float scaleX = 200.f / mapSize.x;
-            float scaleY = 200.f / mapSize.y;
-            float mmX = (float)AEGfxGetWinMaxX() - 200.f * 0.5f - 20.f;
-            float mmY = (float)AEGfxGetWinMaxY() - 200.f * 0.5f - 20.f - 10.f;
-            AEVec2 mapOffset = currentMapForChests->GetOffset();
+    // --- Debug & UI Elements ---
+    DebugContext dbg = MakeDebugCtx();
 
-            auto& gos = GameObjectManager::GetInstance()->GetGameObjects();
-            for (GameObject* go : gos) {
-                if (!go || !go->IsEnabled() || go->GetGOType() != GO_TYPE::LOOT_CHEST) continue;
-                AEVec2 relPos = go->GetPos() - mapOffset;
-                AEVec2 dotPos = { mmX + relPos.x * scaleX, mmY + relPos.y * scaleY };
-                AEMtx33 mtx;
-                GetTransformMtx(mtx, dotPos, 0, { 10.f, 10.f });
-                AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-                AEGfxTextureSet(nullptr, 0, 0);
-                AEGfxSetTransform(mtx.m);
-                AEGfxSetColorToMultiply(1.0f, 0.85f, 0.0f, 1.0f);
-                AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
-            }
+    // Draw chest locations as yellow dots on the minimap
+    if (dbg.debugShowChests) {
+        TileMap* currentMapForChests = inProceduralMap ? nextMap : map;
+        AEVec2 const& mapSize = currentMapForChests->GetFullMapSize();
+        float scaleX = 200.f / mapSize.x;
+        float scaleY = 200.f / mapSize.y;
+        float mmX = (float)AEGfxGetWinMaxX() - 200.f * 0.5f - 20.f;
+        float mmY = (float)AEGfxGetWinMaxY() - 200.f * 0.5f - 20.f - 10.f;
+        AEVec2 mapOffset = currentMapForChests->GetOffset();
+
+        auto& gos = GameObjectManager::GetInstance()->GetGameObjects();
+        for (GameObject* go : gos) {
+            if (!go || !go->IsEnabled() || go->GetGOType() != GO_TYPE::LOOT_CHEST) continue;
+            AEVec2 relPos = go->GetPos() - mapOffset;
+            AEVec2 dotPos = { mmX + relPos.x * scaleX, mmY + relPos.y * scaleY };
+            AEMtx33 mtx;
+            GetTransformMtx(mtx, dotPos, 0, { 10.f, 10.f });
+            AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+            AEGfxTextureSet(nullptr, 0, 0);
+            AEGfxSetTransform(mtx.m);
+            AEGfxSetColorToMultiply(1.0f, 0.85f, 0.0f, 1.0f);
+            AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
         }
-        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-        if (showDebugOverlay) DrawDebugOverlay(dbg);
     }
 
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-    if (showKeybindOverlay) DrawKeybindOverlay(MakeDebugCtx());
+    if (showDebugOverlay) DrawDebugOverlay(dbg);
+    if (showKeybindOverlay) DrawKeybindOverlay(dbg);
 
     if (gPlayer) gPlayer->DrawUI();
 
@@ -1177,10 +1225,11 @@ void GameState::Draw()
 
     HandleTutorialDialogueRender();
     PetManager::GetInstance()->DrawUI();
-
     DropSystem::PrintPickupDisplay();
+
     // Pause menu drawn on top of everything
     Pause::Draw();
+    GameEnd::Draw();
 }
 
 void GameState::HandleTutorialDialogueRender()
@@ -1226,6 +1275,7 @@ void GameState::ExitState()
     boss = nullptr;
     DisableAndClearEnemies(csvEnemies);
     DisableAndClearEnemies(procEnemies);
+    DropSystem::ClearAllPickups();
 
     debugMode = false;
     showDebugOverlay = false;

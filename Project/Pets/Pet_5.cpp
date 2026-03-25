@@ -18,9 +18,11 @@ namespace {
 		caster->DealDamage(other, dmg, pet->GetPetData().dmgTypes[0]);
 		//Apply element
 		Elements::ApplyElement(element, caster, other);
-		StatEffects::StatusEffect* sunSE{ other->GetStatusEffects().at(Elements::sunName) };
-		if (sunSE && sunSE->GetStackCount()) {
-			pet->IncSunCounter();
+		if (other->GetStatusEffects().find(Elements::sunName) != other->GetStatusEffects().end()){
+			StatEffects::StatusEffect* sunSE{ other->GetStatusEffects().at(Elements::sunName) };
+			if (sunSE && sunSE->GetStackCount()) {
+				pet->IncSunCounter();
+			}
 		}
 	}
 
