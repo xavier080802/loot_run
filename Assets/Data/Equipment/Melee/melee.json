@@ -8,7 +8,7 @@
         "weaponType": "Sword",
         "attackType": "SwingArc",
         "isRanged": false,
-        "element": "BLOOD",
+        "element": "NONE",
         "knockback": 100.0,
         "attackSize": 12.0,
         "rarity": "Common",
