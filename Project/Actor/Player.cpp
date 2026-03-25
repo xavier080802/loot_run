@@ -92,13 +92,13 @@ void Player::InitPlayerRuntime(const ActorStats& baseStats)
 		}
 	};
 
-	EquipItem(invDef.weapon1, EquipmentCategory::Melee, [&](const EquipmentData* d) { mInventory.EquipMainWeapon(0, d); });
-	EquipItem(invDef.weapon2, EquipmentCategory::Melee, [&](const EquipmentData* d) { mInventory.EquipMainWeapon(1, d); });
-	EquipItem(invDef.bow, EquipmentCategory::Ranged, [&](const EquipmentData* d) { mInventory.EquipBow(d); });
-	EquipItem(invDef.head, EquipmentCategory::Head, [&](const EquipmentData* d) { mInventory.EquipArmor(d); });
-	EquipItem(invDef.body, EquipmentCategory::Body, [&](const EquipmentData* d) { mInventory.EquipArmor(d); });
-	EquipItem(invDef.hands, EquipmentCategory::Hands, [&](const EquipmentData* d) { mInventory.EquipArmor(d); });
-	EquipItem(invDef.feet, EquipmentCategory::Feet, [&](const EquipmentData* d) { mInventory.EquipArmor(d); });
+	EquipItem(invDef.weapon1,	EquipmentCategory::Melee,	[&](const EquipmentData* d) { mInventory.EquipMainWeapon(0, d); });
+	EquipItem(invDef.weapon2,	EquipmentCategory::Melee,	[&](const EquipmentData* d) { mInventory.EquipMainWeapon(1, d); });
+	EquipItem(invDef.bow,		EquipmentCategory::Ranged,	[&](const EquipmentData* d) { mInventory.EquipBow(d); });
+	EquipItem(invDef.head,		EquipmentCategory::Head,	[&](const EquipmentData* d) { mInventory.EquipArmor(d); });
+	EquipItem(invDef.body,		EquipmentCategory::Body,	[&](const EquipmentData* d) { mInventory.EquipArmor(d); });
+	EquipItem(invDef.hands,		EquipmentCategory::Hands,	[&](const EquipmentData* d) { mInventory.EquipArmor(d); });
+	EquipItem(invDef.feet,		EquipmentCategory::Feet,	[&](const EquipmentData* d) { mInventory.EquipArmor(d); });
 
 	// Give some starter ammo so bow can shoot
 	mInventory.AddAmmo(invDef.ammo);
