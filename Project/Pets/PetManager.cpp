@@ -17,7 +17,8 @@
 /* Flow
 1. App executes, loading pet manager and game state -> LinkPlayer
 2. In main menu, pet is selected, calling SetPet (can be several times)
-3. Game starts -> GameState.Init -> Calls InitPetForGame to create the Pet class and apply pet's passive
+3. Game starts -> GameState.Init -> Calls InitPetForGame to create the Pet class and apply pet's 
+
 4. Game ends -> GameState.ExitState -> Clears status effects, so no need to handle that here.
 5. Program ends -> GO Manager deleted the created pet classes.
 
