@@ -74,7 +74,7 @@
       "attack": {
         "range": 40.0,
         "cooldown": 1.2,
-        "attackType": "Stab",
+        "attackType": "SwingArc",
         "element": "NONE",
         "knockback": 15.0,
         "attackSize": 15.0,

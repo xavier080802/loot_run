@@ -8,9 +8,9 @@
         "weaponType": "Sword",
         "attackType": "SwingArc",
         "isRanged": false,
-        "element": "BLOOD",
+        "element": "NONE",
         "knockback": 100.0,
-        "attackSize": 10.0,
+        "attackSize": 12.0,
         "rarity": "Common",
         "stats": {
             "attack": 10.0
@@ -27,7 +27,7 @@
         "isRanged": false,
         "element": "NONE",
         "knockback": 120.0,
-        "attackSize": 12.0,
+        "attackSize": 14.0,
         "rarity": "Uncommon",
         "stats": {
             "attack": 15.0
@@ -44,7 +44,7 @@
         "isRanged": false,
         "element": "NONE",
         "knockback": 140.0,
-        "attackSize": 14.0,
+        "attackSize": 16.0,
         "rarity": "Rare",
         "stats": {
             "attack": 25.0
@@ -61,7 +61,7 @@
         "isRanged": false,
         "element": "MOON",
         "knockback": 160.0,
-        "attackSize": 16.0,
+        "attackSize": 18.0,
         "rarity": "Epic",
         "stats": {
             "attack": 45.0
@@ -78,7 +78,7 @@
         "isRanged": false,
         "element": "NONE",
         "knockback": 180.0,
-        "attackSize": 18.0,
+        "attackSize": 20.0,
         "rarity": "Legendary",
         "stats": {
             "attack": 80.0

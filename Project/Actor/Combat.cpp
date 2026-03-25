@@ -153,7 +153,7 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 			AEVec2 fireDir = { targetPos.x - pos.x, targetPos.y - pos.y };
 
 			// Fire(caster, direction, radius, speed, lifetime, callback, element, knockback)
-			proj->Fire(caster, fireDir, weapon->attackSize, 200.0f, 3.0f, &OnProjectileHit, weapon->element, weapon->knockback);
+			proj->Fire(caster, fireDir, weapon->attackSize, 500.0f, 3.0f, &OnProjectileHit, weapon->element, weapon->knockback);
 			Bitmask bm{ caster->GetCollisionLayers() };
 			ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
 			proj->SetCollisionLayers(bm); // Proj will scan for interactables otherwise
