@@ -8,7 +8,7 @@
 
 namespace {
 	const float roomSize = 700.f;
-	const float dialogueDur = 2.f;
+	const float dialogueDur = 3.f;
 	const float barrierOffset = roomSize * 0.5f + 160.f;
 }
 
@@ -44,6 +44,7 @@ namespace Tutorial {
 		{
 		case Tutorial::START: {
 			if (DoDialogue(fdt)) {
+				data.playDialogue = false;
 				ChangeStage(MOVEMENT);
 			}
 			break;
@@ -216,6 +217,10 @@ namespace Tutorial {
 		default:
 			break;
 		}
+
+		if (data.playDialogue && AEInputCheckTriggered(AEVK_RBUTTON) && data.currDialogueLine < data.dialogueLines.size() - 1) {
+			++data.currDialogueLine;
+		}
 	}
 
 	void TutorialFairy::ChangeStage(TUT_STAGE next)
@@ -234,7 +239,7 @@ namespace Tutorial {
 		switch (next)
 		{
 		case Tutorial::START:
-			data.dialogueLines = { "Welcome Adventurer to Pandora !", "Battle through various dungeons and gain the strength to defeat evil." };
+			data.dialogueLines = {"[Skip dialogue with right mouse button]", "Welcome Adventurer to Pandora !", "Battle through various dungeons and gain the strength to defeat evil." };
 			data.playDialogue = true;
 			break;
 		case Tutorial::MOVEMENT:
