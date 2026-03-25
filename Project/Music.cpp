@@ -24,6 +24,8 @@ void BGMManager::Init() {
 
 	// Load SFX
 	attackSound = AEAudioLoadMusic("");
+
+	AEAudioSetGroupVolume(bgmGroup, 0.5f);
 }
 
 // --- Music methods ---

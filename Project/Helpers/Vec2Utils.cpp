@@ -111,6 +111,11 @@ bool operator==(AEVec2 lhs, AEVec2 rhs)
     return lhs.x == rhs.x && lhs.y == rhs.y;
 }
 
+bool operator!=(AEVec2 lhs, AEVec2 rhs)
+{
+    return lhs.x != rhs.x || lhs.y != rhs.y;
+}
+
 std::ostream& operator<<(std::ostream& os, AEVec2 const& vec)
 {
     return os << vec.x << " " << vec.y;

@@ -63,17 +63,63 @@ void GameObjectManager::UpdateObjects(double dt, TileMap const* tilemap)
 	for (GameObject* go : goList) {
 		if (!go->collisionEnabled || !go->isEnabled) continue;
 
+		//Dist between prev and curr pos
+		float sqrTravelDist{ AEVec2SquareDistance(&go->prevPos, &go->pos) };
+		const float stepDist{ min(go->scale.x * 0.5f, 10.f) };
+		//Change in pos is big, check collision via raycast-style
+		if (sqrTravelDist >= stepDist * stepDist) {
+			AEVec2 dir{ go->pos - go->prevPos };
+			AEVec2Normalize(&dir, &dir);
+			//Number of steps between prev and curr. Distance between steps is stepDist
+			unsigned numSteps{ static_cast<unsigned>(sqrtf(sqrTravelDist) / stepDist) };
+			for (unsigned i{}; i <= numSteps; ++i) {
+				//Pos of this step
+				AEVec2 newPos{ go->prevPos + dir * (stepDist * i) };
+				bool collided{false};
+				//Hotspots at 45 deg angle intervals (0->360, 8 total)
+				//Allow all hotspots to check (Do not break the loop)
+				for (int h{}; h < 8;++h) {
+					AEVec2 hotspotDir{ AECosDeg(h * 45.f), AESinDeg(h * 45.f) };
+					AEVec2 hsPos{ newPos + hotspotDir * go->scale * 0.5f };
+					//Check if hotspot collides with a tile by checking if hotspot is on a collidable tile.
+					std::pair<TileMap::Tile const*, AEVec2> tile{ tilemap->QueryTileAndInd(hsPos) };
+					if (!tile.first || !BitmaskContainsFlag(go->collisionLayers, tile.first->layer)) {
+						continue; //Hotspot no collision detected.
+					}
+					//Position snapback to not overlap tile.
+					if (tile.first->isSolid) {
+						AEVec2 temp = Helper_HandleGOTileCollision(tile.second, newPos, *go, *tilemap);
+						//Set to true if there was overlap of > 0. Never set back to false
+						collided = collided ? true : (newPos != temp);
+						newPos = temp;
+					}
+
+					go->OnCollideTile(std::make_pair(*tile.first, tile.second));
+				}
+				//After checking hotspots. Set pos to the offset-position 
+				if (collided) {
+					go->pos = newPos;
+					break; //Collision resolved this step
+				}
+			}
+		}
+		//Number of steps wont reach the curr pos,
+		//the below code will check go->pos
+
 		//Hotspots at 45 deg angle intervals (0->360, 8 total)
 		//Allow all hotspots to check in 1 frame (Do not break the loop)
 		for (int h{}; h < 8;++h) {
 			AEVec2 hotspotDir{ AECosDeg(h * 45.f), AESinDeg(h * 45.f) };
+			AEVec2 hsPos{ go->pos + hotspotDir * go->scale * 0.5f };
 			//Check if hotspot collides with a tile by checking if hotspot is on a collidable tile.
-			std::pair<TileMap::Tile const*, AEVec2> tile{ tilemap->QueryTileAndInd(go->pos + hotspotDir * go->scale * 0.5f) };
+			std::pair<TileMap::Tile const*, AEVec2> tile{ tilemap->QueryTileAndInd(hsPos) };
 			if (!tile.first || !BitmaskContainsFlag(go->collisionLayers, tile.first->layer)) {
 				continue; //Hotspot no collision detected.
 			}
 			//Position snapback to not overlap tile.
-			if (tile.first->isSolid) Helper_HandleGOTileCollision(tile.second, *go, *tilemap);
+			if (tile.first->isSolid) {
+				go->pos = Helper_HandleGOTileCollision(tile.second, go->pos, *go, *tilemap);
+			}
 
 			go->OnCollideTile(std::make_pair(*tile.first, tile.second));
 		}
@@ -285,33 +331,23 @@ GameObject* GameObjectManager::FetchGO(GO_TYPE type)
 }
 
 //Prevent clipping with solid tile
-void GameObjectManager::Helper_HandleGOTileCollision(AEVec2 tileInd, GameObject& go, TileMap const& tilemap)
+AEVec2 GameObjectManager::Helper_HandleGOTileCollision(AEVec2 tileInd, AEVec2 startPos, GameObject const& go, TileMap const& tilemap)
 {
 	//Collided with tile. Prevent clipping.
 	AEVec2 tilePos{ tilemap.GetTilePosition((unsigned)tileInd.y, (unsigned)tileInd.x) };
 	const AEVec2 tileSize{ tilemap.GetTileSize() * 0.5f };
-	//Get pos of the edge closest to the go.
-	AEVec2 closest{ AEClamp(go.pos.x, tilePos.x - tileSize.x, tilePos.x + tileSize.x),
-				AEClamp(go.pos.y, tilePos.y - tileSize.y, tilePos.y + tileSize.y) };
 
-	//Check if go is inside tile. In that case, closest edge will be a pt inside the tile and that causes clipping
-	if (closest.x == go.pos.x && closest.y == go.pos.y) {
-		closest.x = (go.prevPos.x < tilePos.x ? tilePos.x - tileSize.x : tilePos.x + tileSize.x);
-		closest.y = (go.prevPos.y > tilePos.y ? tilePos.y - tileSize.y : tilePos.y + tileSize.y);
-	}
-
-	//Distance between go and the closest edge.
-	AEVec2 closDir = go.pos - closest;
-	//If x is inside tile, dir tends to be wrong, so negate. No need for y... for some reason
-	if (go.pos.x > tilePos.x - tileSize.x && go.pos.x < tilePos.x + tileSize.x) closDir.x = -closDir.x;
-	//Overlap amount (how much the go is currently inside the tile): Radius - dist of go from edge
-	float lenClos = AEVec2Length(&closDir);
-	AEVec2 pen = { go.scale.x * 0.5f - lenClos, go.scale.y * 0.5f - lenClos };
-	//Normalize to get dir to closest edge.
-	AEVec2 closestNorm{};
-	if (closDir.x || closDir.y) closestNorm = closDir / lenClos;
-	//Push the GO away along the overlap direction.
-	go.pos += closestNorm * pen;
+	//Get pos of the rect edge closest to the go
+	AEVec2 closest{};
+	closest.x = max(tilePos.x - tileSize.x, min(tilePos.x + tileSize.x, startPos.x));
+	closest.y = max(tilePos.y - tileSize.y, min(tilePos.y + tileSize.y, startPos.y));
+	AEVec2 closestDir{ closest - startPos };
+	float l = AEVec2Length(&closestDir);
+	float overlap{ go.scale.x * 0.5f - l };
+	if (overlap <= 0.f) return startPos;
+	if (closestDir.x || closestDir.y) closestDir = closestDir / l;
+	//Offset by the penetration distance along the penetration direction
+	return startPos - closestDir * overlap;
 }
 
 GameObjectManager::~GameObjectManager()

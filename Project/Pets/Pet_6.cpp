@@ -8,6 +8,7 @@
 #include "../GameObjects/GameObject.h"
 #include "../GameObjects/AttackHitboxGO.h"
 #include "PetManager.h"
+#include "../DebugTools.h"
 #include <sstream>
 
 namespace {
@@ -97,10 +98,16 @@ void Pet_6::SkillUpdate(float dt)
 		//Fire turret shot
 		GameObject* go{ GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PROJECTILE) };
 		Projectile* proj{ dynamic_cast<Projectile*>(go) };
-		if (!proj) return;
+		if (!proj) {
+			Debug::stream << "PROJ FAILED TO FETCH\n";
+			return;
+		}
 		//Find target
 		GameObject* target{ GameObjectManager::GetInstance()->FindClosestGO(player->GetPos(), turretRange, GO_TYPE::ENEMY) };
-		if (!target) return;
+		if (!target) {
+			Debug::stream << "Dragon - No target found\n";
+			return;
+		}
 		//Fire at target. Set color too
 		proj->Fire(player, target->GetPos() - pos, projSize * 0.5f, projSpd, projLife, ProjHit,
 			data.skillElements.empty() ? Elements::ELEMENT_TYPE::NONE : data.skillElements.at(0))
