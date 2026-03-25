@@ -107,6 +107,9 @@ void Pet_6::SkillUpdate(float dt)
 			->GetRenderData().tint = projCol;
 		//Set pos to pet pos, not player pos
 		proj->SetPos(pos);
+		Bitmask bm{ proj->GetCollisionLayers() };
+		ResetFlagAtPos(&bm, Collision::OBSTACLE);
+		proj->SetCollisionLayers(bm);
 		//Set stop rule so proj pierces
 		proj->SetStopRule(Projectile::STOP_RULE::NONE);
 
