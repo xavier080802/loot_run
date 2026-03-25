@@ -42,6 +42,7 @@ namespace {
 	Color tooltipBgCol{ 255,255,255,255 };
 	Color timerTextCol{ 0,0,0,255 };
 	Color onCooldownCol{ 155,155,155,155 };
+	Color availableCol{ 100,255,100,255 };
 	TextOriginPos tooltipAlignment{};
 	TextboxOriginPos boxAlignment{};
 	bool showTimerUnit{};
@@ -173,6 +174,13 @@ void PetManager::DrawUI()
 {
 	if (!equippedPet || !equippedPet->isSet || !PetHasSkill()) return;
 
+	//Available - draw a green box
+	if (!equippedPet->IsOnCooldown()) {
+		DrawTintedMesh(GetTransformMtx(skillUI->GetPos(), 0, skillUI->GetSize()),
+			rm->GetMesh(MESH_SQUARE), nullptr,
+			availableCol, 220);
+	}
+
 	DrawTintedMesh(GetTransformMtx(skillUI->GetPos(), 0, skillUI->GetSize()),
 		rm->GetMesh(MESH_SQUARE), rm->LoadTexture(equippedPet->GetPetData().textures.at(0)),
 		equippedPet->IsOnCooldown() ? onCooldownCol : Color{ 255,255,255,255 }, 255);
@@ -181,6 +189,10 @@ void PetManager::DrawUI()
 	if (equippedPet->IsOnCooldown()) {
 		DrawAEText(rm->GetFont(), std::to_string((int)equippedPet->GetCDTimer()) + (showTimerUnit ? "s" : ""), skillUI->GetPos(), timerFontSize,
 			0, timerTextCol, TEXT_MIDDLE);
+	}
+	else { //Write key above the box
+		DrawAEText(rm->GetFont(), "[R]", skillUI->GetPos() + AEVec2{ 0, skillUI->GetSize().y * 0.5f + 5}, timerFontSize,
+			0, availableCol, TEXT_LOWER_MIDDLE);
 	}
 
 	if (showTooltip) {
@@ -201,7 +213,7 @@ void PetManager::ShowPetTooltip()
 
 	//Draw text box
 	DrawAETextbox(rm->GetFont(), txt, AEVec2{ (float)mP.x, (float)mP.y },
-		AEGfxGetWinMaxX() * 0.4f, descFontSize, lineSpace, textCol, tooltipAlignment, TextboxOriginPos::BOTTOM,
+		AEGfxGetWinMaxX() * 0.7f, descFontSize, lineSpace, textCol, tooltipAlignment, TextboxOriginPos::BOTTOM,
 		TextboxBgCfg{ padding, tooltipBgCol, 255, rm->GetMesh(MESH_SQUARE) });
 }
 
@@ -230,6 +242,26 @@ void PetManager::LoadUIJSON()
 		iconSize = ui.get("size", 75).asFloat();
 		lineSpace = ui.get("lineSpace", 0.05f).asFloat();
 		showTimerUnit = ui.get("showTimerUnit", true).asBool();
+		if (ui.isMember("textCol") && ui["textCol"].size() == 4) {
+			textCol = Color{ ui["textCol"][0].asFloat(), ui["textCol"][1].asFloat(),
+			ui["textCol"][2].asFloat() ,ui["textCol"][3].asFloat() };
+		}
+		if (ui.isMember("boxCol") && ui["boxCol"].size() == 4) {
+			tooltipBgCol = Color{ ui["boxCol"][0].asFloat(), ui["boxCol"][1].asFloat(),
+			ui["boxCol"][2].asFloat() ,ui["boxCol"][3].asFloat() };
+		}
+		if (ui.isMember("timerTextCol") && ui["timerTextCol"].size() == 4) {
+			timerTextCol = Color{ ui["timerTextCol"][0].asFloat(), ui["timerTextCol"][1].asFloat(),
+			ui["timerTextCol"][2].asFloat() ,ui["timerTextCol"][3].asFloat() };
+		}
+		if (ui.isMember("onCooldownCol") && ui["onCooldownCol"].size() == 4) {
+			onCooldownCol = Color{ ui["onCooldownCol"][0].asFloat(), ui["onCooldownCol"][1].asFloat(),
+			ui["onCooldownCol"][2].asFloat() ,ui["onCooldownCol"][3].asFloat() };
+		}
+		if (ui.isMember("availableCol") && ui["availableCol"].size() == 4) {
+			availableCol = Color{ ui["availableCol"][0].asFloat(), ui["availableCol"][1].asFloat(),
+			ui["availableCol"][2].asFloat() ,ui["availableCol"][3].asFloat() };
+		}
 	}
 	ifs.close();
 }

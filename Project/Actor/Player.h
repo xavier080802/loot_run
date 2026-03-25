@@ -23,7 +23,6 @@ public:
     void OnCollide(CollisionData& other) override;
 
     void Draw() override;
-    void DrawUI();
 
     bool IsInvulnerable() override;
 
@@ -47,6 +46,9 @@ public:
     GO_TYPE GetGOType()const override { return GO_TYPE::PLAYER; }
     const ActorStats& GetBaseStats() const override { return mBaseStats; }
     Inventory& GetInventory() { return mInventory; }
+
+    PickupGO* GetNearestPickup() const { return mInteractablePickup; }
+    bool ShowStatsUI() const { return mShowStatsUI; }
 
     void SubscriptionAlert(Input::InputKeyData content) override;
 

@@ -92,7 +92,7 @@ private:
 	bool isLoopingThrList{ false };
 
 	//Response when GO collides with a tile - Prevent GO from moving into the tile.
-	void Helper_HandleGOTileCollision(AEVec2 tileInd, GameObject& go, TileMap const& tilemap);
+	AEVec2 Helper_HandleGOTileCollision(AEVec2 tileInd, AEVec2 startPos, GameObject const& go, TileMap const& tilemap);
 
 	~GameObjectManager();
 };

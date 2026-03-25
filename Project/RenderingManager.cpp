@@ -58,6 +58,13 @@ AEGfxTexture* RenderingManager::LoadTexture(std::string path)
 	return LoadTexture(path.c_str());
 }
 
+f32 RenderingManager::GetFontHeight(s8 id) const
+{
+	f32 tmp{}, out{};
+	AEGfxGetPrintSize(id, "P", 1.f, &tmp, &out); //Get height of some char
+	return out;
+}
+
 RenderingManager::~RenderingManager()
 {
 	for (std::pair <std ::string, AEGfxTexture*> pair : textureMap) {

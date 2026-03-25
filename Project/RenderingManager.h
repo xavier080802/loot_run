@@ -45,6 +45,8 @@ public:
 	//Note that different characters may have different heights, and this is just a general height.
 	//To get font height of text with font size =/= 1, take this value * you_font_size(normalized value)
 	f32 GetFontHeight() const { return fontHeight; }
+	//Get normalized height of a character with the given font
+	f32 GetFontHeight(s8 id) const;
 	//Get animation FPS
 	int GetAnimFPS() const { return animationFPS; };
 

@@ -244,9 +244,10 @@ void PetState::Draw() {
 		}
 	}
 
+	//Writing pet desc
 	if (selectedIndex != -1) {
 		DrawAETextbox(Font, petManager->GetPetDataMap().at(selectedType).skillDesc,
-			AEVec2{ GRID_START.x + SLOT_SIZE, -DEFAULT_H * 0.5f }, 300.f, 1.5f, 0, Color{ 255,255,255,255 }, TextOriginPos::TEXT_MIDDLE_LEFT,
+			AEVec2{ GRID_START.x + SLOT_SIZE, -DEFAULT_H * 0.3f }, 300.f, 1.5f, 0.02f, Color{ 255,255,255,255 }, TextOriginPos::TEXT_MIDDLE_LEFT,
 			TextboxOriginPos::BOTTOM, TextboxBgCfg{ AEVec2{0.02f, 0}, Color{}, 255, nullptr, nullptr });
 	}
 
