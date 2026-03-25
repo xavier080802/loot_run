@@ -19,4 +19,6 @@ namespace DropSystem
 	void PrintPickupDisplay();
 
 	void UpdatePickupDisplay(float dt);
+
+	void ClearAllPickups();
 }

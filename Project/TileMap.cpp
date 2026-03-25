@@ -130,29 +130,32 @@ void TileMap::GenerateProcedural(unsigned int r, unsigned int c, int seed)
     tiles[rows - 3][midC] = tileMap[TILE_NONE];
 
     // --- Step 6: Enemy and chest placement ---
-    // Clearance radius expanded to 3 tiles (~345 px on 115 px tiles).
-    // This guarantees a full enemy body-width gap from every wall so
-    // enemies never clip into geometry on spawn.
-    // HasClearance() also bounds-checks, so no out-of-bounds reads.
     for (unsigned int i = 3; i < rows - 3; ++i) {
         for (unsigned int j = 3; j < cols - 3; ++j) {
-            //if (tiles[i][j].type != TILE_NONE) continue;
+
+            // FIX: Explicitly ensure we are only spawning on empty floor tiles
+            if (tiles[i][j].type != TILE_NONE) continue;
 
             bool onCorridor = ((int)i == midR || (int)j == midC);
             int  dr = (int)i - midR, dc = (int)j - midC;
             bool inCenter = (dr >= -2 && dr <= 2 && dc >= -2 && dc <= 2);
             if (onCorridor || inCenter) continue;
 
-            // Use HasClearance with radius 3 instead of the old hand-rolled loop
+            // Use HasClearance with radius 3 to ensure a 3x3 buffer of non-solid tiles
             if (!HasClearance(i, j, 3)) continue;
 
             int chance = rand() % 100;
-            if (chance < 4) tiles[i][j] = tileMap[TILE_ENEMY];
-            else if (chance < 7) tiles[i][j] = tileMap[TILE_CHEST];
+            if (chance < 4) {
+                tiles[i][j] = tileMap[TILE_ENEMY];
+            }
+            else if (chance < 7) {
+                // By checking TILE_NONE above, we ensure we don't overwrite 
+                // something already placed or spawn in a clumped wall area
+                tiles[i][j] = tileMap[TILE_CHEST];
+            }
         }
     }
 }
-
 // ============================================================
 //  Render
 // ============================================================

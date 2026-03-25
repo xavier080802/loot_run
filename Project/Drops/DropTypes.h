@@ -7,7 +7,8 @@
  * When an enemy dies, the game goes through each DropEntry in their table
  * and rolls a random number. If the roll succeeds, the item in this entry drops.
  * Each entry defines WHAT can drop, its chance, and if it's a stackable item
- * (like coins or ammo), how many can drop at once.
+ * (like 
+ s or ammo), how many can drop at once.
  */
 struct DropEntry
 {

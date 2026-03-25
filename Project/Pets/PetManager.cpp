@@ -370,7 +370,7 @@ void PetManager::CreatePet()
 		break;
 	}
 
-	equippedPet->Init({}, { 25,25 }, 0, MESH_SQUARE, Collision::COL_CIRCLE, { 25,25 }, CreateBitmask(1, Collision::LAYER::ENEMIES), Collision::LAYER::PET);
+	equippedPet->Init({}, { 50,50 }, 0, MESH_SQUARE, Collision::COL_CIRCLE, { 25,25 }, CreateBitmask(1, Collision::LAYER::ENEMIES), Collision::LAYER::PET);
 	Pets::PetData const& data{ it->second };
 	equippedPet->SetData(data, selectedPetInfo.second);
 	//equippedPet->GetRenderData().ReplaceTexture(data.textures.at(0).c_str(), 0);

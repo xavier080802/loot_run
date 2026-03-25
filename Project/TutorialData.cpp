@@ -234,37 +234,37 @@ namespace Tutorial {
 		switch (next)
 		{
 		case Tutorial::START:
-			data.dialogueLines = { "Welcome Adventurer to Pandora !", "Battle through various dungeon and gain strength to defeat evil" };
+			data.dialogueLines = { "Welcome Adventurer to Pandora !", "Battle through various dungeon and gain the strength to defeat evil" };
 			data.playDialogue = true;
 			break;
 		case Tutorial::MOVEMENT:
-			data.dialogueLines = { "MOVEMENT dialogue line 1/2", "MOVEMENT dialogue line 2/2" };
+			data.dialogueLines = { "This is where you learn how to move", "WASD to move up, down, left, right" };
 			data.checks = "----";
 			data.playDialogue = true;
 			break;
 		case Tutorial::DODGE:
-			data.dialogueLines = { "DODGE 1/3", "DODGE dialogue line 2/3", "DODGE line 3/3" };
+			data.dialogueLines = { "If there is an overwhelming horde coming at you, dodge them to avoid getting hit", "Press spacebar to use dodge", "Trying dodging and moving in conjunction" };
 			SetPath({ tilemap->GetTilePosition(3, 11) });
 			break;
 		case Tutorial::MELEE:
-			data.dialogueLines = { "MELEE dialogue line 1/2", "MELEE dialogue line 2/2" };
+			data.dialogueLines = { "Press left mouse button to hit enemy", "Try it against the enemy here" };
 			SetPath({ tilemap->GetTilePosition(3, 18) });
 			break;
 		case Tutorial::LOOT:
-			data.dialogueLines = { "LOOT dialogue line 1/1" };
+			data.dialogueLines = { "Go near the chest and press E to claim your loot", "Press X to swap to seocndary weapon, press Z to swap to main weapon"};
 			SetPath({ tilemap->GetTilePosition(5, 19), tilemap->GetTilePosition(10, 19) });
 			data.checks = "";
 			break;
 		case Tutorial::RANGE:
-			data.dialogueLines = { "RANGE dialogue line 1/2", "RANGE dialogue line 2/2" };
+			data.dialogueLines = { "Swap to bow from your current weapon by pressing Q", "Aim your mouse at the direction of enemy and press left mouse button to shoot" };
 			SetPath({ tilemap->GetTilePosition(11, 17), tilemap->GetTilePosition(11, 12) });
 			break;
 		case Tutorial::BOSS:
-			data.dialogueLines = { "BOSS dialogue line 1/2", "BOSS dialogue line 2/2" };
+			data.dialogueLines = { "This is the boss guarding the dungeon, defeat him to clear the dungeon", "Mere Mortal, do you think you stand a chance ? Die for your insolence !" };
 			SetPath({ tilemap->GetTilePosition(11, 5) });
 			break;
 		case Tutorial::END:
-			data.dialogueLines = { "END dialogue line 1/2", "END dialogue line 2/2" };
+			data.dialogueLines = { "Brave Adventurer, you have cleared the dungeon !", "Please help save Pandora from titanomachy." };
 			SetPath({ mapData->doorPos });
 			break;
 		default:

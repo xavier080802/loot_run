@@ -143,9 +143,9 @@ void ShopState::Update(double dt)
 {
 	if (isGachaActive)
 	{
-		bool openPressed = AEInputCheckTriggered(AEVK_O) || AEInputCheckTriggered(0x4F);
+		bool openPressed = AEInputCheckTriggered(AEVK_LBUTTON) || AEInputCheckTriggered(0x4F);
 		bool skipPressed = AEInputCheckTriggered(AEVK_SPACE);
-		bool pull10 = AEInputCheckTriggered(AEVK_R) || AEInputCheckTriggered(0x52);
+		bool pull10 = AEInputCheckTriggered(AEVK_LBUTTON) || AEInputCheckTriggered(0x52);
 		bool pull100 = AEInputCheckTriggered(AEVK_T) || AEInputCheckTriggered(0x54);
 		bool exitPressed = AEInputCheckTriggered(AEVK_ESCAPE);
 

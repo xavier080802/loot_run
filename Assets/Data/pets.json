@@ -184,7 +184,7 @@
             "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
             "skillCooldown": 10,
             "skillDesc": "Forms a whirlpool at the mouse position.\nWhirlpool pulls enemies in and damages them at the end of its duration.\nWhile the pool is active, recast to end it early.",
-            "textures": [""],
+            "textures": ["Assets/scylla.png"],
             "extra": {
                 "pull": "100",
                 "duration": "7",
