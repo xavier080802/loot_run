@@ -241,7 +241,13 @@
         {
             "id": 6,
             "name": "Dragon",
-            "passive": [],
+          "passive": [
+            {
+              "value": 50,
+              "mathType": "mult",
+              "stat": "att"
+            }
+          ],
             "multipliers": [ //0 to 3required
                 { // 0 - turret dmg
                     "value": 20,
