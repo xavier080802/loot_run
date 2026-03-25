@@ -57,7 +57,7 @@ void Projectile::OnCollide(CollisionData& other)
 
 void Projectile::OnCollideTile(std::pair<TileMap::Tile const&, AEVec2> /*tile*/)
 {
-	if (stopRule != STOP_RULE::ON_FIRST && stopRule != STOP_RULE::FIRST_TILE) {
+	if (stopRule != STOP_RULE::ON_FIRST) {
 		return;
 	}
 	//Disable self
@@ -69,4 +69,10 @@ Projectile& Projectile::SetStopRule(STOP_RULE rule)
 	hasHitList.reserve(10);
 	stopRule = rule;
 	return *this;
+}
+
+GameObject* Projectile::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, Collision::LAYER _isInLayer)
+{
+	stopRule = STOP_RULE::ON_FIRST;
+	return GameObject::Init(_pos, _scale, _z, _meshShape, _colShape, _colSize, _collideWithLayers, _isInLayer);
 }

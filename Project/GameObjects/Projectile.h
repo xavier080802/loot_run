@@ -11,7 +11,6 @@ public:
 	//Rule for when the proj deactivates
 	enum class STOP_RULE {
 		ON_FIRST, //Disabled on first object hit (default)
-		FIRST_TILE, //Disabled on tile (goes through GOs)
 		NONE, //Won't disable on-hit with anything
 	};
 	//Init proj and send it flying for [lifetime] seconds.
@@ -23,7 +22,9 @@ public:
 	void OnCollideTile(std::pair<TileMap::Tile const&, AEVec2> tile) override;
 
 	//Set what will disable the projectile on-hit
-	Projectile& SetStopRule(STOP_RULE rule = STOP_RULE::FIRST_TILE);
+	Projectile& SetStopRule(STOP_RULE rule = STOP_RULE::NONE);
+
+	virtual GameObject* Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, Collision::LAYER _isInLayer) override;
 
 protected:
 	AEVec2 dir{};
