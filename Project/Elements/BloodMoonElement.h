@@ -10,7 +10,7 @@ namespace Elements {
 	//Creates an object on the ground
 	//Periodically damages and applies a def-down debuff.
 	//This function does the periodic dmg and debuffing, called by the hitbox object
-	extern void BloodMoonEffect(GameObject::CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float knockback, void* extra = nullptr);
+	extern void BloodMoonEffect(GameObject::CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float knockback, EquipmentData* weapon=nullptr, void* extra = nullptr);
 }
 
 #endif // !_BLOOD_MOON_ELEMENT_H_

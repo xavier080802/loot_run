@@ -123,7 +123,7 @@ namespace Tutorial {
 				break;
 			}
 			//Check melee attack input
-			if (AEInputCheckTriggered(AEVK_LBUTTON)) {
+			if (AEInputCheckTriggered(AEVK_LBUTTON) && player->GetHeldWeaponData()) {
 				ChangeStage(LOOT);
 			}
 			break;

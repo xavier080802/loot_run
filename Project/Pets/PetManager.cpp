@@ -75,6 +75,7 @@ void PetManager::InitPetForGame(TileMap const& tilemap)
 		std::cout << "Player not linked to PetManager.\n";
 		return;
 	}
+	equippedPet->Reset();
 	PlacePet(player->GetPos());
 	equippedPet->Setup(*player);
 	equippedPet->SetTilemap(tilemap);
@@ -337,6 +338,9 @@ void PetManager::LoadPetData()
 			for (Json::Value const& m : v["skillElements"]) {
 				pd.skillElements.push_back(static_cast<Elements::ELEMENT_TYPE>(m.asInt()));
 			}
+		}
+		if (pd.skillElements.empty()) {
+			pd.skillElements.push_back(Elements::ELEMENT_TYPE::NONE);
 		}
 
 		//(Optional) Extra status effect stuff
