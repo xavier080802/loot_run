@@ -339,6 +339,9 @@ void PetManager::LoadPetData()
 				pd.skillElements.push_back(static_cast<Elements::ELEMENT_TYPE>(m.asInt()));
 			}
 		}
+		if (pd.skillElements.empty()) {
+			pd.skillElements.push_back(Elements::ELEMENT_TYPE::NONE);
+		}
 
 		//(Optional) Extra status effect stuff
 		if (v.findArray("effects")) {

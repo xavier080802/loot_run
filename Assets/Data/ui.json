@@ -9,7 +9,7 @@
     },
     "pet_ui": {
         "descFontSize": 0.4,
-        "timerFontSize": 0.35,
+        "timerFontSize": 0.5,
         "padding": [ 0.03, 0.04 ], //Normalized box padding
         "pos": [ -0.3, -1 ], //Normalized icon position
         "size": 75, //Size of icon (width = height)

@@ -17,6 +17,9 @@ public:
 	//Inherits the caster's collision info (except size), z, and starting pos
 	//Always call this before calling the other set-up functions
 	Projectile* Fire(Actor* const caster, AEVec2 fireDir, float radius, float spd, float lifetime, void (*onHitCallback)(CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float knockback), Elements::ELEMENT_TYPE elem = Elements::ELEMENT_TYPE::NONE, float kb = 100.0f);
+	//Callback when proj hits tile. Param "stopped" is true if this collision results on proj death
+	Projectile& SetHitTileCallback(void (*callback)(Projectile& proj, bool stopped));
+	Projectile& SetTimeoutCallback(void (*callback)(Projectile& proj));
 	void Update(double dt) override;
 	void OnCollide(CollisionData& other) override;
 	void OnCollideTile(std::pair<TileMap::Tile const&, AEVec2> tile) override;
@@ -25,6 +28,8 @@ public:
 	Projectile& SetStopRule(STOP_RULE rule = STOP_RULE::NONE);
 
 	virtual GameObject* Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, Collision::LAYER _isInLayer) override;
+
+	Actor* GetOwner() const { return owner; }
 
 protected:
 	AEVec2 dir{};
@@ -37,7 +42,8 @@ protected:
 
 	//Called when projectile hits an object that it can collide with.
 	void (*OnHit)(CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float knockback) {};
-
+	void (*OnHitTile)(Projectile& proj, bool stopped) = nullptr;
+	void (*OnTimeout)(Projectile& proj) = nullptr;
 	std::vector<GameObject*> hasHitList{};
 };
 #endif // !_PROJECTILE_H_
