@@ -184,12 +184,12 @@
             ],
             "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
             "skillCooldown": 10,
-            "skillDesc": "Forms a whirlpool at the mouse position.\nWhirlpool pulls enemies in and damages them at the end of its duration.\nWhile the pool is active, recast to end it early.",
+            "skillDesc": "Forms a whirlpool at the mouse position.\nWhirlpool pulls enemies in and damages them at the end of its duration.\n\nWhile the pool is active, recast to end it early.",
           "textures": [ "Assets/sprites/pets/scylla.png" ],
             "extra": {
-                "pull": "100",
+                "pull": "120",
                 "duration": "7",
-                "size": "150",
+                "size": "200",
                 "color": "26 60 195 200",
                 "minDmgFalloff": "0.3"
             },
@@ -232,10 +232,10 @@
             "dmgTypes": "ele",
             "extra": { //Required to be strings
                 "auraDuration": "5",
-                "auraSize": "200",
+                "auraSize": "300",
                 "auraTimeBetweenHits": "1.5",
                 "auraColor": "200 60 0 200", //Format: r g b a
-                "sunRequired": "5" //Number of times to hit enemies with sun stacks for bonus effect
+                "sunRequired": "3" //Number of times to hit enemies with sun stacks for bonus effect
             },
             "textures": ["Assets/sprites/pets/pheonix.png"]
         },
