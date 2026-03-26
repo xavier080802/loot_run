@@ -288,6 +288,11 @@ void Inventory::SetActiveMainWeapon(int index)
         mActiveWeaponIndex = index;
 }
 
+int Inventory::GetActiveWeaponIndex() const
+{
+    return mActiveWeaponIndex;
+}
+
 const EquipmentData* Inventory::GetActiveMainWeapon() const
 {
     return (mActiveWeaponIndex == 0) ? mWeapon1 : mWeapon2;
