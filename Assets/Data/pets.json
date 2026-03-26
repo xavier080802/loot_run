@@ -246,6 +246,21 @@
               "value": 50,
               "mathType": "mult",
               "stat": "att"
+            },
+            {
+              "value": 50,
+              "mathType": "mult",
+              "stat": "hp"
+            },
+            {
+              "value": 50,
+              "mathType": "mult",
+              "stat": "spd"
+            },
+            {
+              "value": 50,
+              "mathType": "mult",
+              "stat": "def"
             }
           ],
             "multipliers": [ //0 to 3required

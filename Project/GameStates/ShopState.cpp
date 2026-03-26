@@ -243,20 +243,27 @@ void ShopState::Update(double dt)
 
 				// Minus Button Check
 				AEVec2 minusPos = { worldPos.x - sideOffset, worldPos.y };
-				if (IsCursorOverWorld(minusPos, sideBtnSize, sideBtnSize, true)) {
+				if (IsCursorOverWorld(minusPos, sideBtnSize, shopButtons[i].size.y, true)) {
 					if (AEInputCheckTriggered(AEVK_LBUTTON)) {
 						AEAudioPlay(clickSound, bgm.uiGroup, 0.6f, 0.6f, 0);
-						ShopFunctions::GetInstance()->sellShopUpgrade(currentStat);
+						for (size_t x = 0; x < ShopFunctions::GetInstance()->getPurchaseMultiplier(); x++)
+						{
+							ShopFunctions::GetInstance()->sellShopUpgrade(currentStat);
+						}
 						std::cout << "Decreased " << shopButtons[i].label << " to " << ShopFunctions::GetInstance()->getStatBonus(currentStat) << std::endl;
 					}
 				}
 
 				// Plus Button Check
 				AEVec2 plusPos = { worldPos.x + sideOffset, worldPos.y };
-				if (IsCursorOverWorld(plusPos, sideBtnSize, sideBtnSize, true)) {
+				if (IsCursorOverWorld(plusPos, sideBtnSize, shopButtons[i].size.y, true)) {
 					if (AEInputCheckTriggered(AEVK_LBUTTON)) {
 						AEAudioPlay(clickSound, bgm.uiGroup, 0.6f, 0.6f, 0);
-						ShopFunctions::GetInstance()->buyShopUpgrade(currentStat);
+						for (size_t x = 0; x < ShopFunctions::GetInstance()->getPurchaseMultiplier(); x++)
+						{
+							ShopFunctions::GetInstance()->buyShopUpgrade(currentStat);
+						}
+						
 						std::cout << "Increased " << shopButtons[i].label << " to " << ShopFunctions::GetInstance()->getStatBonus(currentStat) << std::endl;
 					}
 				}
@@ -329,10 +336,10 @@ void ShopState::Draw()
 			AEVec2 plusPos = { worldPos.x + sideOffset, worldPos.y };
 			if (shopButtons[i].hasSideButtons) {
 				SideHover currentSideHover = NONE;
-				if (IsCursorOverWorld(minusPos, sideBtnSize, sideBtnSize, true)) {
+				if (IsCursorOverWorld(minusPos, sideBtnSize, shopButtons[i].size.y, true)) {
 					currentSideHover = MINUS;
 				}
-				else if (IsCursorOverWorld(plusPos, sideBtnSize, sideBtnSize, true)) {
+				else if (IsCursorOverWorld(plusPos, sideBtnSize, shopButtons[i].size.y, true)) {
 					currentSideHover = PLUS;
 				}
 				DrawSideButtons(shopButtons[i], currentSideHover);
