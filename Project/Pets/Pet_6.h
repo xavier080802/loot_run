@@ -15,6 +15,7 @@
 	extra:
 		knockback - (float) Strength of the skill's knockback
 		skillRange - (float) Range of skill (the knockback)
+		skillCol - "r g b a" Color of the knockback hitbox
 		attackCooldown - (float) Time between turret shots
 		turretRange - (float) Turret range (radius)
 		projSpd - (float) Speed of the turret projectile
@@ -35,7 +36,7 @@ private:
 	float attackTimer{}, attackCooldown{}, knockback{}, skillRange{},
 		turretRange{},
 		projSpd{}, projSize{}, projLife{};
-	Color projCol{};
+	Color projCol{}, skillCol{};
 	Player* player{};
 };
 #endif // !_PET_6_H_

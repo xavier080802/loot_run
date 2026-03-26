@@ -294,6 +294,7 @@
             "extra": {
                 "knockback": "600",
                 "skillRange": "300", //Range of the skill AoE
+                "skillCol": "239 232 25 200",
                 "attackCooldown": "2.5", //Turret time-between-attacks
                 "turretRange": "650", //Range where enemies are selectable
                 "projSpd": "400",

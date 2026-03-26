@@ -66,6 +66,8 @@ void Pet_6::Setup(Player& p)
 	projLife = std::stof(data.extra.at("projLife"));
 	std::istringstream isc{ data.extra.at("projCol") };
 	isc >> projCol.r >> projCol.g >> projCol.b >> projCol.a;
+	std::istringstream isc2{ data.extra.at("skillCol") };
+	isc2 >> skillCol.r >> skillCol.g >> skillCol.b >> skillCol.a;
 	
 	attackTimer = attackCooldown;
 	player = &p;
@@ -80,6 +82,7 @@ bool Pet_6::DoSkill(const Pets::SkillCastData& _data)
 	cfg.knockback = knockback;
 	cfg.colliderSize = cfg.renderScale = AEVec2{ skillRange, skillRange };
 	cfg.followOwner = cfg.disableOnHit = false;
+	cfg.tint = skillCol;
 	cfg.owner = player;
 	cfg.zIndex = -2;
 	cfg.onHit = SkillEffect;
