@@ -1,6 +1,7 @@
 #ifndef _PET_3_
 #define _PET_3_
 #include "Pet.h"
+#include "../Actor/ActorSubscriptions.h"
 class Actor;
 class EquipmentData;
 
@@ -12,6 +13,7 @@ class EquipmentData;
 	Damage is based on player's attack.
 
 	extra:
+		baseDmgMult - (float) Starting multiplier applied to attack damage. Scales with rarity scaling
 		attackCooldown - (float) Time between attacks
 		attImgTime - (float) Time to show the attack texture
 
@@ -27,7 +29,7 @@ class EquipmentData;
 		0: Base texture
 		1: Attack texture that appears when attacking
 */
-class Pet_3 : public Pet
+class Pet_3 : public Pet, public ActorBeforeDealingDmgSub
 {
 	GO_TYPE GetPetGOType() const override { return GO_TYPE::PET_3; }
 	void Setup(Player& player) override;
@@ -37,10 +39,12 @@ class Pet_3 : public Pet
 
 	void Attack();
 
+	void SubscriptionAlert(BeforeDealingDmgContent content) override;
+
 	Player* player{ nullptr };
 	Actor* target{ nullptr };
 	EquipmentData const* weap{ nullptr };
-	float attackTimer{}, attackCooldown{};
+	float attackTimer{}, attackCooldown{}, dmgMult{};
 
 	float attackAnimTimer{}, attImgTime{};
 };

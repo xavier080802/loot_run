@@ -29,7 +29,7 @@ namespace {
 		Elements::ApplyElement(pet->GetSkillElement(), caster, &target);
 	}
 
-	void SkillEffect(GameObject::CollisionData& other, Actor* caster, Elements::ELEMENT_TYPE /*element*/, float knockback, void* extra) {
+	void SkillEffect(GameObject::CollisionData& other, Actor* caster, Elements::ELEMENT_TYPE /*element*/, float knockback, EquipmentData*, void* extra) {
 		if (other.other.GetGOType() != GO_TYPE::ENEMY) return;
 		Actor& target = dynamic_cast<Actor&>(other.other);
 		

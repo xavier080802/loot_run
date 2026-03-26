@@ -8,7 +8,7 @@
 
 namespace {
     //extra must be ptr to pet
-    void PopHit(GameObject::CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float, void* extra) {
+    void PopHit(GameObject::CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float, EquipmentData*, void* extra) {
         Pet_4* pet{ static_cast<Pet_4*>(extra) };
         Actor* other{ dynamic_cast<Actor*>(&target.other) };
         if (!pet || !other) return;

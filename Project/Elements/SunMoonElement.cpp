@@ -5,7 +5,7 @@
 #include <map>
 
 namespace {
-	void DetonateDoDmg(GameObject::CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE /*element*/, float /*knockback*/, void* = nullptr) {
+	void DetonateDoDmg(GameObject::CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE /*element*/, float /*knockback*/, EquipmentData* /*weapon*/, void* = nullptr) {
 		Actor* other{ dynamic_cast<Actor*>(&target.other) };
 		if (!other || !caster) return;
 
@@ -18,7 +18,7 @@ namespace {
 }
 
 namespace Elements {
-	void SunMoonEffect(GameObject::CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE /*element*/, float /*knockback*/, void*)
+	void SunMoonEffect(GameObject::CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE /*element*/, float /*knockback*/, EquipmentData* /*weapon*/, void*)
 	{
 		Actor* other{ dynamic_cast<Actor*>(&target.other) };
 		if (!other) return;
