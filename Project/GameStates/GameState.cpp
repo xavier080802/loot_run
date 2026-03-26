@@ -564,7 +564,7 @@ namespace {
 
     void DrawPlayerUI() {
         if (gPlayer->ShowStatsUI()) {
-            Inventory& mInventory{ gPlayer->GetInventory() };
+            Inventory const& mInventory{ gPlayer->GetInventory() };
             // Draw Black Background Box
             AEVec2 bgPos = { -700.0f, 45.0f }; // Centered at left middle (somewhat)
             AEVec2 bgSize = { 600.0f, 520.0f };
@@ -602,10 +602,11 @@ namespace {
             auto hands = mInventory.GetArmor(ArmorSlot::Hands);
             auto feet = mInventory.GetArmor(ArmorSlot::Feet);
             EquipmentData const* held{ gPlayer->GetHeldWeaponData() };
+            int ind{ mInventory.GetActiveWeaponIndex() };
 
-            DrawAEText(font, ("WPN 1: " + (std::string(w1 ? w1->name : "None")) + std::string{ (held && w1 == held) ? " <" : "" }).c_str(), textPos, 0.35f, (held && w1 == held) ? Color{ 200, 255,200,255 } : Color{ 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("WPN 2: " + (std::string(w2 ? w2->name : "None")) + std::string{ (held && w2 == held) ? " <" : "" }).c_str(), textPos, 0.35f, (held && w2 == held) ? Color{ 200, 255,200,255 } : Color{ 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("BOW: " + (std::string(bow ? bow->name : "None")) + std::string{ (held && bow == held) ? " <" : "" }).c_str(), textPos, 0.35f, (held && bow == held) ? Color{ 200, 255,200,255 } : Color{ 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
+            DrawAEText(font, ("WPN 1: " + (std::string(w1 ? w1->name : "None")) + std::string{ (held && ind == 0) ? " <" : "" }).c_str(), textPos, 0.35f, (held && ind == 0) ? Color{ 200, 255,200,255 } : Color{ 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
+            DrawAEText(font, ("WPN 2: " + (std::string(w2 ? w2->name : "None")) + std::string{ (held && ind == 1) ? " <" : "" }).c_str(), textPos, 0.35f, (held && ind == 1) ? Color{ 200, 255,200,255 } : Color{ 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
+            DrawAEText(font, ("BOW: " + (std::string(bow ? bow->name : "None")) + std::string{ (held && ind == 2) ? " <" : "" }).c_str(), textPos, 0.35f, (held && ind == 2) ? Color{ 200, 255,200,255 } : Color{ 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
             DrawAEText(font, ("HEAD: " + std::string(head ? head->name : "None")).c_str(), textPos, 0.35f, { 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
             DrawAEText(font, ("BODY: " + std::string(body ? body->name : "None")).c_str(), textPos, 0.35f, { 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
             DrawAEText(font, ("HANDS: " + std::string(hands ? hands->name : "None")).c_str(), textPos, 0.35f, { 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
