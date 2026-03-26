@@ -75,6 +75,7 @@ void PetManager::InitPetForGame(TileMap const& tilemap)
 		std::cout << "Player not linked to PetManager.\n";
 		return;
 	}
+	equippedPet->Reset();
 	PlacePet(player->GetPos());
 	equippedPet->Setup(*player);
 	equippedPet->SetTilemap(tilemap);
