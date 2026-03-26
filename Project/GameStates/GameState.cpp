@@ -1401,9 +1401,10 @@ void GameState::Draw()
 void GameState::HandleTutorialDialogueRender()
 {
     if (!doTutorial || !fairy || !fairy->data.playDialogue) return;
-    DrawAEText(font, fairy->data.dialogueLines[fairy->data.currDialogueLine].c_str(),
-        fairy->data.dialoguePos, fairy->data.dialogueSize,
-        CreateColor(238, 128, 238, 255), TEXT_MIDDLE, 1);
+    DrawAETextbox(font, fairy->data.dialogueLines[fairy->data.currDialogueLine].c_str(),
+        fairy->data.dialoguePos, AEGfxGetWindowWidth() * 0.9f, fairy->data.dialogueSize, 0.0f,
+        Color{ 0,0,0,255 }, TEXT_MIDDLE, TextboxOriginPos::TOP,
+        TextboxBgCfg{ AEVec2{0.005f, 0.025f}, Color{255,255,255,255}, 255, RenderingManager::GetInstance()->GetMesh(MESH_SQUARE), nullptr });
 }
 
 // =============================================================
