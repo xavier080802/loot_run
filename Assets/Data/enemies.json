@@ -14,7 +14,7 @@
       },
       "render": {
         "radius": 30,
-        "mesh": "circle",
+        "mesh": "square",
         "texturePath": "Assets/sprites/enemies/slime.png"
       },
       "attack": {
@@ -41,7 +41,7 @@
       },
       "render": {
         "radius": 60,
-        "mesh": "circle",
+        "mesh": "square",
         "texturePath": "Assets/sprites/enemies/slimeking.png"
       },
       "attack": {
@@ -68,7 +68,7 @@
       },
       "render": {
         "radius": 25,
-        "mesh": "circle",
+        "mesh": "square",
         "texturePath": "Assets/sprites/enemies/goblin.png"
       },
       "attack": {
@@ -95,7 +95,7 @@
       },
       "render": {
         "radius": 28,
-        "mesh": "circle",
+        "mesh": "square",
         "texturePath": "Assets/sprites/enemies/skeleton.png"
       },
       "attack": {
@@ -122,7 +122,7 @@
       },
       "render": {
         "radius": 40,
-        "mesh": "circle",
+        "mesh": "square",
         "texturePath": "Assets/sprites/enemies/orc.png"
       },
       "attack": {
@@ -149,7 +149,7 @@
       },
       "render": {
         "radius": 50,
-        "mesh": "circle",
+        "mesh": "square",
         "texturePath": "Assets/sprites/enemies/yeti.png"
       },
       "attack": {
@@ -176,7 +176,7 @@
       },
       "render": {
         "radius": 70,
-        "mesh": "circle",
+        "mesh": "square",
         "texturePath": "Assets/sprites/enemies/dragon.png"
       },
       "attack": {
