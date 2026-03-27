@@ -117,6 +117,32 @@ void Enemy::OnDeath(Actor* killer)
     Actor::OnDeath(killer);
 }
 
+void Enemy::OnStatEffectChange()
+{
+    mStats = mDef->baseStats;
+    //Recalc stat changes
+    ActorStats seStats = CalculateStatusEffectStats();
+    mStats.attack += seStats.attack;
+    mStats.attackSpeed += seStats.attackSpeed;
+    mStats.defense += seStats.defense;
+    mStats.maxHP += seStats.maxHP;
+    mStats.moveSpeed += seStats.moveSpeed;
+    ClampStats();
+}
+
+ActorStats Enemy::CalculateStatusEffectStats()
+{
+    ActorStats out;
+    for (auto const& p : statusEffectsDict) {
+        out.attack += p.second->GetFinalModVal(STAT_TYPE::ATT, mDef->baseStats.attack);
+        out.attackSpeed += p.second->GetFinalModVal(STAT_TYPE::ATT_SPD, mDef->baseStats.attackSpeed);
+        out.defense += p.second->GetFinalModVal(STAT_TYPE::DEF, mDef->baseStats.defense);
+        out.maxHP += p.second->GetFinalModVal(STAT_TYPE::MAX_HP, mDef->baseStats.maxHP);
+        out.moveSpeed += p.second->GetFinalModVal(STAT_TYPE::MOVE_SPD, mDef->baseStats.moveSpeed);
+    }
+    return out;
+}
+
 void Enemy::Free()
 {
     mDef = nullptr;

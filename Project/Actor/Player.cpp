@@ -125,6 +125,7 @@ void Player::InitPlayerRuntime(const ActorStats& baseStats)
  *   - Player::TryPickup() - when picking up new equipment.
  *   - Player::SubscriptionAlert() - when swapping or dropping weapons.
  *   - Player::ApplyShopUpgrades() - when returning from the shop.
+ *   - Actor::OnStatEffectChange() - when SE is added or removed.
  */
 void Player::RecalculateStats()
 {
@@ -132,9 +133,37 @@ void Player::RecalculateStats()
 	UpgradeMultipliers up = mInventory.GetUpgradeMultipliers();
 	mStats = StatsCalc::ComputeFinalStats(mBaseStats, eq, up);
 
+	//From status effects
+	ActorStats seStats = CalculateStatusEffectStats();
+	mStats.attack += seStats.attack;
+	mStats.attackSpeed += seStats.attackSpeed;
+	mStats.defense += seStats.defense;
+	mStats.maxHP += seStats.maxHP;
+	mStats.moveSpeed += seStats.moveSpeed;
+
 	// Keep HP valid after stat changes
 	if (mCurrentHP > mStats.maxHP) mCurrentHP = mStats.maxHP;
 	if (mCurrentHP <= 0.0f) mCurrentHP = mStats.maxHP;
+
+	ClampStats();
+}
+
+void Player::OnStatEffectChange()
+{
+	RecalculateStats();
+}
+
+ActorStats Player::CalculateStatusEffectStats()
+{
+	ActorStats out;
+	for (auto const& p : statusEffectsDict) {
+		out.attack += p.second->GetFinalModVal(STAT_TYPE::ATT, mBaseStats.attack);
+		out.attackSpeed += p.second->GetFinalModVal(STAT_TYPE::ATT_SPD, mBaseStats.attackSpeed);
+		out.defense += p.second->GetFinalModVal(STAT_TYPE::DEF, mBaseStats.defense);
+		out.maxHP += p.second->GetFinalModVal(STAT_TYPE::MAX_HP, mBaseStats.maxHP);
+		out.moveSpeed += p.second->GetFinalModVal(STAT_TYPE::MOVE_SPD, mBaseStats.moveSpeed);
+	}
+	return out;
 }
 
 /**

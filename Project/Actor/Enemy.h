@@ -34,6 +34,9 @@ protected:
     // Spawns drops and disables the enemy; actual deletion is manager-controlled
     void OnDeath(Actor* killer = nullptr) override;
 
+    void OnStatEffectChange() override;
+    ActorStats CalculateStatusEffectStats();
+
 private:
     // Non-owning pointer to static enemy definition data
     const EnemyDef* mDef = 0;
