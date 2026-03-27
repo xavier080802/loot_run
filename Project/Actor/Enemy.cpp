@@ -119,6 +119,7 @@ void Enemy::OnDeath(Actor* killer)
 
 void Enemy::OnStatEffectChange()
 {
+    if (!mDef) return;
     mStats = mDef->baseStats;
     //Recalc stat changes
     ActorStats seStats = CalculateStatusEffectStats();
