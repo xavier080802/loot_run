@@ -78,6 +78,11 @@ void Pet_1::OnProjHit(Actor& caster, AEVec2 impactPos, bool allowAOE)
         DoAOE(caster, impactPos);
 }
 
+bool Pet_1::ShowRecastUI() const
+{
+    return charging;
+}
+
 void Pet_1::Setup(Player& player)
 {
     chargeTimer = 0.f;

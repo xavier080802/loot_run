@@ -44,6 +44,8 @@ public:
 	float GetAOEChargeMult() const;
 	//Call when proj hits something.
 	void OnProjHit(Actor& caster, AEVec2 impactPos, bool allowAOE = true);
+
+	bool ShowRecastUI() const override;
 private:
 	//Checks if can do AOE. Call when proj hits something
 	void DoAOE(Actor& caster, AEVec2 impactPos);

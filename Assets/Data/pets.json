@@ -190,14 +190,15 @@
                 }
             ],
             "multipliers": [],
-            "rarityScaling": [ 1, 1.25, 1.5, 1.75, 2, 2.5 ],
-            "skillCooldown": 5,
+            "rarityScaling": [ 1, 1.15, 1.25, 1.5, 2, 2 ],
+            "skillCooldown": 5, //Decreases with rank
             "skillDesc": "Cast while cursor is over an enemy to lock onto them.\nThe Lycan will hunt the target down and attack them periodically.",
             "extra": {
                 "baseDmgMult": "0.5", //Starting (lowest rank) multiplier for attack dmg. Scales with rarity scaling
                 "attackCooldown": "1.0",
                 "attImgTime": "0.5" // Time to show the attacking texture
             },
+            "dmgTypes": ["phy"],
             "textures": [ "Assets/sprites/pets/lycan_default.png", "Assets/sprites/pets/lycan_attack.png" ] //2nd tex is attack img
         },
         {

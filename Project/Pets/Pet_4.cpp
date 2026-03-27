@@ -36,6 +36,11 @@ void Pet_4::Setup(Player&)
     is >> poolCol.r >> poolCol.g >> poolCol.b >> poolCol.a;
 }
 
+bool Pet_4::ShowRecastUI() const
+{
+    return poolActive;
+}
+
 bool Pet_4::DoSkill(const Pets::SkillCastData& _data)
 {
     //Recast to end pool early. Then skill returns true to set real cooldown

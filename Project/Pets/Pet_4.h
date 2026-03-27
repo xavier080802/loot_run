@@ -33,6 +33,8 @@ public:
 
 	float GetMinDmgMult() { return minDmgMult; }
 
+	bool ShowRecastUI() const override;
+
 private:
 	GO_TYPE GetPetGOType() const override { return GO_TYPE::PET_4; }
 
