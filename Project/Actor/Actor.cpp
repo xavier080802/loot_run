@@ -383,6 +383,7 @@ void Actor::ClearStatusEffects()
         delete pair.second;
     }
     statusEffectsDict.clear();
+    OnStatEffectChange();
 }
 
 void Actor::SubToGotKill(ActorGotKillSub* sub, bool remove)
