@@ -26,7 +26,7 @@ STAT_TYPE ParseStatTypeFromStr(const char* str)
 	std::string cmp{ str };
 	std::transform(cmp.begin(), cmp.end(), cmp.begin(), std::toupper);
 
-	if (cmp == "MAXHP" || cmp == "MAX HP" || cmp == "MAX_HP") return MAX_HP;
+	if (cmp == "HP" || cmp == "MAXHP" || cmp == "MAX HP" || cmp == "MAX_HP") return MAX_HP;
 	if (cmp == "DEF") return DEF;
 	if (cmp == "ATT" || cmp == "ATK") return ATT;
 	if (cmp == "ATT_SPD" || cmp == "ATT SPD" || cmp == "ATTSPD") return ATT_SPD;

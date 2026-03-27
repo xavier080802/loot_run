@@ -150,6 +150,11 @@ void Pet::MoveToTarget(double dt)
 	if (AEVec2SquareDistance(&pos, &targetPos) <= pointTolerance) PopPath();
 }
 
+bool Pet::ShowRecastUI() const
+{
+	return false;
+}
+
 void Pet::Setup(Player&)
 {
 }

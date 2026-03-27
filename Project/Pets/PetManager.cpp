@@ -38,11 +38,12 @@ namespace {
 	AEVec2 iconPos{ -1,-1 };
 	f32 iconSize{};
 	f32 lineSpace{};
+	f32 recastBoxThickness{ 5 };
 	Color textCol{ 0,0,255,255 };
 	Color tooltipBgCol{ 255,255,255,255 };
 	Color timerTextCol{ 0,0,0,255 };
 	Color onCooldownCol{ 155,155,155,155 };
-	Color availableCol{ 100,255,100,255 };
+	Color availableCol{ 100,255,100,255 }, recastCol{ 100,255,100,255 };
 	TextOriginPos tooltipAlignment{};
 	TextboxOriginPos boxAlignment{};
 	bool showTimerUnit{};
@@ -83,7 +84,6 @@ void PetManager::InitPetForGame(TileMap const& tilemap)
 	player->ApplyStatusEffect(new StatEffects::StatusEffect{ equippedPet->GetPetData().passive }, player);
 
 	//Generate description for passive
-
 	std::stringstream s;
 	Pets::PetData const& d{ equippedPet->GetPetData() };
 	//Generate description for the skills
@@ -175,8 +175,10 @@ void PetManager::DrawUI()
 {
 	if (!equippedPet || !equippedPet->isSet || !PetHasSkill()) return;
 
-	//Available - draw a green box
-	if (!equippedPet->IsOnCooldown()) {
+	if (equippedPet->ShowRecastUI()) {
+		DrawBox(skillUI->GetPos(), skillUI->GetSize().x, skillUI->GetSize().y, recastBoxThickness, recastCol);
+	}
+	else if (!equippedPet->IsOnCooldown()) { //Available - draw a green box
 		DrawTintedMesh(GetTransformMtx(skillUI->GetPos(), 0, skillUI->GetSize()),
 			rm->GetMesh(MESH_SQUARE), nullptr,
 			availableCol, 220);
@@ -192,8 +194,8 @@ void PetManager::DrawUI()
 			0, timerTextCol, TEXT_MIDDLE);
 	}
 	else { //Write key above the box
-		DrawAEText(rm->GetFont(), "[R]", skillUI->GetPos() + AEVec2{ 0, skillUI->GetSize().y * 0.5f + 5}, timerFontSize,
-			0, availableCol, TEXT_LOWER_MIDDLE);
+		DrawAEText(rm->GetFont(), equippedPet->ShowRecastUI() ? "Recast[R]" : "[R]", skillUI->GetPos() + AEVec2{ 0, skillUI->GetSize().y * 0.5f + 5}, timerFontSize,
+			0, equippedPet->ShowRecastUI() ? recastCol : availableCol, TEXT_LOWER_MIDDLE);
 	}
 
 	if (showTooltip) {
@@ -242,6 +244,7 @@ void PetManager::LoadUIJSON()
 		}
 		iconSize = ui.get("size", 75).asFloat();
 		lineSpace = ui.get("lineSpace", 0.05f).asFloat();
+		recastBoxThickness = ui.get("recastBoxThickness", 5).asFloat();
 		showTimerUnit = ui.get("showTimerUnit", true).asBool();
 		if (ui.isMember("textCol") && ui["textCol"].size() == 4) {
 			textCol = Color{ ui["textCol"][0].asFloat(), ui["textCol"][1].asFloat(),
@@ -262,6 +265,10 @@ void PetManager::LoadUIJSON()
 		if (ui.isMember("availableCol") && ui["availableCol"].size() == 4) {
 			availableCol = Color{ ui["availableCol"][0].asFloat(), ui["availableCol"][1].asFloat(),
 			ui["availableCol"][2].asFloat() ,ui["availableCol"][3].asFloat() };
+		}
+		if (ui.isMember("recastCol") && ui["recastCol"].size() == 4) {
+			recastCol = Color{ ui["recastCol"][0].asFloat(), ui["recastCol"][1].asFloat(),
+			ui["recastCol"][2].asFloat() ,ui["recastCol"][3].asFloat() };
 		}
 	}
 	ifs.close();

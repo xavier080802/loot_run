@@ -14,10 +14,10 @@ void Pet_3::Setup(Player& _player)
     weap = GameDB::GetEquipmentData(EquipmentCategory::Melee, 7);
     attackCooldown = std::stof(data.extra.at("attackCooldown"));
     attImgTime = std::stof(data.extra.at("attImgTime"));
-    dmgMult = std::stof(data.extra.at("baseDmgMult")) * ((int)rank+1);
+    dmgMult = std::stof(data.extra.at("baseDmgMult")) * data.rarityScaling.at((int)rank);
 
     //Skill cooldown scales with rank
-    data.skillCooldown /= ((int)rank + 1);
+    data.skillCooldown /= data.rarityScaling.at((int)rank);
 
     attackAnimTimer = 0.f;
 }

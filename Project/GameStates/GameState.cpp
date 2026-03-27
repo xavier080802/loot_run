@@ -928,10 +928,11 @@ void GameState::InitState()
     gPlayer->GetRenderData().AddTexture(GameDB::GetPlayerTexturePath());
     gPlayer->GetRenderData().SetActiveTexture(0);
 
-    PetManager::GetInstance()->InitPetForGame(*map);
     gPlayer->InitPlayerRuntime(base);
     gPlayer->ApplyShopUpgrades();
     gPlayer->Heal(gPlayer->GetMaxHP());
+    //Call pet stuff after player setup
+    PetManager::GetInstance()->InitPetForGame(*map);
 
     // place all the designer-authored chests from the CSV
     SpawnCsvChests(*map);

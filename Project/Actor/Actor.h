@@ -100,6 +100,11 @@ protected:
 	// Override point for Player/Enemy-specific death behavior
 	virtual void OnDeath(Actor* killer = nullptr);
 
+	// Do something when SE is added/removed.
+	virtual void OnStatEffectChange();
+
+	// Clamp values of mStats
+	void ClampStats();
 
 	ActorStats mStats{};
 	float mCurrentHP = 0.0f;
