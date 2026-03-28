@@ -1175,6 +1175,7 @@ void GameState::Update(double dt)
             AEVec2 procSpawn = nextMap->GetSpawnPoint();
             gPlayer->SetPos(procSpawn);
             gPlayer->Move({ 0,0 });
+            PetManager::GetInstance()->SetTilemap(*nextMap);
             PetManager::GetInstance()->PlacePet(gPlayer->GetPos());
             camPos = procSpawn; camVel = { 0, 0 };
             halfMapWidth = nextMap->GetFullMapSize().x * 0.5f;
