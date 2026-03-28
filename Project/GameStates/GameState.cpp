@@ -26,6 +26,7 @@
 #include "../TileMap.h"
 #include "../UI/Minimap.h"
 #include "../Drops/DropSystem.h"
+#include "../Drops/PickupGO.h"
 #include "../Debug.h"
 #include "../GameStates/LevelSelectState.h"
 #include "../ShopFunctions.h"
@@ -90,7 +91,7 @@ namespace {
     // after that one more enemy is added per wave: wave 1=2, wave 2=3, etc.
     float procWaveTimer = 0.0f;
     int   procWaveNumber = 0;
-    const float PROC_WAVE_INTERVAL = 8.0f;
+    const float PROC_WAVE_INTERVAL = 4.0f;
 
     // chest waves in proc rooms
     // 4 chests drop on room entry, then 1 more every CHEST_WAVE_INTERVAL seconds
@@ -141,6 +142,14 @@ namespace {
     // endless mode survival clock
     float endlessRunTimer = 0.f;
     bool endlessTimerActive = false;
+    
+    float screenFlashTimer = 0.0f;
+    float maxFlashDuration = 0.5f;
+
+    // keyboard popup
+    AEGfxTexture* keyboardTex = nullptr;
+    bool showKeyboardMenu = false;
+    bool keyboardShownOnce = false;
 
     DebugContext MakeDebugCtx()
     {
@@ -375,7 +384,7 @@ namespace {
     // caps at 30 live enemies at once so it doesn't get insane
     void SpawnProcWave(TileMap const& tilemap)
     {
-        const int MAX_LIVE_ENEMIES = 30;
+        const int MAX_LIVE_ENEMIES = 50;
         const float MIN_SPAWN_SPACING = 32.f * 3.f; // ~3 tiles gap between spawns
 
         // don't add more if we're already at the cap
@@ -390,7 +399,7 @@ namespace {
             return;
         }
 
-        int waveSize = (procWaveNumber == 0) ? 8 : (1 + procWaveNumber);
+        int waveSize = (procWaveNumber == 0) ? 12 : (4 + procWaveNumber);
         waveSize = (waveSize < canSpawn) ? waveSize : canSpawn;
         std::cout << "[ProcWave] procWaveNumber=" << procWaveNumber
             << " waveSize=" << waveSize << " (live=" << liveCount << ")\n";
@@ -659,6 +668,57 @@ namespace {
             se.UpdateUI(true);
         }
     }
+
+    void DrawHoveredItemStats() {
+        GameObject* hovered = GameObjectManager::GetInstance()->QueryOnMouse();
+        if (hovered && hovered->GetGOType() == GO_TYPE::ITEM) {
+            PickupGO* pickup = dynamic_cast<PickupGO*>(hovered);
+            if (pickup) {
+                const PickupPayload& payload = pickup->GetPayload();
+                if (payload.type == DropType::Equipment && payload.equipment) {
+                    const EquipmentData* eq = payload.equipment;
+
+                    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+                    AEGfxTextureSet(nullptr, 0, 0);
+
+                    s32 mX, mY;
+                    AEInputGetCursorPosition(&mX, &mY);
+                    
+                    float winW = (float)AEGfxGetWinMaxX() - AEGfxGetWinMinX();
+                    float winH = (float)AEGfxGetWinMaxY() - AEGfxGetWinMinY();
+                    float screenX = (float)mX - (winW * 0.5f);
+                    float screenY = (winH * 0.5f) - (float)mY;
+
+                    AEVec2 bgSize = { 300.0f, 220.0f };
+                    AEVec2 bgPos = { screenX + bgSize.x * 0.5f + 15.0f, screenY - bgSize.y * 0.5f - 15.0f };
+                    
+                    if (bgPos.x + bgSize.x * 0.5f > winW * 0.5f) bgPos.x = winW * 0.5f - bgSize.x * 0.5f;
+                    if (bgPos.y - bgSize.y * 0.5f < -winH * 0.5f) bgPos.y = -winH * 0.5f + bgSize.y * 0.5f;
+
+                    DrawTintedMesh(GetTransformMtx(bgPos, 0.0f, bgSize), squareMesh, nullptr, { 0, 0, 0, 220 }, 255);
+
+                    AEVec2 textPos = { bgPos.x - bgSize.x * 0.5f + 15.0f, bgPos.y + bgSize.y * 0.5f - 25.0f };
+                    Color rColor = GetRarityColor(eq->rarity);
+                    
+                    DrawAEText(font, eq->name, textPos, 0.45f, rColor, TEXT_MIDDLE_LEFT);
+                    textPos.y -= 30.0f;
+                    
+                    DrawAEText(font, ("Sell Price: " + std::to_string(eq->sellPrice)).c_str(), textPos, 0.35f, { 255, 215, 0, 255 }, TEXT_MIDDLE_LEFT);
+                    textPos.y -= 35.0f;
+                    
+                    if (eq->mods.additive.maxHP != 0) { DrawAEText(font, ("Max HP: +" + std::to_string((int)eq->mods.additive.maxHP)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+                    if (eq->mods.additive.attack != 0) { DrawAEText(font, ("Attack: +" + std::to_string((int)eq->mods.additive.attack)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+                    if (eq->mods.additive.defense != 0) { DrawAEText(font, ("Defense: +" + std::to_string((int)eq->mods.additive.defense)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+                    if (eq->mods.additive.moveSpeed != 0) { DrawAEText(font, ("Speed: +" + std::to_string((int)eq->mods.additive.moveSpeed)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+                    if (eq->mods.additive.attackSpeed != 0) { 
+                        std::string aSpdStr = std::to_string(eq->mods.additive.attackSpeed);
+                        aSpdStr = aSpdStr.substr(0, aSpdStr.find('.') + 3);
+                        DrawAEText(font, ("Atk Speed: +" + aSpdStr).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; 
+                    }
+                }
+            }
+        }
+    }
 }
 
 // =============================================================
@@ -743,6 +803,8 @@ void GameState::LoadState()
     float    procTileSize = 115.f;
     unsigned procRows = 50, procCols = 50;
     nextMap = new TileMap({ 0.f, 0.f }, procTileSize, procTileSize);
+    keyboardTex = RenderingManager::GetInstance()->LoadTexture("Assets/sprites/keyboard.png");
+
     srand(1234);
     nextMap->GenerateProcedural(procRows, procCols, 1234);
 
@@ -824,6 +886,15 @@ void GameState::InitState()
     bossHPProgressBar = 0.f;
     inProceduralMap = false;
 
+    // pop up keyboard menu on first entry of any non-tutorial stage in a session
+    if (!doTutorial && !keyboardShownOnce) {
+        showKeyboardMenu = true;
+        keyboardShownOnce = true;
+    }
+    else {
+        showKeyboardMenu = false;
+    }
+
     // player init is the same across all three modes
     Bitmask collideMask = CreateBitmask(3,
         Collision::LAYER::ENEMIES,
@@ -843,7 +914,7 @@ void GameState::InitState()
     // no CSV, just drop straight into a proc room
     if (mapSelected == "Assets/Endless.csv") {
         std::cout << "[InitState] Endless mode.\n";
-
+        gPlayer->SetHeldWeapon(0);
         totalKillTarget = 20 + rand() % 31;
         totalEnemiesRequired = totalKillTarget;
         std::cout << "[InitState] Kill target: " << totalKillTarget << "\n";
@@ -944,7 +1015,7 @@ void GameState::InitState()
     // ── TUTORIAL MODE ─────────────────────────────────────────
     if (doTutorial) {
         std::cout << "[InitState] Tutorial mode.\n";
-
+        gPlayer->SetHeldWeapon(0);
         // find the door so the fairy knows where to guide the player after the boss dies
         for (unsigned r = 0; r < csvRows; ++r) {
             for (unsigned c = 0; c < csvCols; ++c) {
@@ -1005,7 +1076,7 @@ void GameState::InitState()
     csvEnemies.clear();
 
     std::cout << "[InitState] csvSpawnPool has " << csvSpawnPool.size() << " positions.\n";
-
+    gPlayer->SetHeldWeapon(0);
     for (AEVec2 const& pos : csvSpawnPool) {
         Enemy* e = SpawnWeightedEnemy(pos, 0.70f, 0.30f);
         if (!e) {
@@ -1059,6 +1130,14 @@ void GameState::Update(double dt)
         debugGodMode = !debugGodMode;
         std::cout << "[Debug] God mode " << (debugGodMode ? "ON" : "OFF") << "\n";
     }
+
+    // keyboard toggle
+    if (AEInputCheckTriggered(AEVK_X)) {
+        showKeyboardMenu = !showKeyboardMenu;
+        std::cout << "[Menu] Keyboard " << (showKeyboardMenu ? "ON" : "OFF") << "\n";
+    }
+
+    if (showKeyboardMenu) return;
     if (AEInputCheckTriggered(AEVK_F6)) {
         debugFreezeEnemies = !debugFreezeEnemies;
         std::cout << "[Debug] Freeze AI " << (debugFreezeEnemies ? "ON" : "OFF") << "\n";
@@ -1299,6 +1378,8 @@ void GameState::Update(double dt)
         GameObjectManager::GetInstance()->UpdateObjects(dt, currentMap);
     }
 
+    if (screenFlashTimer > 0.0f) screenFlashTimer -= (float)dt;
+
     DropSystem::UpdatePickupDisplay(static_cast<float>(dt));
 }
 
@@ -1380,6 +1461,13 @@ void GameState::Draw()
     if (showKeybindOverlay) DrawKeybindOverlay(dbg);
 
     if (gPlayer) DrawPlayerUI();
+    DrawHoveredItemStats();
+
+    // [X] Keybinds hint in bottom-right corner (non-tutorial only)
+    if (!doTutorial && font >= 0) {
+        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        AEGfxPrint(font, "[X] Keybinds", 0.62f, -0.88f, 0.5f, 1.f, 1.f, 1.f, 0.7f);
+    }
 
     // survival clock at the top for endless mode
     if (endlessTimerActive && font >= 0) {
@@ -1395,9 +1483,44 @@ void GameState::Draw()
     PetManager::GetInstance()->DrawUI();
     DropSystem::PrintPickupDisplay();
 
+    if (screenFlashTimer > 0.0f) {
+        float winW = (float)AEGfxGetWinMaxX() - (float)AEGfxGetWinMinX();
+        float winH = (float)AEGfxGetWinMaxY() - (float)AEGfxGetWinMinY();
+        AEMtx33 mtx;
+        GetTransformMtx(mtx, { 0, 0 }, 0, { winW, winH });
+        AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+        AEGfxTextureSet(nullptr, 0, 0);
+        AEGfxSetTransform(mtx.m);
+        float alpha = (screenFlashTimer / maxFlashDuration) * 0.3f; // Max 30% alpha
+        AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, alpha);
+        AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
+    }
+
+    if (showKeyboardMenu && keyboardTex) {
+        float winW = (float)(AEGfxGetWinMaxX() - AEGfxGetWinMinX());
+        float winH = (float)(AEGfxGetWinMaxY() - AEGfxGetWinMinY());
+
+        float drawH = winH * 0.8f;
+        float drawW = winW * 0.6f;
+        AEMtx33 trans;
+        GetTransformMtx(trans, { 0, 0 }, 0, { drawW, drawH });
+
+        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+        AEGfxTextureSet(keyboardTex, 0, 0);
+        AEGfxSetTransform(trans.m);
+        AEGfxSetTransparency(1.f);
+        AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
+        AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
+    }
+
     // pause and end screens sit on top of everything else
     Pause::Draw();
     GameEnd::Draw();
+}
+
+void GameState::TriggerScreenFlash(float duration) {
+    screenFlashTimer = maxFlashDuration = duration;
 }
 
 void GameState::HandleTutorialDialogueRender()

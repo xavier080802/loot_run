@@ -156,6 +156,13 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 			ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
 			proj->SetCollisionLayers(bm); // Proj will scan for interactables otherwise
 			std::cout << "[Combat] Enemy/Player fired a projectile!\n";
+			// Set color based on caster type
+			if (caster->GetGOType() == GO_TYPE::PLAYER) {
+				proj->GetRenderData().tint = { 0, 255, 0, 255 }; // Green for Player
+			}
+			else {
+				proj->GetRenderData().tint = { 255, 0, 0, 255 }; // Red for Enemy
+			}
 			break;
 		}
 
@@ -191,6 +198,14 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 			cfg.offset = (pos - caster->GetPos()) + AEVec2{ dir.x* (weapon->attackSize * 2.5f), dir.y* (weapon->attackSize * 2.5f) }; // offset in front
 			cfg.onHit = &OnMeleeHit;
 			cfg.disableOnHit = false;
+
+			// Set color based on caster type
+			if (caster->GetGOType() == GO_TYPE::PLAYER){
+				cfg.tint = { 0, 255, 0, 255 }; // Green for Player
+			}
+			else {
+				cfg.tint = { 255, 0, 0, 255 }; // Red for Enemy
+			}
 
 			hb->Start(cfg);
 
@@ -234,6 +249,14 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 			cfg.onHit = &OnMeleeHit;
 			cfg.disableOnHit = false;
 
+			// Set color based on caster type
+			if (caster->GetGOType() == GO_TYPE::PLAYER){
+				cfg.tint = { 0, 255, 0, 255 }; // Green for Player
+			}
+			else {
+				cfg.tint = { 255, 0, 0, 255 }; // Red for Enemy
+			}
+
 			hb->Start(cfg);
 			hb->SetRotation(AERadToDeg(atan2(dir.y, dir.x)));
 
@@ -269,6 +292,14 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 			cfg.onHit = &OnMeleeHit;
 			cfg.disableOnHit = false;
 			cfg.followOwner = true; // Stay on the caster as they move
+
+			// Set color based on caster type
+			if (caster->GetGOType() == GO_TYPE::PLAYER){
+				cfg.tint = { 0, 255, 0, 255 }; // Green for Player
+			}
+			else {
+				cfg.tint = { 255, 0, 0, 255 }; // Red for Enemy
+			}
 
 			hb->Start(cfg);
 
