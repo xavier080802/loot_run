@@ -932,7 +932,9 @@ void GameState::InitState()
     gPlayer->ApplyShopUpgrades();
     gPlayer->Heal(gPlayer->GetMaxHP());
     //Call pet stuff after player setup
-    PetManager::GetInstance()->InitPetForGame(*map);
+    if (!doTutorial) {
+        PetManager::GetInstance()->InitPetForGame(*map);
+    }
 
     // place all the designer-authored chests from the CSV
     SpawnCsvChests(*map);
@@ -981,17 +983,15 @@ void GameState::InitState()
         std::vector<AEVec2> csvSpawnPool = FindSafeSpawnPositions(*map, 0, true);
         csvEnemies.clear();
         for (AEVec2 const& pos : csvSpawnPool) {
-            Enemy* e = SpawnWeightedEnemy(pos, 0.70f, 0.30f);
+            Enemy* e = SpawnWeightedEnemy(pos, 1.f, 0.f);
             if (!e) continue;
             csvEnemies.push_back(e);
             std::cout << "[Tutorial] Spawned " << e->GetDefinition().name
                 << " at (" << pos.x << ", " << pos.y << ")\n";
         }
         std::cout << "[Tutorial] Spawned " << csvEnemies.size() << " enemies total.\n";
-        if (doTutorial) {
-            fairy->InitTutorial(gPlayer, *map, currentLevel);
-            fairy->tilemap = map;
-        }
+        fairy->InitTutorial(gPlayer, *map, currentLevel);
+        fairy->tilemap = map;
         return;
     }
 
@@ -1092,6 +1092,10 @@ void GameState::Update(double dt)
         if (gPlayer) { gPlayer->Heal(gPlayer->GetMaxHP()); std::cout << "[Debug] HP refilled.\n"; }
     }
 
+    //Cast pet skill
+    if (AEInputCheckTriggered(AEVK_R))
+        PostOffice::GetInstance()->Send("PetManager", new PetSkillMsg(PetSkillMsg::CAST_SKILL));
+
 #pragma region inputs_for_testing
     if (AEInputCheckTriggered(AEVK_L)) {
         LootChest* chest = dynamic_cast<LootChest*>(
@@ -1100,8 +1104,6 @@ void GameState::Update(double dt)
         chest->Init(m, { 75,75 }, 1, MESH_SQUARE, Collision::COL_RECT, { 75,75 },
             CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE);
     }
-    if (AEInputCheckTriggered(AEVK_R))
-        PostOffice::GetInstance()->Send("PetManager", new PetSkillMsg(PetSkillMsg::CAST_SKILL));
 
     if (AEInputCheckTriggered(AEVK_N)) {
         AEVec2 m = GetMouseWorldVec();

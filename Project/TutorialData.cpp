@@ -26,6 +26,7 @@ namespace Tutorial {
 		SetEnabled(true);
 		ChangeStage(START);
 		LootChest::SubToChestOpened(this);
+		player->SubToGotKill(this);
 		SetPos(_map.GetTilePosition(3, 4));
 		targetPos = pos;
 	}
@@ -106,24 +107,26 @@ namespace Tutorial {
 		}
 		case Tutorial::MELEE: {
 			if (data.isWaiting) {
-				//Go to r3
-				if (IsPointOverRectRot(800, 600, roomSize, roomSize,
-					0, pPos.x, pPos.y)) {
+				if (data.isWaiting) {
 					data.isWaiting = false;
 					data.playDialogue = true;
-					std::cout << "WAIT OVER\n";
 				}
-				break;
 			}
 			if (data.playDialogue) {
-				if (DoDialogue(fdt)) {
+				if (data.playDialogue && DoDialogue(fdt)) {
+					//Dialogue over, move to next room
 					data.playDialogue = false;
-					data.isFollowing = true;
+					tilemap->ChangeTile(3, 14, TileMap::TILE_NONE);
+					SetPath({ tilemap->GetTilePosition(3, 18) });
 				}
 				break;
 			}
-			//Check melee attack input
-			if (AEInputCheckTriggered(AEVK_LBUTTON) && player->GetHeldWeaponData()) {
+			//Prevent going backwards
+			if (tilemap->GetTileIndFromPos(pPos).x >= 18) {
+				tilemap->ChangeTile(3, 14, TileMap::TILE_WALL);
+			}
+			//Check for kill
+			if (data.checks == "M") {
 				ChangeStage(LOOT);
 			}
 			break;
@@ -136,6 +139,7 @@ namespace Tutorial {
 					data.isWaiting = false;
 					data.playDialogue = true;
 					std::cout << "WAIT OVER\n";
+					tilemap->ChangeTile(6, 19, TileMap::TILE_WALL);
 				}
 				break;
 			}
@@ -155,50 +159,62 @@ namespace Tutorial {
 		}
 		case Tutorial::RANGE: {
 			if (data.isWaiting) {
-				//Go to r5
-				if (IsPointOverRectRot(0, -600, roomSize, roomSize,
-					0, pPos.x, pPos.y)) {
-					data.isWaiting = false;
-					data.playDialogue = true;
-					std::cout << "WAIT OVER\n";
-				}
-				break;
+				data.playDialogue = true;
+				data.isWaiting = false;
 			}
 			if (data.playDialogue) {
-				if (DoDialogue(fdt)) {
+				//Stop before the room until dialogue is done, and player holds their bow.
+				if (DoDialogue(fdt) && player->GetHeldWeaponData() && player->GetHeldWeaponData()->isRanged) {
+					//Player holding bow, proceed.
 					data.playDialogue = false;
-					data.isFollowing = true;
+					tilemap->ChangeTile(11, 16, TileMap::TILE_NONE);
+					SetPath({ tilemap->GetTilePosition(11, 12) });
+				}
+				else if (!player->GetHeldWeaponData() || !player->GetHeldWeaponData()->isRanged){
+					//Player is not holding a bow, wait.
+					data.currDialogueLine = 0;
+					data.dialogueLines = { "Press Q to equip your bow" };
+					data.timer = dialogueDur - 0.5f;
+					data.playDialogue = true;
 				}
 				break;
 			}
-			//Check if range weapon is used (TEMP: havent checked for what is the active weapon)
-			if (AEInputCheckTriggered(AEVK_LBUTTON)) {
+			//Prevent going backwards
+			if (tilemap->GetTileIndFromPos(pPos).x <= 15) {
+				tilemap->ChangeTile(16, 11, TileMap::TILE_WALL);
+			}
+			//Check if enemy is killed in this stage
+			if (data.checks == "R") {
 				ChangeStage(BOSS);
 			}
 			break;
 		}
 		case Tutorial::BOSS: {
 			if (data.isWaiting) {
-				//Go to r6
-				if (IsPointOverRectRot(-800, -600, roomSize, roomSize,
-					0, pPos.x, pPos.y)) {
-					data.isWaiting = false;
-					data.playDialogue = true;
-					std::cout << "WAIT OVER\n";
-				}
-				break;
+				data.isWaiting = false;
+				data.playDialogue = true;
 			}
 			if (data.playDialogue) {
 				if (DoDialogue(fdt)) {
 					data.playDialogue = false;
-					data.isFollowing = true;
+					SetPath({ tilemap->GetTilePosition(11, 5) });
+					tilemap->ChangeTile(11, 8, TileMap::TILE_NONE);
 				}
 				break;
+			}
+			//Lock player in room with boss
+			if (tilemap->GetTileIndFromPos(pPos).x <= 6) {
+				tilemap->ChangeTile(11, 8, TileMap::TILE_WALL);
 			}
 			//Controlled in game state, changes state when boss dies.
 			break;
 		}
 		case Tutorial::END: {
+			if (data.isWaiting) {
+				data.isWaiting = false;
+				data.playDialogue = true;
+			}
+			data.playDialogue = true;
 			if (data.playDialogue) {
 				if (DoDialogue(fdt)) {
 					data.playDialogue = false;
@@ -208,7 +224,7 @@ namespace Tutorial {
 			}
 			// Walk through the TILE_DOOR tile to exit to main menu.
 			if (tilemap && tilemap->IsDoor(pPos)) {
-				std::cout << "[Tutorial] Player walked through door � going to main menu.\n";
+				std::cout << "[Tutorial] Player walked through door - going to main menu.\n";
 				GameStateManager::GetInstance()
 					->SetNextGameState("MainMenuState", true, true);
 			}
@@ -218,8 +234,9 @@ namespace Tutorial {
 			break;
 		}
 
-		if (data.playDialogue && AEInputCheckTriggered(AEVK_RBUTTON) && data.currDialogueLine < data.dialogueLines.size() - 1) {
-			++data.currDialogueLine;
+		//Dialogue skipping
+		if (data.playDialogue && AEInputCheckTriggered(AEVK_RBUTTON)) {
+			data.timer = dialogueDur;
 		}
 	}
 
@@ -248,12 +265,12 @@ namespace Tutorial {
 			data.playDialogue = true;
 			break;
 		case Tutorial::DODGE:
-			data.dialogueLines = { "If there is an overwhelming horde coming at you, dodge them to avoid getting hit", "Press spacebar to use dodge", "Trying dodging and moving in conjunction" };
+			data.dialogueLines = { "If there is an overwhelming horde coming at you, dodge to avoid getting hit", "Press spacebar to use dodge", "Trying dodging and moving simultaneously" };
 			SetPath({ tilemap->GetTilePosition(3, 11) });
 			break;
 		case Tutorial::MELEE:
-			data.dialogueLines = { "Press left mouse button to hit enemy", "Try it against the enemy here" };
-			SetPath({ tilemap->GetTilePosition(3, 18) });
+			data.dialogueLines = { "There's a beast in the next room... Get ready.", "Press left mouse button to attack", "If your weapon is not equipped, press Z." };
+			SetPath({ tilemap->GetTilePosition(3, 13) });
 			break;
 		case Tutorial::LOOT:
 			data.dialogueLines = { "Go near the chest and press E to claim your loot", "Press X to swap to secondary weapon, press Z to swap to main weapon"};
@@ -261,15 +278,15 @@ namespace Tutorial {
 			data.checks = "";
 			break;
 		case Tutorial::RANGE:
-			data.dialogueLines = { "Swap to bow from your current weapon by pressing Q", "Aim your mouse at the direction of the enemy and press left mouse button to shoot" };
-			SetPath({ tilemap->GetTilePosition(11, 17), tilemap->GetTilePosition(11, 12) });
+			data.dialogueLines = { "Swap to your bow by pressing Q", "Aim your mouse at the enemy and press left mouse button to shoot" };
+			SetPath({ tilemap->GetTilePosition(11, 17) });
 			break;
 		case Tutorial::BOSS:
-			data.dialogueLines = { "This is the boss guarding the dungeon, defeat him to clear the dungeon", "Mere Mortal, do you think you stand a chance ? Die for your insolence !" };
-			SetPath({ tilemap->GetTilePosition(11, 5) });
+			data.dialogueLines = { "This is the boss guarding the dungeon, defeat him to clear the dungeon", "Ready.... 3... 2... 1... GO!" };
+			SetPath({ tilemap->GetTilePosition(11, 9) });
 			break;
 		case Tutorial::END:
-			data.dialogueLines = { "Brave Adventurer, you have cleared the dungeon !", "Please help save Pandora from titanomachy." };
+			data.dialogueLines = { "Brave Adventurer, you have cleared the dungeon !", "Please save Pandora from the Titanomachy." };
 			SetPath({ mapData->doorPos });
 			break;
 		default:
@@ -292,6 +309,18 @@ namespace Tutorial {
 		ChangeStage(RANGE);
 	}
 
+	void TutorialFairy::SubscriptionAlert(ActorGotKillSubContent /*content*/)
+	{
+		if (data.stage == MELEE) {
+			data.checks = "M";
+			return;
+		}
+		if (data.stage == RANGE) {
+			data.checks = "R";
+			return;
+		}
+	}
+
 	void TutorialFairy::SetTutBarrier()
 	{
 		if (!tilemap) return;
@@ -308,19 +337,19 @@ namespace Tutorial {
 			tilemap->ChangeTile(3, 14, TileMap::TILE_WALL);
 			break;
 		case Tutorial::MELEE:
-			tilemap->ChangeTile(3, 14, TileMap::TILE_NONE);
-			tilemap->ChangeTile(6, 19, TileMap::TILE_WALL);
+			tilemap->ChangeTile(3, 14, TileMap::TILE_WALL);
+			//tilemap->ChangeTile(6, 19, TileMap::TILE_WALL);
 			break;
 		case Tutorial::LOOT:
 			tilemap->ChangeTile(6, 19, TileMap::TILE_NONE);
 			tilemap->ChangeTile(11, 16, TileMap::TILE_WALL);
 			break;
 		case Tutorial::RANGE:
-			tilemap->ChangeTile(11, 16, TileMap::TILE_NONE);
+			//tilemap->ChangeTile(11, 16, TileMap::TILE_NONE);
 			tilemap->ChangeTile(11, 8, TileMap::TILE_WALL);
 			break;
 		case Tutorial::BOSS:
-			tilemap->ChangeTile(11, 8, TileMap::TILE_NONE);
+			tilemap->ChangeTile(11, 8, TileMap::TILE_WALL);
 			break;
 		case Tutorial::END:
 
