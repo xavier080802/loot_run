@@ -17,7 +17,8 @@
 /* Flow
 1. App executes, loading pet manager and game state -> LinkPlayer
 2. In main menu, pet is selected, calling SetPet (can be several times)
-3. Game starts -> GameState.Init -> Calls InitPetForGame to create the Pet class and apply pet's passive
+3. Game starts -> GameState.Init -> Calls InitPetForGame to create the Pet class and apply pet's 
+
 4. Game ends -> GameState.ExitState -> Clears status effects, so no need to handle that here.
 5. Program ends -> GO Manager deleted the created pet classes.
 
@@ -37,10 +38,12 @@ namespace {
 	AEVec2 iconPos{ -1,-1 };
 	f32 iconSize{};
 	f32 lineSpace{};
+	f32 recastBoxThickness{ 5 };
 	Color textCol{ 0,0,255,255 };
 	Color tooltipBgCol{ 255,255,255,255 };
 	Color timerTextCol{ 0,0,0,255 };
 	Color onCooldownCol{ 155,155,155,155 };
+	Color availableCol{ 100,255,100,255 }, recastCol{ 100,255,100,255 };
 	TextOriginPos tooltipAlignment{};
 	TextboxOriginPos boxAlignment{};
 	bool showTimerUnit{};
@@ -73,6 +76,7 @@ void PetManager::InitPetForGame(TileMap const& tilemap)
 		std::cout << "Player not linked to PetManager.\n";
 		return;
 	}
+	equippedPet->Reset();
 	PlacePet(player->GetPos());
 	equippedPet->Setup(*player);
 	equippedPet->SetTilemap(tilemap);
@@ -80,7 +84,6 @@ void PetManager::InitPetForGame(TileMap const& tilemap)
 	player->ApplyStatusEffect(new StatEffects::StatusEffect{ equippedPet->GetPetData().passive }, player);
 
 	//Generate description for passive
-
 	std::stringstream s;
 	Pets::PetData const& d{ equippedPet->GetPetData() };
 	//Generate description for the skills
@@ -172,6 +175,15 @@ void PetManager::DrawUI()
 {
 	if (!equippedPet || !equippedPet->isSet || !PetHasSkill()) return;
 
+	if (equippedPet->ShowRecastUI()) {
+		DrawBox(skillUI->GetPos(), skillUI->GetSize().x, skillUI->GetSize().y, recastBoxThickness, recastCol);
+	}
+	else if (!equippedPet->IsOnCooldown()) { //Available - draw a green box
+		DrawTintedMesh(GetTransformMtx(skillUI->GetPos(), 0, skillUI->GetSize()),
+			rm->GetMesh(MESH_SQUARE), nullptr,
+			availableCol, 220);
+	}
+
 	DrawTintedMesh(GetTransformMtx(skillUI->GetPos(), 0, skillUI->GetSize()),
 		rm->GetMesh(MESH_SQUARE), rm->LoadTexture(equippedPet->GetPetData().textures.at(0)),
 		equippedPet->IsOnCooldown() ? onCooldownCol : Color{ 255,255,255,255 }, 255);
@@ -180,6 +192,10 @@ void PetManager::DrawUI()
 	if (equippedPet->IsOnCooldown()) {
 		DrawAEText(rm->GetFont(), std::to_string((int)equippedPet->GetCDTimer()) + (showTimerUnit ? "s" : ""), skillUI->GetPos(), timerFontSize,
 			0, timerTextCol, TEXT_MIDDLE);
+	}
+	else { //Write key above the box
+		DrawAEText(rm->GetFont(), equippedPet->ShowRecastUI() ? "Recast[R]" : "[R]", skillUI->GetPos() + AEVec2{ 0, skillUI->GetSize().y * 0.5f + 5}, timerFontSize,
+			0, equippedPet->ShowRecastUI() ? recastCol : availableCol, TEXT_LOWER_MIDDLE);
 	}
 
 	if (showTooltip) {
@@ -200,7 +216,7 @@ void PetManager::ShowPetTooltip()
 
 	//Draw text box
 	DrawAETextbox(rm->GetFont(), txt, AEVec2{ (float)mP.x, (float)mP.y },
-		AEGfxGetWinMaxX() * 0.4f, descFontSize, lineSpace, textCol, tooltipAlignment, TextboxOriginPos::BOTTOM,
+		AEGfxGetWinMaxX() * 0.7f, descFontSize, lineSpace, textCol, tooltipAlignment, TextboxOriginPos::BOTTOM,
 		TextboxBgCfg{ padding, tooltipBgCol, 255, rm->GetMesh(MESH_SQUARE) });
 }
 
@@ -228,7 +244,32 @@ void PetManager::LoadUIJSON()
 		}
 		iconSize = ui.get("size", 75).asFloat();
 		lineSpace = ui.get("lineSpace", 0.05f).asFloat();
+		recastBoxThickness = ui.get("recastBoxThickness", 5).asFloat();
 		showTimerUnit = ui.get("showTimerUnit", true).asBool();
+		if (ui.isMember("textCol") && ui["textCol"].size() == 4) {
+			textCol = Color{ ui["textCol"][0].asFloat(), ui["textCol"][1].asFloat(),
+			ui["textCol"][2].asFloat() ,ui["textCol"][3].asFloat() };
+		}
+		if (ui.isMember("boxCol") && ui["boxCol"].size() == 4) {
+			tooltipBgCol = Color{ ui["boxCol"][0].asFloat(), ui["boxCol"][1].asFloat(),
+			ui["boxCol"][2].asFloat() ,ui["boxCol"][3].asFloat() };
+		}
+		if (ui.isMember("timerTextCol") && ui["timerTextCol"].size() == 4) {
+			timerTextCol = Color{ ui["timerTextCol"][0].asFloat(), ui["timerTextCol"][1].asFloat(),
+			ui["timerTextCol"][2].asFloat() ,ui["timerTextCol"][3].asFloat() };
+		}
+		if (ui.isMember("onCooldownCol") && ui["onCooldownCol"].size() == 4) {
+			onCooldownCol = Color{ ui["onCooldownCol"][0].asFloat(), ui["onCooldownCol"][1].asFloat(),
+			ui["onCooldownCol"][2].asFloat() ,ui["onCooldownCol"][3].asFloat() };
+		}
+		if (ui.isMember("availableCol") && ui["availableCol"].size() == 4) {
+			availableCol = Color{ ui["availableCol"][0].asFloat(), ui["availableCol"][1].asFloat(),
+			ui["availableCol"][2].asFloat() ,ui["availableCol"][3].asFloat() };
+		}
+		if (ui.isMember("recastCol") && ui["recastCol"].size() == 4) {
+			recastCol = Color{ ui["recastCol"][0].asFloat(), ui["recastCol"][1].asFloat(),
+			ui["recastCol"][2].asFloat() ,ui["recastCol"][3].asFloat() };
+		}
 	}
 	ifs.close();
 }
@@ -304,6 +345,9 @@ void PetManager::LoadPetData()
 			for (Json::Value const& m : v["skillElements"]) {
 				pd.skillElements.push_back(static_cast<Elements::ELEMENT_TYPE>(m.asInt()));
 			}
+		}
+		if (pd.skillElements.empty()) {
+			pd.skillElements.push_back(Elements::ELEMENT_TYPE::NONE);
 		}
 
 		//(Optional) Extra status effect stuff

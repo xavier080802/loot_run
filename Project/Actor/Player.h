@@ -23,7 +23,6 @@ public:
     void OnCollide(CollisionData& other) override;
 
     void Draw() override;
-    void DrawUI();
 
     bool IsInvulnerable() override;
 
@@ -48,6 +47,9 @@ public:
     const ActorStats& GetBaseStats() const override { return mBaseStats; }
     Inventory& GetInventory() { return mInventory; }
 
+    PickupGO* GetNearestPickup() const { return mInteractablePickup; }
+    bool ShowStatsUI() const { return mShowStatsUI; }
+
     void SubscriptionAlert(Input::InputKeyData content) override;
 
     ~Player() {};
@@ -60,8 +62,12 @@ private:
         Bow
     };
 
-private:
     void OnDeath(Actor* killer = nullptr) override;
+
+    //On SE added/removed, recalc stats
+    void OnStatEffectChange() override;
+    //Gets what bonuses/debuffs a SE applies
+    ActorStats CalculateStatusEffectStats();
 
     ActorStats mBaseStats{};
     Inventory  mInventory{};

@@ -91,15 +91,20 @@ public:
 	//Sub to be alerted when this actor is inflicted with a status effect
 	void SubToSEGain(ActorGainedStatusEffectSub* sub, bool remove = false);
 
-protected:
-	// Override point for Player/Enemy-specific death behavior
-	virtual void OnDeath(Actor* killer = nullptr);
-
 	// Draw icons of status effects
 	// iconSize: Icons are square
 	// center: Center position from which icons are drawn around
 	// numIcons: Max number of icons to display. Display width is iconSize*numIcons
 	void DrawStatusEffectIcons(float iconSize, AEVec2 center, int numIcons, bool allowTooltip = false, bool isHUD = false) const;
+protected:
+	// Override point for Player/Enemy-specific death behavior
+	virtual void OnDeath(Actor* killer = nullptr);
+
+	// Do something when SE is added/removed.
+	virtual void OnStatEffectChange();
+
+	// Clamp values of mStats
+	void ClampStats();
 
 	ActorStats mStats{};
 	float mCurrentHP = 0.0f;

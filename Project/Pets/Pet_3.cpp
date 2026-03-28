@@ -10,12 +10,14 @@
 void Pet_3::Setup(Player& _player)
 {
     player = &_player;
+    player->SubToBeforeDealingDmg(this);
     weap = GameDB::GetEquipmentData(EquipmentCategory::Melee, 7);
     attackCooldown = std::stof(data.extra.at("attackCooldown"));
     attImgTime = std::stof(data.extra.at("attImgTime"));
+    dmgMult = std::stof(data.extra.at("baseDmgMult")) * data.rarityScaling.at((int)rank);
 
     //Skill cooldown scales with rank
-    data.skillCooldown /= (int)rank ? (int)rank : 1;
+    data.skillCooldown /= data.rarityScaling.at((int)rank);
 
     attackAnimTimer = 0.f;
 }
@@ -96,4 +98,11 @@ void Pet_3::Attack()
     attackTimer = attackCooldown;
     attackAnimTimer = attImgTime;
     Combat::ExecuteAttack(player, pos, weap, target->GetPos());
+}
+
+void Pet_3::SubscriptionAlert(BeforeDealingDmgContent content)
+{
+    if (content.weapon && content.weapon->id == 7) {
+        content.finalDmg *= dmgMult;
+    }
 }

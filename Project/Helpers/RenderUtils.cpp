@@ -120,25 +120,15 @@ void DrawMeshWithTexOffset(AEMtx33 transform, AEGfxVertexList* mesh, AEGfxTextur
 
 void DrawBox(AEVec2 center, f32 width, f32 height, f32 thickness, Color col)
 {
-	u32 hexCol = ColToHex(col);
-	AEGfxVertexList* vtx[4] = {
-		CreateSquareMesh(width + thickness*2.f, thickness, hexCol), //top
-		CreateSquareMesh(thickness, height + thickness*2.f, hexCol), //left
-		CreateSquareMesh(width + thickness*2.f, thickness, hexCol), //bottom
-		CreateSquareMesh(thickness, height + thickness*2.f, hexCol) // right
-	};
-	DrawMesh(GetTransformMtx(ToVec2(center.x, center.y - height / 2.f - thickness/2.f), 0, ToVec2(1.f, 1.f)),
-		vtx[0], NULL, col.a);
-	DrawMesh(GetTransformMtx(ToVec2(center.x - width/2.f - thickness / 2.f, center.y), 0, ToVec2(1.f, 1.f)),
-		vtx[1], NULL, col.a);
-	DrawMesh(GetTransformMtx(ToVec2(center.x, center.y + height / 2.f + thickness / 2.f), 0, ToVec2(1.f, 1.f)),
-		vtx[2], NULL, col.a);
-	DrawMesh(GetTransformMtx(ToVec2(center.x + width / 2.f + thickness / 2.f, center.y), 0, ToVec2(1.f, 1.f)),
-		vtx[3], NULL, col.a);
-
-	for (int i = 0; i < 4; i++) {
-		AEGfxMeshFree(vtx[i]);
-	}
+	AEGfxVertexList* m = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
+	DrawTintedMesh(GetTransformMtx(ToVec2(center.x, center.y - height / 2.f - thickness/2.f), 0, ToVec2(width + thickness * 2.f, thickness)),
+		m, nullptr, col,col.a);
+	DrawTintedMesh(GetTransformMtx(ToVec2(center.x - width/2.f - thickness / 2.f, center.y), 0, ToVec2(thickness, height + thickness * 2.f)),
+		m, nullptr, col,col.a);
+	DrawTintedMesh(GetTransformMtx(ToVec2(center.x, center.y + height / 2.f + thickness / 2.f), 0, ToVec2(width + thickness * 2.f, thickness)),
+		m, nullptr, col,col.a);
+	DrawTintedMesh(GetTransformMtx(ToVec2(center.x + width / 2.f + thickness / 2.f, center.y), 0, ToVec2(thickness, height + thickness * 2.f)),
+		m, nullptr, col,col.a);
 }
 
 AEVec2 GetTextAlignPosNorm(s8 const& font, std::string const& text, AEVec2 pos, f32 fontSize, TextOriginPos alignment)
@@ -213,7 +203,7 @@ void DrawAEText(s8 const& font, std::string const& text, AEVec2 pos, f32 fontSiz
 	size_t i{}; //End of substr
 	size_t start{}; //Start of substr
 	size_t num{}; //Num of newlines
-	static const f32 fontH{ RenderingManager::GetInstance()->GetFontHeight() * fontSize };
+	static const f32 fontH{ RenderingManager::GetInstance()->GetFontHeight(font) * fontSize };
 	do {
 		i = text.find_first_of('\n', start);
 		//No newline, or last line might not have a newline char, check if theres more chars
@@ -239,7 +229,7 @@ void GetAEMultilineTextSize(s8 const& font, std::string const& text, f32 fontSiz
 	//Split string based on newlines
 	size_t i{}; //End of substr
 	size_t start{}; //Start of substr
-	static const f32 fontH{ RenderingManager::GetInstance()->GetFontHeight() * fontSize };
+	static const f32 fontH{ RenderingManager::GetInstance()->GetFontHeight(font) * fontSize };
 	do {
 		i = text.find_first_of('\n', start);
 		//No newline, or last line might not have a newline char, check if theres more chars
@@ -314,7 +304,7 @@ AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 bo
 	} while (i != std::string::npos);
 
 	//Offset to keep box on screen
-	static const f32 fontH{RenderingManager::GetInstance()->GetFontHeight() * fontSize};
+	static const f32 fontH{RenderingManager::GetInstance()->GetFontHeight(font) * fontSize};
 	AEVec2 acBoxSize{};
 	GetAEMultilineTextSize(font, wrapped.str(), fontSize, acBoxSize.x, acBoxSize.y, lineSpace);
 

@@ -8,7 +8,7 @@
 namespace {
 	bool auraActive{false};
 
-	void OnAuraHit(GameObject::CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float, void* extra)
+	void OnAuraHit(GameObject::CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float, EquipmentData*, void* extra)
 	{
 		Actor* other = dynamic_cast<Actor*>(&target.other);
 		Pet_5* pet = static_cast<Pet_5*>(extra);

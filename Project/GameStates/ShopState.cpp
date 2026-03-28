@@ -44,7 +44,7 @@ namespace {
 		{{ 500.f, 700.f }, { 450.f, 144.f }, "Move Speed", true},
 		{{ 1100.f, 300.f }, { 450.f, 144.f }, "Health", true},
 		{{ 1100.f, 500.f }, { 450.f, 144.f }, "Defense", true},
-		{{ 1100.f, 700.f }, { 450.f, 144.f }, "Enter Gacha", false},
+		//{{ 1100.f, 700.f }, { 450.f, 144.f }, "Enter Gacha", false},
 		{{ 300.f, 100.f }, { 225.f, 110.f }, "back", false},
 		{{ 1300.f, 100.f }, { 225.f, 110.f }, "REFUND", false},
 		{{ 915.f, 830.f }, { 80.f, 60.f }, "x1", false},
@@ -201,11 +201,11 @@ void ShopState::Update(double dt)
 					case 4: // Defense
 						break;
 					case 5: // Gacha Trigger
-						isGachaActive = true;
-						bgm.StopGameplayBGM();
-						bgm.PlayGacha();
-						BeginGachaOverlay(gStateAnim, 10, 0.6f, 1.2f, 0.3f);
-						break;
+						//isGachaActive = true;
+						//bgm.StopGameplayBGM();
+						//bgm.PlayGacha();
+						//BeginGachaOverlay(gStateAnim, 10, 0.6f, 1.2f, 0.3f);
+						//break;
 					case 6: //back
 						GameStateManager::GetInstance()
 							->SetNextGameState("MainMenuState", true, true);
@@ -243,20 +243,27 @@ void ShopState::Update(double dt)
 
 				// Minus Button Check
 				AEVec2 minusPos = { worldPos.x - sideOffset, worldPos.y };
-				if (IsCursorOverWorld(minusPos, sideBtnSize, sideBtnSize, true)) {
+				if (IsCursorOverWorld(minusPos, sideBtnSize, shopButtons[i].size.y, true)) {
 					if (AEInputCheckTriggered(AEVK_LBUTTON)) {
 						AEAudioPlay(clickSound, bgm.uiGroup, 0.6f, 0.6f, 0);
-						ShopFunctions::GetInstance()->sellShopUpgrade(currentStat);
+						for (size_t x = 0; x < ShopFunctions::GetInstance()->getPurchaseMultiplier(); x++)
+						{
+							ShopFunctions::GetInstance()->sellShopUpgrade(currentStat);
+						}
 						std::cout << "Decreased " << shopButtons[i].label << " to " << ShopFunctions::GetInstance()->getStatBonus(currentStat) << std::endl;
 					}
 				}
 
 				// Plus Button Check
 				AEVec2 plusPos = { worldPos.x + sideOffset, worldPos.y };
-				if (IsCursorOverWorld(plusPos, sideBtnSize, sideBtnSize, true)) {
+				if (IsCursorOverWorld(plusPos, sideBtnSize, shopButtons[i].size.y, true)) {
 					if (AEInputCheckTriggered(AEVK_LBUTTON)) {
 						AEAudioPlay(clickSound, bgm.uiGroup, 0.6f, 0.6f, 0);
-						ShopFunctions::GetInstance()->buyShopUpgrade(currentStat);
+						for (size_t x = 0; x < ShopFunctions::GetInstance()->getPurchaseMultiplier(); x++)
+						{
+							ShopFunctions::GetInstance()->buyShopUpgrade(currentStat);
+						}
+						
 						std::cout << "Increased " << shopButtons[i].label << " to " << ShopFunctions::GetInstance()->getStatBonus(currentStat) << std::endl;
 					}
 				}
@@ -329,10 +336,10 @@ void ShopState::Draw()
 			AEVec2 plusPos = { worldPos.x + sideOffset, worldPos.y };
 			if (shopButtons[i].hasSideButtons) {
 				SideHover currentSideHover = NONE;
-				if (IsCursorOverWorld(minusPos, sideBtnSize, sideBtnSize, true)) {
+				if (IsCursorOverWorld(minusPos, sideBtnSize, shopButtons[i].size.y, true)) {
 					currentSideHover = MINUS;
 				}
-				else if (IsCursorOverWorld(plusPos, sideBtnSize, sideBtnSize, true)) {
+				else if (IsCursorOverWorld(plusPos, sideBtnSize, shopButtons[i].size.y, true)) {
 					currentSideHover = PLUS;
 				}
 				DrawSideButtons(shopButtons[i], currentSideHover);

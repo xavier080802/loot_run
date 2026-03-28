@@ -8,6 +8,7 @@
 #include "../GameObjects/GameObject.h"
 #include "../GameObjects/AttackHitboxGO.h"
 #include "PetManager.h"
+#include "../DebugTools.h"
 #include <sstream>
 
 namespace {
@@ -28,7 +29,7 @@ namespace {
 		Elements::ApplyElement(pet->GetSkillElement(), caster, &target);
 	}
 
-	void SkillEffect(GameObject::CollisionData& other, Actor* caster, Elements::ELEMENT_TYPE /*element*/, float knockback, void* extra) {
+	void SkillEffect(GameObject::CollisionData& other, Actor* caster, Elements::ELEMENT_TYPE /*element*/, float knockback, EquipmentData*, void* extra) {
 		if (other.other.GetGOType() != GO_TYPE::ENEMY) return;
 		Actor& target = dynamic_cast<Actor&>(other.other);
 		
@@ -65,6 +66,8 @@ void Pet_6::Setup(Player& p)
 	projLife = std::stof(data.extra.at("projLife"));
 	std::istringstream isc{ data.extra.at("projCol") };
 	isc >> projCol.r >> projCol.g >> projCol.b >> projCol.a;
+	std::istringstream isc2{ data.extra.at("skillCol") };
+	isc2 >> skillCol.r >> skillCol.g >> skillCol.b >> skillCol.a;
 	
 	attackTimer = attackCooldown;
 	player = &p;
@@ -79,6 +82,7 @@ bool Pet_6::DoSkill(const Pets::SkillCastData& _data)
 	cfg.knockback = knockback;
 	cfg.colliderSize = cfg.renderScale = AEVec2{ skillRange, skillRange };
 	cfg.followOwner = cfg.disableOnHit = false;
+	cfg.tint = skillCol;
 	cfg.owner = player;
 	cfg.zIndex = -2;
 	cfg.onHit = SkillEffect;
@@ -97,16 +101,25 @@ void Pet_6::SkillUpdate(float dt)
 		//Fire turret shot
 		GameObject* go{ GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PROJECTILE) };
 		Projectile* proj{ dynamic_cast<Projectile*>(go) };
-		if (!proj) return;
+		if (!proj) {
+			Debug::stream << "PROJ FAILED TO FETCH\n";
+			return;
+		}
 		//Find target
 		GameObject* target{ GameObjectManager::GetInstance()->FindClosestGO(player->GetPos(), turretRange, GO_TYPE::ENEMY) };
-		if (!target) return;
+		if (!target) {
+			Debug::stream << "Dragon - No target found\n";
+			return;
+		}
 		//Fire at target. Set color too
 		proj->Fire(player, target->GetPos() - pos, projSize * 0.5f, projSpd, projLife, ProjHit,
 			data.skillElements.empty() ? Elements::ELEMENT_TYPE::NONE : data.skillElements.at(0))
 			->GetRenderData().tint = projCol;
 		//Set pos to pet pos, not player pos
 		proj->SetPos(pos);
+		Bitmask bm{ proj->GetCollisionLayers() };
+		ResetFlagAtPos(&bm, Collision::OBSTACLE);
+		proj->SetCollisionLayers(bm);
 		//Set stop rule so proj pierces
 		proj->SetStopRule(Projectile::STOP_RULE::NONE);
 

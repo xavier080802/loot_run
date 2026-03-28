@@ -44,6 +44,8 @@ struct BGMManager {
     void SetBGMVolume(float v);
     void SetUIVolume(float v);
     void SetSFXVolume(float v);
+
+    float GetBGMVolume() const;
 };
 
 extern BGMManager bgm;

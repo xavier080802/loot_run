@@ -1,15 +1,26 @@
 {
+    "player_healthbar": {
+        "size": [ 300, 30 ], //HP bar dimensions
+        "bgCol": [ 104, 11, 11, 255 ], //Container
+        "fillCol": [ 240, 20, 20, 255 ], //HP indicator
+        "shieldCol": [ 255, 255, 0, 255 ], //Shield indicator
+        "seIconSize": 30, //Status effect icon size (width=height)
+        "maxIcons": 6 //Number of SE icons to show
+    },
     "pet_ui": {
-        "descFontSize": 0.3,
-        "timerFontSize": 0.35,
+        "descFontSize": 0.4,
+        "timerFontSize": 0.5,
         "padding": [ 0.03, 0.04 ], //Normalized box padding
-        "pos": [ -1, -1 ], //Normalized icon position
+        "pos": [ -0.3, -0.99 ], //Normalized icon position
         "size": 75, //Size of icon (width = height)
         "lineSpace": 0.02, //Normalized distance between lines
+        "recastBoxThickness": 5, //Thickness of the border that appears when recasting
         "textCol": [ 0, 0, 0, 255 ],
-        "boxCol": [ 200, 200, 200, 220 ],
-        "timerTextCol": [ 200, 200, 200, 255 ],
+        "boxCol": [ 200, 200, 200, 220 ], //Tooltip
+        "timerTextCol": [ 50, 50, 50, 255 ],
         "onCooldownCol": [ 150, 150, 150, 155 ],
+        "availableCol": [ 100, 255, 100, 255 ],
+        "recastCol": [ 100, 255, 100, 255 ],
         "showTimerUnit": true,
         "textAlignment": "TEXT_LOWER_LEFT", //X alignment affects the box
         "boxAlignment": "BOTTOM" //What part of the box is at the cursor

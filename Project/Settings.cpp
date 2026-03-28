@@ -37,7 +37,7 @@ namespace
 
     // Runtime state
     bool popupOpen   = false;
-    int  bgmVolume = 10;  // 0-10
+    int  bgmVolume = 5;  // 0-10. Note: Initial value set in Music.cpp Init, match this value with that
     int  uiVolume    = 10;  // 0-10
     int  sfxVolume   = 10;  // 0-10
 
@@ -156,7 +156,7 @@ namespace
 // Public interface
 namespace Settings
 {
-    void Open()  { popupOpen = true;  }
+    void Open()  { popupOpen = true; }
     void Close() { popupOpen = false; }
     bool IsOpen(){ return popupOpen;  }
 

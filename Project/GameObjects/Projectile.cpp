@@ -17,7 +17,21 @@ Projectile* Projectile::Fire(Actor* const caster, AEVec2 fireDir, float radius, 
 	lifespan = lifetime;
 	goType = GO_TYPE::PROJECTILE;
 	OnHit = onHitCallback;
+	Bitmask bm{ ResetFlagAtPos(&collisionLayers, Collision::INTERACTABLE) };
+	SetCollisionLayers(bm);
 	return this;
+}
+
+Projectile& Projectile::SetHitTileCallback(void(*callback)(Projectile& proj, bool stopped))
+{
+	OnHitTile = callback;
+	return *this;
+}
+
+Projectile& Projectile::SetTimeoutCallback(void(*callback)(Projectile& proj))
+{
+	OnTimeout = callback;
+	return *this;
 }
 
 void Projectile::Update(double dt)
@@ -31,6 +45,7 @@ void Projectile::Update(double dt)
 	//Check timeout
 	if (lifespan <= 0.f) {
 		isEnabled = false; //Grew old and died.
+		if (OnTimeout) OnTimeout(*this);
 	}
 }
 
@@ -55,8 +70,10 @@ void Projectile::OnCollide(CollisionData& other)
 	}
 }
 
-void Projectile::OnCollideTile(std::pair<TileMap::Tile const&, AEVec2> /*tile*/)
+void Projectile::OnCollideTile(std::pair<TileMap::Tile const&, AEVec2> tile)
 {
+	if (OnHitTile) OnHitTile(*this, stopRule == STOP_RULE::ON_FIRST);
+
 	if (stopRule != STOP_RULE::ON_FIRST) {
 		return;
 	}
@@ -74,5 +91,8 @@ Projectile& Projectile::SetStopRule(STOP_RULE rule)
 GameObject* Projectile::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize, Bitmask _collideWithLayers, Collision::LAYER _isInLayer)
 {
 	stopRule = STOP_RULE::ON_FIRST;
+	OnHit = nullptr;
+	OnHitTile = nullptr;
+	OnTimeout = nullptr;
 	return GameObject::Init(_pos, _scale, _z, _meshShape, _colShape, _colSize, _collideWithLayers, _isInLayer);
 }

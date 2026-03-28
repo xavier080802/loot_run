@@ -125,6 +125,7 @@ void Player::InitPlayerRuntime(const ActorStats& baseStats)
  *   - Player::TryPickup() - when picking up new equipment.
  *   - Player::SubscriptionAlert() - when swapping or dropping weapons.
  *   - Player::ApplyShopUpgrades() - when returning from the shop.
+ *   - Actor::OnStatEffectChange() - when SE is added or removed.
  */
 void Player::RecalculateStats()
 {
@@ -132,9 +133,37 @@ void Player::RecalculateStats()
 	UpgradeMultipliers up = mInventory.GetUpgradeMultipliers();
 	mStats = StatsCalc::ComputeFinalStats(mBaseStats, eq, up);
 
+	//From status effects
+	ActorStats seStats = CalculateStatusEffectStats();
+	mStats.attack += seStats.attack;
+	mStats.attackSpeed += seStats.attackSpeed;
+	mStats.defense += seStats.defense;
+	mStats.maxHP += seStats.maxHP;
+	mStats.moveSpeed += seStats.moveSpeed;
+
 	// Keep HP valid after stat changes
 	if (mCurrentHP > mStats.maxHP) mCurrentHP = mStats.maxHP;
 	if (mCurrentHP <= 0.0f) mCurrentHP = mStats.maxHP;
+
+	ClampStats();
+}
+
+void Player::OnStatEffectChange()
+{
+	RecalculateStats();
+}
+
+ActorStats Player::CalculateStatusEffectStats()
+{
+	ActorStats out;
+	for (auto const& p : statusEffectsDict) {
+		out.attack += p.second->GetFinalModVal(STAT_TYPE::ATT, mBaseStats.attack);
+		out.attackSpeed += p.second->GetFinalModVal(STAT_TYPE::ATT_SPD, mBaseStats.attackSpeed);
+		out.defense += p.second->GetFinalModVal(STAT_TYPE::DEF, mBaseStats.defense);
+		out.maxHP += p.second->GetFinalModVal(STAT_TYPE::MAX_HP, mBaseStats.maxHP);
+		out.moveSpeed += p.second->GetFinalModVal(STAT_TYPE::MOVE_SPD, mBaseStats.moveSpeed);
+	}
+	return out;
 }
 
 /**
@@ -638,109 +667,6 @@ void Player::OnCollide(CollisionData& other)
 void Player::Draw()
 {
 	Actor::Draw();
-}
-
-/**
- * @brief Renders the player's Heads-Up Display (HUD) element overlay.
- *
- * Draws the HP bar, status effect icons, interaction prompts for ground items,
- * and the expanded stats/equipment menu if the 'B' key toggle is active.
- *
- * @note Called by:
- *   - GameState::Draw() - rendered in screen-space after the world draws.
- */
-void Player::DrawUI() {
-	AEVec2 camPos{};
-	AEGfxGetCamPosition(&camPos.x, &camPos.y);
-
-	if (mShowStatsUI) {
-		// Draw Black Background Box
-		AEVec2 bgPos = { camPos.x - 700.0f, camPos.y + 45.0f }; // Centered at left middle (somewhat)
-		AEVec2 bgSize = { 600.0f, 520.0f }; 
-		DrawTintedMesh(GetTransformMtx(bgPos, 0.0f, bgSize), squareMesh, nullptr, {0, 0, 0, 180}, 255);
-
-		// Coin Counter in Top Left
-		std::string coinText = "Coins: " + std::to_string(mInventory.GetCoins());
-		DrawAEText(RenderingManager::GetInstance()->GetFont(), coinText.c_str(), { camPos.x - 780.0f, camPos.y + 280.0f }, 0.5f, {255, 215, 0, 255}, TEXT_MIDDLE_LEFT);
-		// Ammo Counter
-		std::string ammoText = "Ammo: " + std::to_string(mInventory.GetAmmo());
-		DrawAEText(RenderingManager::GetInstance()->GetFont(), ammoText.c_str(), { camPos.x - 780.0f, camPos.y + 250.0f }, 0.5f, {200, 200, 200, 255}, TEXT_MIDDLE_LEFT);
-
-		// Stats & Equipment UI on the Left
-		AEVec2 textPos = { camPos.x - 780.0f, camPos.y + 200.0f };
-		float yLineSpc = -20.0f;
-		
-		DrawAEText(RenderingManager::GetInstance()->GetFont(), "--- STATS ---", textPos, 0.4f, {255, 255, 255, 255}, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-		DrawAEText(RenderingManager::GetInstance()->GetFont(), ("Max HP: " + std::to_string((int)mStats.maxHP)).c_str(), textPos, 0.4f, {255, 255, 255, 255}, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-		DrawAEText(RenderingManager::GetInstance()->GetFont(), ("Attack: " + std::to_string((int)mStats.attack)).c_str(), textPos, 0.4f, {255, 255, 255, 255}, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-		DrawAEText(RenderingManager::GetInstance()->GetFont(), ("Defense: " + std::to_string((int)mStats.defense)).c_str(), textPos, 0.4f, {255, 255, 255, 255}, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-		DrawAEText(RenderingManager::GetInstance()->GetFont(), ("Move Speed: " + std::to_string((int)mStats.moveSpeed)).c_str(), textPos, 0.4f, {255, 255, 255, 255}, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-		
-		std::string tSpd = std::to_string(mStats.attackSpeed);
-		size_t spdLen = tSpd.length() > 4 ? 4 : tSpd.length();
-		DrawAEText(RenderingManager::GetInstance()->GetFont(), ("Atk Speed: " + tSpd.substr(0, spdLen)).c_str(), textPos, 0.4f, {255, 255, 255, 255}, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc * 2.0f;
-		
-		DrawAEText(RenderingManager::GetInstance()->GetFont(), "--- EQUIPMENT ---", textPos, 0.4f, {255, 255, 255, 255}, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-		
-		auto w1 = mInventory.GetMainWeapon(0);
-		auto w2 = mInventory.GetMainWeapon(1);
-		auto bow = mInventory.GetBow();
-		auto head = mInventory.GetArmor(ArmorSlot::Head);
-		auto body = mInventory.GetArmor(ArmorSlot::Body);
-		auto hands = mInventory.GetArmor(ArmorSlot::Hands);
-		auto feet = mInventory.GetArmor(ArmorSlot::Feet);
-		
-		DrawAEText(RenderingManager::GetInstance()->GetFont(), ("WPN 1: " + std::string(w1 ? w1->name : "None")).c_str(), textPos, 0.35f, {200, 200, 200, 255}, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-		DrawAEText(RenderingManager::GetInstance()->GetFont(), ("WPN 2: " + std::string(w2 ? w2->name : "None")).c_str(), textPos, 0.35f, {200, 200, 200, 255}, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-		DrawAEText(RenderingManager::GetInstance()->GetFont(), ("BOW: " + std::string(bow ? bow->name : "None")).c_str(), textPos, 0.35f, {200, 200, 200, 255}, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-		DrawAEText(RenderingManager::GetInstance()->GetFont(), ("HEAD: " + std::string(head ? head->name : "None")).c_str(), textPos, 0.35f, {200, 200, 200, 255}, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-		DrawAEText(RenderingManager::GetInstance()->GetFont(), ("BODY: " + std::string(body ? body->name : "None")).c_str(), textPos, 0.35f, {200, 200, 200, 255}, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-		DrawAEText(RenderingManager::GetInstance()->GetFont(), ("HANDS: " + std::string(hands ? hands->name : "None")).c_str(), textPos, 0.35f, {200, 200, 200, 255}, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-		DrawAEText(RenderingManager::GetInstance()->GetFont(), ("FEET: " + std::string(feet ? feet->name : "None")).c_str(), textPos, 0.35f, {200, 200, 200, 255}, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-	}
-
-	//Healthbar Container
-	
-	DrawTintedMesh(hpBarTrans, squareMesh, nullptr, HpContainerCol, 255);
-	//Health indicator fill
-	AEVec2 hpBarFillSize{ HpBarSize.x * (mCurrentHP / mStats.maxHP), HpBarSize.y };
-	AEVec2 hpBarFillPos = hpBarPos;
-	hpBarFillPos.x -= (HpBarSize.x - hpBarFillSize.x) * 0.5f;
-	DrawTintedMesh(GetTransformMtx(hpBarFillPos, 0, hpBarFillSize),
-		squareMesh, nullptr, {240, 20, 20, 255}, 255);
-	//Shield value (if any)
-	if (mShieldValue) {
-		float shieldFill{ HpBarSize.x * min(mShieldValue / mStats.maxHP, 1.f) };
-		DrawTintedMesh(GetTransformMtx(hpBarPos - AEVec2{ (HpBarSize.x - shieldFill) *0.5f,0}, 0, { shieldFill, HpBarSize.y }),
-			squareMesh, nullptr, { 255, 255, 0, 255 }, 200);
-	}
-	//Hp Text: "curr (+shield) / max"
-	DrawAEText(RenderingManager::GetInstance()->GetFont(),
-		std::string{ std::to_string((int)mCurrentHP) + (mShieldValue ? (" (+" + std::to_string((int)mShieldValue)+")") : "")
-		+ " / " + std::to_string((int)mStats.maxHP)}.c_str(),
-		hpBarPos, HpBarSize.y / RenderingManager::GetInstance()->GetFontSize(), Color{ 0,0,0,255 }, TEXT_MIDDLE);
-
-	//Status effects above hp bar
-	DrawStatusEffectIcons(30, hpBarPos + AEVec2{0, HpBarSize.y * 0.5f +15}, 6, true, true);
-
-	if (mInteractablePickup && mInteractablePickup->IsEnabled() && mInteractablePickup->GetPayload().equipment)
-	{
-		const EquipmentData* eq = mInteractablePickup->GetPayload().equipment;
-		std::string nameStr = std::string(eq->name);
-		std::string promptStr = "[E] Swap   [C] Sell (" + std::to_string(eq->sellPrice) + " Coins)";
-		
-		AEVec2 itemPos = { 0.0f, -55.0f }; // Centered below player and HP bar
-		DrawAEText(RenderingManager::GetInstance()->GetFont(), nameStr.c_str(), itemPos, 0.4f, {255,255,255,255}, TEXT_MIDDLE);
-		itemPos.y -= 20.0f;
-		DrawAEText(RenderingManager::GetInstance()->GetFont(), promptStr.c_str(), itemPos, 0.4f, {255,255,255,255}, TEXT_MIDDLE);
-	}
-
-	//Tooltip
-	for (auto it{ statusEffectsDict.rbegin() }; it != statusEffectsDict.rend(); ++it) {
-		StatEffects::StatusEffect& se = *(*it).second;
-
-		se.UpdateUI(true);
-	}
 }
 
 /**
