@@ -135,8 +135,7 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 	 *                  player's position for enemy). Passed by VALUE.
 	 *
 	 * @note Called by:
-	 *   - Player::Update() - when the player left-clicks to attack.
-	 *   - Enemy::Update() - when the enemy's attack cooldown expires and it's in attack range.
+	 *   - ExecuteAttack()
 	 */
 	void ExecuteAttack(Actor* caster, AEVec2 casterPos, const EquipmentData* weapon, AEVec2 targetPos) {
 		if (!caster || !weapon) return;
@@ -151,13 +150,11 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 			if (!proj) return;
 
 			AEVec2 fireDir = { targetPos.x - pos.x, targetPos.y - pos.y };
-
 			// Fire(caster, direction, radius, speed, lifetime, callback, element, knockback)
 			proj->Fire(caster, fireDir, weapon->attackSize, 500.0f, 3.0f, &OnProjectileHit, weapon->element, weapon->knockback);
 			Bitmask bm{ caster->GetCollisionLayers() };
 			ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
 			proj->SetCollisionLayers(bm); // Proj will scan for interactables otherwise
-
 			std::cout << "[Combat] Enemy/Player fired a projectile!\n";
 			break;
 		}
