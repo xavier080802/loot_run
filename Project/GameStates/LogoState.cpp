@@ -16,7 +16,8 @@ void LogoState::Update(double dt) {
         GameStateManager::GetInstance()->SetNextGameState("MainMenuState");
     }
 
-    if (AEInputCheckTriggered(AEVK_SPACE) || AEInputCheckTriggered(AEVK_RETURN)) {
+    if (AEInputCheckTriggered(
+        _SPACE) || AEInputCheckTriggered(AEVK_RETURN)) {
         GameStateManager::GetInstance()->SetNextGameState("MainMenuState");
     }
 }

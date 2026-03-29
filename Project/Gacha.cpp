@@ -8,69 +8,45 @@
 #include <string>
 #include <map>
 
-static float s_screenShake = 0.0f;  // reserved for future screen-shake use
-static bool  s_chestOpened = false; // has the player pressed Open this session
-static float s_chestLightTimer = 0.0f;  // how long the "light burst" after opening lasts
-static const float s_chestLightMax = 0.85f; // duration of that light burst in seconds
+static float s_screenShake = 0.0f;
+static bool  s_chestOpened = false;
+static float s_chestLightTimer = 0.0f;
+static const float s_chestLightMax = 0.85f;
 
-// The chest does a little bounce when opened
 static float s_chestBounceTimer = 0.0f;
 static float s_chestBounceOffset = 0.0f;
 
-// Drives the idle glow pulse on the chest before it's opened
 static float s_idleGlowTimer = 0.0f;
 
-// Tracks which entry had the highest rarity in the current roll batch,
-// used to decide what colour the chest-open burst should be
 static WordEntry s_highestEntry;
 
-// A single reusable quad mesh used by DrawSolidRect for flash overlays
 static AEGfxVertexList* s_overlayQuad = nullptr;
 
-// -- Mythical-specific timers --
-// Flash: a brief full-screen red tint that plays on mythical reveal
-// Pulse: drives the sine-wave scale/alpha animation on the name text
-// Revealing flag: stays true while we're continuously spawning shimmer particles
 static float s_mythicalFlashTimer = 0.0f;
 static float s_mythicalPulseTimer = 0.0f;
 static bool  s_isMythicalRevealing = false;
 
-// Same idea as mythical pulse but for legendary - separate so they
-// can run at different speeds without interfering with each other
 static float s_legendaryPulseTimer = 0.0f;
 
+static bool s_showRates = false;
 
 struct GachaParticle {
-    float x, y;      // current position (in AE normalised screen coords)
-    float vx, vy;    // velocity per frame
-    float life;      // seconds remaining - particle dies when this hits 0
-    float r, g, b;   // colour
-    float floorY;    // y level the particle bounces off
+    float x, y;
+    float vx, vy;
+    float life;
+    float r, g, b;
+    float floorY;
 };
 static std::vector<GachaParticle> s_particles;
 
-
-// ============================================================
-//  //  Pet type lookup
-//  Converts the string name used in gachaPool to the enum
-//  value PetManager actually stores.
-//  Iterates the PetManager data map and matches against
-//  PetData::name (case-sensitive, exact match).
-//  Returns NONE if no match is found.
-//  If a new pet is added to the pool, a corresponding entry
-//  must exist in PetManager's data map or it will save as NONE.
-// ============================================================
 static Pets::PET_TYPE GetPetTypeFromWord(const std::string& word) {
     auto const& petmap = PetManager::GetInstance()->GetPetDataMap();
     for (auto it{ petmap.begin() }; it != petmap.end(); ++it) {
-        if (it->second.name == word) {
-            return it->first;
-        }
+        if (it->second.name == word) return it->first;
     }
     return Pets::PET_TYPE::NONE;
 }
 
-// Basic burst used for Common through Rare reveals.
 static void SpawnBurst(float x, float y, float r, float g, float b, int count) {
     for (int i = 0; i < count; ++i) {
         float angle = (rand() % 360) * 0.0174533f;
@@ -84,7 +60,6 @@ static void SpawnBurst(float x, float y, float r, float g, float b, int count) {
     }
 }
 
-// Upgraded burst for Epic and Legendary reveals.
 static void SpawnEpicBurst(float x, float y, float r, float g, float b, int count) {
     for (int i = 0; i < count; ++i) {
         float angle = (rand() % 360) * 0.0174533f;
@@ -101,12 +76,11 @@ static void SpawnEpicBurst(float x, float y, float r, float g, float b, int coun
     }
 }
 
-// Fire-themed burst reserved for Dragon (Mythical) only.
 static void SpawnMythicalBurst(float x, float y, int count) {
     static const float palette[3][3] = {
-        { 1.0f, 0.0f, 0.0f },  // bright red
-        { 1.0f, 0.4f, 0.0f },  // orange
-        { 0.8f, 0.0f, 0.0f },  // deep red
+        { 1.0f, 0.0f, 0.0f },
+        { 1.0f, 0.4f, 0.0f },
+        { 0.8f, 0.0f, 0.0f },
     };
     for (int i = 0; i < count; ++i) {
         float angle = (rand() % 360) * 0.0174533f;
@@ -121,28 +95,28 @@ static void SpawnMythicalBurst(float x, float y, int count) {
 }
 
 static std::vector<WordEntry> gachaPool = {
-    {"Rock",  "Common", 15.799995f, 1.0f, 1.0f, 1.0f},
-    {"Slime", "Common", 15.75f, 1.0f, 1.0f, 1.0f},
-    {"Lycan",  "Common", 15.75f, 1.0f, 1.0f, 1.0f},
-    {"Scylla", "Common", 15.75f, 1.0f, 1.0f, 1.0f},
-    {"Rock",  "Uncommon", 5.0f, 0.0f, 1.0f, 0.0f},
-    {"Slime", "Uncommon", 5.0f, 0.0f, 1.0f, 0.0f},
-    {"Lycan",  "Uncommon", 5.0f, 0.0f, 1.0f, 0.0f},
-    {"Scylla", "Uncommon", 5.0f, 0.0f, 1.0f, 0.0f},
-    {"Rock",  "Rare", 2.5f, 0.0f, 0.5f, 1.0f},
-    {"Slime", "Rare", 2.5f, 0.0f, 0.5f, 1.0f},
-    {"Lycan",  "Rare", 2.5f, 0.0f, 0.5f, 1.0f},
-    {"Scylla", "Rare", 2.5f, 0.0f, 0.5f, 1.0f},
-    {"Rock",  "Epic", 1.25f, 0.6f, 0.1f, 0.9f},
-    {"Slime", "Epic", 1.25f, 0.6f, 0.1f, 0.9f},
-    {"Lycan",  "Epic", 1.25f, 0.6f, 0.1f, 0.9f},
-    {"Scylla", "Epic", 1.25f, 0.6f, 0.1f, 0.9f},
-    {"Rock",   "Legendary", 0.19f, 1.0f, 0.5f, 0.0f},
-    {"Slime",  "Legendary", 0.19f, 1.0f, 0.5f, 0.0f},
-    {"Lycan",   "Legendary", 0.19f, 1.0f, 0.5f, 0.0f},
-    {"Scylla",  "Legendary", 0.19f, 1.0f, 0.5f, 0.0f},
-    {"Phoenix", "Legendary", 0.19f, 1.0f, 0.5f, 0.0f},
-    {"Dragon", "Mythical", 0.000005f, 1.0f, 0.0f, 0.0f},
+    {"Rock",    "Common",    15.799995f, 1.0f, 1.0f, 1.0f},
+    {"Slime",   "Common",    15.75f,     1.0f, 1.0f, 1.0f},
+    {"Lycan",   "Common",    15.75f,     1.0f, 1.0f, 1.0f},
+    {"Scylla",  "Common",    15.75f,     1.0f, 1.0f, 1.0f},
+    {"Rock",    "Uncommon",  5.0f,       0.0f, 1.0f, 0.0f},
+    {"Slime",   "Uncommon",  5.0f,       0.0f, 1.0f, 0.0f},
+    {"Lycan",   "Uncommon",  5.0f,       0.0f, 1.0f, 0.0f},
+    {"Scylla",  "Uncommon",  5.0f,       0.0f, 1.0f, 0.0f},
+    {"Rock",    "Rare",      2.5f,       0.0f, 0.5f, 1.0f},
+    {"Slime",   "Rare",      2.5f,       0.0f, 0.5f, 1.0f},
+    {"Lycan",   "Rare",      2.5f,       0.0f, 0.5f, 1.0f},
+    {"Scylla",  "Rare",      2.5f,       0.0f, 0.5f, 1.0f},
+    {"Rock",    "Epic",      1.25f,      0.6f, 0.1f, 0.9f},
+    {"Slime",   "Epic",      1.25f,      0.6f, 0.1f, 0.9f},
+    {"Lycan",   "Epic",      1.25f,      0.6f, 0.1f, 0.9f},
+    {"Scylla",  "Epic",      1.25f,      0.6f, 0.1f, 0.9f},
+    {"Rock",    "Legendary", 0.19f,      1.0f, 0.5f, 0.0f},
+    {"Slime",   "Legendary", 0.19f,      1.0f, 0.5f, 0.0f},
+    {"Lycan",   "Legendary", 0.19f,      1.0f, 0.5f, 0.0f},
+    {"Scylla",  "Legendary", 0.19f,      1.0f, 0.5f, 0.0f},
+    {"Phoenix", "Legendary", 0.19f,      1.0f, 0.5f, 0.0f},
+    {"Dragon",  "Mythical",  0.000005f,  1.0f, 0.0f, 0.0f},
 };
 
 int RarityRank(const std::string& r) {
@@ -155,7 +129,7 @@ int RarityRank(const std::string& r) {
     return -1;
 }
 
-WordEntry RollGachaWord() {
+static WordEntry RollGachaWord() {
     float total = 0.0f;
     for (auto& e : gachaPool) total += e.weight;
     float roll = ((float)rand() / RAND_MAX) * total;
@@ -197,6 +171,110 @@ static void DrawSolidRect(const AEMtx33& parent, float x, float y, float w, floa
     if (s_overlayQuad) AEGfxMeshDraw(s_overlayQuad, AE_GFX_MDM_TRIANGLES);
 }
 
+static bool IsMouseOverChest() {
+    s32 mx, my;
+    AEInputGetCursorPosition(&mx, &my);
+
+    float winW = (float)(AEGfxGetWinMaxX() * 2);
+    float winH = (float)(AEGfxGetWinMaxY() * 2);
+
+    float worldX = ((float)mx / (winW * 0.5f)) - 1.0f;
+    float worldY = 1.0f - ((float)my / (winH * 0.5f));
+
+    float halfW = 400.0f / winW;
+    float halfH = 300.0f / winH;
+    float chestY = s_chestBounceOffset / (winH * 0.5f);
+
+    return (worldX >= -halfW && worldX <= halfW &&
+        worldY >= chestY - halfH && worldY <= chestY + halfH);
+}
+
+static void DrawRatesPanel(s8 fontId) {
+    EnsureOverlayMesh();
+
+    // Full screen black overlay drawn directly - no DrawSolidRect
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+    AEGfxTextureSet(NULL, 0.0f, 0.0f);
+    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+    AEGfxSetTransparency(1.0f);
+    AEGfxSetColorToMultiply(0.0f, 0.0f, 0.0f, 0.92f);
+    AEMtx33 fullScreen;
+    AEMtx33Scale(&fullScreen, 2.0f, 2.0f);
+    AEGfxSetTransform(fullScreen.m);
+    AEGfxMeshDraw(s_overlayQuad, AE_GFX_MDM_TRIANGLES);
+
+    // Panel background
+    AEGfxSetColorToMultiply(0.08f, 0.08f, 0.12f, 1.0f);
+    AEMtx33 panelMtx;
+    AEMtx33Scale(&panelMtx, 0.95f, 1.55f);
+    AEGfxSetTransform(panelMtx.m);
+    AEGfxMeshDraw(s_overlayQuad, AE_GFX_MDM_TRIANGLES);
+
+    AEMtx33 I; AEMtx33Identity(&I);
+
+    // Panel border
+    DrawSolidRect(I, 0.0f, 0.785f, 0.95f, 0.015f, 0.4f, 0.4f, 0.6f, 1.0f);
+    DrawSolidRect(I, 0.0f, -0.785f, 0.95f, 0.015f, 0.4f, 0.4f, 0.6f, 1.0f);
+    DrawSolidRect(I, -0.485f, 0.0f, 0.015f, 1.57f, 0.4f, 0.4f, 0.6f, 1.0f);
+    DrawSolidRect(I, 0.485f, 0.0f, 0.015f, 1.57f, 0.4f, 0.4f, 0.6f, 1.0f);
+
+    struct RarityInfo { const char* name; float r, g, b; };
+    static const RarityInfo tiers[] = {
+        { "Mythical",  1.0f, 0.0f, 0.0f },
+        { "Legendary", 1.0f, 0.5f, 0.0f },
+        { "Epic",      0.6f, 0.1f, 0.9f },
+        { "Rare",      0.0f, 0.5f, 1.0f },
+        { "Uncommon",  0.0f, 1.0f, 0.0f },
+        { "Common",    1.0f, 1.0f, 1.0f },
+    };
+
+    std::map<std::string, float> totalWeights;
+    float grandTotal = 0.0f;
+    for (auto& e : gachaPool) { totalWeights[e.rarity] += e.weight; grandTotal += e.weight; }
+
+    float titleScale = 2.2f;
+    float titleHalfW = (5.0f * 0.0135f * titleScale) / 2.0f;
+    AEGfxPrint(fontId, "RATES", -titleHalfW, 0.62f, titleScale, 1.0f, 0.85f, 0.2f, 1.0f);
+
+    DrawSolidRect(I, 0.0f, 0.54f, 0.8f, 0.006f, 0.6f, 0.5f, 0.1f, 1.0f);
+
+    float startY = 0.42f;
+    float stepY = 0.165f;
+    float rowScale = 1.55f;
+
+    for (int i = 0; i < 6; ++i) {
+        auto& tier = tiers[i];
+        float pct = (totalWeights[tier.name] / grandTotal) * 100.0f;
+
+        int petCount = 0;
+        for (auto& e : gachaPool) if (e.rarity == tier.name) petCount++;
+
+        float y = startY - i * stepY;
+
+        if (i % 2 == 0)
+            DrawSolidRect(I, 0.0f, y, 0.88f, stepY * 0.85f, 1.0f, 1.0f, 1.0f, 0.04f);
+
+        char nameBuf[32];
+        sprintf_s(nameBuf, "%s", tier.name);
+        AEGfxPrint(fontId, nameBuf, -0.42f, y, rowScale, tier.r, tier.g, tier.b, 1.0f);
+
+        char pctBuf[32];
+        sprintf_s(pctBuf, "%.6f%%", pct);
+        float pctW = ((float)strlen(pctBuf) * 0.0135f * rowScale);
+        AEGfxPrint(fontId, pctBuf, -pctW / 2.0f, y, rowScale, 1.0f, 1.0f, 1.0f, 1.0f);
+
+        char petBuf[32];
+        sprintf_s(petBuf, "%d pets", petCount);
+        float petW = ((float)strlen(petBuf) * 0.0135f * rowScale);
+        AEGfxPrint(fontId, petBuf, 0.42f - petW, y, rowScale, 0.6f, 0.6f, 0.6f, 1.0f);
+    }
+
+    const char* hint = "[I] Close";
+    float hintScale = 1.3f;
+    float hintW = ((float)strlen(hint) * 0.0135f * hintScale);
+    AEGfxPrint(fontId, hint, -hintW / 2.0f, -0.70f, hintScale, 0.5f, 0.5f, 0.5f, 1.0f);
+}
+
 void BeginGachaOverlay(GachaAnimation& anim, int count, float intro, float /*roll*/, float delay) {
     anim.Reset();
     anim.currentIndex = -1;
@@ -206,6 +284,7 @@ void BeginGachaOverlay(GachaAnimation& anim, int count, float intro, float /*rol
     s_mythicalPulseTimer = 0.0f;
     s_legendaryPulseTimer = 0.0f;
     s_isMythicalRevealing = false;
+    s_showRates = false;
     for (int i = 0; i < count; ++i) anim.results.push_back(RollGachaWord());
     s_highestEntry = FindHighestRarity(anim.results);
     anim.phase = GachaPhase::Intro;
@@ -219,34 +298,46 @@ void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skip, bool open) {
         if (anim.introTimer <= 0.0f) anim.phase = GachaPhase::Rolling;
         return;
     }
+
     s_idleGlowTimer += dt;
     s_mythicalPulseTimer += dt;
     s_legendaryPulseTimer += dt;
+
     if (s_chestBounceTimer > 0.0f) {
         s_chestBounceTimer -= dt;
         s_chestBounceOffset = sinf((s_chestBounceTimer / 0.35f) * 3.14159f) * 15.0f;
     }
     else s_chestBounceOffset = 0.0f;
 
-    if (anim.phase == GachaPhase::Rolling && open && !s_chestOpened) {
-        s_chestOpened = true;
-        s_chestBounceTimer = 0.35f;
-        s_chestLightTimer = s_chestLightMax;
-        if (RarityRank(s_highestEntry.rarity) >= 5) {
-            SpawnMythicalBurst(0.0f, 0.0f, 600);
-            SpawnMythicalBurst(-0.3f, 0.1f, 200);
-            SpawnMythicalBurst(0.3f, 0.1f, 200);
-            s_mythicalFlashTimer = 0.6f;
-            s_isMythicalRevealing = true;
+    if (anim.phase == GachaPhase::Rolling) {
+        if (AEInputCheckTriggered(AEVK_I)) s_showRates = !s_showRates;
+
+        if (!s_showRates) {
+            bool mouseOpen = AEInputCheckTriggered(AEVK_LBUTTON) && IsMouseOverChest();
+            bool keyOpen = open;
+
+            if ((mouseOpen || keyOpen) && !s_chestOpened) {
+                s_chestOpened = true;
+                s_chestBounceTimer = 0.35f;
+                s_chestLightTimer = s_chestLightMax;
+                if (RarityRank(s_highestEntry.rarity) >= 5) {
+                    SpawnMythicalBurst(0.0f, 0.0f, 600);
+                    SpawnMythicalBurst(-0.3f, 0.1f, 200);
+                    SpawnMythicalBurst(0.3f, 0.1f, 200);
+                    s_mythicalFlashTimer = 0.6f;
+                    s_isMythicalRevealing = true;
+                }
+                else {
+                    SpawnBurst(0.0f, 0.0f, s_highestEntry.r, s_highestEntry.g, s_highestEntry.b, 260);
+                }
+                for (WordEntry const& e : anim.results) {
+                    PetManager::GetInstance()->AddNewPet(Pets::PetSaveData{ GetPetTypeFromWord(e.word), static_cast<Pets::PET_RANK>(RarityRank(e.rarity)) });
+                }
+                PetManager::GetInstance()->SaveInventoryToJSON();
+            }
         }
-        else {
-            SpawnBurst(0.0f, 0.0f, s_highestEntry.r, s_highestEntry.g, s_highestEntry.b, 260);
-        }
-        for (WordEntry const& e : anim.results) {
-            PetManager::GetInstance()->AddNewPet(Pets::PetSaveData{ GetPetTypeFromWord(e.word), static_cast<Pets::PET_RANK>(RarityRank(e.rarity)) });
-        }
-        PetManager::GetInstance()->SaveInventoryToJSON();
     }
+
     if (s_chestOpened && anim.phase == GachaPhase::Rolling) {
         s_chestLightTimer -= dt;
         if (s_chestLightTimer <= 0.0f) {
@@ -254,7 +345,9 @@ void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skip, bool open) {
             anim.timer = 0.0f;
         }
     }
+
     if (s_mythicalFlashTimer > 0.0f) s_mythicalFlashTimer -= dt;
+
     if (s_isMythicalRevealing && anim.phase == GachaPhase::Reveal) {
         int idx = anim.currentIndex;
         if (idx >= 0 && idx < (int)anim.results.size()) {
@@ -264,6 +357,7 @@ void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skip, bool open) {
             else s_isMythicalRevealing = false;
         }
     }
+
     if (anim.phase == GachaPhase::Reveal) {
         if (skip) {
             for (int i = anim.currentIndex + 1; i < (int)anim.results.size(); ++i) {
@@ -289,14 +383,14 @@ void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skip, bool open) {
                 float bX = 0, bY = 0;
                 int i = anim.currentIndex;
                 if (anim.results.size() <= 10) {
-                    if (i < 3) { bX = -0.55f + i * 0.55f; bY = 0.70f; }
+                    if (i < 3) { bX = -0.55f + i * 0.55f;       bY = 0.70f; }
                     else if (i < 6) { bX = -0.55f + (i - 3) * 0.55f; bY = 0.40f; }
                     else if (i < 9) { bX = -0.55f + (i - 6) * 0.55f; bY = 0.10f; }
-                    else { bX = 0.0f; bY = -0.20f; }
+                    else { bX = 0.0f;                       bY = -0.20f; }
                 }
                 else {
                     bX = -0.72f + ((i % 10) * 0.16f);
-                    bY = 0.65f - ((i / 10) * 0.11f);
+                    bY = 0.65f - ((i / static_cast<float>(10)) * 0.11f);
                 }
                 if (RarityRank(e.rarity) >= 5) {
                     SpawnMythicalBurst(bX, bY, 500);
@@ -322,6 +416,7 @@ void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skip, bool open) {
             }
         }
     }
+
     for (int i = 0; i < (int)s_particles.size();) {
         auto& p = s_particles[i];
         p.vy -= dt * 0.4f; p.vx *= (1.0f - dt * 0.8f); p.vy *= (1.0f - dt * 0.3f);
@@ -333,25 +428,27 @@ void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skip, bool open) {
     }
 }
 
-// Draw order: flash overlay -> particles -> card names -> HUD prompts -> chest
 void DrawGachaOverlay(GachaAnimation& anim, s8 fontId) {
     EnsureOverlayMesh();
     AEMtx33 I; AEMtx33Identity(&I);
 
-    // Full-screen red tint -- fades out over s_mythicalFlashTimer seconds
+    // Rates panel is drawn first and returns early so nothing bleeds through
+    if (s_showRates) {
+        DrawRatesPanel(fontId);
+        return;
+    }
+
     if (s_mythicalFlashTimer > 0.0f) {
         float alpha = (s_mythicalFlashTimer / 0.6f) * 0.55f;
         DrawSolidRect(I, 0.0f, 0.0f, 2.0f, 2.0f, 1.0f, 0.0f, 0.0f, alpha);
     }
 
-    // Draw every live particle.
     for (auto& p : s_particles) {
         float fadeAlpha = (p.life > 1.0f) ? 1.0f : p.life;
         float sz = 0.8f + p.life * 0.3f;
         AEGfxPrint(fontId, (p.life > 1.2f) ? "*" : ".", p.x, p.y, sz, p.r, p.g, p.b, fadeAlpha);
     }
 
-    // --- Card name display (Reveal and Done phases) ---
     if (anim.phase == GachaPhase::Reveal || anim.phase == GachaPhase::Done) {
         for (int i = 0; i <= anim.currentIndex; ++i) {
             if (i >= (int)anim.results.size()) continue;
@@ -359,29 +456,24 @@ void DrawGachaOverlay(GachaAnimation& anim, s8 fontId) {
             bool isMythical = (RarityRank(e.rarity) >= 5);
             bool isLegendary = (RarityRank(e.rarity) >= 4);
 
-            // The "active" card (currently being revealed) gets a big centred display.
             if (i == anim.currentIndex && isLegendary && !anim.isFinished) {
                 if (isMythical) {
-                    // --- Mythical reveal display ---
                     float pulse = 5.5f + 0.6f * sinf(s_mythicalPulseTimer * 6.0f);
                     float labelAlpha = 0.6f + 0.4f * sinf(s_mythicalPulseTimer * 8.0f);
                     float glowAlpha = 0.25f + 0.15f * sinf(s_mythicalPulseTimer * 5.0f);
                     float cx = -((float)e.word.length() * 0.0135f * pulse) / 2.0f;
 
-                    // Draw the name four times offset for a glowing halo
                     AEGfxPrint(fontId, e.word.c_str(), cx - 0.03f, 0.05f, pulse, 1.0f, 0.0f, 0.0f, glowAlpha);
                     AEGfxPrint(fontId, e.word.c_str(), cx + 0.03f, 0.05f, pulse, 1.0f, 0.0f, 0.0f, glowAlpha);
                     AEGfxPrint(fontId, e.word.c_str(), cx, 0.08f, pulse, 1.0f, 0.0f, 0.0f, glowAlpha);
                     AEGfxPrint(fontId, e.word.c_str(), cx, 0.02f, pulse, 1.0f, 0.0f, 0.0f, glowAlpha);
                     AEGfxPrint(fontId, e.word.c_str(), cx, 0.05f, pulse, 1.0f, 0.0f, 0.0f, 1.0f);
 
-                    // "!!! NEW !!!" label centred above the name
                     float newLabelScale = 2.5f;
                     float newLabelHalfW = (11.0f * 0.0135f * newLabelScale) / 2.0f;
                     AEGfxPrint(fontId, "!!! NEW !!!", -newLabelHalfW, 0.30f, newLabelScale, 1.0f, 0.2f, 0.0f, labelAlpha);
                 }
                 else {
-                    // --- Legendary reveal display ---
                     float legPulse = 5.0f + 0.3f * sinf(s_legendaryPulseTimer * 5.0f);
                     float legAlpha = 0.7f + 0.3f * sinf(s_legendaryPulseTimer * 5.0f);
                     float cx = -((float)e.word.length() * 0.0135f * legPulse) / 2.0f;
@@ -393,7 +485,6 @@ void DrawGachaOverlay(GachaAnimation& anim, s8 fontId) {
                 }
             }
             else {
-                // --- Already-revealed cards sitting in the grid ---
                 float x = 0, y = 0, dr = e.r, dg = e.g, db = e.b;
                 if (RarityRank(e.rarity) >= 5) {
                     dr = 0.7f + 0.3f * sinf(s_mythicalPulseTimer * 6.0f); dg = 0.0f; db = 0.0f;
@@ -403,23 +494,23 @@ void DrawGachaOverlay(GachaAnimation& anim, s8 fontId) {
                 }
 
                 if (anim.results.size() <= 10) {
-                    if (i < 3) { x = -0.55f + i * 0.55f; y = 0.70f; }
+                    if (i < 3) { x = -0.55f + i * 0.55f;       y = 0.70f; }
                     else if (i < 6) { x = -0.55f + (i - 3) * 0.55f; y = 0.40f; }
                     else if (i < 9) { x = -0.55f + (i - 6) * 0.55f; y = 0.10f; }
-                    else { x = 0.0f; y = -0.20f; }
+                    else { x = 0.0f;                       y = -0.20f; }
 
                     float gridScale = 1.5f;
                     float cx = x - ((e.word.length() * 0.0135f * gridScale) / 2.0f);
                     AEGfxPrint(fontId, e.word.c_str(), cx, y, gridScale, dr, dg, db, 1.0f);
                 }
                 else {
-                    x = -0.72f + ((i % 10) * 0.16f); y = 0.65f - ((i / 10) * 0.11f);
+                    x = -0.72f + ((i % 10) * 0.16f);
+                    y = 0.65f - ((i / static_cast<float>(10)) * 0.11f);
                     AEGfxPrint(fontId, ".", x, y, 1.2f, dr, dg, db, 1.0f);
                 }
             }
         }
 
-        // Bottom HUD prompt changes once the session is fully done
         if (anim.phase == GachaPhase::Done) {
             float hudScale = 1.5f;
             float hudW = (44.0f * 0.0135f * hudScale) / 2.0f;
@@ -432,16 +523,17 @@ void DrawGachaOverlay(GachaAnimation& anim, s8 fontId) {
         }
     }
 
-    // --- Chest (Rolling phase only) ---
     if (anim.phase == GachaPhase::Rolling) {
         static AEGfxTexture* texClosed = RenderingManager::GetInstance()->LoadTexture("Assets/gacha.png");
         static AEGfxTexture* texOpen = RenderingManager::GetInstance()->LoadTexture("Assets/gacha_open.png");
         static AEGfxVertexList* chestMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
+
         AEGfxTexture* currentTex = s_chestOpened ? texOpen : texClosed;
         float alpha = s_chestOpened ? 1.0f : (0.75f + 0.25f * sinf(s_idleGlowTimer * 2.0f));
+
         AEMtx33 S, T, M;
         AEMtx33Scale(&S, 400.0f, 300.0f);
-        AEMtx33Trans(&T, 0.0f, 0.0f + s_chestBounceOffset);
+        AEMtx33Trans(&T, 0.0f, s_chestBounceOffset);
         AEMtx33Concat(&M, &T, &S);
         AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
         AEGfxTextureSet(currentTex, 0.0f, 0.0f);
@@ -453,10 +545,26 @@ void DrawGachaOverlay(GachaAnimation& anim, s8 fontId) {
 
         if (!s_chestOpened) {
             float hudScale = 1.5f;
-            float hudW = (38.0f * 0.0135f * hudScale) / 2.0f;
-            AEGfxPrint(fontId, "[Press]: Open Chest           [ESC]: Quit", -hudW, -0.75f, hudScale, 1, 1, 1, 1);
+            float hudW = (44.0f * 0.0135f * hudScale) / 2.0f;
+            AEGfxPrint(fontId, "[Click Chest] Open  [I] Rates  [ESC] Quit", -hudW, -0.75f, hudScale, 1, 1, 1, 1);
         }
     }
 }
 
-void UnloadGacha() { AEGfxMeshFree(s_overlayQuad); }
+void UnloadGacha() {
+    if (s_overlayQuad) {
+        AEGfxMeshFree(s_overlayQuad);
+        s_overlayQuad = nullptr;
+    }
+    s_particles.clear();
+    s_showRates = false;
+    s_chestOpened = false;
+    s_isMythicalRevealing = false;
+    s_mythicalFlashTimer = 0.0f;
+    s_mythicalPulseTimer = 0.0f;
+    s_legendaryPulseTimer = 0.0f;
+    s_idleGlowTimer = 0.0f;
+    s_chestBounceTimer = 0.0f;
+    s_chestBounceOffset = 0.0f;
+    s_chestLightTimer = 0.0f;
+}

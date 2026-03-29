@@ -273,7 +273,7 @@ namespace Tutorial {
 			SetPath({ tilemap->GetTilePosition(3, 13) });
 			break;
 		case Tutorial::LOOT:
-			data.dialogueLines = { "Go near the chest and press E to claim your loot", "Press X to swap to secondary weapon, press Z to swap to main weapon"};
+			data.dialogueLines = { "Go near the chest and press E to claim your loot", "Press 2 to swap to secondary weapon, press 1 to swap to main weapon"};
 			SetPath({ tilemap->GetTilePosition(5, 19), tilemap->GetTilePosition(10, 19) });
 			data.checks = "";
 			break;

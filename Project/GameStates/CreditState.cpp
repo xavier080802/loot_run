@@ -61,47 +61,47 @@ namespace {
     }
 
     const char* credits[] = {
-        "(C) MetaDigger",
-        "(C) Kenney Assets",
-        "Copyrights for software, tools and libraries",
-        " ",
-        "Mandy WONG   Johnny DEEK",
-        "TAN Chek Ming   Prasanna Kumar GHALI",
-        "Claude COMAIR   CHU Jason Yeu Tat   Michael GATS",
-        "EXECUTIVES",
-        " ",
-        "Claude COMAIR",
-        "PRESIDENT",
-        " ",
-        "DigiPen Institute of Technology Singapore",
-        "Created at",
-        " ",
-        "NParks falcon chicks cam",
-        "SPECIAL THANKS TO",
-        " ",
-        "DR Soroor Malekmohammadi Faradounbeh",
-        "MR Tan Chee Wei, Tommy",
-        "MR Wong Han Feng, Gerald",
-        "Instructors",
-        " ",
-        "Faculty and Advisors",
-        " ",
-        "Joon Hin",
-        "UI LEAD and PROGRAMMER",
-        " ",
-        "Hong Teck",
-        "GAMEPLAY LEAD and PROGRAMMER",
-        " ",
-        "Edna Sim",
-        "TECH LEAD and PROGRAMMER",
-        " ",
-        "Xavier Lim",
-        "TEAM LEAD and PROGRAMMER",
-        " ",
-        "Team Members:",
-        " ",
-        "Team STD::Null",
-        nullptr
+       "(C) MetaDigger",
+       "(C) Kenney Assets",
+       "Copyrights for software, tools and libraries",
+       " ",
+       "Mandy WONG   Johnny DEEK",
+       "TAN Chek Ming   Prasanna Kumar GHALI",
+       "Claude COMAIR   CHU Jason Yeu Tat   Michael GATS",
+       "EXECUTIVES",
+       " ",
+       "Claude COMAIR",
+       "PRESIDENT",
+       " ",
+       "DigiPen Institute of Technology Singapore",
+       "Created at",
+       " ",
+       "NParks falcon chicks cam",
+       "SPECIAL THANKS TO",
+       " ",
+       "DR Soroor Malekmohammadi Faradounbeh",
+       "MR Tan Chee Wei, Tommy",
+       "MR Wong Han Feng, Gerald",
+       "Instructors",
+       " ",
+       "Faculty and Advisors",
+       " ",
+       "Joon Hin",
+       "UI LEAD and PROGRAMMER",
+       " ",
+       "Hong Teck",
+       "GAMEPLAY LEAD and PROGRAMMER",
+       " ",
+       "Edna Sim",
+       "TECH LEAD and PROGRAMMER",
+       " ",
+       "Xavier Lim",
+       "TEAM LEAD and PROGRAMMER",
+       " ",
+       "Team Members:",
+       " ",
+       "Team STD::Null",
+       nullptr
     };
 
     bool IsHeader(const char* line)
@@ -191,8 +191,10 @@ void CreditState::Update(double dt)
         if (scrollBodyHeight >= fullH) {
             scrollBodyHeight = fullH;
             state = STATE_SCROLLING;
+            int totalLines = 0;
+            for (int i = 0; credits[i] != nullptr; ++i) totalLines++;
             float cy = 0.0f;
-            yPos_credits = cy + fullH * 0.5f - CAP_H * scale;
+            yPos_credits = cy - fullH * 0.5f + CAP_H * scale + totalLines * LINE_H * scale;
         }
         return;
     }
@@ -244,25 +246,25 @@ void CreditState::Draw()
     int totalLines = 0;
     for (int i = 0; credits[i] != nullptr; ++i) totalLines++;
 
-    for (int i = totalLines - 1; i >= 0; --i) {
-        int   reversedIdx = (totalLines - 1) - i;
-        float y = yPos_credits + reversedIdx * LINE_H * scale;
+    for (int i = 0; i < totalLines; ++i) {
+        float y = yPos_credits - i * LINE_H * scale;  // subtract so lines go upward
 
         if (y < clipWorldTop)    continue;
         if (y > clipWorldBottom) continue;
 
         if (IsHeader(credits[i])) {
-            DrawAEText(Font, credits[i], { cx, y }, scale * 0.85f,
+            DrawAEText(Font, credits[i], { cx, y }, scale * 0.9f,
                 CreateColor(160, 110, 10, 255), TEXT_MIDDLE);
         }
         else {
-            DrawAEText(Font, credits[i], { cx, y }, scale * 0.7f,
+            DrawAEText(Font, credits[i], { cx, y }, scale * 0.72f,
                 CreateColor(40, 25, 10, 255), TEXT_MIDDLE);
         }
     }
 
-    if (yPos_credits + totalLines * LINE_H * scale < clipWorldTop) {
-        yPos_credits = clipWorldBottom;
+    if (yPos_credits - totalLines * LINE_H * scale > clipWorldBottom) {
+        int totalLinesReset = totalLines;
+        yPos_credits = clipWorldBottom + totalLinesReset * LINE_H * scale;
     }
 
     AEVec2 hintPos = DefaultToWorld(80.0f, DEFAULT_H - 40.0f);
