@@ -9,7 +9,7 @@
 #include "../Helpers/ColorUtils.h"
 #include "../main.h"
 #include <iostream>
-#include "../gacha.h"
+//#include "../gacha.h"
 #include "../Music.h"
 #include "../Pets/PetManager.h"
 #include "../UIConfig.h"
@@ -109,9 +109,9 @@ namespace {
 
 	// Track previous hover state
 	bool btnHoverStates[SHOP_BTN_COUNT] = { false };
-	static GachaAnimation gStateAnim;
-	static s8 gachaFont = -1;
-	bool isGachaActive = false;
+	//static GachaAnimation gStateAnim;
+	//static s8 gachaFont = -1;
+	//bool isGachaActive = false;
 }
 
 void ShopState::LoadState()
@@ -120,8 +120,8 @@ void ShopState::LoadState()
 
 	hoverSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17767.wav");
 	clickSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17766.wav");
-	gachaFont = AEGfxCreateFont(SECONDARY_FONT_PATH, 32);
-	EnsureOverlayMesh();
+	//gachaFont = AEGfxCreateFont(SECONDARY_FONT_PATH, 32);
+	//EnsureOverlayMesh();
 }
 
 void ShopState::InitState()
@@ -136,37 +136,37 @@ void ShopState::InitState()
 
 	// Reset hover tracking when entering state
 	for (int i = 0; i < SHOP_BTN_COUNT; ++i) btnHoverStates[i] = false;
-	isGachaActive = false;
+	//isGachaActive = false;
 }
 
 void ShopState::Update(double dt)
 {
-	if (isGachaActive)
-	{
-		bool openPressed = AEInputCheckTriggered(AEVK_LBUTTON) || AEInputCheckTriggered(0x4F);
-		bool skipPressed = AEInputCheckTriggered(AEVK_SPACE);
-		bool pull10 = AEInputCheckTriggered(AEVK_LBUTTON) || AEInputCheckTriggered(0x52);
-		bool pull100 = AEInputCheckTriggered(AEVK_T) || AEInputCheckTriggered(0x54);
-		bool exitPressed = AEInputCheckTriggered(AEVK_ESCAPE);
+	//if (isGachaActive)
+	//{
+	//	bool openPressed = AEInputCheckTriggered(AEVK_LBUTTON) || AEInputCheckTriggered(0x4F);
+	//	bool skipPressed = AEInputCheckTriggered(AEVK_SPACE);
+	//	bool pull10 = AEInputCheckTriggered(AEVK_LBUTTON) || AEInputCheckTriggered(0x52);
+	//	bool pull100 = AEInputCheckTriggered(AEVK_T) || AEInputCheckTriggered(0x54);
+	//	bool exitPressed = AEInputCheckTriggered(AEVK_ESCAPE);
 
-		if (exitPressed) {
-			isGachaActive = false;
-			bgm.StopGacha(0.2f);
-			return;
-		}
+	//	if (exitPressed) {
+	//		isGachaActive = false;
+	//		bgm.StopGacha(0.2f);
+	//		return;
+	//	}
 
-		// Main Button Logic
-		if (gStateAnim.phase == GachaPhase::Done) {
-			PetManager::GetInstance()->SaveInventoryToJSON();
-			if (pull10) BeginGachaOverlay(gStateAnim, 10, 0.1f, 0.8f, 0.3f);
-			else if (pull100) BeginGachaOverlay(gStateAnim, 100, 0.1f, 1.2f, 0.2f);
-		}
+	//	// Main Button Logic
+	//	if (gStateAnim.phase == GachaPhase::Done) {
+	//		PetManager::GetInstance()->SaveInventoryToJSON();
+	//		if (pull10) BeginGachaOverlay(gStateAnim, 10, 0.1f, 0.8f, 0.3f);
+	//		else if (pull100) BeginGachaOverlay(gStateAnim, 100, 0.1f, 1.2f, 0.2f);
+	//	}
 
-		UpdateGachaOverlay(gStateAnim, static_cast<float>(dt), skipPressed, openPressed);
-		if (gStateAnim.isFinished) gStateAnim.phase = GachaPhase::Done;
-	}
-	else
-	{
+	//	UpdateGachaOverlay(gStateAnim, static_cast<float>(dt), skipPressed, openPressed);
+	//	if (gStateAnim.isFinished) gStateAnim.phase = GachaPhase::Done;
+	//}
+	//else
+	//{
 		for (int i = 0; i < SHOP_BTN_COUNT; ++i)
 		{
 			AEVec2 worldPos = DefaultToWorld(shopButtons[i].pos.x, shopButtons[i].pos.y);
@@ -269,12 +269,12 @@ void ShopState::Update(double dt)
 				}
 			}
 		}
-	}
+	//}
 }
 
 void ShopState::Draw()
 {
-	if (isGachaActive)
+	/*if (isGachaActive)
 	{
 		AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 		AEGfxStart();
@@ -282,7 +282,7 @@ void ShopState::Draw()
 		DrawGachaOverlay(gStateAnim, gachaFont);
 	}
 	else
-	{
+	{*/
 		AEGfxSetBackgroundColor(0.2f, 0.2f, 0.2f);
 		AEGfxStart();
 		AEGfxSetBlendMode(AE_GFX_BM_BLEND);
@@ -364,14 +364,14 @@ void ShopState::Draw()
 				}
 			}
 		}
-	}
+	//}
 }
 
 void ShopState::ExitState()
 {
 	std::cout << "Exit shop state\n";
-	bgm.StopGacha(0.2f);
-	gStateAnim.Reset();
+	//bgm.StopGacha(0.2f);
+	//gStateAnim.Reset();
 }
 
 void ShopState::UnloadState() {
@@ -383,5 +383,5 @@ void ShopState::UnloadState() {
 	AEAudioUnloadAudio(hoverSound);
 	AEAudioUnloadAudio(clickSound);
 
-	gachaFont = -1;
+	//gachaFont = -1;
 }
