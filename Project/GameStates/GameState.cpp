@@ -1106,6 +1106,7 @@ void GameState::Update(double dt)
 		(AEInputCheckTriggered(AEVK_M) || AEInputCheckTriggered(AEVK_ESCAPE)))
 	{
 		Pause::Toggle();
+		return;
 	}
 
 	// Pause zeroes dt and handles its own input; skip all game logic while open
