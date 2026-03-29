@@ -15,6 +15,7 @@ public:
 	void UnloadState() override;
 	void Update(double dt) override; 
 	void Draw() override;
+	static void TriggerScreenFlash(float duration = 0.5f);
 
 private:
 	void HandleTutorialDialogueRender();

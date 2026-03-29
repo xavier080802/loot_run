@@ -57,6 +57,22 @@ GameObject* Player::Init(AEVec2 _pos, AEVec2 _scale, int _z,
 	if (!squareMesh) {
 		squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
 	}
+
+	if (!weaponSpriteGO) {
+		weaponSpriteGO = new GameObject(true);
+	}
+
+	weaponSpriteGO->Init(_pos, { 40.f, 40.f }, _z + 1, MESH_SQUARE, Collision::SHAPE::COL_RECT, { 0,0 }, Bitmask{0}, Collision::LAYER::NONE);
+	weaponSpriteGO->SetCollision(false);
+
+	if (!aimArrowGO) {
+		aimArrowGO = new GameObject(true);
+	}
+	aimArrowGO->Init(_pos, { 40.f, 40.f }, _z - 2, MESH_SQUARE, Collision::SHAPE::COL_RECT, { 0,0 }, Bitmask{0}, Collision::LAYER::NONE);
+	aimArrowGO->SetCollision(false);
+	aimArrowGO->GetRenderData().AddTexture("Assets/sprites/attacks/direction.png");
+	aimArrowGO->GetRenderData().SetActiveTexture(0);
+
 	hpBarPos = { 0, AEGfxGetWinMinY() + HpBarSize.y * 0.5f + 5 };
 	hpBarTrans = GetTransformMtx(hpBarPos, 0, HpBarSize);
 	return GameObject::Init(_pos, _scale, _z, _meshShape, _colShape, _colSize, _collideWithLayers, _isInLayers);
@@ -109,7 +125,7 @@ void Player::InitPlayerRuntime(const ActorStats& baseStats)
 
 	InputManager::GetInstance()->SubscribeMouse(this, 1)
 		.SubscribeKeyboard(this, 1)
-		.Key(AEVK_Q).Key(AEVK_Z).Key(AEVK_X)
+		.Key(AEVK_Q).Key(AEVK_1).Key(AEVK_2)
 		.Key(AEVK_G).Key(AEVK_B);
 }
 
@@ -280,6 +296,51 @@ void Player::Update(double dt)
 	Temp_DoVelocityMovement(dt);
 
 	Actor::Update(dt);
+
+	// Update the weapon sprite representation
+	if (weaponSpriteGO) {
+		const EquipmentData* weapon = GetHeldWeaponData();
+		if (weapon && weapon->texturePath && weapon->texturePath[0] != '\0') {
+			weaponSpriteGO->SetEnabled(true);
+			AEVec2 weaponPos = pos;
+			
+			float offsetDistance = scale.x * 0.6f;
+			weaponPos.x += offsetDistance;
+
+			weaponSpriteGO->SetPos(weaponPos);
+			
+			weaponSpriteGO->Init(weaponPos, scale-10.0f, z + 1, MESH_SQUARE, Collision::SHAPE::COL_RECT, { 0,0 }, Bitmask{ 0 }, Collision::LAYER::NONE);
+			weaponSpriteGO->SetCollision(false);
+			
+			// Load the texture and apply rarity tint
+			weaponSpriteGO->GetRenderData().AddTexture(weapon->texturePath);
+			weaponSpriteGO->GetRenderData().SetActiveTexture((int)weaponSpriteGO->GetRenderData().texList.size() - 1);
+			weaponSpriteGO->GetRenderData().tint = GetRarityColor(weapon->rarity);
+		}
+		else {
+			weaponSpriteGO->SetEnabled(false);
+		}
+	}
+
+	// Update aim arrow
+	if (aimArrowGO) {
+		AEVec2 mousePos = GetMouseWorldVec();
+		AEVec2 dir = { mousePos.x - pos.x, mousePos.y - pos.y };
+
+		if (dir.x != 0.0f || dir.y != 0.0f) {
+			AEVec2Normalize(&dir, &dir);
+			
+			float offsetDistance = scale.x * 0.8f;
+			AEVec2 arrowPos = { pos.x + dir.x * offsetDistance, pos.y + dir.y * offsetDistance };
+
+			// Adjust size roughly based on attack size or default to 40
+			aimArrowGO->Init(arrowPos, { 40.f, 40.f }, z - 2, MESH_SQUARE, Collision::SHAPE::COL_RECT, { 0,0 }, Bitmask{ 0 }, Collision::LAYER::NONE);
+			aimArrowGO->SetCollision(false);
+			
+			float angle = atan2(dir.y, dir.x);
+			aimArrowGO->SetRotation(AERadToDeg(angle) - 90.0f);
+		}
+	}
 }
 
 /**
@@ -576,7 +637,7 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 			Debug::stream << "Held: " << SafeName(GetHeldWeaponData()) << "\n";
 		}
 		break;
-	case AEVK_Z:
+	case AEVK_1:
 		if (content.type == Input::INPUT_TYPE::TRIGGERED) {
 			heldWeapon = HeldWeapon::Weapon1;
 			mInventory.SetActiveMainWeapon(0);
@@ -584,7 +645,7 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 			Debug::stream << "Held: " << SafeName(GetHeldWeaponData()) << "\n";
 		}
 		break;
-	case AEVK_X:
+	case AEVK_2:
 		if (content.type == Input::INPUT_TYPE::TRIGGERED) {
 			heldWeapon = HeldWeapon::Weapon2;
 			mInventory.SetActiveMainWeapon(1);
@@ -615,6 +676,13 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
  */
 void Player::OnDeath(Actor* killer)
 {
+	if (weaponSpriteGO) {
+		weaponSpriteGO->SetEnabled(false);
+	}
+	if (aimArrowGO) {
+		aimArrowGO->SetEnabled(false);
+	}
+
 	Actor::OnDeath(killer);
 	Debug::stream << "PLAYER DIED\n";
 }

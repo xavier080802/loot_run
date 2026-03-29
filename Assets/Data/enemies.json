@@ -33,7 +33,7 @@
       "category": "Boss",
       "dropTableId": 0,
       "baseStats": {
-        "maxHP": 100,
+        "maxHP": 500,
         "attack": 15,
         "defense": 0,
         "moveSpeed": 0,
@@ -168,7 +168,7 @@
       "category": "Boss",
       "dropTableId": 0,
       "baseStats": {
-        "maxHP": 300,
+        "maxHP": 500,
         "attack": 35,
         "defense": 20,
         "moveSpeed": 110,

@@ -206,8 +206,8 @@ GameObject* GameObjectManager::QueryOnMouse()
 	size_t i{ static_cast<size_t>(inds.y * grid.partitions + inds.x) };
 	if (i >= grid.cells.size()) return nullptr; //Out of bounds
 	//Find gameobject on mouse
-	for (GOCollision::Element const& e : grid.cells.at(i).elements) {
-		GameObject& go{ *goList.at(e.index) };
+	for (auto it = grid.cells.at(i).elements.rbegin(); it != grid.cells.at(i).elements.rend(); ++it) {
+		GameObject& go{ *goList.at(it->index) };
 		if (!go.IsEnabled()) continue;
 		if ((go.colShape == Collision::COL_RECT && IsCursorOverWorld(go.GetPos(), go.GetColSize(), false))
 			|| (go.colShape == Collision::COL_CIRCLE && IsCursorOverOvalWorld(go.GetPos(), go.GetColSize(),0, false))) {

@@ -10,6 +10,7 @@
 #include <iostream>
 #include "../DebugTools.h"
 #include "../UI/UIManager.h"
+#include "../GameStates/GameState.h"
 
 namespace {
     // Just for debugging
@@ -174,6 +175,7 @@ void Actor::TakeDamage(DamageData const& data)
 
     if (goType == GO_TYPE::PLAYER) {
         std::cout << "[Player] Took " << actualDmg << " damage. Current HP: " << mCurrentHP << "/" << mStats.maxHP << '\n';
+        GameState::TriggerScreenFlash(0.5f); // Full screen red flash
     }
     
     // Alert on-hit subscribers (e.g., target's defensive reactive effects, or attacker's lifesteal)
