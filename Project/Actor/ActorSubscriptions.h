@@ -4,6 +4,9 @@
 #include "StatsTypes.h"
 class Actor; //Avoid circular dependency. Do the Include in cpp.
 struct EquipmentData;
+namespace StatEffects{
+	class StatusEffect;
+}
 //Declarations for Subscribers related to Actor
 
 struct ActorGotKillSubContent {

@@ -935,6 +935,8 @@ void GameState::InitState()
     if (!doTutorial) {
         PetManager::GetInstance()->InitPetForGame(*map);
     }
+    //When player dies, alert game state
+    gPlayer->SubToOnDeath(this);
 
     // place all the designer-authored chests from the CSV
     SpawnCsvChests(*map);
@@ -1270,14 +1272,6 @@ void GameState::Update(double dt)
             }
         }
     }
-    if (mapSelected != "Assets/Endless.csv" && gPlayer && gPlayer->GetHP() <= 0.f) {
-        GameEnd::Show(false, false, 0.f, gPlayer->GetInventory().GetCoins(), totalEnemiesKilled);
-        std::cout << "PLAYER DIED - not Endless. \n";
-    }
-    if (mapSelected == "Assets/Endless.csv" && gPlayer && gPlayer->GetHP() <= 0.f) {
-        GameEnd::Show(false, true, endlessRunTimer, gPlayer->GetInventory().GetCoins(), totalEnemiesKilled);
-        std::cout << "PLAYER DIED — Endless over.\n";
-    }
     minimap->Update(dt, *currentMap, *gPlayer);
     UpdateWorldMap((float)dt);
 
@@ -1410,6 +1404,13 @@ void GameState::HandleTutorialDialogueRender()
         fairy->data.dialoguePos, AEGfxGetWindowWidth() * 0.9f, fairy->data.dialogueSize, 0.0f,
         Color{ 0,0,0,255 }, TEXT_MIDDLE, TextboxOriginPos::TOP,
         TextboxBgCfg{ AEVec2{0.005f, 0.025f}, Color{255,255,255,255}, 255, RenderingManager::GetInstance()->GetMesh(MESH_SQUARE), nullptr });
+}
+
+void GameState::SubscriptionAlert(ActorDeadSubContent content)
+{
+    if (content.victim != gPlayer) return;
+    //Player died, end
+    GameEnd::Show(false, mapSelected == "Assets/Endless.csv", endlessRunTimer, gPlayer->GetInventory().GetCoins(), totalEnemiesKilled);
 }
 
 // =============================================================

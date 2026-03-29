@@ -2,11 +2,12 @@
 #define _GAME_STATE_H
 #include "../GameStateManager.h"
 #include "AEEngine.h"
+#include "../Actor/ActorSubscriptions.h"
 
 extern std::string mapSelected;
 
 //State for the game scene
-class GameState : public State {
+class GameState : public State, ActorDeadSub {
 public:
 	void LoadState() override;
 	void InitState() override;
@@ -15,10 +16,10 @@ public:
 	void Update(double dt) override; 
 	void Draw() override;
 
-
-
 private:
 	void HandleTutorialDialogueRender();
+
+	void SubscriptionAlert(ActorDeadSubContent content) override;
 };
 bool getBossAlive();
 float getBossHPProgressBar();
