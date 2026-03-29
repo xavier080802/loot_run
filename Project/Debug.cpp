@@ -228,7 +228,7 @@ void DrawEnemyStats(const DebugContext& ctx)
         pos.y += e->GetDefinition().render.radius + 20.f;
         std::ostringstream oss;
         oss << e->GetDefinition().name
-            << " HP:" << (int)e->GetHP() << "/" << (int)e->GetMaxHP();
+            << " HP:" << (int)std::ceilf(e->GetHP()) << "/" << (int)e->GetMaxHP();
         DrawAEText(ctx.font, oss.str().c_str(), pos, 0.45f,
             CreateColor(255, 255, 100, 255), TEXT_MIDDLE, 0);
     }
