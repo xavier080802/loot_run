@@ -129,16 +129,37 @@ void LevelSelectState::Update(double dt) {
 				switch (i)
 				{
 				case 0: //tutorial
+					if (selectedBtn == i)
+					{
+						// Double-click: already selected, start immediately
+						GameStateManager::GetInstance()
+							->SetNextGameState("GameState", true, true);
+						return;
+					}
 					mapSelected = "Assets/TutorialMap.csv";
 					selectedBtn = i;
 					std::cout << "tutorial: " << mapSelected << std::endl;
 					break;
 				case 1: //normal - CSV dungeon + procedural rooms
+					if (selectedBtn == i)
+					{
+						// Double-click: already selected, start immediately
+						GameStateManager::GetInstance()
+							->SetNextGameState("GameState", true, true);
+						return;
+					}
 					mapSelected = "Assets/Dungeon.csv";
 					selectedBtn = i;
 					std::cout << "normal: " << mapSelected << std::endl;
 					break;
 				case 2: //endless - procedural only, no CSV map
+					if (selectedBtn == i)
+					{
+						// Double-click: already selected, start immediately
+						GameStateManager::GetInstance()
+							->SetNextGameState("GameState", true, true);
+						return;
+					}
 					mapSelected = "Assets/Endless.csv";
 					selectedBtn = i;
 					std::cout << "endless: " << mapSelected << std::endl;
