@@ -530,18 +530,15 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 			if (attackCooldownTimer > 0.0f) return;
 			// Ensure weapon is equipped first before acknowledging attack attempt to avoid spam
 			if (!GetHeldWeaponData()) {
-				// We don't print "No weapon!" here because it would spam every frame while held
 				return;
 			}
 			
 			Debug::stream << "LMB triggered. cooldown=" << attackCooldownTimer << "\n";
 			Debug::stream << "Attack pressed. Held=" << (int)heldWeapon << " weaponPtr=" << GetHeldWeaponData() << "\n";
-			if (GetHeldWeaponData()->isRanged) {
-				Debug::stream << "Remaining ammo: " << mInventory.GetAmmo() - 1 << "\n";
-			}
 
 			// Ammo gate for bow/projectile weapons
 			if (GetHeldWeaponData()->isRanged) {
+				Debug::stream << "Remaining ammo: " << mInventory.GetAmmo() - 1 << "\n";
 				if (!mInventory.ConsumeAmmo(1)) {
 					attackCooldownTimer = 0.0f;
 					Debug::stream << "No ammo to fire!\n";
@@ -557,18 +554,68 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 			Combat::ExecuteAttack(this, GetHeldWeaponData(), GetMouseWorldVec());
 		}
 		break;
-	case AEVK_RBUTTON: // Weapon swap = Right Mouse (swap weapon1 <-> weapon2)
-		if (content.type == Input::INPUT_TYPE::TRIGGERED) {
-			mInventory.SwapMainWeapon();
-
-			if (heldWeapon == HeldWeapon::Weapon1) heldWeapon = HeldWeapon::Weapon2;
-			else if (heldWeapon == HeldWeapon::Weapon2) heldWeapon = HeldWeapon::Weapon1;
-
-			RecalculateStats();
-
-			Debug::stream << "Swapped. Held: " << SafeName(GetHeldWeaponData()) << "\n";
+	case VK_SCROLL: {
+		int ind{ mInventory.GetActiveWeaponIndex() };
+		Player::HeldWeapon prevWeap{ heldWeapon };
+		//After setting the weapon based on scroll dir,
+		//Check if the next weapon exists. If it doesnt, let the switch case fall through to the next
+		//At the last case before default, it won't be able to loop back to the other side so adding that manually.
+		//Default basically just sets back to the original weap, thus no change.
+		if (content.type == Input::INPUT_TYPE::SCROLL_UP) {
+			switch (ind)
+			{
+			case 0:
+				heldWeapon = HeldWeapon::Bow;
+				ind = 2;
+				if(GetHeldWeaponData()) break;
+			case 1:
+				heldWeapon = HeldWeapon::Weapon1;
+				ind = 0;
+				if (GetHeldWeaponData()) break;
+			case 2:
+				heldWeapon = HeldWeapon::Weapon2;
+				ind = 1;
+				if (!GetHeldWeaponData()) { //Loop back to first weapon ([1] empty)
+					heldWeapon = HeldWeapon::Weapon1;
+					ind = 0;
+				}
+				if (GetHeldWeaponData()) break;
+			default:
+				ind = mInventory.GetActiveWeaponIndex();
+				heldWeapon = prevWeap;
+				break;
+			}
 		}
+		else { //Scroll DOWN
+			switch (ind)
+			{
+			case 0:
+				heldWeapon = HeldWeapon::Weapon2;
+				ind = 1;
+				if (GetHeldWeaponData()) break;
+			case 1:
+				heldWeapon = HeldWeapon::Bow;
+				ind = 2;
+				if (GetHeldWeaponData()) break;
+			case 2:
+				heldWeapon = HeldWeapon::Weapon1;
+				ind = 0;
+				if (!GetHeldWeaponData()) { //Loop back to [1] ([0] empty)
+					heldWeapon = HeldWeapon::Weapon2;
+					ind = 1;
+				}
+				if (GetHeldWeaponData()) break;
+			default:
+				ind = mInventory.GetActiveWeaponIndex();
+				heldWeapon = prevWeap;
+				break;
+			}
+		}
+
+		mInventory.SetActiveMainWeapon(ind);
+		RecalculateStats();
 		break;
+	}
 	case AEVK_G: // Drop
 		if (content.type == Input::INPUT_TYPE::TRIGGERED) {
 			const EquipmentData* held = GetHeldWeaponData();

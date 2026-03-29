@@ -269,7 +269,7 @@ namespace Tutorial {
 			SetPath({ tilemap->GetTilePosition(3, 11) });
 			break;
 		case Tutorial::MELEE:
-			data.dialogueLines = { "There's a beast in the next room... Get ready.", "Press left mouse button to attack", "If your weapon is not equipped, press Z." };
+			data.dialogueLines = { "There's a beast in the next room... Get ready.", "Press left mouse button to attack", "If your weapon is not equipped, press 1" };
 			SetPath({ tilemap->GetTilePosition(3, 13) });
 			break;
 		case Tutorial::LOOT:
