@@ -318,6 +318,9 @@
     <ClCompile Include="GameEnd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GameStates\LogoState.cpp">
+      <Filter>Source Files\GameStates</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -583,6 +586,9 @@
     </ClInclude>
     <ClInclude Include="GameEnd.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStates\LogoState.h">
+      <Filter>Header Files\GameStates</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
