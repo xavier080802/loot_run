@@ -67,6 +67,9 @@ void MainMenuState::LoadState()
 
 	Font = AEGfxCreateFont(PRIMARY_FONT_PATH, 38);
 	BigFont = AEGfxCreateFont(PRIMARY_FONT_PATH, 75);
+
+	bgm.Init();
+	Settings::Load(); // load saved volumes and apply to bgm groups immediately
 }
 
 void MainMenuState::InitState()

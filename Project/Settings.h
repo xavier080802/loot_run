@@ -34,6 +34,10 @@ namespace Settings
     int GetUIVolume();
     int GetSFXVolume();
 
+    /// Load saved volumes from disk and apply them to bgm.
+    /// Call once during application startup before the first frame.
+    void Load();
+
     /// Handle popup input for one frame.
     /// Returns true if the popup is open and consumed input this frame --
     /// the caller should skip all other input processing when true.
