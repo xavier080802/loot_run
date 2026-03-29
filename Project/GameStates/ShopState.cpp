@@ -384,5 +384,4 @@ void ShopState::UnloadState() {
 	AEAudioUnloadAudio(clickSound);
 
 	gachaFont = -1;
-	UnloadGacha();
 }
