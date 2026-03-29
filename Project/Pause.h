@@ -29,10 +29,12 @@ namespace Pause
     /// True while the pause menu is visible.
     bool IsOpen();
 
-    /// Handle pause menu input for one frame.
-    /// Returns true if the pause menu is open and consumed input this frame --
-    /// the caller (GameState::Update) should skip all game logic when true.
-    bool Update();
+    /// Zeroes dt while the pause menu is open so all game systems freeze naturally.
+    /// Also handles button input.
+    /// Call at the top of GameState::Update() before any other game logic:
+    ///     Pause::Update(dt);
+    ///     if (Pause::IsOpen()) return;
+    void Update(double& dt);
 
     /// Render the pause overlay on top of the game world.
     /// Does nothing when IsOpen() is false.

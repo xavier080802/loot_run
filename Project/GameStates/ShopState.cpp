@@ -104,9 +104,6 @@ namespace {
 		DrawAEText(Font, "+", plusPos, scale, CreateColor(255, 255, 255, 255), TEXT_MIDDLE);
 	}
 
-	AEAudio hoverSound;
-	AEAudio clickSound;
-
 	// Track previous hover state
 	bool btnHoverStates[SHOP_BTN_COUNT] = { false };
 	//static GachaAnimation gStateAnim;
@@ -118,8 +115,6 @@ void ShopState::LoadState()
 {
 	squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
 
-	hoverSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17767.wav");
-	clickSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17766.wav");
 	//gachaFont = AEGfxCreateFont(SECONDARY_FONT_PATH, 32);
 	//EnsureOverlayMesh();
 }
@@ -178,9 +173,7 @@ void ShopState::Update(double dt)
 
 			// Play hover sound only when pointer enters button
 			if (buttonHover && !btnHoverStates[i])
-			{
-				AEAudioPlay(hoverSound, bgm.uiGroup, 0.2f, 0.7f, 0);
-			}
+			bgm.PlayUIHover();
 			btnHoverStates[i] = buttonHover;
 
 			if (buttonHover)
@@ -188,7 +181,7 @@ void ShopState::Update(double dt)
 				buttonClick = AEInputCheckTriggered(AEVK_LBUTTON);
 				if (buttonClick)
 				{
-					AEAudioPlay(clickSound, bgm.uiGroup, 0.6f, 0.6f, 0);
+				bgm.PlayUIClick();
 					switch (i) {
 					case 0: // Damage
 						break;
@@ -245,11 +238,9 @@ void ShopState::Update(double dt)
 				AEVec2 minusPos = { worldPos.x - sideOffset, worldPos.y };
 				if (IsCursorOverWorld(minusPos, sideBtnSize, shopButtons[i].size.y, true)) {
 					if (AEInputCheckTriggered(AEVK_LBUTTON)) {
-						AEAudioPlay(clickSound, bgm.uiGroup, 0.6f, 0.6f, 0);
+					bgm.PlayUIClick();
 						for (size_t x = 0; x < ShopFunctions::GetInstance()->getPurchaseMultiplier(); x++)
-						{
 							ShopFunctions::GetInstance()->sellShopUpgrade(currentStat);
-						}
 						std::cout << "Decreased " << shopButtons[i].label << " to " << ShopFunctions::GetInstance()->getStatBonus(currentStat) << std::endl;
 					}
 				}
@@ -258,12 +249,9 @@ void ShopState::Update(double dt)
 				AEVec2 plusPos = { worldPos.x + sideOffset, worldPos.y };
 				if (IsCursorOverWorld(plusPos, sideBtnSize, shopButtons[i].size.y, true)) {
 					if (AEInputCheckTriggered(AEVK_LBUTTON)) {
-						AEAudioPlay(clickSound, bgm.uiGroup, 0.6f, 0.6f, 0);
+					bgm.PlayUIClick();
 						for (size_t x = 0; x < ShopFunctions::GetInstance()->getPurchaseMultiplier(); x++)
-						{
 							ShopFunctions::GetInstance()->buyShopUpgrade(currentStat);
-						}
-						
 						std::cout << "Increased " << shopButtons[i].label << " to " << ShopFunctions::GetInstance()->getStatBonus(currentStat) << std::endl;
 					}
 				}
@@ -378,10 +366,6 @@ void ShopState::UnloadState() {
 	//unload fonts
 	if (Font >= 0) AEGfxDestroyFont(Font);
 	if (BigFont >= 0) AEGfxDestroyFont(BigFont);
-
-	// Unload button audio
-	AEAudioUnloadAudio(hoverSound);
-	AEAudioUnloadAudio(clickSound);
 
 	//gachaFont = -1;
 }

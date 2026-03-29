@@ -8,6 +8,7 @@
 #include "../Helpers/RenderUtils.h"
 #include "../Helpers/ColorUtils.h"
 #include "../UIConfig.h"
+#include "../Music.h"
 #include <iostream>
 
 namespace {
@@ -22,7 +23,6 @@ namespace {
     float winW, winH, scale;
 
     AEAudioGroup audioGroup;
-    AEAudio clickSound;
     AEAudio bgMusic;
 
     enum ScrollState { STATE_WAITING, STATE_UNROLLING, STATE_SCROLLING };
@@ -141,7 +141,7 @@ void CreditState::LoadState()
     std::cout << "[CreditState] scroll_closed: " << (texClosed ? "OK" : "FAILED") << "\n";
     std::cout << "[CreditState] scroll_open:   " << (texOpen ? "OK" : "FAILED") << "\n";
     audioGroup = AEAudioCreateGroup();
-    clickSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17766.wav");
+
     bgMusic = AEAudioLoadSound("Assets/Audio/PROSPECTUS - Corporate MSCCRP1_50.wav");
 }
 
@@ -178,7 +178,7 @@ void CreditState::Update(double dt)
         if (AEInputCheckTriggered(AEVK_LBUTTON) ||
             AEInputCheckTriggered(AEVK_SPACE) ||
             AEInputCheckTriggered(AEVK_RETURN)) {
-            AEAudioPlay(clickSound, audioGroup, 0.6f, 0.6f, 0);
+            bgm.PlayUIClick();
             state = STATE_UNROLLING;
             scrollBodyHeight = 0.0f;
         }
@@ -280,7 +280,6 @@ void CreditState::ExitState()
 void CreditState::UnloadState()
 {
     if (Font >= 0) AEGfxDestroyFont(Font);
-    AEAudioUnloadAudio(clickSound);
     AEAudioUnloadAudio(bgMusic);
     AEAudioUnloadAudioGroup(audioGroup);
 }

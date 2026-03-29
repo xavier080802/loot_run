@@ -15,6 +15,7 @@ struct BGMManager {
     AEAudio creditsTrack;
 
     // UI Sound Tracks
+    AEAudio uiHoverSound;
     AEAudio uiClickSound;
 
     // SFX Tracks
@@ -34,6 +35,7 @@ struct BGMManager {
     void StopCredits();
 
     // UI Methods
+    void PlayUIHover();
     void PlayUIClick();
 
     // SFX Methods

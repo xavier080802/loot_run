@@ -91,18 +91,16 @@ namespace Pause
     void Toggle() { if (pauseOpen) Close(); else Open(); }
     bool IsOpen() { return pauseOpen; }
 
-    bool Update()
+    void Update(double& dt)
     {
-        if (!pauseOpen) return false;
+        if (!pauseOpen) return;
+
+        // Freeze the game world by killing the time step
+        dt = 0.0;
 
         // Settings popup takes priority when open
-        if (Settings::IsOpen())
-        {
-            // ESC or M while settings open closes settings, not pause
-            Settings::Update(GetScale(), bgm.uiGroup,
-                             bgm.uiClickSound, bgm.uiClickSound);
-            return true;
-        }
+        Settings::Update(GetScale());
+        if (Settings::IsOpen()) return;
 
         bool clicked = AEInputCheckTriggered(AEVK_LBUTTON);
         float scale  = GetScale();
@@ -112,9 +110,9 @@ namespace Pause
         bool hovSettings = Hovered(POP_CX, ROW_SETTINGS, BTN_W, BTN_H, scale);
         bool hovMainMenu = Hovered(POP_CX, ROW_MAINMENU, BTN_W, BTN_H, scale);
 
-        if (hovResume   && !hoverStates[0]) bgm.PlayUIClick();
-        if (hovSettings && !hoverStates[1]) bgm.PlayUIClick();
-        if (hovMainMenu && !hoverStates[2]) bgm.PlayUIClick();
+        if (hovResume   && !hoverStates[0]) bgm.PlayUIHover();
+        if (hovSettings && !hoverStates[1]) bgm.PlayUIHover();
+        if (hovMainMenu && !hoverStates[2]) bgm.PlayUIHover();
 
         hoverStates[0] = hovResume;
         hoverStates[1] = hovSettings;
@@ -143,8 +141,6 @@ namespace Pause
         // ESC or M closes pause
         if (AEInputCheckTriggered(AEVK_ESCAPE) || AEInputCheckTriggered(AEVK_M))
             Close();
-
-        return true; // consumed this frame
     }
 
     void Draw()

@@ -122,15 +122,13 @@ namespace
     void UpdateVolumeRow(float rowY, float scale,
                          int& volume, void (BGMManager::*setter)(float),
                          int minusIdx, int plusIdx,
-                         AEAudioGroup audioGroup,
-                         AEAudio clickSound, AEAudio hoverSound,
                          bool clicked)
     {
         bool minus = Hovered(POP_CX - SIDE_OFFSET, rowY, SIDE_W, SIDE_H, scale);
         bool plus  = Hovered(POP_CX + SIDE_OFFSET, rowY, SIDE_W, SIDE_H, scale);
 
-        if (minus && !hoverStates[minusIdx]) AEAudioPlay(hoverSound, audioGroup, 0.2f, 0.7f, 0);
-        if (plus  && !hoverStates[plusIdx])  AEAudioPlay(hoverSound, audioGroup, 0.2f, 0.7f, 0);
+        if (minus && !hoverStates[minusIdx]) bgm.PlayUIHover();
+        if (plus  && !hoverStates[plusIdx])  bgm.PlayUIHover();
         hoverStates[minusIdx] = minus;
         hoverStates[plusIdx]  = plus;
 
@@ -140,13 +138,13 @@ namespace
             {
                 --volume;
                 (bgm.*setter)(volume / 10.f);
-                AEAudioPlay(clickSound, audioGroup, 0.6f, 0.6f, 0);
+                bgm.PlayUIClick();
             }
             else if (plus && volume < 10)
             {
                 ++volume;
                 (bgm.*setter)(volume / 10.f);
-                AEAudioPlay(clickSound, audioGroup, 0.6f, 0.6f, 0);
+                bgm.PlayUIClick();
             }
         }
     }
@@ -164,10 +162,7 @@ namespace Settings
     int GetUIVolume()    { return uiVolume;    }
     int GetSFXVolume()   { return sfxVolume;   }
 
-    bool Update(float scale,
-                AEAudioGroup audioGroup,
-                AEAudio      clickSound,
-                AEAudio      hoverSound)
+    bool Update(float scale)
     {
         if (!popupOpen) return false;
 
@@ -176,25 +171,25 @@ namespace Settings
         // Music row  -- hoverStates[1], [2]
         UpdateVolumeRow(ROW_BGM, scale,
                         bgmVolume, &BGMManager::SetBGMVolume,
-                        1, 2, audioGroup, clickSound, hoverSound, clicked);
+                        1, 2, clicked);
 
         // UI row  -- hoverStates[3], [4]
         UpdateVolumeRow(ROW_UI, scale,
                         uiVolume, &BGMManager::SetUIVolume,
-                        3, 4, audioGroup, clickSound, hoverSound, clicked);
+                        3, 4, clicked);
 
         // SFX row  -- hoverStates[5], [6]
         UpdateVolumeRow(ROW_SFX, scale,
                         sfxVolume, &BGMManager::SetSFXVolume,
-                        5, 6, audioGroup, clickSound, hoverSound, clicked);
+                        5, 6, clicked);
 
         // Close button  -- hoverStates[0]
         bool closeHov = Hovered(POP_CX, ROW_CLOSE, 235.f, 67.f, scale);
-        if (closeHov && !hoverStates[0]) AEAudioPlay(hoverSound, audioGroup, 0.2f, 0.7f, 0);
+        if (closeHov && !hoverStates[0]) bgm.PlayUIHover();
         hoverStates[0] = closeHov;
         if (closeHov && clicked)
         {
-            AEAudioPlay(clickSound, audioGroup, 0.6f, 0.6f, 0);
+            bgm.PlayUIClick();
             popupOpen = false;
         }
 

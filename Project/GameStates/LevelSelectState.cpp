@@ -116,9 +116,7 @@ void LevelSelectState::Update(double dt) {
 
 		// Play hover sound only when pointer enters button
 		if (buttonHover && !btnHoverStates[i])
-		{
-			bgm.PlayUIClick();
-		}
+			bgm.PlayUIHover();
 		btnHoverStates[i] = buttonHover;
 
 		if (buttonHover)
