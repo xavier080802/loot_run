@@ -235,19 +235,14 @@ void LevelSelectState::Draw() {
 
 		// Selected has strongest highlight. Hover still shows a lighter highlight.
 		float tint = selected ? 1.0f : (hover ? 0.9f : 0.75f);
-		AEGfxSetColorToMultiply(
-			tint,
-			tint,
-			tint,
-			1.0f
-		);
+		i == 3 ? AEGfxSetColorToMultiply(tint * 0.6f, tint * 0.9f, tint * 0.6f, 1.0f) : AEGfxSetColorToMultiply(tint, tint, tint, 1.0f);
 
 		AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
-
-		DrawAEText(
-			Font, levelButtons[i].label, worldPos, scale,
-			CreateColor(10, 10, 10, 255),
-			TEXT_MIDDLE
-		);
+		if (i == 3) {
+			DrawAEText(Font, levelButtons[i].label, worldPos, scale * 1.5f, CreateColor(10, 30, 30, 255), TEXT_MIDDLE);
+		}
+		else {
+			DrawAEText(Font, levelButtons[i].label, worldPos, scale, CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
+		}
 	}
 }
