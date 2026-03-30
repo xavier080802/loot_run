@@ -18,7 +18,9 @@ public:
 
 
 private:
-	void HandleTutorialDialogueRender();
+void HandleTutorialDialogueRender();
+int   mLastMinuteMark = 0;
+float mNotificationTimer = 0.0f;
 };
 bool getBossAlive();
 float getBossHPProgressBar();
