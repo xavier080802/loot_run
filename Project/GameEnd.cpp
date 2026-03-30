@@ -9,6 +9,7 @@
 #include "ShopFunctions.h"
 #include "UIConfig.h"
 #include <cstdio>
+#include "AEEngine.h"
 
 // =====================================================================
 // Internal state
@@ -32,6 +33,7 @@ namespace
 	constexpr float ROW_KILLS     = POP_TOP + 275.f;
 	constexpr float ROW_TIME      = POP_TOP + 355.f;   // endless only
 	constexpr float ROW_HIGHSCORE = POP_TOP + 420.f;   // endless only
+	constexpr float ROW_HINT	  = POP_TOP + 650.f;
 
 	// Button Y: shift down further when endless rows are shown
 	constexpr float ROW_BTNS_STD  = POP_TOP + 460.f;
@@ -52,6 +54,26 @@ namespace
 	float runTime     = 0.f;
 	int   coinsGained = 0;
 	int   killCount   = 0;
+
+	// Hints
+	const char* hintTexts[] = {
+		"You can use the coins you earn to buy upgrades in the shop!",
+		"Collect heath pickups to survive longer!",
+		"It is ok to skip strong enemies!",
+		"Keep an eye on your ammo and use your ranged attacks wisely!",
+		"Your dodge has invincibility frames! Use it to avoid damage and reposition yourself!",
+		"Try attacking and dodging at the same time!",
+		"Pets can be helpful companions in battle. Press R to use your pet's ability!",
+		"You can press and hold Left Click to auto attack!",
+		"Skill issue. Get Gud. L + Ratio"
+	};
+	constexpr int HINT_COUNT = sizeof(hintTexts) / sizeof(hintTexts[0]);
+	int hintIndex = 0;
+	bool hintsSeeded = false;
+
+	// Hint timer (seconds)
+	constexpr float HINT_INTERVAL = 8.f;
+	float hintTimer = 0.f;
 
 	// Hover tracking: [0] = Retry  [1] = Main Menu
 	bool hoverStates[2] = { false };
@@ -128,6 +150,7 @@ namespace GameEnd
 {
 	void Show(bool won, bool endless, float time, int coins, int kills)
 	{
+		bool wasOpen = overlayOpen;
 		overlayOpen = true;
 		isWin       = won;
 		isEndless   = endless;
@@ -135,6 +158,19 @@ namespace GameEnd
 		coinsGained = coins;
 		killCount   = kills;
 		hoverStates[0] = hoverStates[1] = false;
+		// Seed random once and pick a hint
+		if (!hintsSeeded)
+		{
+			std::srand(static_cast<unsigned>(std::time(nullptr)));
+			hintsSeeded = true;
+		}
+		// Only choose a new hint when the overlay is opened (transition from closed -> open)
+		if (!wasOpen)
+		{
+			hintIndex = std::rand() % HINT_COUNT;
+			hintTimer = 0.f;
+		}
+
 		EnsureFonts();
 	}
 
@@ -189,6 +225,13 @@ namespace GameEnd
 		EnsureFonts();
 
 		float scale = GetScale();
+
+		// Advance hint timer using AlphaEngine frame time and rotate hint every HINT_INTERVAL seconds
+		hintTimer += static_cast<float>(AEFrameRateControllerGetFrameTime());
+		if (hintTimer >= HINT_INTERVAL) {
+			hintTimer = 0.f;
+			hintIndex = (hintIndex + 1) % HINT_COUNT;
+		}
 
 		AEGfxSetBlendMode(AE_GFX_BM_BLEND);
 
@@ -257,6 +300,15 @@ namespace GameEnd
 					   scale * 0.72f,
 					   CreateColor(255, 215, 0, 255), TEXT_MIDDLE);
 		}
+
+		// ---- Hints ----
+		const char* hintText = hintTexts[hintIndex % HINT_COUNT];
+		char HintBuf[128];
+		snprintf(HintBuf, sizeof(HintBuf), "Hint:  %s", hintText);
+		DrawAEText(fontBody, HintBuf,
+			D2W(POP_CX, ROW_HINT, scale),
+			scale * 0.72f,
+			CreateColor(220, 220, 170, 255), TEXT_MIDDLE);
 
 		// ---- Buttons ----
 		float btnY = isEndless ? ROW_BTNS_END : ROW_BTNS_STD;
