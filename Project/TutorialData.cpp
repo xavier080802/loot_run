@@ -214,7 +214,6 @@ namespace Tutorial {
 				data.isWaiting = false;
 				data.playDialogue = true;
 			}
-			data.playDialogue = true;
 			if (data.playDialogue) {
 				if (DoDialogue(fdt)) {
 					data.playDialogue = false;

@@ -549,6 +549,9 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 					return;
 				}
 			}
+			else {
+				bgm.PlayClip("Assets/Audio/CTE02_88.1 Slow Swing.wav", 0.5f);
+			}
 
 			// Convert attackSpeed into seconds-per-attack cooldown
 			float atkSpd = mStats.attackSpeed;
@@ -556,7 +559,6 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 			attackCooldownTimer = 1.0f / atkSpd;
 
 			Combat::ExecuteAttack(this, GetHeldWeaponData(), GetMouseWorldVec());
-			bgm.PlayClip("Assets/Audio/CTE02_88.1 Slow Swing.wav", 0.5f);
 		}
 		break;
 	case VK_SCROLL: {
