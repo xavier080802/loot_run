@@ -11,6 +11,7 @@
 #include "../Helpers/MatrixUtils.h"
 #include "../GameStateManager.h"
 #include "../ShopFunctions.h"
+#include "../Music.h"
 #include <iostream>
 
 namespace {
@@ -21,12 +22,14 @@ namespace {
 	AEVec2 hpBarPos{};
 	Color HpContainerCol{ 104, 11, 11, 255 };
 
+
 	// Safe way to print weapon name (incase null pointer)
 	static const char* SafeName(const EquipmentData* w)
 	{
 		return (w && w->name) ? w->name : "None";
 	}
 }
+extern BGMManager bgm;
 
 /**
  * @brief Initializes the Player GameObject with physics, collision, and rendering data.
@@ -485,6 +488,7 @@ bool Player::TryPickup(const PickupPayload& payload)
 	}
 
 	DropSystem::AddToPickupDisplay(payload);
+	bgm.PlayClip("Assets/Audio/Bag_coins.wav", 0.4f);
 	return true;
 }
 
@@ -552,6 +556,7 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 			attackCooldownTimer = 1.0f / atkSpd;
 
 			Combat::ExecuteAttack(this, GetHeldWeaponData(), GetMouseWorldVec());
+			bgm.PlayClip("Assets/Audio/CTE02_88.1 Slow Swing.wav", 0.5f);
 		}
 		break;
 	case VK_SCROLL: {
