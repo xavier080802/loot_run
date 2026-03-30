@@ -44,7 +44,7 @@ namespace {
 		{{ 500.f, 700.f }, { 450.f, 144.f }, "Move Speed", true},
 		{{ 1100.f, 300.f }, { 450.f, 144.f }, "Health", true},
 		{{ 1100.f, 500.f }, { 450.f, 144.f }, "Defense", true},
-		{{ 1100.f, 700.f }, { 450.f, 144.f }, "Enter Gacha", false},
+		//{{ 1100.f, 700.f }, { 450.f, 144.f }, "Enter Gacha", false},
 		{{ 300.f, 100.f }, { 225.f, 110.f }, "back", false},
 		{{ 1300.f, 100.f }, { 225.f, 110.f }, "REFUND", false},
 		{{ 915.f, 830.f }, { 80.f, 60.f }, "x1", false},
@@ -201,11 +201,11 @@ void ShopState::Update(double dt)
 					case 4: // Defense
 						break;
 					case 5: // Gacha Trigger
-						isGachaActive = true;
+						/*isGachaActive = true;
 						bgm.StopGameplayBGM();
 						bgm.PlayGacha();
 						BeginGachaOverlay(gStateAnim, 10, 0.6f, 1.2f, 0.3f);
-						break;
+						break;*/
 					case 6: //back
 						GameStateManager::GetInstance()
 							->SetNextGameState("MainMenuState", true, true);

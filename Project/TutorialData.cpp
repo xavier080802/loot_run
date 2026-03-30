@@ -284,7 +284,8 @@ namespace Tutorial {
 	{
 		if (data.stage != LOOT) return;
 
-		//Player opens chest before fairy is done - Progress after fairy finishes yapping.
+		//Player opens chest before fairy is done - 
+		// after fairy finishes yapping.
 		if (data.playDialogue) {
 			data.checks = "CHEST";
 			return;

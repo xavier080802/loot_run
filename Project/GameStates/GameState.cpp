@@ -843,7 +843,7 @@ void GameState::InitState()
     if (mapSelected == "Assets/Endless.csv") {
         std::cout << "[InitState] Endless mode.\n";
 
-        totalKillTarget = 20 + rand() % 31;
+        totalKillTarget = 20 + rand() % 20;
         totalEnemiesRequired = totalKillTarget;
         std::cout << "[InitState] Kill target: " << totalKillTarget << "\n";
 
