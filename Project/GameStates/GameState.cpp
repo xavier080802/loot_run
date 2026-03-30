@@ -1093,6 +1093,9 @@ void GameState::InitState()
         endlessRunTimer = 0.f;
         endlessTimerActive = true;
 
+        //When player dies, alert game state
+        gPlayer->SubToOnDeath(this);
+
         PetManager::GetInstance()->SetTilemap(*nextMap);
         minimap->Reset();
         return;
@@ -1142,8 +1145,6 @@ void GameState::InitState()
     if (!doTutorial) {
         PetManager::GetInstance()->InitPetForGame(*map);
     }
-    //When player dies, alert game state
-    gPlayer->SubToOnDeath(this);
 
     // place all the designer-authored chests from the CSV
     SpawnCsvChests(*map);
@@ -1229,6 +1230,9 @@ void GameState::InitState()
             << " (" << tier << ") at (" << pos.x << ", " << pos.y << ")\n";
     }
     std::cout << "[InitState] Spawned " << csvEnemies.size() << " CSV enemies total.\n";
+
+    //When player dies, alert game state
+    gPlayer->SubToOnDeath(this);
 }
 
 // =============================================================
