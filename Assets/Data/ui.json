@@ -7,6 +7,19 @@
         "seIconSize": 30, //Status effect icon size (width=height)
         "maxIcons": 6 //Number of SE icons to show
     },
+    "player_inventory": {
+        "bgCol": [ 0, 0, 0, 150 ],
+        "statTxtCol": [ 255, 255, 255, 255 ],
+        "coinTxtCol": [ 255, 215, 0, 255 ],
+        "ammoTxtCol": [ 200, 200, 200, 255 ],
+        "iconSize": 50,
+        "edgePadding": [20,20], //padding around the edge of the box
+        "iconGap": 10, //Gap between icons that are side-by-side
+        "sectionGap": 20, //Gap between gear and stat sections
+        "statIconSize": 50,
+        "statFontSize": 0.35,
+        "statGap": 5
+    },
     "pet_ui": {
         "descFontSize": 0.4,
         "timerFontSize": 0.5,

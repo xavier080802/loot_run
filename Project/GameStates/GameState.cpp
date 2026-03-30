@@ -32,6 +32,7 @@
 #include "../ShopFunctions.h"
 #include "../Pause.h"
 #include "../GameEnd.h"
+#include "../UI/UIElement.h"
 #include <json/json.h>
 
 namespace {
@@ -53,15 +54,28 @@ namespace {
     }
 
     struct {
+        //-----Healthbar----
+
         AEVec2 hpBarSize{};
         Color hpBgCol{}, hpFillCol{}, hpShieldCol{};
         float seIconSize{};
         unsigned maxIcons{};
 
+        //----Inventory----
+
+        AEVec2 invPos, invSize;
+        Color invBGCol{}, invCoinCol, invAmmoCol, invStatTxtCol;
+        AEVec2 invGearIconSz{}, invStatIconSz{};
+        AEVec2 invEdgePadding{};
+        float invIconGap, invSectionGap, invStatFontSz, invStatGap;
+
         //Not loaded from json
         AEVec2 hpBarPos{};
         AEMtx33 hpBarTrans{};
     } playerUISettings;
+
+    std::array<UIElement*, 7> invGearElements{};
+    int invGearHoverInd{-1};
 
     // --- BOSS / ENEMY TRACKING ---
     bool   bossAlive = true;
@@ -572,54 +586,53 @@ namespace {
     }
 
     void DrawPlayerUI() {
+        int fontSz = RenderingManager::GetInstance()->GetFontSize();
         if (gPlayer->ShowStatsUI()) {
             Inventory const& mInventory{ gPlayer->GetInventory() };
-            // Draw Black Background Box
-            AEVec2 bgPos = { -700.0f, 45.0f }; // Centered at left middle (somewhat)
-            AEVec2 bgSize = { 600.0f, 520.0f };
-            DrawTintedMesh(GetTransformMtx(bgPos, 0.0f, bgSize), squareMesh, nullptr, { 0, 0, 0, 180 }, 255);
 
-            // Coin Counter in Top Left
-            std::string coinText = "Coins: " + std::to_string(mInventory.GetCoins());
-            DrawAEText(font, coinText.c_str(), { -780.0f, 280.0f }, 0.5f, { 255, 215, 0, 255 }, TEXT_MIDDLE_LEFT);
-            // Ammo Counter
-            std::string ammoText = "Ammo: " + std::to_string(mInventory.GetAmmo());
-            DrawAEText(font, ammoText.c_str(), { -780.0f,  250.0f }, 0.5f, { 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT);
+            //Draw background
+            DrawTintedMesh(GetTransformMtx(playerUISettings.invPos, 0.0f, playerUISettings.invSize), squareMesh, nullptr, { 0, 0, 0, 180 }, 255);
 
-            // Stats & Equipment UI on the Left
-            AEVec2 textPos = { -780.0f, 200.0f };
-            float yLineSpc = -20.0f;
-
-            ActorStats const& mStats{ gPlayer->GetStats() };
-            DrawAEText(font, "--- STATS ---", textPos, 0.4f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("Max HP: " + std::to_string((int)mStats.maxHP)).c_str(), textPos, 0.4f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("Attack: " + std::to_string((int)mStats.attack)).c_str(), textPos, 0.4f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("Defense: " + std::to_string((int)mStats.defense)).c_str(), textPos, 0.4f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("Move Speed: " + std::to_string((int)mStats.moveSpeed)).c_str(), textPos, 0.4f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-
-            std::string tSpd = std::to_string(mStats.attackSpeed);
-            size_t spdLen = tSpd.length() > 4 ? 4 : tSpd.length();
-            DrawAEText(font, ("Atk Speed: " + tSpd.substr(0, spdLen)).c_str(), textPos, 0.4f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc * 2.0f;
-
-            DrawAEText(font, "--- EQUIPMENT ---", textPos, 0.4f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-
-            auto w1 = mInventory.GetMainWeapon(0);
-            auto w2 = mInventory.GetMainWeapon(1);
-            auto bow = mInventory.GetBow();
-            auto head = mInventory.GetArmor(ArmorSlot::Head);
-            auto body = mInventory.GetArmor(ArmorSlot::Body);
-            auto hands = mInventory.GetArmor(ArmorSlot::Hands);
-            auto feet = mInventory.GetArmor(ArmorSlot::Feet);
+            //Draw equipped gear
             EquipmentData const* held{ gPlayer->GetHeldWeaponData() };
             int ind{ mInventory.GetActiveWeaponIndex() };
 
-            DrawAEText(font, ("WPN 1: " + (std::string(w1 ? w1->name : "None")) + std::string{ (held && ind == 0) ? " <" : "" }).c_str(), textPos, 0.35f, (held && ind == 0) ? Color{ 200, 255,200,255 } : Color{ 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("WPN 2: " + (std::string(w2 ? w2->name : "None")) + std::string{ (held && ind == 1) ? " <" : "" }).c_str(), textPos, 0.35f, (held && ind == 1) ? Color{ 200, 255,200,255 } : Color{ 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("BOW: " + (std::string(bow ? bow->name : "None")) + std::string{ (held && ind == 2) ? " <" : "" }).c_str(), textPos, 0.35f, (held && ind == 2) ? Color{ 200, 255,200,255 } : Color{ 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("HEAD: " + std::string(head ? head->name : "None")).c_str(), textPos, 0.35f, { 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("BODY: " + std::string(body ? body->name : "None")).c_str(), textPos, 0.35f, { 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("HANDS: " + std::string(hands ? hands->name : "None")).c_str(), textPos, 0.35f, { 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("FEET: " + std::string(feet ? feet->name : "None")).c_str(), textPos, 0.35f, { 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
+            std::array<EquipmentData const*, 7> gear{
+                mInventory.GetMainWeapon(0),mInventory.GetMainWeapon(1),mInventory.GetBow(),
+                mInventory.GetArmor(ArmorSlot::Head), mInventory.GetArmor(ArmorSlot::Body),mInventory.GetArmor(ArmorSlot::Hands),mInventory.GetArmor(ArmorSlot::Feet)
+            };
+
+            for (int i{}; i < gear.size(); ++i) {
+                AEMtx33 mtx{ GetTransformMtx(invGearElements[i]->GetPos(), 0, invGearElements[i]->GetSize()) };
+                //Draw background
+                DrawTintedMesh(mtx,
+                    squareMesh, nullptr, (held && ind == i) ? Color{0,255,0,255} : Color{ 100,100,0,255 }, 200);
+
+                if (!gear[i]) continue;
+                //Draw item texure
+                DrawMesh(mtx, squareMesh, RenderingManager::GetInstance()->LoadTexture(gear[i]->texturePath), 255);
+            }
+
+            //Draw the player's stats
+            float yLineSpc{ playerUISettings.invStatFontSz * fontSz + playerUISettings.invStatGap };
+            AEVec2 textPos{ AEGfxGetWinMinX()+ playerUISettings.invEdgePadding.x,
+                invGearElements.back()->GetPos().y - playerUISettings.invGearIconSz.y * 0.5f - playerUISettings.invSectionGap };
+            ActorStats const& mStats{ gPlayer->GetStats() };
+
+            DrawAEText(font, ("Max HP: " + std::to_string((int)mStats.maxHP)).c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invStatTxtCol, TEXT_MIDDLE_LEFT); textPos.y -= yLineSpc;
+            DrawAEText(font, ("Att: " + std::to_string((int)mStats.attack)).c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invStatTxtCol, TEXT_MIDDLE_LEFT); textPos.y -= yLineSpc;
+            DrawAEText(font, ("Def: " + std::to_string((int)mStats.defense)).c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invStatTxtCol, TEXT_MIDDLE_LEFT); textPos.y -= yLineSpc;
+            DrawAEText(font, ("Spd: " + std::to_string((int)mStats.moveSpeed)).c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invStatTxtCol, TEXT_MIDDLE_LEFT); textPos.y -= yLineSpc;
+            std::string tSpd = std::to_string(mStats.attackSpeed);
+            size_t spdLen = tSpd.length() > 4 ? 4 : tSpd.length();
+            DrawAEText(font, ("Atk Spd: " + tSpd.substr(0, spdLen)).c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invStatTxtCol, TEXT_MIDDLE_LEFT); textPos.y -= yLineSpc;
+            
+            //Coin Counter
+            std::string coinText = "Coins: " + std::to_string(mInventory.GetCoins());
+            DrawAEText(font, coinText.c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invCoinCol, TEXT_MIDDLE_LEFT);textPos.y -= yLineSpc;
+            // Ammo Counter
+            std::string ammoText = "Ammo: " + std::to_string(mInventory.GetAmmo());
+            DrawAEText(font, ammoText.c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invAmmoCol, TEXT_MIDDLE_LEFT);
         }
 
         //Healthbar Container
@@ -640,7 +653,7 @@ namespace {
         DrawAEText(font,
             std::string{ std::to_string((int)gPlayer->GetHP()) + (gPlayer->GetShieldVal() ? (" (+" + std::to_string((int)gPlayer->GetShieldVal()) + ")") : "")
             + " / " + std::to_string((int)gPlayer->GetMaxHP()) }.c_str(),
-            playerUISettings.hpBarPos, playerUISettings.hpBarSize.y / RenderingManager::GetInstance()->GetFontSize(), Color{ 0,0,0,255 }, TEXT_MIDDLE);
+            playerUISettings.hpBarPos, playerUISettings.hpBarSize.y / fontSz, Color{ 0,0,0,255 }, TEXT_MIDDLE);
 
         //Status effects above hp bar
         gPlayer->DrawStatusEffectIcons(playerUISettings.seIconSize,
@@ -660,13 +673,64 @@ namespace {
             DrawAEText(font, promptStr.c_str(), itemPos, 0.4f, { 255,255,255,255 }, TEXT_MIDDLE);
         }
 
-        //Tooltip
+        //Tooltip for SE
         std::map<std::string, StatEffects::StatusEffect*> statusEffectsDict{ gPlayer->GetStatusEffects() };
         for (auto it{ statusEffectsDict.rbegin() }; it != statusEffectsDict.rend(); ++it) {
             StatEffects::StatusEffect& se = *(*it).second;
 
             se.UpdateUI(true);
         }
+    }
+
+    //Hovering over equipment in inventory UI
+    void DrawUIHoveredGearTooltip(int ind) {
+        if (ind == -1) return;
+        //Cursor pos
+        s32 mx{}, my{};
+        AEInputGetCursorPosition(&mx, &my);
+        AEVec2 mP = ScreenToWorld(AEVec2{ (float)mx, (float)my });
+        
+        //Tooltip text
+        Inventory const& mInventory{ gPlayer->GetInventory() };
+        std::array<EquipmentData const*, 7> arr{
+               mInventory.GetMainWeapon(0),mInventory.GetMainWeapon(1),mInventory.GetBow(),
+               mInventory.GetArmor(ArmorSlot::Head), mInventory.GetArmor(ArmorSlot::Body),mInventory.GetArmor(ArmorSlot::Hands),mInventory.GetArmor(ArmorSlot::Feet)
+        };
+        EquipmentData const* eq{arr[ind]};
+        if (!eq) return;
+
+        //Draw tooltip
+        float winW = (float)AEGfxGetWinMaxX() - AEGfxGetWinMinX();
+        float winH = (float)AEGfxGetWinMaxY() - AEGfxGetWinMinY();
+        AEVec2 bgSize = { 300.0f, 220.0f };
+        AEVec2 bgPos = { mP.x + bgSize.x * 0.5f + 15.0f, mP.y - bgSize.y * 0.5f - 15.0f };
+
+        if (bgPos.x + bgSize.x * 0.5f > winW * 0.5f) bgPos.x = winW * 0.5f - bgSize.x * 0.5f;
+        if (bgPos.y - bgSize.y * 0.5f < -winH * 0.5f) bgPos.y = -winH * 0.5f + bgSize.y * 0.5f;
+
+        DrawTintedMesh(GetTransformMtx(bgPos, 0.0f, bgSize), squareMesh, nullptr, { 0, 0, 0, 220 }, 255);
+
+        AEVec2 textPos = { bgPos.x - bgSize.x * 0.5f + 15.0f, bgPos.y + bgSize.y * 0.5f - 25.0f };
+        Color rColor = GetRarityColor(eq->rarity);
+
+        DrawAEText(font, eq->name, textPos, 0.45f, rColor, TEXT_MIDDLE_LEFT);
+        textPos.y -= 30.0f;
+
+        DrawAEText(font, ("Sell Price: " + std::to_string(eq->sellPrice)).c_str(), textPos, 0.35f, { 255, 215, 0, 255 }, TEXT_MIDDLE_LEFT);
+        textPos.y -= 35.0f;
+
+        if (eq->mods.additive.maxHP != 0) { DrawAEText(font, ("Max HP: +" + std::to_string((int)eq->mods.additive.maxHP)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+        if (eq->mods.additive.attack != 0) { DrawAEText(font, ("Attack: +" + std::to_string((int)eq->mods.additive.attack)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+        if (eq->mods.additive.defense != 0) { DrawAEText(font, ("Defense: +" + std::to_string((int)eq->mods.additive.defense)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+        if (eq->mods.additive.moveSpeed != 0) { DrawAEText(font, ("Speed: +" + std::to_string((int)eq->mods.additive.moveSpeed)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+        if (eq->mods.additive.attackSpeed != 0) {
+            std::string aSpdStr = std::to_string(eq->mods.additive.attackSpeed);
+            aSpdStr = aSpdStr.substr(0, aSpdStr.find('.') + 3);
+            DrawAEText(font, ("Atk Speed: +" + aSpdStr).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f;
+        }
+
+        //Reset hover state
+        ind = -1;
     }
 
     void DrawHoveredItemStats() {
@@ -757,26 +821,56 @@ void GameState::LoadState()
         Json::CharReaderBuilder builder;
         std::string errs;
 
-        if (Json::parseFromStream(builder, ifs, &root, &errs) && root.isMember("pet_ui"))
+        if (Json::parseFromStream(builder, ifs, &root, &errs))
         {
-            Json::Value ui = root["player_healthbar"];
-            if (ui.isMember("size") && ui["size"].size() == 2) {
-                playerUISettings.hpBarSize = AEVec2{ ui["size"][0].asFloat(), ui["size"][1].asFloat() };
+            if (root.isMember("player_healthbar")) {
+                Json::Value ui = root["player_healthbar"];
+                if (ui.isMember("size") && ui["size"].size() == 2) {
+                    playerUISettings.hpBarSize = AEVec2{ ui["size"][0].asFloat(), ui["size"][1].asFloat() };
+                }
+                if (ui.isMember("bgCol") && ui["bgCol"].size() == 4) {
+                    playerUISettings.hpBgCol = Color{ ui["bgCol"][0].asFloat(), ui["bgCol"][1].asFloat(),
+                    ui["bgCol"][2].asFloat() ,ui["bgCol"][3].asFloat() };
+                }
+                if (ui.isMember("fillCol") && ui["fillCol"].size() == 4) {
+                    playerUISettings.hpFillCol = Color{ ui["fillCol"][0].asFloat(), ui["fillCol"][1].asFloat(),
+                    ui["fillCol"][2].asFloat() ,ui["fillCol"][3].asFloat() };
+                }
+                if (ui.isMember("shieldCol") && ui["shieldCol"].size() == 4) {
+                    playerUISettings.hpShieldCol = Color{ ui["shieldCol"][0].asFloat(), ui["shieldCol"][1].asFloat(),
+                    ui["shieldCol"][2].asFloat() ,ui["shieldCol"][3].asFloat() };
+                }
+                playerUISettings.maxIcons = ui.get("maxIcons", 6).asUInt();
+                playerUISettings.seIconSize = ui.get("seIconSize", 30).asFloat();
             }
-            if (ui.isMember("bgCol") && ui["bgCol"].size() == 4) {
-                playerUISettings.hpBgCol = Color{ ui["bgCol"][0].asFloat(), ui["bgCol"][1].asFloat(),
-                ui["bgCol"][2].asFloat() ,ui["bgCol"][3].asFloat() };
+            if (root.isMember("player_inventory")) {
+                Json::Value ui = root["player_inventory"];
+                if (ui.isMember("bgCol") && ui["bgCol"].size() == 4) {
+                    playerUISettings.invBGCol = Color{ ui["bgCol"][0].asFloat(), ui["bgCol"][1].asFloat(),
+                    ui["bgCol"][2].asFloat() ,ui["bgCol"][3].asFloat() };
+                }
+                if (ui.isMember("statTxtCol") && ui["statTxtCol"].size() == 4) {
+                    playerUISettings.invStatTxtCol = Color{ ui["statTxtCol"][0].asFloat(), ui["statTxtCol"][1].asFloat(),
+                    ui["statTxtCol"][2].asFloat() ,ui["statTxtCol"][3].asFloat() };
+                }
+                if (ui.isMember("coinTxtCol") && ui["coinTxtCol"].size() == 4) {
+                    playerUISettings.invCoinCol = Color{ ui["coinTxtCol"][0].asFloat(), ui["coinTxtCol"][1].asFloat(),
+                    ui["coinTxtCol"][2].asFloat() ,ui["coinTxtCol"][3].asFloat() };
+                }
+                if (ui.isMember("ammoTxtCol") && ui["ammoTxtCol"].size() == 4) {
+                    playerUISettings.invAmmoCol = Color{ ui["ammoTxtCol"][0].asFloat(), ui["ammoTxtCol"][1].asFloat(),
+                    ui["ammoTxtCol"][2].asFloat() ,ui["ammoTxtCol"][3].asFloat() };
+                }
+                playerUISettings.invGearIconSz.x = playerUISettings.invGearIconSz.y = ui.get("iconSize", 75).asFloat();
+                if (ui.isMember("edgePadding") && ui["edgePadding"].size() == 2) {
+                    playerUISettings.invEdgePadding = AEVec2{ ui["edgePadding"][0].asFloat(), ui["edgePadding"][1].asFloat() };
+                }
+                playerUISettings.invIconGap = ui.get("iconGap", 10).asFloat();
+                playerUISettings.invSectionGap = ui.get("sectionGap", 10).asFloat();
+                playerUISettings.invStatIconSz.x = playerUISettings.invStatIconSz.y = ui.get("statIconSize", 30).asFloat();
+                playerUISettings.invStatFontSz = ui.get("statFontSize", 1).asFloat();
+                playerUISettings.invStatGap = ui.get("statGap", 5).asFloat();
             }
-            if (ui.isMember("fillCol") && ui["fillCol"].size() == 4) {
-                playerUISettings.hpFillCol = Color{ ui["fillCol"][0].asFloat(), ui["fillCol"][1].asFloat(),
-                ui["fillCol"][2].asFloat() ,ui["fillCol"][3].asFloat() };
-            }
-            if (ui.isMember("shieldCol") && ui["shieldCol"].size() == 4) {
-                playerUISettings.hpShieldCol = Color{ ui["shieldCol"][0].asFloat(), ui["shieldCol"][1].asFloat(),
-                ui["shieldCol"][2].asFloat() ,ui["shieldCol"][3].asFloat() };
-            }
-            playerUISettings.maxIcons = ui.get("maxIcons", 6).asUInt();
-            playerUISettings.seIconSize = ui.get("seIconSize", 30).asFloat();
         }
     }
     else {
@@ -885,6 +979,48 @@ void GameState::InitState()
     bossMaxHPProgressBar = 100.f;
     bossHPProgressBar = 0.f;
     inProceduralMap = false;
+
+    //Load Inventory UI variables
+    playerUISettings.invSize ={ 2 * (playerUISettings.invEdgePadding.x + playerUISettings.invGearIconSz.x) + playerUISettings.invIconGap,
+                7 * (RenderingManager::GetInstance()->GetFontSize() * playerUISettings.invStatFontSz) + 6*playerUISettings.invStatGap
+        + 4 * (playerUISettings.invGearIconSz.y) + 3 * playerUISettings.invIconGap + 2 * playerUISettings.invEdgePadding.y };
+    playerUISettings.invPos = { AEGfxGetWinMinX() + playerUISettings.invSize.x * 0.5f,0 };
+
+    float y{ playerUISettings.invSize.y * 0.5f - (playerUISettings.invEdgePadding.y + playerUISettings.invGearIconSz.y * 0.5f) };
+    invGearElements[0] = new UIElement{
+        AEVec2{playerUISettings.invPos.x - (playerUISettings.invIconGap + playerUISettings.invGearIconSz.x) * 0.5f, y},
+        playerUISettings.invGearIconSz, 2, Collision::COL_RECT
+    };
+    invGearElements[1] = new UIElement{
+        AEVec2{playerUISettings.invPos.x + (playerUISettings.invIconGap + playerUISettings.invGearIconSz.x) * 0.5f, y},
+        playerUISettings.invGearIconSz, 2, Collision::COL_RECT
+    };
+    y -= playerUISettings.invIconGap + playerUISettings.invGearIconSz.y;
+    invGearElements[2] = new UIElement{
+        AEVec2{playerUISettings.invPos.x, y},
+        playerUISettings.invGearIconSz, 2, Collision::COL_RECT
+    };
+    y -= playerUISettings.invIconGap + playerUISettings.invGearIconSz.y;
+    invGearElements[3] = new UIElement{
+        AEVec2{playerUISettings.invPos.x - (playerUISettings.invIconGap + playerUISettings.invGearIconSz.x) * 0.5f, y},
+        playerUISettings.invGearIconSz, 2, Collision::COL_RECT
+    };
+    invGearElements[4] = new UIElement{
+        AEVec2{playerUISettings.invPos.x + (playerUISettings.invIconGap + playerUISettings.invGearIconSz.x) * 0.5f, y},
+        playerUISettings.invGearIconSz, 2, Collision::COL_RECT
+    };
+    y -= playerUISettings.invIconGap + playerUISettings.invGearIconSz.y;
+    invGearElements[5] = new UIElement{
+        AEVec2{playerUISettings.invPos.x - (playerUISettings.invIconGap + playerUISettings.invGearIconSz.x) * 0.5f, y},
+        playerUISettings.invGearIconSz, 2, Collision::COL_RECT
+    };
+    invGearElements[6] = new UIElement{
+        AEVec2{playerUISettings.invPos.x + (playerUISettings.invIconGap + playerUISettings.invGearIconSz.x) * 0.5f, y},
+        playerUISettings.invGearIconSz, 2, Collision::COL_RECT
+    };
+    for (int i{}; i < invGearElements.size(); ++i) {
+        invGearElements[i]->SetHoverCallback([i](bool) {invGearHoverInd = i;});
+    }
 
     // pop up keyboard menu on first entry of any non-tutorial stage in a session
     if (!doTutorial && !keyboardShownOnce) {
@@ -1492,6 +1628,8 @@ void GameState::Draw()
         AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, alpha);
         AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
     }
+
+    DrawUIHoveredGearTooltip(invGearHoverInd);
 
     if (showKeyboardMenu && keyboardTex) {
         float winW = (float)(AEGfxGetWinMaxX() - AEGfxGetWinMinX());
