@@ -1146,6 +1146,9 @@ void GameState::InitState()
     if (!doTutorial) {
         PetManager::GetInstance()->InitPetForGame(*map);
     }
+    else {
+        PetManager::GetInstance()->UnsetPet();
+    }
 
     // place all the designer-authored chests from the CSV
     SpawnCsvChests(*map);

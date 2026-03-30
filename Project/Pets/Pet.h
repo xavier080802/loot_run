@@ -64,6 +64,7 @@ public:
 
 	virtual ~Pet() {};
 
+	//Whether the pet can be used or not
 	bool isSet{ false };
 protected:
 	virtual void DoMovement(double dt);
