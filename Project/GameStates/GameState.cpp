@@ -610,7 +610,8 @@ namespace {
 
                 if (!gear[i]) continue;
                 //Draw item texure
-                DrawMesh(mtx, squareMesh, RenderingManager::GetInstance()->LoadTexture(gear[i]->texturePath), 255);
+                mtx = GetTransformMtx(invGearElements[i]->GetPos(), 0, invGearElements[i]->GetSize());
+                DrawTintedMesh(mtx, squareMesh, RenderingManager::GetInstance()->LoadTexture(gear[i]->texturePath), GetRarityColor(gear[i]->rarity), 255);
             }
 
             //Draw the player's stats
