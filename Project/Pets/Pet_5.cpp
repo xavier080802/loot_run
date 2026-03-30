@@ -101,7 +101,7 @@ bool Pet_5::DoSkill(const Pets::SkillCastData& _data)
 
 	auraActive = true;
 	sunCounter = 0;
-	bgm.PlayClip("Assets/Audio/Bird_screech.wav", 0.5f);
+	bgm.PlayClip("Assets/Audio/peep.wav", 0.5f);
 	return true;
 }
 
