@@ -28,7 +28,7 @@ void DrawPanel(const DebugContext& ctx,
     AEGfxMeshDraw(ctx.squareMesh, AE_GFX_MDM_TRIANGLES);
 }
 
-// Keybind overlay — shown when player presses K
+// Keybind overlay ï¿½ shown when player presses K
 void DrawKeybindOverlay(const DebugContext& ctx)
 {
     if (ctx.font < 0) return;
@@ -105,7 +105,7 @@ void DrawKeybindOverlay(const DebugContext& ctx)
     KV("[F7]", "Highlight chests");
 }
 
-// Debug overlay — shown when TAB is pressed in debug mode
+// Debug overlay ï¿½ shown when TAB is pressed in debug mode
 void DrawDebugOverlay(const DebugContext& ctx)
 {
     if (ctx.font < 0 || !ctx.gPlayer) return;

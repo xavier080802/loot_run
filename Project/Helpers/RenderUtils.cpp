@@ -82,7 +82,7 @@ AEGfxVertexList* CreateCircleMesh(f32 radius, Color col, unsigned int slices)
 
 void DrawMesh(AEMtx33 transform, AEGfxVertexList* mesh, AEGfxTexture* tex, float alpha)
 {
-	DrawTintedMesh(transform, mesh, tex, CreateColor(0, 0, 0, 0), alpha);
+	DrawTintedMesh(transform, mesh, tex, Color{255,255,255,255}, alpha);
 }
 
 void DrawTintedMesh(AEMtx33 transform, AEGfxVertexList* mesh, AEGfxTexture* tex, Color tint, float alpha)
@@ -219,7 +219,7 @@ void DrawAEText(s8 const& font, std::string const& text, AEVec2 pos, f32 fontSiz
 		//Draw line below previous line (if any)
 		DrawAEText(font, sub.c_str(), { pos.x, pos.y - ((fontH +lineSpace)*AEGfxGetWinMaxY()) * num }, fontSize, col, alignment, isHUD);
 
-		num++;
+		++num;
 		start = i+1;
 	} while (i != std::string::npos);
 }

@@ -10,7 +10,10 @@ namespace Input {
 	enum class INPUT_TYPE : char {
 		CURR,
 		TRIGGERED,
-		RELEASED
+		RELEASED,
+
+		SCROLL_UP,
+		SCROLL_DOWN
 	};
 
 	struct InputKeyData {

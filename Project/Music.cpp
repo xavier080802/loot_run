@@ -1,5 +1,6 @@
 #include "Music.h"
 
+
 BGMManager bgm;
 
 void BGMManager::Init() {
@@ -61,6 +62,18 @@ void BGMManager::StopCredits() {
 	AEAudioStopGroup(bgmGroup);
 }
 
+void BGMManager::PlayClip(std::string const& filepath, float vol, float pitch, bool isUI)
+{
+	if (sfxMap.find(filepath) == sfxMap.end()) {
+		sfxMap[filepath] = AEAudioLoadSound(filepath.c_str());
+	}
+	if (!AEAudioIsValidAudio(sfxMap[filepath])) {
+		//Audio invalid (failed to load?)
+		return;
+	}
+	AEAudioPlay(sfxMap[filepath], isUI ? uiGroup : sfxGroup, vol, pitch, 0);
+}
+
 // --- UI methods ---
 void BGMManager::PlayUIClick() {
 	AEAudioPlay(uiClickSound, uiGroup, 1.0f, 1.0f, 0);
@@ -108,4 +121,8 @@ void BGMManager::Exit() {
 	AEAudioUnloadAudioGroup(gachaGroup);
 	AEAudioUnloadAudioGroup(uiGroup);
 	AEAudioUnloadAudioGroup(sfxGroup);
+
+	for (auto& p : sfxMap) {
+		AEAudioUnloadAudio(p.second);
+	}
 }

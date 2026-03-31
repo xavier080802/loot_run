@@ -1,5 +1,7 @@
 #pragma once
 #include "AEAudio.h"
+#include <map>
+#include <string>
 
 struct BGMManager {
     // Audio Groups
@@ -21,6 +23,8 @@ struct BGMManager {
     AEAudio attackSound;
     AEAudio explosionSound;
 
+    std::map<std::string, AEAudio> sfxMap;
+
     void Init();
     void Exit();
 
@@ -33,6 +37,8 @@ struct BGMManager {
     void PlayCredits();
     void StopCredits();
 
+    void PlayClip(std::string const& filepath, float vol = 1.f, float pitch = 1.f, bool isUI = false);
+
     // UI Methods
     void PlayUIClick();
 
@@ -44,8 +50,6 @@ struct BGMManager {
     void SetBGMVolume(float v);
     void SetUIVolume(float v);
     void SetSFXVolume(float v);
-
-    float GetBGMVolume() const;
 };
 
 extern BGMManager bgm;

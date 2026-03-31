@@ -11,6 +11,7 @@
 #include "../Helpers/MatrixUtils.h"
 #include "../GameStateManager.h"
 #include "../ShopFunctions.h"
+#include "../Music.h"
 #include <iostream>
 
 namespace {
@@ -21,12 +22,14 @@ namespace {
 	AEVec2 hpBarPos{};
 	Color HpContainerCol{ 104, 11, 11, 255 };
 
+
 	// Safe way to print weapon name (incase null pointer)
 	static const char* SafeName(const EquipmentData* w)
 	{
 		return (w && w->name) ? w->name : "None";
 	}
 }
+extern BGMManager bgm;
 
 /**
  * @brief Initializes the Player GameObject with physics, collision, and rendering data.
@@ -57,6 +60,22 @@ GameObject* Player::Init(AEVec2 _pos, AEVec2 _scale, int _z,
 	if (!squareMesh) {
 		squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
 	}
+
+	if (!weaponSpriteGO) {
+		weaponSpriteGO = new GameObject(true);
+	}
+
+	weaponSpriteGO->Init(_pos, { 40.f, 40.f }, _z + 1, MESH_SQUARE, Collision::SHAPE::COL_RECT, { 0,0 }, Bitmask{0}, Collision::LAYER::NONE);
+	weaponSpriteGO->SetCollision(false);
+
+	if (!aimArrowGO) {
+		aimArrowGO = new GameObject(true);
+	}
+	aimArrowGO->Init(_pos, { 40.f, 40.f }, _z - 2, MESH_SQUARE, Collision::SHAPE::COL_RECT, { 0,0 }, Bitmask{0}, Collision::LAYER::NONE);
+	aimArrowGO->SetCollision(false);
+	aimArrowGO->GetRenderData().AddTexture("Assets/sprites/attacks/direction.png");
+	aimArrowGO->GetRenderData().SetActiveTexture(0);
+
 	hpBarPos = { 0, AEGfxGetWinMinY() + HpBarSize.y * 0.5f + 5 };
 	hpBarTrans = GetTransformMtx(hpBarPos, 0, HpBarSize);
 	return GameObject::Init(_pos, _scale, _z, _meshShape, _colShape, _colSize, _collideWithLayers, _isInLayers);
@@ -109,7 +128,7 @@ void Player::InitPlayerRuntime(const ActorStats& baseStats)
 
 	InputManager::GetInstance()->SubscribeMouse(this, 1)
 		.SubscribeKeyboard(this, 1)
-		.Key(AEVK_Q).Key(AEVK_Z).Key(AEVK_X)
+		.Key(AEVK_Q).Key(AEVK_1).Key(AEVK_2)
 		.Key(AEVK_G).Key(AEVK_B);
 }
 
@@ -280,6 +299,51 @@ void Player::Update(double dt)
 	Temp_DoVelocityMovement(dt);
 
 	Actor::Update(dt);
+
+	// Update the weapon sprite representation
+	if (weaponSpriteGO) {
+		const EquipmentData* weapon = GetHeldWeaponData();
+		if (weapon && weapon->texturePath && weapon->texturePath[0] != '\0') {
+			weaponSpriteGO->SetEnabled(true);
+			AEVec2 weaponPos = pos;
+			
+			float offsetDistance = scale.x * 0.6f;
+			weaponPos.x += offsetDistance;
+
+			weaponSpriteGO->SetPos(weaponPos);
+			
+			weaponSpriteGO->Init(weaponPos, scale-10.0f, z + 1, MESH_SQUARE, Collision::SHAPE::COL_RECT, { 0,0 }, Bitmask{ 0 }, Collision::LAYER::NONE);
+			weaponSpriteGO->SetCollision(false);
+			
+			// Load the texture and apply rarity tint
+			weaponSpriteGO->GetRenderData().AddTexture(weapon->texturePath);
+			weaponSpriteGO->GetRenderData().SetActiveTexture((int)weaponSpriteGO->GetRenderData().texList.size() - 1);
+			weaponSpriteGO->GetRenderData().tint = GetRarityColor(weapon->rarity);
+		}
+		else {
+			weaponSpriteGO->SetEnabled(false);
+		}
+	}
+
+	// Update aim arrow
+	if (aimArrowGO) {
+		AEVec2 mousePos = GetMouseWorldVec();
+		AEVec2 dir = { mousePos.x - pos.x, mousePos.y - pos.y };
+
+		if (dir.x != 0.0f || dir.y != 0.0f) {
+			AEVec2Normalize(&dir, &dir);
+			
+			float offsetDistance = scale.x * 0.8f;
+			AEVec2 arrowPos = { pos.x + dir.x * offsetDistance, pos.y + dir.y * offsetDistance };
+
+			// Adjust size roughly based on attack size or default to 40
+			aimArrowGO->Init(arrowPos, { 40.f, 40.f }, z - 2, MESH_SQUARE, Collision::SHAPE::COL_RECT, { 0,0 }, Bitmask{ 0 }, Collision::LAYER::NONE);
+			aimArrowGO->SetCollision(false);
+			
+			float angle = atan2(dir.y, dir.x);
+			aimArrowGO->SetRotation(AERadToDeg(angle) - 90.0f);
+		}
+	}
 }
 
 /**
@@ -424,6 +488,7 @@ bool Player::TryPickup(const PickupPayload& payload)
 	}
 
 	DropSystem::AddToPickupDisplay(payload);
+	bgm.PlayClip("Assets/Audio/Bag_coins.wav", 0.4f);
 	return true;
 }
 
@@ -469,23 +534,23 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 			if (attackCooldownTimer > 0.0f) return;
 			// Ensure weapon is equipped first before acknowledging attack attempt to avoid spam
 			if (!GetHeldWeaponData()) {
-				// We don't print "No weapon!" here because it would spam every frame while held
 				return;
 			}
 			
 			Debug::stream << "LMB triggered. cooldown=" << attackCooldownTimer << "\n";
 			Debug::stream << "Attack pressed. Held=" << (int)heldWeapon << " weaponPtr=" << GetHeldWeaponData() << "\n";
-			if (GetHeldWeaponData()->isRanged) {
-				Debug::stream << "Remaining ammo: " << mInventory.GetAmmo() - 1 << "\n";
-			}
 
 			// Ammo gate for bow/projectile weapons
 			if (GetHeldWeaponData()->isRanged) {
+				Debug::stream << "Remaining ammo: " << mInventory.GetAmmo() - 1 << "\n";
 				if (!mInventory.ConsumeAmmo(1)) {
 					attackCooldownTimer = 0.0f;
 					Debug::stream << "No ammo to fire!\n";
 					return;
 				}
+			}
+			else {
+				bgm.PlayClip("Assets/Audio/CTE02_88.1 Slow Swing.wav", 0.5f);
 			}
 
 			// Convert attackSpeed into seconds-per-attack cooldown
@@ -496,18 +561,68 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 			Combat::ExecuteAttack(this, GetHeldWeaponData(), GetMouseWorldVec());
 		}
 		break;
-	case AEVK_RBUTTON: // Weapon swap = Right Mouse (swap weapon1 <-> weapon2)
-		if (content.type == Input::INPUT_TYPE::TRIGGERED) {
-			mInventory.SwapMainWeapon();
-
-			if (heldWeapon == HeldWeapon::Weapon1) heldWeapon = HeldWeapon::Weapon2;
-			else if (heldWeapon == HeldWeapon::Weapon2) heldWeapon = HeldWeapon::Weapon1;
-
-			RecalculateStats();
-
-			Debug::stream << "Swapped. Held: " << SafeName(GetHeldWeaponData()) << "\n";
+	case VK_SCROLL: {
+		int ind{ mInventory.GetActiveWeaponIndex() };
+		Player::HeldWeapon prevWeap{ heldWeapon };
+		//After setting the weapon based on scroll dir,
+		//Check if the next weapon exists. If it doesnt, let the switch case fall through to the next
+		//At the last case before default, it won't be able to loop back to the other side so adding that manually.
+		//Default basically just sets back to the original weap, thus no change.
+		if (content.type == Input::INPUT_TYPE::SCROLL_UP) {
+			switch (ind)
+			{
+			case 0:
+				heldWeapon = HeldWeapon::Bow;
+				ind = 2;
+				if(GetHeldWeaponData()) break;
+			case 1:
+				heldWeapon = HeldWeapon::Weapon1;
+				ind = 0;
+				if (GetHeldWeaponData()) break;
+			case 2:
+				heldWeapon = HeldWeapon::Weapon2;
+				ind = 1;
+				if (!GetHeldWeaponData()) { //Loop back to first weapon ([1] empty)
+					heldWeapon = HeldWeapon::Weapon1;
+					ind = 0;
+				}
+				if (GetHeldWeaponData()) break;
+			default:
+				ind = mInventory.GetActiveWeaponIndex();
+				heldWeapon = prevWeap;
+				break;
+			}
 		}
+		else { //Scroll DOWN
+			switch (ind)
+			{
+			case 0:
+				heldWeapon = HeldWeapon::Weapon2;
+				ind = 1;
+				if (GetHeldWeaponData()) break;
+			case 1:
+				heldWeapon = HeldWeapon::Bow;
+				ind = 2;
+				if (GetHeldWeaponData()) break;
+			case 2:
+				heldWeapon = HeldWeapon::Weapon1;
+				ind = 0;
+				if (!GetHeldWeaponData()) { //Loop back to [1] ([0] empty)
+					heldWeapon = HeldWeapon::Weapon2;
+					ind = 1;
+				}
+				if (GetHeldWeaponData()) break;
+			default:
+				ind = mInventory.GetActiveWeaponIndex();
+				heldWeapon = prevWeap;
+				break;
+			}
+		}
+
+		mInventory.SetActiveMainWeapon(ind);
+		RecalculateStats();
 		break;
+	}
 	case AEVK_G: // Drop
 		if (content.type == Input::INPUT_TYPE::TRIGGERED) {
 			const EquipmentData* held = GetHeldWeaponData();
@@ -576,7 +691,7 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 			Debug::stream << "Held: " << SafeName(GetHeldWeaponData()) << "\n";
 		}
 		break;
-	case AEVK_Z:
+	case AEVK_1:
 		if (content.type == Input::INPUT_TYPE::TRIGGERED) {
 			heldWeapon = HeldWeapon::Weapon1;
 			mInventory.SetActiveMainWeapon(0);
@@ -584,7 +699,7 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 			Debug::stream << "Held: " << SafeName(GetHeldWeaponData()) << "\n";
 		}
 		break;
-	case AEVK_X:
+	case AEVK_2:
 		if (content.type == Input::INPUT_TYPE::TRIGGERED) {
 			heldWeapon = HeldWeapon::Weapon2;
 			mInventory.SetActiveMainWeapon(1);
@@ -615,6 +730,13 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
  */
 void Player::OnDeath(Actor* killer)
 {
+	if (weaponSpriteGO) {
+		weaponSpriteGO->SetEnabled(false);
+	}
+	if (aimArrowGO) {
+		aimArrowGO->SetEnabled(false);
+	}
+
 	Actor::OnDeath(killer);
 	Debug::stream << "PLAYER DIED\n";
 }

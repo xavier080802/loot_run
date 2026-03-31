@@ -2,9 +2,11 @@
 #include "../Actor/Player.h"
 #include "../GameObjects/AttackHitboxGO.h"
 #include "PetManager.h"
+#include "../Music.h"
 #include <string>
 #include <sstream>
 
+extern BGMManager bgm;
 namespace {
 	bool auraActive{false};
 
@@ -99,6 +101,7 @@ bool Pet_5::DoSkill(const Pets::SkillCastData& _data)
 
 	auraActive = true;
 	sunCounter = 0;
+	bgm.PlayClip("Assets/Audio/peep.wav", 0.5f);
 	return true;
 }
 

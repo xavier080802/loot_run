@@ -26,11 +26,13 @@
 #include "../TileMap.h"
 #include "../UI/Minimap.h"
 #include "../Drops/DropSystem.h"
+#include "../Drops/PickupGO.h"
 #include "../Debug.h"
 #include "../GameStates/LevelSelectState.h"
 #include "../ShopFunctions.h"
 #include "../Pause.h"
 #include "../GameEnd.h"
+#include "../UI/UIElement.h"
 #include <json/json.h>
 
 namespace {
@@ -49,14 +51,30 @@ namespace {
     }
 
     struct {
+        //-----Healthbar----
+
         AEVec2 hpBarSize{};
         Color hpBgCol{}, hpFillCol{}, hpShieldCol{};
         float seIconSize{};
         unsigned maxIcons{};
+
+        //----Inventory----
+
+        AEVec2 invPos, invSize;
+        Color invBGCol{}, invCoinCol, invAmmoCol, invStatTxtCol;
+        AEVec2 invGearIconSz{}, invStatIconSz{};
+        AEVec2 invEdgePadding{};
+        float invIconGap, invSectionGap, invStatFontSz, invStatGap;
+
+        //Not loaded from json
         AEVec2 hpBarPos{};
         AEMtx33 hpBarTrans{};
     } playerUISettings;
 
+    std::array<UIElement*, 7> invGearElements{};
+    int invGearHoverInd{-1};
+
+    // --- BOSS / ENEMY TRACKING ---
     bool   bossAlive = true;
     bool   bossSpawned = false;
     float  bossRadius = 60.0f;
@@ -77,7 +95,7 @@ namespace {
 
     float procWaveTimer = 0.0f;
     int   procWaveNumber = 0;
-    const float PROC_WAVE_INTERVAL = 8.0f;
+    const float PROC_WAVE_INTERVAL = 4.0f;
 
     float procChestWaveTimer = 0.0f;
     int   procChestWaveNumber = 0;
@@ -118,6 +136,14 @@ namespace {
 
     float endlessRunTimer = 0.f;
     bool endlessTimerActive = false;
+    
+    float screenFlashTimer = 0.0f;
+    float maxFlashDuration = 0.5f;
+
+    // keyboard popup
+    AEGfxTexture* keyboardTex = nullptr;
+    bool showKeyboardMenu = false;
+    bool keyboardShownOnce = false;
 
     DebugContext MakeDebugCtx()
     {
@@ -325,8 +351,8 @@ namespace {
 
     void SpawnProcWave(TileMap const& tilemap)
     {
-        const int MAX_LIVE_ENEMIES = 30;
-        const float MIN_SPAWN_SPACING = 115.f * 2.0f;
+        const int MAX_LIVE_ENEMIES = 50;
+        const float MIN_SPAWN_SPACING = 32.f * 3.f; // ~3 tiles gap between spawns
 
         // 5% increase every 60 seconds)
         float currentDifficulty = 1.0f;
@@ -345,7 +371,7 @@ namespace {
         int canSpawn = MAX_LIVE_ENEMIES - liveCount;
         if (canSpawn <= 0) return;
 
-        int waveSize = (procWaveNumber == 0) ? 8 : (1 + procWaveNumber);
+        int waveSize = (procWaveNumber == 0) ? 12 : (4 + procWaveNumber);
         waveSize = (waveSize < canSpawn) ? waveSize : canSpawn;
         ++procWaveNumber;
 
@@ -501,6 +527,7 @@ namespace {
     }
 
     void DrawPlayerUI() {
+        int fontSz = RenderingManager::GetInstance()->GetFontSize();
         if (gPlayer->ShowStatsUI()) {
             Inventory const& mInventory{ gPlayer->GetInventory() };
             AEVec2 bgPos = { -700.0f, 45.0f };
@@ -535,16 +562,51 @@ namespace {
             auto body = mInventory.GetArmor(ArmorSlot::Body);
             auto hands = mInventory.GetArmor(ArmorSlot::Hands);
             auto feet = mInventory.GetArmor(ArmorSlot::Feet);
+
+            //Draw background
+            DrawTintedMesh(GetTransformMtx(playerUISettings.invPos, 0.0f, playerUISettings.invSize), squareMesh, nullptr, { 0, 0, 0, 180 }, 255);
+
+            //Draw equipped gear
             EquipmentData const* held{ gPlayer->GetHeldWeaponData() };
             int ind{ mInventory.GetActiveWeaponIndex() };
 
-            DrawAEText(font, ("WPN 1: " + (std::string(w1 ? w1->name : "None")) + std::string{ (held && ind == 0) ? " <" : "" }).c_str(), textPos, 0.35f, (held && ind == 0) ? Color{ 200, 255,200,255 } : Color{ 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("WPN 2: " + (std::string(w2 ? w2->name : "None")) + std::string{ (held && ind == 1) ? " <" : "" }).c_str(), textPos, 0.35f, (held && ind == 1) ? Color{ 200, 255,200,255 } : Color{ 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("BOW: " + (std::string(bow ? bow->name : "None")) + std::string{ (held && ind == 2) ? " <" : "" }).c_str(), textPos, 0.35f, (held && ind == 2) ? Color{ 200, 255,200,255 } : Color{ 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("HEAD: " + std::string(head ? head->name : "None")).c_str(), textPos, 0.35f, { 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("BODY: " + std::string(body ? body->name : "None")).c_str(), textPos, 0.35f, { 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("HANDS: " + std::string(hands ? hands->name : "None")).c_str(), textPos, 0.35f, { 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("FEET: " + std::string(feet ? feet->name : "None")).c_str(), textPos, 0.35f, { 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
+            std::array<EquipmentData const*, 7> gear{
+                mInventory.GetMainWeapon(0),mInventory.GetMainWeapon(1),mInventory.GetBow(),
+                mInventory.GetArmor(ArmorSlot::Head), mInventory.GetArmor(ArmorSlot::Body),mInventory.GetArmor(ArmorSlot::Hands),mInventory.GetArmor(ArmorSlot::Feet)
+            };
+
+            for (int i{}; i < gear.size(); ++i) {
+                AEMtx33 mtx{ GetTransformMtx(invGearElements[i]->GetPos(), 0, invGearElements[i]->GetSize()) };
+                //Draw background
+                DrawTintedMesh(mtx,
+                    squareMesh, nullptr, (held && ind == i) ? Color{0,255,0,255} : Color{ 100,100,0,255 }, 200);
+
+                if (!gear[i]) continue;
+                //Draw item texure
+                mtx = GetTransformMtx(invGearElements[i]->GetPos(), 0, invGearElements[i]->GetSize());
+                DrawTintedMesh(mtx, squareMesh, RenderingManager::GetInstance()->LoadTexture(gear[i]->texturePath), GetRarityColor(gear[i]->rarity), 255);
+            }
+
+            //Draw the player's stats
+            float yLineSpc{ playerUISettings.invStatFontSz * fontSz + playerUISettings.invStatGap };
+            AEVec2 textPos{ AEGfxGetWinMinX()+ playerUISettings.invEdgePadding.x,
+                invGearElements.back()->GetPos().y - playerUISettings.invGearIconSz.y * 0.5f - playerUISettings.invSectionGap };
+            ActorStats const& mStats{ gPlayer->GetStats() };
+
+            DrawAEText(font, ("Max HP: " + std::to_string((int)mStats.maxHP)).c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invStatTxtCol, TEXT_MIDDLE_LEFT); textPos.y -= yLineSpc;
+            DrawAEText(font, ("Att: " + std::to_string((int)mStats.attack)).c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invStatTxtCol, TEXT_MIDDLE_LEFT); textPos.y -= yLineSpc;
+            DrawAEText(font, ("Def: " + std::to_string((int)mStats.defense)).c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invStatTxtCol, TEXT_MIDDLE_LEFT); textPos.y -= yLineSpc;
+            DrawAEText(font, ("Spd: " + std::to_string((int)mStats.moveSpeed)).c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invStatTxtCol, TEXT_MIDDLE_LEFT); textPos.y -= yLineSpc;
+            std::string tSpd = std::to_string(mStats.attackSpeed);
+            size_t spdLen = tSpd.length() > 4 ? 4 : tSpd.length();
+            DrawAEText(font, ("Atk Spd: " + tSpd.substr(0, spdLen)).c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invStatTxtCol, TEXT_MIDDLE_LEFT); textPos.y -= yLineSpc;
+            
+            //Coin Counter
+            std::string coinText = "Coins: " + std::to_string(mInventory.GetCoins());
+            DrawAEText(font, coinText.c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invCoinCol, TEXT_MIDDLE_LEFT);textPos.y -= yLineSpc;
+            // Ammo Counter
+            std::string ammoText = "Ammo: " + std::to_string(mInventory.GetAmmo());
+            DrawAEText(font, ammoText.c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invAmmoCol, TEXT_MIDDLE_LEFT);
         }
 
         DrawTintedMesh(playerUISettings.hpBarTrans, squareMesh, nullptr, playerUISettings.hpBgCol, playerUISettings.hpBgCol.a);
@@ -561,7 +623,7 @@ namespace {
         DrawAEText(font,
             std::string{ std::to_string((int)gPlayer->GetHP()) + (gPlayer->GetShieldVal() ? (" (+" + std::to_string((int)gPlayer->GetShieldVal()) + ")") : "")
             + " / " + std::to_string((int)gPlayer->GetMaxHP()) }.c_str(),
-            playerUISettings.hpBarPos, playerUISettings.hpBarSize.y / RenderingManager::GetInstance()->GetFontSize(), Color{ 0,0,0,255 }, TEXT_MIDDLE);
+            playerUISettings.hpBarPos, playerUISettings.hpBarSize.y / fontSz, Color{ 0,0,0,255 }, TEXT_MIDDLE);
 
         gPlayer->DrawStatusEffectIcons(playerUISettings.seIconSize,
             playerUISettings.hpBarPos + AEVec2{ 0, playerUISettings.hpBarSize.y * 0.5f + playerUISettings.seIconSize * 0.5f },
@@ -580,10 +642,113 @@ namespace {
             DrawAEText(font, promptStr.c_str(), itemPos, 0.4f, { 255,255,255,255 }, TEXT_MIDDLE);
         }
 
+        //Tooltip for SE
         std::map<std::string, StatEffects::StatusEffect*> statusEffectsDict{ gPlayer->GetStatusEffects() };
         for (auto it{ statusEffectsDict.rbegin() }; it != statusEffectsDict.rend(); ++it) {
             StatEffects::StatusEffect& se = *(*it).second;
             se.UpdateUI(true);
+        }
+    }
+
+    //Hovering over equipment in inventory UI
+    void DrawUIHoveredGearTooltip(int ind) {
+        if (ind == -1) return;
+        //Cursor pos
+        s32 mx{}, my{};
+        AEInputGetCursorPosition(&mx, &my);
+        AEVec2 mP = ScreenToWorld(AEVec2{ (float)mx, (float)my });
+        
+        //Tooltip text
+        Inventory const& mInventory{ gPlayer->GetInventory() };
+        std::array<EquipmentData const*, 7> arr{
+               mInventory.GetMainWeapon(0),mInventory.GetMainWeapon(1),mInventory.GetBow(),
+               mInventory.GetArmor(ArmorSlot::Head), mInventory.GetArmor(ArmorSlot::Body),mInventory.GetArmor(ArmorSlot::Hands),mInventory.GetArmor(ArmorSlot::Feet)
+        };
+        EquipmentData const* eq{arr[ind]};
+        if (!eq) return;
+
+        //Draw tooltip
+        float winW = (float)AEGfxGetWinMaxX() - AEGfxGetWinMinX();
+        float winH = (float)AEGfxGetWinMaxY() - AEGfxGetWinMinY();
+        AEVec2 bgSize = { 300.0f, 220.0f };
+        AEVec2 bgPos = { mP.x + bgSize.x * 0.5f + 15.0f, mP.y - bgSize.y * 0.5f - 15.0f };
+
+        if (bgPos.x + bgSize.x * 0.5f > winW * 0.5f) bgPos.x = winW * 0.5f - bgSize.x * 0.5f;
+        if (bgPos.y - bgSize.y * 0.5f < -winH * 0.5f) bgPos.y = -winH * 0.5f + bgSize.y * 0.5f;
+
+        DrawTintedMesh(GetTransformMtx(bgPos, 0.0f, bgSize), squareMesh, nullptr, { 0, 0, 0, 220 }, 255);
+
+        AEVec2 textPos = { bgPos.x - bgSize.x * 0.5f + 15.0f, bgPos.y + bgSize.y * 0.5f - 25.0f };
+        Color rColor = GetRarityColor(eq->rarity);
+
+        DrawAEText(font, eq->name, textPos, 0.45f, rColor, TEXT_MIDDLE_LEFT);
+        textPos.y -= 30.0f;
+
+        DrawAEText(font, ("Sell Price: " + std::to_string(eq->sellPrice)).c_str(), textPos, 0.35f, { 255, 215, 0, 255 }, TEXT_MIDDLE_LEFT);
+        textPos.y -= 35.0f;
+
+        if (eq->mods.additive.maxHP != 0) { DrawAEText(font, ("Max HP: +" + std::to_string((int)eq->mods.additive.maxHP)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+        if (eq->mods.additive.attack != 0) { DrawAEText(font, ("Attack: +" + std::to_string((int)eq->mods.additive.attack)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+        if (eq->mods.additive.defense != 0) { DrawAEText(font, ("Defense: +" + std::to_string((int)eq->mods.additive.defense)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+        if (eq->mods.additive.moveSpeed != 0) { DrawAEText(font, ("Speed: +" + std::to_string((int)eq->mods.additive.moveSpeed)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+        if (eq->mods.additive.attackSpeed != 0) {
+            std::string aSpdStr = std::to_string(eq->mods.additive.attackSpeed);
+            aSpdStr = aSpdStr.substr(0, aSpdStr.find('.') + 3);
+            DrawAEText(font, ("Atk Speed: +" + aSpdStr).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f;
+        }
+
+        //Reset hover state
+        ind = -1;
+    }
+
+    void DrawHoveredItemStats() {
+        GameObject* hovered = GameObjectManager::GetInstance()->QueryOnMouse();
+        if (hovered && hovered->GetGOType() == GO_TYPE::ITEM) {
+            PickupGO* pickup = dynamic_cast<PickupGO*>(hovered);
+            if (pickup) {
+                const PickupPayload& payload = pickup->GetPayload();
+                if (payload.type == DropType::Equipment && payload.equipment) {
+                    const EquipmentData* eq = payload.equipment;
+
+                    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+                    AEGfxTextureSet(nullptr, 0, 0);
+
+                    s32 mX, mY;
+                    AEInputGetCursorPosition(&mX, &mY);
+                    
+                    float winW = (float)AEGfxGetWinMaxX() - AEGfxGetWinMinX();
+                    float winH = (float)AEGfxGetWinMaxY() - AEGfxGetWinMinY();
+                    float screenX = (float)mX - (winW * 0.5f);
+                    float screenY = (winH * 0.5f) - (float)mY;
+
+                    AEVec2 bgSize = { 300.0f, 220.0f };
+                    AEVec2 bgPos = { screenX + bgSize.x * 0.5f + 15.0f, screenY - bgSize.y * 0.5f - 15.0f };
+                    
+                    if (bgPos.x + bgSize.x * 0.5f > winW * 0.5f) bgPos.x = winW * 0.5f - bgSize.x * 0.5f;
+                    if (bgPos.y - bgSize.y * 0.5f < -winH * 0.5f) bgPos.y = -winH * 0.5f + bgSize.y * 0.5f;
+
+                    DrawTintedMesh(GetTransformMtx(bgPos, 0.0f, bgSize), squareMesh, nullptr, { 0, 0, 0, 220 }, 255);
+
+                    AEVec2 textPos = { bgPos.x - bgSize.x * 0.5f + 15.0f, bgPos.y + bgSize.y * 0.5f - 25.0f };
+                    Color rColor = GetRarityColor(eq->rarity);
+                    
+                    DrawAEText(font, eq->name, textPos, 0.45f, rColor, TEXT_MIDDLE_LEFT);
+                    textPos.y -= 30.0f;
+                    
+                    DrawAEText(font, ("Sell Price: " + std::to_string(eq->sellPrice)).c_str(), textPos, 0.35f, { 255, 215, 0, 255 }, TEXT_MIDDLE_LEFT);
+                    textPos.y -= 35.0f;
+                    
+                    if (eq->mods.additive.maxHP != 0) { DrawAEText(font, ("Max HP: +" + std::to_string((int)eq->mods.additive.maxHP)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+                    if (eq->mods.additive.attack != 0) { DrawAEText(font, ("Attack: +" + std::to_string((int)eq->mods.additive.attack)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+                    if (eq->mods.additive.defense != 0) { DrawAEText(font, ("Defense: +" + std::to_string((int)eq->mods.additive.defense)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+                    if (eq->mods.additive.moveSpeed != 0) { DrawAEText(font, ("Speed: +" + std::to_string((int)eq->mods.additive.moveSpeed)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+                    if (eq->mods.additive.attackSpeed != 0) { 
+                        std::string aSpdStr = std::to_string(eq->mods.additive.attackSpeed);
+                        aSpdStr = aSpdStr.substr(0, aSpdStr.find('.') + 3);
+                        DrawAEText(font, ("Atk Speed: +" + aSpdStr).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; 
+                    }
+                }
+            }
         }
     }
 }
@@ -623,26 +788,56 @@ void GameState::LoadState()
         Json::CharReaderBuilder builder;
         std::string errs;
 
-        if (Json::parseFromStream(builder, ifs, &root, &errs) && root.isMember("pet_ui"))
+        if (Json::parseFromStream(builder, ifs, &root, &errs))
         {
-            Json::Value ui = root["player_healthbar"];
-            if (ui.isMember("size") && ui["size"].size() == 2) {
-                playerUISettings.hpBarSize = AEVec2{ ui["size"][0].asFloat(), ui["size"][1].asFloat() };
+            if (root.isMember("player_healthbar")) {
+                Json::Value ui = root["player_healthbar"];
+                if (ui.isMember("size") && ui["size"].size() == 2) {
+                    playerUISettings.hpBarSize = AEVec2{ ui["size"][0].asFloat(), ui["size"][1].asFloat() };
+                }
+                if (ui.isMember("bgCol") && ui["bgCol"].size() == 4) {
+                    playerUISettings.hpBgCol = Color{ ui["bgCol"][0].asFloat(), ui["bgCol"][1].asFloat(),
+                    ui["bgCol"][2].asFloat() ,ui["bgCol"][3].asFloat() };
+                }
+                if (ui.isMember("fillCol") && ui["fillCol"].size() == 4) {
+                    playerUISettings.hpFillCol = Color{ ui["fillCol"][0].asFloat(), ui["fillCol"][1].asFloat(),
+                    ui["fillCol"][2].asFloat() ,ui["fillCol"][3].asFloat() };
+                }
+                if (ui.isMember("shieldCol") && ui["shieldCol"].size() == 4) {
+                    playerUISettings.hpShieldCol = Color{ ui["shieldCol"][0].asFloat(), ui["shieldCol"][1].asFloat(),
+                    ui["shieldCol"][2].asFloat() ,ui["shieldCol"][3].asFloat() };
+                }
+                playerUISettings.maxIcons = ui.get("maxIcons", 6).asUInt();
+                playerUISettings.seIconSize = ui.get("seIconSize", 30).asFloat();
             }
-            if (ui.isMember("bgCol") && ui["bgCol"].size() == 4) {
-                playerUISettings.hpBgCol = Color{ ui["bgCol"][0].asFloat(), ui["bgCol"][1].asFloat(),
-                ui["bgCol"][2].asFloat() ,ui["bgCol"][3].asFloat() };
+            if (root.isMember("player_inventory")) {
+                Json::Value ui = root["player_inventory"];
+                if (ui.isMember("bgCol") && ui["bgCol"].size() == 4) {
+                    playerUISettings.invBGCol = Color{ ui["bgCol"][0].asFloat(), ui["bgCol"][1].asFloat(),
+                    ui["bgCol"][2].asFloat() ,ui["bgCol"][3].asFloat() };
+                }
+                if (ui.isMember("statTxtCol") && ui["statTxtCol"].size() == 4) {
+                    playerUISettings.invStatTxtCol = Color{ ui["statTxtCol"][0].asFloat(), ui["statTxtCol"][1].asFloat(),
+                    ui["statTxtCol"][2].asFloat() ,ui["statTxtCol"][3].asFloat() };
+                }
+                if (ui.isMember("coinTxtCol") && ui["coinTxtCol"].size() == 4) {
+                    playerUISettings.invCoinCol = Color{ ui["coinTxtCol"][0].asFloat(), ui["coinTxtCol"][1].asFloat(),
+                    ui["coinTxtCol"][2].asFloat() ,ui["coinTxtCol"][3].asFloat() };
+                }
+                if (ui.isMember("ammoTxtCol") && ui["ammoTxtCol"].size() == 4) {
+                    playerUISettings.invAmmoCol = Color{ ui["ammoTxtCol"][0].asFloat(), ui["ammoTxtCol"][1].asFloat(),
+                    ui["ammoTxtCol"][2].asFloat() ,ui["ammoTxtCol"][3].asFloat() };
+                }
+                playerUISettings.invGearIconSz.x = playerUISettings.invGearIconSz.y = ui.get("iconSize", 75).asFloat();
+                if (ui.isMember("edgePadding") && ui["edgePadding"].size() == 2) {
+                    playerUISettings.invEdgePadding = AEVec2{ ui["edgePadding"][0].asFloat(), ui["edgePadding"][1].asFloat() };
+                }
+                playerUISettings.invIconGap = ui.get("iconGap", 10).asFloat();
+                playerUISettings.invSectionGap = ui.get("sectionGap", 10).asFloat();
+                playerUISettings.invStatIconSz.x = playerUISettings.invStatIconSz.y = ui.get("statIconSize", 30).asFloat();
+                playerUISettings.invStatFontSz = ui.get("statFontSize", 1).asFloat();
+                playerUISettings.invStatGap = ui.get("statGap", 5).asFloat();
             }
-            if (ui.isMember("fillCol") && ui["fillCol"].size() == 4) {
-                playerUISettings.hpFillCol = Color{ ui["fillCol"][0].asFloat(), ui["fillCol"][1].asFloat(),
-                ui["fillCol"][2].asFloat() ,ui["fillCol"][3].asFloat() };
-            }
-            if (ui.isMember("shieldCol") && ui["shieldCol"].size() == 4) {
-                playerUISettings.hpShieldCol = Color{ ui["shieldCol"][0].asFloat(), ui["shieldCol"][1].asFloat(),
-                ui["shieldCol"][2].asFloat() ,ui["shieldCol"][3].asFloat() };
-            }
-            playerUISettings.maxIcons = ui.get("maxIcons", 6).asUInt();
-            playerUISettings.seIconSize = ui.get("seIconSize", 30).asFloat();
         }
     }
     else {
@@ -668,6 +863,8 @@ void GameState::LoadState()
     float    procTileSize = 115.f;
     unsigned procRows = 50, procCols = 50;
     nextMap = new TileMap({ 0.f, 0.f }, procTileSize, procTileSize);
+    keyboardTex = RenderingManager::GetInstance()->LoadTexture("Assets/sprites/keyboard.png");
+
     srand(1234);
     nextMap->GenerateProcedural(procRows, procCols, 1234);
 
@@ -745,6 +942,58 @@ void GameState::InitState()
     bossHPProgressBar = 0.f;
     inProceduralMap = false;
 
+    //Load Inventory UI variables
+    playerUISettings.invSize ={ 2 * (playerUISettings.invEdgePadding.x + playerUISettings.invGearIconSz.x) + playerUISettings.invIconGap,
+                7 * (RenderingManager::GetInstance()->GetFontSize() * playerUISettings.invStatFontSz) + 6*playerUISettings.invStatGap
+        + 4 * (playerUISettings.invGearIconSz.y) + 3 * playerUISettings.invIconGap + 2 * playerUISettings.invEdgePadding.y };
+    playerUISettings.invPos = { AEGfxGetWinMinX() + playerUISettings.invSize.x * 0.5f,0 };
+
+    float y{ playerUISettings.invSize.y * 0.5f - (playerUISettings.invEdgePadding.y + playerUISettings.invGearIconSz.y * 0.5f) };
+    invGearElements[0] = new UIElement{
+        AEVec2{playerUISettings.invPos.x - (playerUISettings.invIconGap + playerUISettings.invGearIconSz.x) * 0.5f, y},
+        playerUISettings.invGearIconSz, 2, Collision::COL_RECT
+    };
+    invGearElements[1] = new UIElement{
+        AEVec2{playerUISettings.invPos.x + (playerUISettings.invIconGap + playerUISettings.invGearIconSz.x) * 0.5f, y},
+        playerUISettings.invGearIconSz, 2, Collision::COL_RECT
+    };
+    y -= playerUISettings.invIconGap + playerUISettings.invGearIconSz.y;
+    invGearElements[2] = new UIElement{
+        AEVec2{playerUISettings.invPos.x, y},
+        playerUISettings.invGearIconSz, 2, Collision::COL_RECT
+    };
+    y -= playerUISettings.invIconGap + playerUISettings.invGearIconSz.y;
+    invGearElements[3] = new UIElement{
+        AEVec2{playerUISettings.invPos.x - (playerUISettings.invIconGap + playerUISettings.invGearIconSz.x) * 0.5f, y},
+        playerUISettings.invGearIconSz, 2, Collision::COL_RECT
+    };
+    invGearElements[4] = new UIElement{
+        AEVec2{playerUISettings.invPos.x + (playerUISettings.invIconGap + playerUISettings.invGearIconSz.x) * 0.5f, y},
+        playerUISettings.invGearIconSz, 2, Collision::COL_RECT
+    };
+    y -= playerUISettings.invIconGap + playerUISettings.invGearIconSz.y;
+    invGearElements[5] = new UIElement{
+        AEVec2{playerUISettings.invPos.x - (playerUISettings.invIconGap + playerUISettings.invGearIconSz.x) * 0.5f, y},
+        playerUISettings.invGearIconSz, 2, Collision::COL_RECT
+    };
+    invGearElements[6] = new UIElement{
+        AEVec2{playerUISettings.invPos.x + (playerUISettings.invIconGap + playerUISettings.invGearIconSz.x) * 0.5f, y},
+        playerUISettings.invGearIconSz, 2, Collision::COL_RECT
+    };
+    for (int i{}; i < invGearElements.size(); ++i) {
+        invGearElements[i]->SetHoverCallback([i](bool) {invGearHoverInd = i;});
+    }
+
+    // pop up keyboard menu on first entry of any non-tutorial stage in a session
+    if (!doTutorial && !keyboardShownOnce) {
+        showKeyboardMenu = true;
+        keyboardShownOnce = true;
+    }
+    else {
+        showKeyboardMenu = false;
+    }
+
+    // player init is the same across all three modes
     Bitmask collideMask = CreateBitmask(3,
         Collision::LAYER::ENEMIES,
         Collision::LAYER::INTERACTABLE,
@@ -761,7 +1010,7 @@ void GameState::InitState()
 
     if (mapSelected == "Assets/Endless.csv") {
         std::cout << "[InitState] Endless mode.\n";
-
+        gPlayer->SetHeldWeapon(0);
         totalKillTarget = 20 + rand() % 31;
         totalEnemiesRequired = totalKillTarget;
         std::cout << "[InitState] Kill target: " << totalKillTarget << "\n";
@@ -802,6 +1051,9 @@ void GameState::InitState()
         loadingTimer = LOADING_DURATION;
         endlessRunTimer = 0.f;
         endlessTimerActive = true;
+
+        //When player dies, alert game state
+        gPlayer->SubToOnDeath(this);
 
         PetManager::GetInstance()->SetTilemap(*nextMap);
         minimap->Reset();
@@ -847,7 +1099,13 @@ void GameState::InitState()
     gPlayer->InitPlayerRuntime(base);
     gPlayer->ApplyShopUpgrades();
     gPlayer->Heal(gPlayer->GetMaxHP());
-    PetManager::GetInstance()->InitPetForGame(*map);
+    //Call pet stuff after player setup
+    if (!doTutorial) {
+        PetManager::GetInstance()->InitPetForGame(*map);
+    }
+    else {
+        PetManager::GetInstance()->UnsetPet();
+    }
 
     SpawnCsvChests(*map);
 
@@ -857,7 +1115,8 @@ void GameState::InitState()
 
     if (doTutorial) {
         std::cout << "[InitState] Tutorial mode.\n";
-
+        gPlayer->SetHeldWeapon(0);
+        // find the door so the fairy knows where to guide the player after the boss dies
         for (unsigned r = 0; r < csvRows; ++r) {
             for (unsigned c = 0; c < csvCols; ++c) {
                 const TileMap::Tile* t = map->QueryTile(r, c);
@@ -892,17 +1151,15 @@ void GameState::InitState()
         std::vector<AEVec2> csvSpawnPool = FindSafeSpawnPositions(*map, 0, true);
         csvEnemies.clear();
         for (AEVec2 const& pos : csvSpawnPool) {
-            Enemy* e = SpawnWeightedEnemy(pos, 0.70f, 0.30f);
+            Enemy* e = SpawnWeightedEnemy(pos, 1.f, 0.f);
             if (!e) continue;
             csvEnemies.push_back(e);
             std::cout << "[Tutorial] Spawned " << e->GetDefinition().name
                 << " at (" << pos.x << ", " << pos.y << ")\n";
         }
         std::cout << "[Tutorial] Spawned " << csvEnemies.size() << " enemies total.\n";
-        if (doTutorial) {
-            fairy->InitTutorial(gPlayer, *map, currentLevel);
-            fairy->tilemap = map;
-        }
+        fairy->InitTutorial(gPlayer, *map, currentLevel);
+        fairy->tilemap = map;
         return;
     }
 
@@ -914,7 +1171,7 @@ void GameState::InitState()
     csvEnemies.clear();
 
     std::cout << "[InitState] csvSpawnPool has " << csvSpawnPool.size() << " positions.\n";
-
+    gPlayer->SetHeldWeapon(0);
     for (AEVec2 const& pos : csvSpawnPool) {
         Enemy* e = SpawnWeightedEnemy(pos, 0.70f, 0.30f);
         if (!e) {
@@ -929,6 +1186,9 @@ void GameState::InitState()
             << " (" << tier << ") at (" << pos.x << ", " << pos.y << ")\n";
     }
     std::cout << "[InitState] Spawned " << csvEnemies.size() << " CSV enemies total.\n";
+
+    //When player dies, alert game state
+    gPlayer->SubToOnDeath(this);
 }
 
 // =============================================================
@@ -964,6 +1224,14 @@ void GameState::Update(double dt)
         debugGodMode = !debugGodMode;
         std::cout << "[Debug] God mode " << (debugGodMode ? "ON" : "OFF") << "\n";
     }
+
+    // keyboard toggle
+    if (AEInputCheckTriggered(AEVK_X)) {
+        showKeyboardMenu = !showKeyboardMenu;
+        std::cout << "[Menu] Keyboard " << (showKeyboardMenu ? "ON" : "OFF") << "\n";
+    }
+
+    if (showKeyboardMenu) return;
     if (AEInputCheckTriggered(AEVK_F6)) {
         debugFreezeEnemies = !debugFreezeEnemies;
         std::cout << "[Debug] Freeze AI " << (debugFreezeEnemies ? "ON" : "OFF") << "\n";
@@ -997,6 +1265,10 @@ void GameState::Update(double dt)
         if (gPlayer) { gPlayer->Heal(gPlayer->GetMaxHP()); std::cout << "[Debug] HP refilled.\n"; }
     }
 
+    //Cast pet skill
+    if (AEInputCheckTriggered(AEVK_R))
+        PostOffice::GetInstance()->Send("PetManager", new PetSkillMsg(PetSkillMsg::CAST_SKILL));
+
 #pragma region inputs_for_testing
     if (AEInputCheckTriggered(AEVK_L)) {
         LootChest* chest = dynamic_cast<LootChest*>(
@@ -1005,8 +1277,6 @@ void GameState::Update(double dt)
         chest->Init(m, { 75,75 }, 1, MESH_SQUARE, Collision::COL_RECT, { 75,75 },
             CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE);
     }
-    if (AEInputCheckTriggered(AEVK_R))
-        PostOffice::GetInstance()->Send("PetManager", new PetSkillMsg(PetSkillMsg::CAST_SKILL));
 
     if (AEInputCheckTriggered(AEVK_N)) {
         AEVec2 m = GetMouseWorldVec();
@@ -1076,6 +1346,7 @@ void GameState::Update(double dt)
             AEVec2 procSpawn = nextMap->GetSpawnPoint();
             gPlayer->SetPos(procSpawn);
             gPlayer->Move({ 0,0 });
+            PetManager::GetInstance()->SetTilemap(*nextMap);
             PetManager::GetInstance()->PlacePet(gPlayer->GetPos());
             camPos = procSpawn; camVel = { 0, 0 };
             halfMapWidth = nextMap->GetFullMapSize().x * 0.5f;
@@ -1189,7 +1460,6 @@ void GameState::Update(double dt)
             }
         }
     }
-
     minimap->Update(dt, *currentMap, *gPlayer);
     UpdateWorldMap((float)dt);
 
@@ -1213,6 +1483,8 @@ void GameState::Update(double dt)
     else {
         GameObjectManager::GetInstance()->UpdateObjects(dt, currentMap);
     }
+
+    if (screenFlashTimer > 0.0f) screenFlashTimer -= (float)dt;
 
     DropSystem::UpdatePickupDisplay(static_cast<float>(dt));
 }
@@ -1288,6 +1560,13 @@ void GameState::Draw()
     if (showKeybindOverlay) DrawKeybindOverlay(dbg);
 
     if (gPlayer) DrawPlayerUI();
+    DrawHoveredItemStats();
+
+    // [X] Keybinds hint in bottom-right corner (non-tutorial only)
+    if (!doTutorial && font >= 0) {
+        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        AEGfxPrint(font, "[X] Keybinds", 0.62f, -0.88f, 0.5f, 1.f, 1.f, 1.f, 0.7f);
+    }
 
     if (endlessTimerActive && font >= 0) {
         int minutes = (int)endlessRunTimer / 60;
@@ -1309,8 +1588,46 @@ void GameState::Draw()
     PetManager::GetInstance()->DrawUI();
     DropSystem::PrintPickupDisplay();
 
+    if (screenFlashTimer > 0.0f) {
+        float winW = (float)AEGfxGetWinMaxX() - (float)AEGfxGetWinMinX();
+        float winH = (float)AEGfxGetWinMaxY() - (float)AEGfxGetWinMinY();
+        AEMtx33 mtx;
+        GetTransformMtx(mtx, { 0, 0 }, 0, { winW, winH });
+        AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+        AEGfxTextureSet(nullptr, 0, 0);
+        AEGfxSetTransform(mtx.m);
+        float alpha = (screenFlashTimer / maxFlashDuration) * 0.3f; // Max 30% alpha
+        AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, alpha);
+        AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
+    }
+
+    DrawUIHoveredGearTooltip(invGearHoverInd);
+
+    if (showKeyboardMenu && keyboardTex) {
+        float winW = (float)(AEGfxGetWinMaxX() - AEGfxGetWinMinX());
+        float winH = (float)(AEGfxGetWinMaxY() - AEGfxGetWinMinY());
+
+        float drawH = winH * 0.8f;
+        float drawW = winW * 0.6f;
+        AEMtx33 trans;
+        GetTransformMtx(trans, { 0, 0 }, 0, { drawW, drawH });
+
+        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+        AEGfxTextureSet(keyboardTex, 0, 0);
+        AEGfxSetTransform(trans.m);
+        AEGfxSetTransparency(1.f);
+        AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
+        AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
+    }
+
+    // pause and end screens sit on top of everything else
     Pause::Draw();
     GameEnd::Draw();
+}
+
+void GameState::TriggerScreenFlash(float duration) {
+    screenFlashTimer = maxFlashDuration = duration;
 }
 
 void GameState::HandleTutorialDialogueRender()
@@ -1320,6 +1637,13 @@ void GameState::HandleTutorialDialogueRender()
         fairy->data.dialoguePos, AEGfxGetWindowWidth() * 0.9f, fairy->data.dialogueSize, 0.0f,
         Color{ 0,0,0,255 }, TEXT_MIDDLE, TextboxOriginPos::TOP,
         TextboxBgCfg{ AEVec2{0.005f, 0.025f}, Color{255,255,255,255}, 255, RenderingManager::GetInstance()->GetMesh(MESH_SQUARE), nullptr });
+}
+
+void GameState::SubscriptionAlert(ActorDeadSubContent content)
+{
+    if (content.victim != gPlayer) return;
+    //Player died, end
+    GameEnd::Show(false, mapSelected == "Assets/Endless.csv", endlessRunTimer, gPlayer->GetInventory().GetCoins(), totalEnemiesKilled);
 }
 
 // =============================================================
