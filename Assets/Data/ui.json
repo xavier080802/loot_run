@@ -96,6 +96,10 @@
             ]
         }
 
+        If hardcoding, put a bool "hardcodeInstead" to true,
+        which will disable the normal rendering.
+        Dev needs to go to GuideState and hardcode. Use Title as id
+
         */
         "pages": [
             {

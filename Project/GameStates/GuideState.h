@@ -51,6 +51,7 @@ private:
 		std::vector<Img> imgPaths;
 		AEVec2 contentPos;
 		float contentFontSize, contentWidth, contentLineSpace;
+		bool hardcodeInstead;
 	};
 	std::vector<Page> pages;
 

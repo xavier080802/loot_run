@@ -45,23 +45,30 @@ void GuideState::Draw() {
 		return;
 	}
 
-	//Page indicator
+	// ===================== Page indicator =====================
 	char buf[20];
 	sprintf_s(buf, pageIndicator.format.c_str(), currPage + 1, pages.size());
 	DrawAEText(font, buf, pageIndicator.pos, pageIndicator.fontSize, pageIndicator.color, pageIndicator.origin);
 
-	//Draw the current page
+	//===================== Draw the current page =====================
 	Page const& p{ pages.at(currPage) };
-	//Title
-	DrawAEText(font, p.titleText.c_str(), titlePos, titleFontSz, p.titleCol, TEXT_MIDDLE);
-	//Content
-	DrawAETextbox(font, p.contentText, p.contentPos, p.contentWidth, p.contentFontSize, p.contentLineSpace, p.contentCol, p.contentTxtOrigin, TextboxOriginPos::TOP);
-	//Images
-	for (Img const& img : p.imgPaths) {
-		DrawMesh(GetTransformMtx(img.pos, 0, img.size), rm->GetMesh(MESH_SQUARE), rm->LoadTexture(img.path), 255);
+	if (!p.hardcodeInstead) {
+		//Title
+		DrawAEText(font, p.titleText.c_str(), titlePos, titleFontSz, p.titleCol, TEXT_MIDDLE);
+		//Content
+		DrawAETextbox(font, p.contentText, p.contentPos, p.contentWidth, p.contentFontSize, p.contentLineSpace, p.contentCol, p.contentTxtOrigin, TextboxOriginPos::TOP);
+		//Images
+		for (Img const& img : p.imgPaths) {
+			DrawMesh(GetTransformMtx(img.pos, 0, img.size), rm->GetMesh(MESH_SQUARE), rm->LoadTexture(img.path), 255);
+		}
+	}
+	else {
+		// First, Check if the current page is the correct page
+		// Then, put your code to render
+
 	}
 
-	//Buttons
+	//===================== Buttons =====================
 	if (prevBtn) {
 		DrawTintedMesh(GetTransformMtx(prevBtn->GetPos(), 0, prevBtn->GetSize()),
 			rm->GetMesh(MESH_SQUARE), nullptr, prevHovered ? btnHoverCol : btnCol, 255);
@@ -176,6 +183,7 @@ void GuideState::LoadUIJSON() {
 		pages.reserve(pgs.size());
 		for (Json::Value& v : pgs) {
 			Page p{};
+			p.hardcodeInstead = v.get("hardcodeInstead", false).asBool();
 			p.titleText = v.get("titleText", "").asString();
 			p.contentText = v.get("contentText", "").asString();
 			p.contentTxtOrigin = ParseTextAlignment(v.get("contentTxtOrigin", "").asString());
