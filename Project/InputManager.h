@@ -49,7 +49,18 @@ public:
 	//Let manager know to poll this key (keyboard only).
 	InputManager& Key(u8 key);
 
+	void Enable(bool enable = true) { enabled = enable; }
+	bool IsEnabled() const { return enabled; }
+
+	int GetMinPrio() const { return minPrio; }
+	// The minimum priority level for objects to receive callbacks.
+	// Recommended to save the previous value and set back
+	void SetMinPrio(int min) { minPrio = min; }
+
 private:
+	bool enabled{true};
+	//Receiver must have priority >= this for it to receive a callback
+	int minPrio{-1000};
 	struct Receiver {
 		Input::InputSub* sub;
 		int priority;

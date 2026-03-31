@@ -10,17 +10,7 @@ UIElement::UIElement(AEVec2 _pos, AEVec2 _size, int _z, Collision::SHAPE _shape,
 
 UIElement::UIElement(Json::Value const& json)
 {
-	if (json.findArray("pos") && json["pos"].size() == 2) {
-		Json::Value posArr{ json["pos"] };
-		pos = { posArr[0].asFloat(), posArr[0].asFloat() };
-	}
-	if (json.findArray("size") && json["size"].size() == 2) {
-		Json::Value sizeArr{ json["size"] };
-		size = { sizeArr[0].asFloat(), sizeArr[0].asFloat() };
-	}
-	z = json.get("z", 0).asInt();
-	blocksInteraction = json.get("blockInteraction", true).asBool();
-
+	ReInit(json);
 	UIManager::GetInstance()->Register(this);
 }
 
@@ -76,8 +66,30 @@ UIElement& UIElement::ReInit(AEVec2 _pos, AEVec2 _size, int _z, Collision::SHAPE
 	return *this;
 }
 
+UIElement& UIElement::ReInit(Json::Value const& json)
+{
+	if (json.findArray("pos") && json["pos"].size() == 2) {
+		Json::Value posArr{ json["pos"] };
+		pos = { posArr[0].asFloat(), posArr[1].asFloat() };
+	}
+	if (json.findArray("size") && json["size"].size() == 2) {
+		Json::Value sizeArr{ json["size"] };
+		size = { sizeArr[0].asFloat(), sizeArr[1].asFloat() };
+	}
+	z = json.get("z", 0).asInt();
+	blocksInteraction = json.get("blockInteraction", true).asBool();
+
+	return *this;
+}
+
 UIElement& UIElement::SetOrphaned()
 {
 	isOrphan = true;
+	return *this;
+}
+
+UIElement& UIElement::SetPriority(int _z)
+{
+	z = _z;
 	return *this;
 }

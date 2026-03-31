@@ -13,7 +13,7 @@
         "coinTxtCol": [ 255, 215, 0, 255 ],
         "ammoTxtCol": [ 200, 200, 200, 255 ],
         "iconSize": 50,
-        "edgePadding": [20,20], //padding around the edge of the box
+        "edgePadding": [ 20, 20 ], //padding around the edge of the box
         "iconGap": 10, //Gap between icons that are side-by-side
         "sectionGap": 20, //Gap between gear and stat sections
         "statIconSize": 50,
@@ -45,5 +45,88 @@
         "pos": [ -0.975, -0.975 ], //Normalized [-1,1]
         "textAlignment": "TEXT_LOWER_LEFT",
         "max": 5 //Max to display
+    },
+    "guide": {
+        "btnCol": [ 200, 200, 200, 255 ],
+        "btnHoverCol": [ 240, 240, 240, 255 ],
+        "btnFontSize": 0.5,
+        "btnTextCol": [ 0, 0, 0, 255 ],
+        "titlePos": [ 0, 400 ],
+        "titleFontSize": 1.2,
+        "pageIndicator": {
+            "pos": [ 0, -400 ],
+            "fontSize": 0.7,
+            "color": [ 200, 200, 200, 255 ],
+            "format": "%i / %i",
+            "origin": "TEXT_MIDDLE"
+        },
+        "prevBtn": {
+            "pos": [ -300, -375 ],
+            "size": [ 100, 67 ],
+            "text": "<"
+        },
+        "nextBtn": {
+            "pos": [ 300, -375 ],
+            "size": [ 100, 67 ],
+            "text": ">"
+        },
+        "exitBtn": {
+            "pos": [ -650, 400 ],
+            "size": [ 200, 67 ],
+            "text": "Exit"
+        },
+        /* Page object format
+            
+        {
+            "titleText": "",
+            "contentText": "",
+            "contentTxtOrigin": "TEXT_MIDDLE",
+            "titleCol": [255,255,255,255],
+            "contentCol": [ 255, 255, 255, 255 ],
+            "contentPos": [ 0, 0 ],
+            "contentWidth": 0,
+            "contentFontSize": 0.5,
+            "contentLineSpace": 0.015,
+            "imgPaths": [
+                {
+                    "path": "Assets/",
+                    "size": [0,0],
+                    "pos": [0,0],
+                }
+            ]
+        }
+
+        */
+        "pages": [
+            {
+                "titleText": "Intro",
+                "contentText": "Welcome to Loot Run!\nCollect coins from defeating enemies and collecting loot.\nUse these coins to gacha for pets.",
+                "contentTxtOrigin": "TEXT_MIDDLE",
+                "titleCol": [ 255, 255, 255, 255 ],
+                "contentCol": [ 255, 255, 255, 255 ],
+                "contentPos": [ 0, 300 ],
+                "contentWidth": 500,
+                "contentFontSize": 0.5,
+                "contentLineSpace": 0.015,
+                "imgPaths": []
+            },
+            {
+                "titleText": "Basic Controls",
+                "contentText": "",
+                "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                "titleCol": [ 255, 255, 255, 255 ],
+                "contentCol": [ 255, 255, 255, 255 ],
+                "contentPos": [ 0, 300 ],
+                "contentWidth": 0,
+                "contentFontSize": 0.5,
+                "imgPaths": [
+                    {
+                        "path": "Assets/sprites/keyboard.png",
+                        "size": [ 960, 640 ],
+                        "pos": [ 0, 0 ]
+                    }
+                ]
+            }
+        ]
     }
 }

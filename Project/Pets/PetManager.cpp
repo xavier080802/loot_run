@@ -291,7 +291,7 @@ void PetManager::LoadPetData()
 	std::string errs;
 
 	if (!Json::parseFromStream(builder, ifs, &root, &errs) || !root["pets"].isArray()) {
-		std::cout << "LoadEnemyDefs: parse failed: " << errs << "\n";
+		std::cout << "Pets: parse failed: " << errs << "\n";
 		return;
 	}
 

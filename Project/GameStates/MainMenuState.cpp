@@ -39,7 +39,8 @@ namespace {
 		{{ 200.f, 500.f }, { 235.f, 67.f }, "Shop"},
 		{{ 200.f, 600.f }, { 235.f, 67.f }, "Settings"},
 		{{ 200.f, 700.f }, { 235.f, 67.f }, "Credits"},
-		{{ 200.f, 800.f }, { 235.f, 67.f }, "Exit Game"}
+		{{ 200.f, 800.f }, { 235.f, 67.f }, "Exit Game"},
+		{{ 1400.f, 800.f}, {235.f, 67.f}, "Controls & Help"}
 	};
 	Title title = { { DEFAULT_W *0.5f, 200.f}, {800,600}, "LOOT RUN"};
 	std::string logoTex{ "Assets/sprites/logo.png" };
@@ -145,6 +146,7 @@ void MainMenuState::Update(double /*dt*/)
 				case 3: Settings::Open(); break;
 				case 4: GameStateManager::GetInstance()->SetNextGameState("CreditState", true, true); break;
 				case 5: Terminate(); break;
+				case 6: GameStateManager::GetInstance()->SetNextGameState("GuideState", true, false, false); break;
 				}
 			}
 		}
