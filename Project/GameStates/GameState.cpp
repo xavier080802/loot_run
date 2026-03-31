@@ -530,38 +530,6 @@ namespace {
         int fontSz = RenderingManager::GetInstance()->GetFontSize();
         if (gPlayer->ShowStatsUI()) {
             Inventory const& mInventory{ gPlayer->GetInventory() };
-            AEVec2 bgPos = { -700.0f, 45.0f };
-            AEVec2 bgSize = { 600.0f, 520.0f };
-            DrawTintedMesh(GetTransformMtx(bgPos, 0.0f, bgSize), squareMesh, nullptr, { 0, 0, 0, 180 }, 255);
-
-            std::string coinText = "Coins: " + std::to_string(mInventory.GetCoins());
-            DrawAEText(font, coinText.c_str(), { -780.0f, 280.0f }, 0.5f, { 255, 215, 0, 255 }, TEXT_MIDDLE_LEFT);
-            std::string ammoText = "Ammo: " + std::to_string(mInventory.GetAmmo());
-            DrawAEText(font, ammoText.c_str(), { -780.0f,  250.0f }, 0.5f, { 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT);
-
-            AEVec2 textPos = { -780.0f, 200.0f };
-            float yLineSpc = -20.0f;
-
-            ActorStats const& mStats{ gPlayer->GetStats() };
-            DrawAEText(font, "--- STATS ---", textPos, 0.4f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("Max HP: " + std::to_string((int)mStats.maxHP)).c_str(), textPos, 0.4f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("Attack: " + std::to_string((int)mStats.attack)).c_str(), textPos, 0.4f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("Defense: " + std::to_string((int)mStats.defense)).c_str(), textPos, 0.4f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("Move Speed: " + std::to_string((int)mStats.moveSpeed)).c_str(), textPos, 0.4f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-
-            std::string tSpd = std::to_string(mStats.attackSpeed);
-            size_t spdLen = tSpd.length() > 4 ? 4 : tSpd.length();
-            DrawAEText(font, ("Atk Speed: " + tSpd.substr(0, spdLen)).c_str(), textPos, 0.4f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc * 2.0f;
-
-            DrawAEText(font, "--- EQUIPMENT ---", textPos, 0.4f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-
-            auto w1 = mInventory.GetMainWeapon(0);
-            auto w2 = mInventory.GetMainWeapon(1);
-            auto bow = mInventory.GetBow();
-            auto head = mInventory.GetArmor(ArmorSlot::Head);
-            auto body = mInventory.GetArmor(ArmorSlot::Body);
-            auto hands = mInventory.GetArmor(ArmorSlot::Hands);
-            auto feet = mInventory.GetArmor(ArmorSlot::Feet);
 
             //Draw background
             DrawTintedMesh(GetTransformMtx(playerUISettings.invPos, 0.0f, playerUISettings.invSize), squareMesh, nullptr, { 0, 0, 0, 180 }, 255);

@@ -18,10 +18,10 @@ public:
 	static void TriggerScreenFlash(float duration = 0.5f);
 
 private:
-void HandleTutorialDialogueRender();
-int   mLastMinuteMark = 0;
-float mNotificationTimer = 0.0f;
-void SubscriptionAlert(ActorDeadSubContent content) override;
+	void HandleTutorialDialogueRender();
+	void SubscriptionAlert(ActorDeadSubContent content) override;
+	int   mLastMinuteMark = 0;
+	float mNotificationTimer = 0.0f;
 };
 bool getBossAlive();
 float getBossHPProgressBar();
