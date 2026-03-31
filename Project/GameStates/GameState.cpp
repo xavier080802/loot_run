@@ -1131,6 +1131,8 @@ void GameState::InitState()
     gPlayer->InitPlayerRuntime(base);
     gPlayer->ApplyShopUpgrades();
     gPlayer->Heal(gPlayer->GetMaxHP());
+    //Call pet stuff after player setup
+    PetManager::GetInstance()->InitPetForGame(*map);
 
     // pets don't follow in tutorial so the player isn't overwhelmed early on
     if (!doTutorial) {
@@ -1331,10 +1333,6 @@ void GameState::Update(double dt)
         }
     }
 #endif
-
-    //Cast pet skill — always available regardless of debug mode
-    if (AEInputCheckTriggered(AEVK_R))
-        PostOffice::GetInstance()->Send("PetManager", new PetSkillMsg(PetSkillMsg::CAST_SKILL));
 
     // --- NON-DEBUG INPUTS ---
     // keyboard toggle — X shows/hides the keybind image popup

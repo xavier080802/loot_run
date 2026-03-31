@@ -194,11 +194,6 @@ void ShopState::Update(double dt)
 					case 4: // Defense
 						break;
 					case 5: // Gacha Trigger
-						//isGachaActive = true;
-						//bgm.StopGameplayBGM();
-						//bgm.PlayGacha();
-						//BeginGachaOverlay(gStateAnim, 10, 0.6f, 1.2f, 0.3f);
-						//break;
 					case 6: //back
 						GameStateManager::GetInstance()
 							->SetNextGameState("MainMenuState", true, true);
