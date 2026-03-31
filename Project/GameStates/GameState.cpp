@@ -97,6 +97,9 @@ namespace {
     int   totalKillTarget = 0;
 
     float bossSpawnThreshold = 1.0f;
+    float bossRespawnTimer = 0.f;
+    bool  bossRespawnPending = false;
+    const float BOSS_RESPAWN_DELAY = 3.f;
 
     // enemy waves in proc rooms
     // first wave (wave 0) fires straight away with 12 enemies when you enter
@@ -400,7 +403,7 @@ namespace {
     void SpawnProcWave(TileMap const& tilemap)
     {
         const int MAX_LIVE_ENEMIES = 50;
-        const float MIN_SPAWN_SPACING = 32.f * 3.f; // ~3 tiles gap between spawns
+        const float MIN_SPAWN_SPACING = 115.f * 2.5f; // ~5 tiles gap between spawns
 
         // scale enemy stats up every 60 seconds in endless (5% per minute)
         float currentDifficulty = 1.0f;
@@ -1335,7 +1338,7 @@ void GameState::Update(double dt)
             chest->Init(m, { 75,75 }, 1, MESH_SQUARE, Collision::COL_RECT, { 75,75 },
                 CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE);
         }
-        //spawn chest at cursor
+        //spawn enemy at cursor
         if (AEInputCheckTriggered(AEVK_N)) {
             AEVec2 m = GetMouseWorldVec();
             Enemy* e = SpawnWeightedEnemy(m, 0.70f, 0.30f);
@@ -1513,13 +1516,33 @@ void GameState::Update(double dt)
             return;
         }
         else {
-            // endless mode — reset and keep going, player stays in place
-            std::cout << "BOSS SLAYED — Endless continues!\n";
+            // endless mode — start the 3-second countdown before resetting the room
+            // player stays frozen during this window so they don't spawn inside a wall
+            std::cout << "BOSS SLAYED — Endless countdown started!\n";
+            bossRespawnPending = true;
+            bossRespawnTimer = BOSS_RESPAWN_DELAY;
             bossSpawned = false;
             bossAlive = true;
             boss = nullptr;
             bossHPProgressBar = 0.f;
             bossMaxHPProgressBar = 100.f;
+        }
+    }
+
+    // ── ENDLESS RESPAWN COUNTDOWN ──────────────────────────────────────────────
+    // tick down after boss dies — actual map reset fires when timer hits zero
+    if (bossRespawnPending) {
+        bossRespawnTimer -= (float)dt;
+        if (gPlayer) {
+            gPlayer->Update(dt);
+            AEVec2 target = gPlayer->GetPos();
+            camPos.x += (target.x - camPos.x) * (dt / camSmoothTime);
+            camPos.y += (target.y - camPos.y) * (dt / camSmoothTime);
+            SetCameraPos(camPos);
+        }
+        if (bossRespawnTimer <= 0.f) {
+            // timer expired — reset kill tracking and generate fresh room
+            bossRespawnPending = false;
             totalKillTarget = 20 + rand() % 31;
             totalEnemiesRequired = totalKillTarget;
             previousRoomsKilled = 0;
@@ -1533,6 +1556,11 @@ void GameState::Update(double dt)
             teleportCooldown = 2.f;
             if (nextMap) {
                 nextMap->GenerateProcedural(50, 50, rand());
+                AEVec2 procSpawn = nextMap->GetSpawnPoint();
+                // teleport player to the fresh spawn point before enemies start spawning
+                gPlayer->SetPos(procSpawn);
+                camPos = procSpawn; camVel = { 0, 0 };
+                SetCameraPos(camPos);
                 procWaveNumber = 0;
                 SpawnProcWave(*nextMap);
                 procWaveTimer = 0.0f;
@@ -1544,7 +1572,9 @@ void GameState::Update(double dt)
                 PetManager::GetInstance()->SetTilemap(*nextMap);
             }
         }
+        return; // freeze all other logic during the countdown
     }
+
     minimap->Update(dt, *currentMap, *gPlayer);
     UpdateWorldMap((float)dt);
 
@@ -1670,6 +1700,15 @@ void GameState::Draw()
             float alpha = mNotificationTimer / 5.0f;
             AEGfxPrint(font, flashText, -0.80f, 0.5f, 1.2f, 1.0f, 0.2f, 0.2f, alpha);
         }
+    }
+
+    // --- ENDLESS RESPAWN COUNTDOWN TEXT ---
+    if (bossRespawnPending && font >= 0) {
+        int displaySecs = (int)std::ceilf(bossRespawnTimer);
+        char cdText[64];
+        snprintf(cdText, sizeof(cdText), "NEXT ROOM IN: %d", displaySecs);
+        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        AEGfxPrint(font, cdText, -0.28f, 0.50f, 1.2f, 1.0f, 0.0f, 0.0f, 1.0f);
     }
 
     HandleTutorialDialogueRender();
