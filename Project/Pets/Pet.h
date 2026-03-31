@@ -28,6 +28,10 @@ public:
 	//Sets the cooldown if the skill casted successfully.
 	void CastSkill(const Pets::SkillCastData& data);
 
+	//To be overrided.
+	//If true, the skill icon should display the recast version
+	virtual bool ShowRecastUI() const;
+
 	//To be overrided. Called when game is starting. Used for eg. subscribing
 	virtual void Setup(Player& player);
 

@@ -223,6 +223,7 @@ void Actor::ApplyStatusEffect(StatEffects::StatusEffect* eff, Actor* caster)
     //Check if existing
     if (statusEffectsDict.find(eff->GetName()) != statusEffectsDict.end()) {
         statusEffectsDict[eff->GetName()]->OnReapply(eff->GetStackCount());
+        OnStatEffectChange();
 
         for (auto& sub : seGainedSubs) {
             sub->SubscriptionAlert({true, eff->GetStackCount(), *statusEffectsDict[eff->GetName()]});
@@ -237,6 +238,7 @@ void Actor::ApplyStatusEffect(StatEffects::StatusEffect* eff, Actor* caster)
         }
         statusEffectsDict.insert(std::pair<std::string, StatEffects::StatusEffect*>(eff->GetName(), eff));
         eff->OnApply(this, caster);
+        OnStatEffectChange();
 
         for (auto& sub : seGainedSubs) {
             sub->SubscriptionAlert({ false, eff->GetStackCount(), *statusEffectsDict[eff->GetName()] });
@@ -256,7 +258,7 @@ void Actor::UpdateStatusEffects(double dt)
         if (!rit->second->IsEnded()) continue;
         delete rit->second;
         statusEffectsDict.erase(rit->first);
-
+        OnStatEffectChange();
         //Prevent error if this is the last element
         if (statusEffectsDict.empty()) break;
     }
@@ -314,6 +316,21 @@ void Actor::OnDeath(Actor* killer)
     }
 }
 
+void Actor::OnStatEffectChange()
+{
+    //Empty by design
+}
+
+void Actor::ClampStats()
+{
+    //Note: right now just clamping to >= 0. Upper limit TBD
+    mStats.attack = AEClamp(mStats.attack, 0, mStats.attack);
+    mStats.attackSpeed = AEClamp(mStats.attackSpeed, 0, mStats.attackSpeed);
+    mStats.defense = AEClamp(mStats.defense, 0, mStats.defense);
+    mStats.maxHP = AEClamp(mStats.maxHP, 0, mStats.maxHP);
+    mStats.moveSpeed = AEClamp(mStats.moveSpeed, 0, mStats.moveSpeed);
+}
+
 void Actor::DrawStatusEffectIcons(float iconSize, AEVec2 center, int numIcons, bool allowTooltip, bool isHUD) const
 {
     //Draw status effects below GO.
@@ -366,6 +383,7 @@ void Actor::ClearStatusEffects()
         delete pair.second;
     }
     statusEffectsDict.clear();
+    OnStatEffectChange();
 }
 
 void Actor::SubToGotKill(ActorGotKillSub* sub, bool remove)

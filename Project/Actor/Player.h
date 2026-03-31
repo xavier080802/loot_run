@@ -62,8 +62,12 @@ private:
         Bow
     };
 
-private:
     void OnDeath(Actor* killer = nullptr) override;
+
+    //On SE added/removed, recalc stats
+    void OnStatEffectChange() override;
+    //Gets what bonuses/debuffs a SE applies
+    ActorStats CalculateStatusEffectStats();
 
     ActorStats mBaseStats{};
     Inventory  mInventory{};

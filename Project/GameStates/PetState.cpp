@@ -31,16 +31,16 @@ namespace {
 
 	// =========================================================================
 	// LAYOUT CONFIG
-	// Edit button positions, sizes, and labels here.
-	// pos  = centre of element in default-space (1600 x 900 canvas)
-	// size = { width, height } in default-space
 	// =========================================================================
 	struct Button
 	{
 		AEVec2      pos;
 		AEVec2      size;
 		const char* label;
+<<<<<<< HEAD
 		bool        hasSideButtons;
+=======
+>>>>>>> 6eb6c61ef08f0f7f482625915580eb0a06ec4c53
 	};
 
 	struct Title
@@ -53,6 +53,7 @@ namespace {
 	Button petButtons[] =
 	{
 		// idx 0 — Pet Inventory  (left column)
+<<<<<<< HEAD
 		{{ 500.f,  500.f }, { 450.f, 144.f }, "PET INVENTORY", false },
 		// idx 1 — Gacha          (right column)
 		{{ 1100.f, 500.f }, { 450.f, 144.f }, "GACHA",         false },
@@ -64,6 +65,18 @@ namespace {
 
 	constexpr int PET_BTN_COUNT = sizeof(petButtons) / sizeof(Button);
 	// =========================================================================
+=======
+		{{ 500.f,  500.f }, { 450.f, 144.f }, "PET INVENTORY" },
+		// idx 1 — Gacha          (right column)
+		{{ 1100.f, 500.f }, { 450.f, 144.f }, "GACHA"         },
+		// idx 2 — Back           (top-left)
+		{{ 300.f,  100.f }, { 225.f, 110.f }, "back"          },
+	};
+
+	Title titleCfg = { { DEFAULT_W / 2, 100.f }, { 675.f, 110.f }, "PETS" };
+
+	constexpr int PET_BTN_COUNT = sizeof(petButtons) / sizeof(Button);
+>>>>>>> 6eb6c61ef08f0f7f482625915580eb0a06ec4c53
 
 	float winW, winH, scale;
 
@@ -85,16 +98,18 @@ namespace {
 	// Audio
 	// -------------------------------------------------------------------------
 	AEAudioGroup petAudioGroup;
-	AEAudio hoverSound, clickSound;
-
-	// Track previous hover state (same pattern as ShopState)
-	bool btnHoverStates[PET_BTN_COUNT] = { false };
+	AEAudio      hoverSound, clickSound;
+	bool         btnHoverStates[PET_BTN_COUNT] = { false };
 
 	// -------------------------------------------------------------------------
 	// Gacha
 	// -------------------------------------------------------------------------
 	static GachaAnimation gStateAnim;
+<<<<<<< HEAD
 	static s8 gachaFont = -1;
+=======
+	static s8             gachaFont = -1;
+>>>>>>> 6eb6c61ef08f0f7f482625915580eb0a06ec4c53
 
 	// -------------------------------------------------------------------------
 	// Inventory
@@ -180,8 +195,9 @@ void PetState::InitState()
 {
 	std::cout << "Pet state enter\n";
 	AEGfxFontSystemStart();
-	Font = AEGfxCreateFont(PRIMARY_FONT_PATH, 38);
+	Font = AEGfxCreateFont(PRIMARY_FONT_PATH, 30);
 	BigFont = AEGfxCreateFont(PRIMARY_FONT_PATH, 75);
+
 	winW = static_cast<float>(AEGfxGetWinMaxX());
 	winH = static_cast<float>(AEGfxGetWinMaxY());
 	scale = (winW * 2 / DEFAULT_W) < (winH * 2 / DEFAULT_H)
@@ -227,9 +243,9 @@ void PetState::Update(double dt)
 			return;
 		}
 
-		bool openPressed = AEInputCheckTriggered(AEVK_LBUTTON) || AEInputCheckTriggered(0x4F);
+		bool openPressed = AEInputCheckTriggered(0x4F);
 		bool skipPressed = AEInputCheckTriggered(AEVK_SPACE);
-		bool pull10 = AEInputCheckTriggered(AEVK_LBUTTON) || AEInputCheckTriggered(0x52);
+		bool pull10 = AEInputCheckTriggered(0x52);
 		bool pull100 = AEInputCheckTriggered(AEVK_T) || AEInputCheckTriggered(0x54);
 
 		if (gStateAnim.phase == GachaPhase::Done) {
@@ -328,44 +344,44 @@ void PetState::Update(double dt)
 		AEVec2 worldSize = { petButtons[i].size.x * scale, petButtons[i].size.y * scale };
 
 		bool buttonHover = IsCursorOverWorld(worldPos, worldSize.x, worldSize.y, true);
+<<<<<<< HEAD
 		bool buttonClick = false;
+=======
+>>>>>>> 6eb6c61ef08f0f7f482625915580eb0a06ec4c53
 
 		if (buttonHover && !btnHoverStates[i])
 			AEAudioPlay(hoverSound, petAudioGroup, 0.2f, 0.7f, 0);
 		btnHoverStates[i] = buttonHover;
 
-		if (buttonHover) {
-			buttonClick = AEInputCheckTriggered(AEVK_LBUTTON);
-			if (buttonClick) {
-				AEAudioPlay(clickSound, petAudioGroup, 0.6f, 0.6f, 0);
-				switch (i) {
-				case 0: // Pet Inventory
-					currentView = PetView::INVENTORY;
-					RebuildSortedInventory();
-					break;
-				case 1: // Gacha
-				{
-					currentView = PetView::GACHA;
-					bgm.StopGameplayBGM();
-					bgm.PlayGacha();
-					int coins = ShopFunctions::GetInstance()->getMoney();
-					if (coins >= GACHA_COST_10) {
-						ShopFunctions::GetInstance()->addMoney(-GACHA_COST_10);
-						BeginGachaOverlay(gStateAnim, 10, 0.6f, 1.2f, 0.3f);
-					}
-					else {
-						gStateAnim.Reset();
-						gStateAnim.phase = GachaPhase::Done;
-						std::cout << "[Gacha] Not enough coins (need " << GACHA_COST_10 << ")\n";
-					}
-					break;
+		if (buttonHover && AEInputCheckTriggered(AEVK_LBUTTON)) {
+			AEAudioPlay(clickSound, petAudioGroup, 0.6f, 0.6f, 0);
+			switch (i) {
+			case 0: // Pet Inventory
+				currentView = PetView::INVENTORY;
+				RebuildSortedInventory();
+				break;
+			case 1: // Gacha
+			{
+				currentView = PetView::GACHA;
+				bgm.StopGameplayBGM();
+				bgm.PlayGacha();
+				int coins = ShopFunctions::GetInstance()->getMoney();
+				if (coins >= GACHA_COST_10) {
+					ShopFunctions::GetInstance()->addMoney(-GACHA_COST_10);
+					BeginGachaOverlay(gStateAnim, 10, 0.6f, 1.2f, 0.3f);
 				}
-				case 2: // Back
-					GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
-					break;
+				else {
+					gStateAnim.Reset();
+					gStateAnim.phase = GachaPhase::Done;
+					std::cout << "[Gacha] Not enough coins (need " << GACHA_COST_10 << ")\n";
 				}
-				std::cout << "Clicked Pet Button: " << petButtons[i].label << "\n";
+				break;
 			}
+			case 2: // Back
+				GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
+				break;
+			}
+			std::cout << "Clicked Pet Button: " << petButtons[i].label << "\n";
 		}
 	}
 }
@@ -386,7 +402,11 @@ void PetState::Draw()
 		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
 
 		// Coin HUD
+<<<<<<< HEAD
 		int coins = ShopFunctions::GetInstance()->getMoney();
+=======
+		int    coins = ShopFunctions::GetInstance()->getMoney();
+>>>>>>> 6eb6c61ef08f0f7f482625915580eb0a06ec4c53
 		AEVec2 coinLabelPos = DefaultToWorld(1500.f, 50.f);
 		DrawAEText(Font, "COINS:", coinLabelPos, scale, CreateColor(255, 215, 0, 255), TEXT_MIDDLE);
 		char coinBuf[32];
@@ -407,20 +427,24 @@ void PetState::Draw()
 	// ---- INVENTORY VIEW ------------------------------------------------------
 	if (currentView == PetView::INVENTORY)
 	{
-		AEGfxSetBackgroundColor(0.2f, 0.2f, 0.2f);
+		AEGfxSetBackgroundColor(0.15f, 0.15f, 0.15f);
 		AEGfxStart();
 		AEGfxSetBlendMode(AE_GFX_BM_BLEND);
 		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
 		// Title
-		AEVec2  invTitlePos = DefaultToWorld(title.pos.x, title.pos.y);
-		AEVec2  invTitleSize = { title.size.x * scale, title.size.y * scale };
-		AEMtx33 mtx;
-		GetTransformMtx(mtx, invTitlePos, 0.0f, invTitleSize);
-		AEGfxSetTransform(mtx.m);
-		AEGfxSetColorToMultiply(0.75f, 0.75f, 0.75f, 1.0f);
-		AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
-		DrawAEText(BigFont, "PET INVENTORY", invTitlePos, scale, CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
+		{
+			AEVec2  invTitlePos = DefaultToWorld(DEFAULT_W / 2, 100.f);
+			AEVec2  invTitleSize = { 675.f * scale, 110.f * scale };
+			AEMtx33 mtx;
+			GetTransformMtx(mtx, invTitlePos, 0.0f, invTitleSize);
+			AEGfxSetTransform(mtx.m);
+			AEGfxSetColorToMultiply(0.75f, 0.75f, 0.75f, 1.0f);
+			AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
+			AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+			DrawAEText(BigFont, "PET INVENTORY", invTitlePos, scale, CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
+			AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+		}
 
 		auto const& petDataMap = petManager->GetPetDataMap();
 
@@ -438,6 +462,9 @@ void PetState::Draw()
 			bool isSelected = (index == selectedIndex);
 			bool hover = (index < (int)slotHover.size()) ? slotHover[index] : false;
 
+			AEMtx33 mtx;
+
+			// Gold border for selected slot
 			if (isSelected) {
 				AEVec2 borderSize = { worldSize.x + 8.f * scale, worldSize.y + 8.f * scale };
 				GetTransformMtx(mtx, worldPos, 0.0f, borderSize);
@@ -446,13 +473,15 @@ void PetState::Draw()
 				AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 			}
 
+			// Slot background
 			GetTransformMtx(mtx, worldPos, 0.0f, worldSize);
 			AEGfxSetTransform(mtx.m);
-			if (isSelected) AEGfxSetColorToMultiply(0.5f, 0.45f, 0.1f, 1.0f);
+			if (isSelected)      AEGfxSetColorToMultiply(0.5f, 0.45f, 0.1f, 1.0f);
 			else if (hover)      AEGfxSetColorToMultiply(0.4f, 0.4f, 0.4f, 1.0f);
 			else                 AEGfxSetColorToMultiply(0.2f, 0.2f, 0.2f, 1.0f);
 			AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 
+			// Pet name, count, labels
 			auto it = petDataMap.find(static_cast<Pets::PET_TYPE>(slot.petId));
 			if (it != petDataMap.end()) {
 				AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
@@ -460,17 +489,13 @@ void PetState::Draw()
 
 				DrawAEText(Font, it->second.name.c_str(), worldPos, scale, rarityColor, TEXT_MIDDLE);
 
-				AEVec2 rankPos = { worldPos.x, worldPos.y - 18.f * scale };
-				DrawAEText(Font, RankName(static_cast<Pets::PET_RANK>(slot.rank)),
-					rankPos, scale * 0.7f, rarityColor, TEXT_MIDDLE);
-
-				AEVec2 countPos = { worldPos.x, worldPos.y - 35.f * scale };
+				AEVec2 countPos = { worldPos.x, worldPos.y - 25.0f * scale };
 				std::string countStr = "x" + std::to_string(slot.count);
 				DrawAEText(Font, countStr.c_str(), countPos, scale * 0.8f,
 					CreateColor(255, 255, 255, 255), TEXT_MIDDLE);
 
 				if (isSelected) {
-					AEVec2 labelPos = { worldPos.x, worldPos.y + 40.f * scale };
+					AEVec2 labelPos = { worldPos.x, worldPos.y + 40.0f * scale };
 					DrawAEText(Font, "EQUIPPED", labelPos, scale * 0.75f,
 						CreateColor(255, 220, 0, 255), TEXT_MIDDLE);
 				}
@@ -478,6 +503,7 @@ void PetState::Draw()
 			}
 		}
 
+		// Skill description textbox
 		if (selectedIndex != -1) {
 			auto it = petManager->GetPetDataMap().find(selectedType);
 			if (it != petManager->GetPetDataMap().end()) {
@@ -489,6 +515,7 @@ void PetState::Draw()
 			}
 		}
 
+		// Bottom hint bar
 		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
 		AEVec2 hintPos = DefaultToWorld(DEFAULT_W * 0.5f, DEFAULT_H - 40.f);
 		if (selectedType != Pets::PET_TYPE::NONE) {
@@ -512,45 +539,59 @@ void PetState::Draw()
 	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
 	// Title
-	AEVec2  titlePos = DefaultToWorld(title.pos.x, title.pos.y);
-	AEVec2  titleSize = { title.size.x * scale, title.size.y * scale };
-	AEMtx33 mtx;
-	GetTransformMtx(mtx, titlePos, 0.0f, titleSize);
-	AEGfxSetTransform(mtx.m);
-	AEGfxSetColorToMultiply(0.75f, 0.75f, 0.75f, 1.0f);
-	AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
-	DrawAEText(BigFont, title.label, titlePos, scale, CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
+	{
+		AEVec2  titlePos = DefaultToWorld(titleCfg.pos.x, titleCfg.pos.y);
+		AEVec2  titleSize = { titleCfg.size.x * scale, titleCfg.size.y * scale };
+		AEMtx33 mtx;
+		GetTransformMtx(mtx, titlePos, 0.0f, titleSize);
+		AEGfxSetTransform(mtx.m);
+		AEGfxSetColorToMultiply(0.75f, 0.75f, 0.75f, 1.0f);
+		AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
+		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+		DrawAEText(BigFont, titleCfg.label, titlePos, scale, CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
+		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+	}
 
 	// Coin HUD
-	AEVec2 coinLabelPos = DefaultToWorld(1500.f, 50.f);
-	DrawAEText(Font, "COINS:", coinLabelPos, scale, CreateColor(255, 215, 0, 255), TEXT_MIDDLE);
-	char coinAmount[64];
-	snprintf(coinAmount, sizeof(coinAmount), "%d", ShopFunctions::GetInstance()->getMoney());
-	AEVec2 coinAmtPos = DefaultToWorld(1500.f, 95.f);
-	DrawAEText(Font, coinAmount, coinAmtPos, scale, CreateColor(255, 215, 0, 255), TEXT_MIDDLE);
+	{
+		AEVec2 coinLabelPos = DefaultToWorld(1500.f, 50.f);
+		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+		DrawAEText(Font, "COINS:", coinLabelPos, scale, CreateColor(255, 215, 0, 255), TEXT_MIDDLE);
+		char coinAmount[64];
+		snprintf(coinAmount, sizeof(coinAmount), "%d", ShopFunctions::GetInstance()->getMoney());
+		AEVec2 coinAmtPos = DefaultToWorld(1500.f, 95.f);
+		DrawAEText(Font, coinAmount, coinAmtPos, scale, CreateColor(255, 215, 0, 255), TEXT_MIDDLE);
+		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+	}
 
 	// Buttons
 	for (int i = 0; i < PET_BTN_COUNT; ++i)
 	{
-		AEVec2 worldPos = DefaultToWorld(petButtons[i].pos.x, petButtons[i].pos.y);
-		AEVec2 worldSize = { petButtons[i].size.x * scale, petButtons[i].size.y * scale };
-		bool   hover = IsCursorOverWorld(worldPos, worldSize.x, worldSize.y, true);
+		AEVec2  worldPos = DefaultToWorld(petButtons[i].pos.x, petButtons[i].pos.y);
+		AEVec2  worldSize = { petButtons[i].size.x * scale, petButtons[i].size.y * scale };
+		bool    hover = IsCursorOverWorld(worldPos, worldSize.x, worldSize.y, true);
+		AEMtx33 mtx;
 
 		GetTransformMtx(mtx, worldPos, 0.0f, worldSize);
 		AEGfxSetTransform(mtx.m);
 		AEGfxSetColorToMultiply(hover ? 0.9f : 0.75f, hover ? 0.9f : 0.75f, hover ? 0.9f : 0.75f, 1.0f);
 		AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
+
+		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
 		DrawAEText(Font, petButtons[i].label, worldPos, scale, CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
+		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 	}
 
 	// Cost hint below the Gacha button
 	{
-		float   bottom = petButtons[1].pos.y + petButtons[1].size.y * 0.5f + 20.f;
-		AEVec2  costPos = DefaultToWorld(petButtons[1].pos.x, bottom);
-		char    costLabel[64];
+		float  bottom = petButtons[1].pos.y + petButtons[1].size.y * 0.5f + 20.f;
+		AEVec2 costPos = DefaultToWorld(petButtons[1].pos.x, bottom);
+		char   costLabel[64];
 		snprintf(costLabel, sizeof(costLabel), "x10: %d coins  |  x100: %d coins",
 			GACHA_COST_10, GACHA_COST_100);
+		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
 		DrawAEText(Font, costLabel, costPos, scale * 0.75f, CreateColor(255, 215, 0, 255), TEXT_MIDDLE);
+		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 	}
 }
 

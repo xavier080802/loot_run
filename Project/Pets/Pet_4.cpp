@@ -8,7 +8,7 @@
 
 namespace {
     //extra must be ptr to pet
-    void PopHit(GameObject::CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float, void* extra) {
+    void PopHit(GameObject::CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float, EquipmentData*, void* extra) {
         Pet_4* pet{ static_cast<Pet_4*>(extra) };
         Actor* other{ dynamic_cast<Actor*>(&target.other) };
         if (!pet || !other) return;
@@ -34,6 +34,11 @@ void Pet_4::Setup(Player&)
     poolSize = { sz, sz };
     std::istringstream is{ data.extra["color"] };
     is >> poolCol.r >> poolCol.g >> poolCol.b >> poolCol.a;
+}
+
+bool Pet_4::ShowRecastUI() const
+{
+    return poolActive;
 }
 
 bool Pet_4::DoSkill(const Pets::SkillCastData& _data)

@@ -68,21 +68,61 @@
                 }
             ],
             "multipliers": [
-                {
-                    "value": 7.5,
+                // 0-3: BASE damage scalings, at 0 charge-time
+                { //0 - proj dmg
+                    "value": 2,
                     "mathType": "mult",
                     "stat": "att"
                 },
-                {
+                { //1 - proj dmg
+                    "value": 1,
+                    "mathType": "flat"
+                },
+                { //2 - AOE dmg
+                    "value": 4,
+                    "mathType": "mult",
+                    "stat": "att"
+                },
+                { //3 - AOE dmg
+                    "value": 2,
+                    "mathType": "flat"
+                },
+
+                //4-7: MAX damage, at max charge time
+                { //4 - proj dmg
+                    "value": 25,
+                    "mathType": "mult",
+                    "stat": "att"
+                },
+                { //5 - proj dmg
                     "value": 5,
+                    "mathType": "flat"
+                },
+                { //6 - AOE dmg
+                    "value": 15,
+                    "mathType": "mult",
+                    "stat": "att"
+                },
+                { //7 - AOE dmg
+                    "value": 4,
                     "mathType": "flat"
                 }
             ],
             "dmgTypes": [ "phy" ],
             "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
-            "skillCooldown": 6,
-            "skillDesc": "Yeet the rock",
-            "textures": ["Assets/sprites/pets/rock.png"]
+            "skillCooldown": 5,
+            "skillDesc": "On first cast, begin charging.\nCast again to YEET the rock.\nDamage increases with charge time, and becomes AOE after a certain time.\nAfter the 2nd cast, cooldown is refunded inversely from charge time (Longer charge = less refund)",
+            "textures": [ "Assets/sprites/pets/rock.png" ],
+            "extra": {
+                "maxChargeDur": "4",
+                "aoeChargeThreshold": "2",
+                "resetChargeDur": "8",
+                "maxCDRefund": "0.75",
+                "aoeDiameter": "100",
+                "aoeCol": "151 111 31 150",
+                "projRadius": "10",
+                "projSpd": "400"
+            }
         },
         {
             "id": 2,
@@ -150,13 +190,15 @@
                 }
             ],
             "multipliers": [],
-            "rarityScaling": [ 1, 1.25, 1.5, 1.75, 2, 2.5 ],
-            "skillCooldown": 5,
+            "rarityScaling": [ 1, 1.15, 1.25, 1.5, 2, 2 ],
+            "skillCooldown": 5, //Decreases with rank
             "skillDesc": "Cast while cursor is over an enemy to lock onto them.\nThe Lycan will hunt the target down and attack them periodically.",
             "extra": {
+                "baseDmgMult": "0.5", //Starting (lowest rank) multiplier for attack dmg. Scales with rarity scaling
                 "attackCooldown": "1.0",
                 "attImgTime": "0.5" // Time to show the attacking texture
             },
+            "dmgTypes": ["phy"],
             "textures": [ "Assets/sprites/pets/lycan_default.png", "Assets/sprites/pets/lycan_attack.png" ] //2nd tex is attack img
         },
         {
@@ -183,12 +225,12 @@
             ],
             "rarityScaling": [ 1, 2, 3, 4, 5, 6 ],
             "skillCooldown": 10,
-            "skillDesc": "Forms a whirlpool at the mouse position.\nWhirlpool pulls enemies in and damages them at the end of its duration.\nWhile the pool is active, recast to end it early.",
+            "skillDesc": "Forms a whirlpool at the mouse position.\nWhirlpool pulls enemies in and damages them at the end of its duration.\n\nWhile the pool is active, recast to end it early.",
           "textures": [ "Assets/sprites/pets/scylla.png" ],
             "extra": {
-                "pull": "100",
+                "pull": "120",
                 "duration": "7",
-                "size": "150",
+                "size": "200",
                 "color": "26 60 195 200",
                 "minDmgFalloff": "0.3"
             },
@@ -231,10 +273,10 @@
             "dmgTypes": "ele",
             "extra": { //Required to be strings
                 "auraDuration": "5",
-                "auraSize": "200",
+                "auraSize": "300",
                 "auraTimeBetweenHits": "1.5",
                 "auraColor": "200 60 0 200", //Format: r g b a
-                "sunRequired": "5" //Number of times to hit enemies with sun stacks for bonus effect
+                "sunRequired": "3" //Number of times to hit enemies with sun stacks for bonus effect
             },
             "textures": ["Assets/sprites/pets/pheonix.png"]
         },
@@ -293,6 +335,7 @@
             "extra": {
                 "knockback": "600",
                 "skillRange": "300", //Range of the skill AoE
+                "skillCol": "239 232 25 200",
                 "attackCooldown": "2.5", //Turret time-between-attacks
                 "turretRange": "650", //Range where enemies are selectable
                 "projSpd": "400",

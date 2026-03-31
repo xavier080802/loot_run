@@ -77,7 +77,6 @@ void DrawTintedMesh(AEMtx33 transform, AEGfxVertexList* mesh, AEGfxTexture* tex,
 void DrawMeshWithTexOffset(AEMtx33 transform, AEGfxVertexList* mesh, AEGfxTexture* tex, Color tint, float alpha, AEVec2 texOffset);
 
 /// <summary>
-/// BROKEN
 /// Draws a hollow box (AKA outline). 
 /// Thickness expands outwards, leaving the effective area within to be exactly
 /// width x height.

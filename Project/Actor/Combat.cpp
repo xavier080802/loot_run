@@ -72,7 +72,7 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 	 *   - AttackHitboxGO::OnCollide() - the hitbox fires this as its onHit callback.
 	 *     Set up during Combat::ExecuteAttack() when creating the hitbox config.
 	 */
-	void OnMeleeHit(GameObject::CollisionData& data, Actor* caster, Elements::ELEMENT_TYPE element, float knockback, void*)
+	void OnMeleeHit(GameObject::CollisionData& data, Actor* caster, Elements::ELEMENT_TYPE element, float knockback, EquipmentData* weapon, void*)
 	{
 		if (!caster) return;
         
@@ -86,7 +86,7 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 
 		if (target.IsInvulnerable()) return;
 
-		caster->DealDamage(&target, caster->GetStats().attack, DAMAGE_TYPE::PHYSICAL, nullptr);
+		caster->DealDamage(&target, caster->GetStats().attack, DAMAGE_TYPE::PHYSICAL, weapon);
 
         if (element != Elements::ELEMENT_TYPE::NONE) {
             std::cout << "[Combat] Melee hit applied element: " << static_cast<int>(element) << "\n";
@@ -185,6 +185,7 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 			cfg.knockback = weapon->knockback;
 			cfg.lifetime = 0.30f;
 			cfg.zIndex = caster->GetZ() - 1;
+			cfg.weapon = const_cast<EquipmentData*>(weapon);
 
 			// Tentative version: circle hitbox
 			cfg.colliderShape = Collision::COL_CIRCLE;
@@ -226,6 +227,7 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 			cfg.knockback = weapon->knockback;
 			cfg.lifetime = 0.15f;
 			cfg.zIndex = caster->GetZ() - 1;
+			cfg.weapon = const_cast<EquipmentData*>(weapon);
 
 			cfg.colliderShape = Collision::COL_CIRCLE;
 			cfg.colliderSize = { weapon->attackSize * 3.0f, weapon->attackSize * 3.0f };
@@ -260,6 +262,7 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 			cfg.knockback = weapon->knockback;
 			cfg.lifetime = 0.30f;
 			cfg.zIndex = caster->GetZ() - 1;
+			cfg.weapon = const_cast<EquipmentData*>(weapon);
 
 			cfg.colliderShape = Collision::COL_CIRCLE;
 			// Massive scale to cover an area
