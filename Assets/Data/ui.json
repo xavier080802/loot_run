@@ -13,7 +13,7 @@
         "coinTxtCol": [ 255, 215, 0, 255 ],
         "ammoTxtCol": [ 200, 200, 200, 255 ],
         "iconSize": 50,
-        "edgePadding": [20,20], //padding around the edge of the box
+        "edgePadding": [ 20, 20 ], //padding around the edge of the box
         "iconGap": 10, //Gap between icons that are side-by-side
         "sectionGap": 20, //Gap between gear and stat sections
         "statIconSize": 50,
@@ -45,5 +45,484 @@
         "pos": [ -0.975, -0.975 ], //Normalized [-1,1]
         "textAlignment": "TEXT_LOWER_LEFT",
         "max": 5 //Max to display
+    },
+    //GuideState content
+    "guide": {
+        "btnCol": [ 191, 191, 191, 255 ],
+        "btnHoverCol": [ 229.5, 229.5, 229.5, 255 ],
+        "btnFontSize": 0.5,
+        "btnTextCol": [ 0, 0, 0, 255 ],
+        "titlePos": [ 0, 400 ],
+        "titleFontSize": 1.2,
+        "pageIndicator": { //The thing that shows what page they are on
+            "pos": [ 0, -400 ],
+            "fontSize": 0.7,
+            "color": [ 200, 200, 200, 255 ],
+            "format": "%i / %i", // sprintf (c-style printf formatting). Only 2 digits: curr page and max pages.
+            "origin": "TEXT_MIDDLE"
+        },
+        "prevBtn": { //Previous page
+            "pos": [ -300, -400 ],
+            "size": [ 100, 67 ],
+            "text": "<"
+        },
+        "nextBtn": { //next page
+            "pos": [ 300, -400 ],
+            "size": [ 100, 67 ],
+            "text": ">"
+        },
+        "exitBtn": {
+            "pos": [ -650, 400 ],
+            "size": [ 200, 67 ],
+            "text": "Exit"
+        },
+        /* Page object format
+            
+        {
+            "titleText": "",
+            "titleCol": [ 255, 255, 255, 255 ],
+            "content": [
+                {
+                    "text": "",
+                    "contentTxtOrigin": "TEXT_MIDDLE",
+                    "contentCol": [ 255, 255, 255, 255 ],
+                    "contentPos": [ 0, 0 ],
+                    "contentWidth": 1000,
+                    "contentFontSize": 0.5,
+                    "contentLineSpace": 0.015,
+                    "imgPaths": [
+                        {
+                            "path": "Assets/",
+                            "size": [ 0, 0 ],
+                            "pos": [ 0, 0 ]
+                        }
+                    ]
+                }
+            ]
+        }
+
+        If hardcoding content, put a bool "hardcodeInstead" to true,
+        which will disable the normal rendering.
+        Dev needs to go to GuideState and hardcode. Use Title as id
+
+        */
+        "pages": [
+            {
+                "titleText": "Intro",
+                "titleCol": [ 255, 255, 255, 255 ],
+                "content": [
+                    {
+                        "text": "Welcome to Loot Run!\nCollect coins from defeating enemies and collecting loot.\nUse these coins to gacha for pets in the Pets menu or upgrade your stats in Shop.\n\n\nDefeat enemies to summon to boss, then kill that boss!",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 255, 255, 255 ],
+                        "contentPos": [ 0, 300 ],
+                        "contentWidth": 1000,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": []
+                    }
+                ]
+            },
+            {
+                "titleText": "Basic Controls",
+                "titleCol": [ 255, 255, 255, 255 ],
+                "content": [
+                    {
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 255, 255, 255 ],
+                        "contentPos": [ 0, 300 ],
+                        "contentWidth": 1000,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": [
+                            {
+                                "path": "Assets/sprites/keyboard.png",
+                                "size": [ 960, 640 ],
+                                "pos": [ 0, 0 ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            { //Elements page that covers the basic elements. Each element has 2 content: header(with image), and the desc text.
+                "titleText": "Elements - Basics",
+                "titleCol": [ 255, 255, 255, 255 ],
+                "content": [
+                    { // Overview
+                        "text": "There are 3 elements.\nDifferent weapons and pets can inflict these elements on their targets",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 200, 255, 200, 255 ],
+                        "contentPos": [ 0, 300 ],
+                        "contentWidth": 0,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": []
+                    },
+                    // ============ BLOOD =============
+                    {
+                        "text": "Blood",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 200, 200, 255 ],
+                        "contentPos": [ -500, 200 ],
+                        "contentWidth": 350,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": [
+                            {
+                                "path": "Assets/bloodEle.png",
+                                "size": [ 100, 100 ],
+                                "pos": [ -500, 100 ]
+                            }
+                        ]
+                    },
+                    {
+                        "text": "While applied, deals damage-over-time (DoT) to its bearer.\n\nReapplying this element triggers 1 instance of the DoT immediately.",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 255, 255, 255 ],
+                        "contentPos": [ -500, 40 ],
+                        "contentWidth": 350,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": []
+                    },
+                    // ============== SUN ================
+                    {
+                        "text": "Sun",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 255, 200, 255 ],
+                        "contentPos": [ 0, 200 ],
+                        "contentWidth": 350,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": [
+                            {
+                                "path": "Assets/sunEle.png",
+                                "size": [ 100, 100 ],
+                                "pos": [ 0, 100 ]
+                            }
+                        ]
+                    },
+                    {
+                        "text": "When applied, it has a certain number of stacks.\n\nEach time the bearer is hit, the attacker removes 1 stack off the bearer to gain an equal number of stacks of a buff.\n\nAll remaining stacks are transferred to the killer on-death",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 255, 255, 255 ],
+                        "contentPos": [ 0, 40 ],
+                        "contentWidth": 350,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": []
+                    },
+                    // ============== MOON ================
+                    {
+                        "text": "Moon",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 200, 200, 255, 255 ],
+                        "contentPos": [ 500, 200 ],
+                        "contentWidth": 350,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": [
+                            {
+                                "path": "Assets/moonEle.png",
+                                "size": [ 100, 100 ],
+                                "pos": [ 500, 100 ]
+                            }
+                        ]
+                    },
+                    {
+                        "text": "Reduces the defense of its bearer.\n\nWhen hitting the bearer, the attacker is healed.\n\nIf the weapon is melee, the heal is increased.",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 255, 255, 255 ],
+                        "contentPos": [ 500, 40 ],
+                        "contentWidth": 350,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": []
+                    }
+                ]
+            },
+            {
+                "titleText": "Elements - Combinations",
+                "titleCol": [ 255, 255, 255, 255 ],
+                "content": [
+                    { //Overview
+                        "text": "When 2 elements are applied to the same target, they combine, removing the original elements from the target.",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 200, 255, 200, 255 ],
+                        "contentPos": [ 0, 300 ],
+                        "contentWidth": 1000,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": []
+                    },
+                    { // ========= BLOOD + SUN =========
+                        "text": "Blood + Sun",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 220, 200, 255 ],
+                        "contentPos": [ -350, 200 ],
+                        "contentWidth": 700,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": [
+                            {
+                                "path": "Assets/bloodEle.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ -525, 200 ]
+                            },
+                            {
+                                "path": "Assets/sunEle.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ -475, 200 ]
+                            }
+                        ]
+                    },
+                    {
+                        "text": "Applies an enhanced DoT effect on the bearer, dealing a % of their max-hp.\n\nOn death, deals damage in an area.",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 255, 255, 255 ],
+                        "contentPos": [ -350, 150 ],
+                        "contentWidth": 650,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015
+                    },
+                    { // ========= BLOOD + MOON =========
+                        "text": "Blood + Moon",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 230, 170, 200, 255 ],
+                        "contentPos": [ 350, 200 ],
+                        "contentWidth": 700,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": [
+                            {
+                                "path": "Assets/bloodEle.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ 475, 200 ]
+                            },
+                            {
+                                "path": "Assets/moonEle.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ 525, 200 ]
+                            }
+                        ]
+                    },
+                    {
+                        "text": "The Blood Moon casts its shadow on the ground centered on the target.\n\nTargets inside are debuffed and damaged.",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 255, 255, 255 ],
+                        "contentPos": [ 350, 150 ],
+                        "contentWidth": 650,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015
+                    },
+                    { // ========= SUN + MOON=========
+                        "text": "Sun + Moon",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 185, 155, 10, 255 ],
+                        "contentPos": [ 0, -50 ],
+                        "contentWidth": 700,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": [
+                            {
+                                "path": "Assets/sunEle.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ -125, -50 ]
+                            },
+                            {
+                                "path": "Assets/moonEle.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ 125, -50 ]
+                            }
+                        ]
+                    },
+                    {
+                        "text": "The Eclipse's shadow is cast onto the target.\n\nBased on who triggered the combo, their opponents inside are slowed and their debuffs are refreshed.\n\nAllies (or player) have their buffs refreshed while inside.\n\nWhen the Eclipse ends, opponents inside are damaged.",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 255, 255, 255 ],
+                        "contentPos": [ 0, -100 ],
+                        "contentWidth": 1000,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.01
+                    }
+                ]
+            },
+            {
+                "titleText": "Pets",
+                "titleCol": [ 255, 255, 255, 255 ],
+                "content": [
+                    {
+                        "text": "Equip a pet from the Main Menu -> Pets -> Inventory\nPets are obtained from the Gacha in Main Menu -> Shop",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 200, 255, 200, 255 ],
+                        "contentPos": [ 0, 300 ],
+                        "contentWidth": 1000,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": []
+                    },
+                    { //Section header 1 - Rarity
+                        "text": "Rarities:",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 240, 240, 240, 255 ],
+                        "contentPos": [ -700, 200 ],
+                        "contentWidth": 300,
+                        "contentFontSize": 0.45,
+                        "contentLineSpace": 0.01
+                    },
+                    { //Rarity
+                        "text": "Common",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 200, 200, 200, 255 ],
+                        "contentPos": [ -700, 150 ],
+                        "contentFontSize": 0.4,
+                        "contentLineSpace": 0.015
+                    },
+                    { //Rarity
+                        "text": "Uncommon",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 30, 255, 0, 255 ],
+                        "contentPos": [ -700, 125 ],
+                        "contentFontSize": 0.4,
+                        "contentLineSpace": 0.015
+                    },
+                    { //Rarity
+                        "text": "Rare",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 0, 112, 221, 255 ],
+                        "contentPos": [ -700, 100 ],
+                        "contentFontSize": 0.4,
+                        "contentLineSpace": 0.015
+                    },
+                    { //Rarity
+                        "text": "Epic",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 163, 53, 238, 255 ],
+                        "contentPos": [ -700, 75 ],
+                        "contentFontSize": 0.4,
+                        "contentLineSpace": 0.015
+                    },
+                    { //Rarity
+                        "text": "Legendary",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 255, 128, 0, 255 ],
+                        "contentPos": [ -700, 50 ],
+                        "contentFontSize": 0.4,
+                        "contentLineSpace": 0.015
+                    },
+                    { //Rarity
+                        "text": "Mythical",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 255, 0, 0, 255 ],
+                        "contentPos": [ -700, 25 ],
+                        "contentFontSize": 0.4,
+                        "contentLineSpace": 0.015
+                    },
+                    {
+                        "text": "The rarer a pet, the stronger it becomes!\n\nAll pets passively grant a buff to your stats. Different pets have different buffs.\n\nEach pet also has an active skill that you can cast. Read more about each pet's skills mid-run by hovering over the skill icon.\n\nSome pets can apply elements to enemies.",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 255, 255, 255, 255 ],
+                        "contentPos": [ -400, 200 ],
+                        "contentWidth": 800,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015
+                    }
+                ]
+            },
+            {
+                "titleText": "Equipment",
+                "titleCol": [ 255, 255, 255, 255 ],
+                "content": [
+                    {
+                        "text": "Equipment like armor and weapons can be looted from chests and enemies.\n\nYou have several inventory slots - 1 for each kind of armor, 2 for melee weapons, and 1 for a ranged weapon.\n\nPicking up gear automatically fills the slot if available.\n\nEquipment comes in several rarities, so go for the rarest items as they are stronger!\n\nSome weapons can apply an element to enemies hit.",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 255, 255, 255 ],
+                        "contentPos": [ 0, 275 ],
+                        "contentWidth": 1000,
+                        "contentFontSize": 0.5,
+                        "imgPaths": [
+                            {
+                                "path": "Assets/sprites/weapons/melee/sword.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ -125, 325 ]
+                            },
+                            {
+                                "path": "Assets/sprites/weapons/range/bow.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ -75, 325 ]
+                            },
+                            {
+                                "path": "Assets/sprites/armor/body.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ -25, 325 ]
+                            },
+                            {
+                                "path": "Assets/sprites/armor/feet.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ 25, 325 ]
+                            },
+                            {
+                                "path": "Assets/sprites/armor/hands.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ 75, 325 ]
+                            },
+                            {
+                                "path": "Assets/sprites/armor/head.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ 125, 325 ]
+                            }
+                        ]
+                    },
+                    { //Rarity
+                        "text": "Common",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 139, 69, 19, 255 ],
+                        "contentPos": [ -750, 150 ],
+                        "contentFontSize": 0.4,
+                        "contentLineSpace": 0.015
+                    },
+                    { //Rarity
+                        "text": "Uncommon",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 100, 220, 100, 255 ],
+                        "contentPos": [ -750, 125 ],
+                        "contentFontSize": 0.4,
+                        "contentLineSpace": 0.015
+                    },
+                    { //Rarity
+                        "text": "Rare",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 100, 150, 255, 255 ],
+                        "contentPos": [ -750, 100 ],
+                        "contentFontSize": 0.4,
+                        "contentLineSpace": 0.015
+                    },
+                    { //Rarity
+                        "text": "Epic",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 180, 80, 255, 255 ],
+                        "contentPos": [ -750, 75 ],
+                        "contentFontSize": 0.4,
+                        "contentLineSpace": 0.015
+                    },
+                    { //Rarity
+                        "text": "Legendary",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 255, 165, 0, 255 ],
+                        "contentPos": [ -750, 50 ],
+                        "contentFontSize": 0.4,
+                        "contentLineSpace": 0.015
+                    },
+                    { //Rarity
+                        "text": "Mythical",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 255, 215, 0, 255 ],
+                        "contentPos": [ -750, 25 ],
+                        "contentFontSize": 0.4,
+                        "contentLineSpace": 0.015
+                    }
+                ]
+            }
+        ]
     }
 }

@@ -20,6 +20,7 @@
 #include "Drops/DropSystem.h"
 #include "../Project/GameStates/CreditState.h"
 #include "../Project/GameStates/LogoState.h"
+#include "../Project/GameStates/GuideState.h"
 #include "GameDB.h"
 #if defined(DEBUG) | defined(_DEBUG)
 	#include <memory>
@@ -78,6 +79,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	stateManager->AddGameState("PetState", new PetState);
 	stateManager->AddGameState("CreditState", new CreditState);
 	stateManager->AddGameState("LogoState", new LogoState);
+	stateManager->AddGameState("GuideState", new GuideState);
 
 	//Enter first game state
 	stateManager->SetNextGameState("LogoState", true, true);

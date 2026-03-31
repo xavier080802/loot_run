@@ -476,7 +476,7 @@ void PetState::Draw()
 			if (it != petManager->GetPetDataMap().end()) {
 				DrawAETextbox(Font, it->second.skillDesc,
 					AEVec2{ GRID_START.x + SLOT_SIZE, -DEFAULT_H * 0.3f },
-					300.f, 1.5f, 0.02f, Color{ 255, 255, 255, 255 },
+					300.f, 1.f, 0.02f, Color{ 255, 255, 255, 255 },
 					TextOriginPos::TEXT_MIDDLE_LEFT, TextboxOriginPos::BOTTOM,
 					TextboxBgCfg{ AEVec2{ 0.02f, 0 }, Color{}, 255, nullptr, nullptr });
 			}

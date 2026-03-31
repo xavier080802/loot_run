@@ -11,7 +11,7 @@ void GameStateManager::AddGameState(std::string stateName, State* state)
 	state->LoadState();
 }
 
-bool GameStateManager::SetNextGameState(std::string nextName, bool initNext, bool exitCurr)
+bool GameStateManager::SetNextGameState(std::string nextName, bool initNext, bool exitCurr, bool disableGOs)
 {
 	if (currState.first == nextName || stateList.find(nextName) == stateList.end()) {
 		return false;
@@ -21,8 +21,10 @@ bool GameStateManager::SetNextGameState(std::string nextName, bool initNext, boo
 		stateList.find(currState.first)->second->ExitState();
 	}
 	prevState = currState;
-	//Disable all gameobjects in manager. Let InitState reenable needed GOs
-	GameObjectManager::GetInstance()->DisableAllGOs();
+	if (disableGOs) {
+		//Disable all gameobjects in manager. Let InitState reenable needed GOs
+		GameObjectManager::GetInstance()->DisableAllGOs();
+	}
 	//Enter new state
 	currState.first = nextName;
 	currState.second = stateList.find(nextName)->second;
@@ -35,7 +37,7 @@ bool GameStateManager::ReturnToPrevState(bool reInitPrev, bool exitCurr)
 	if (!prevState.second)
 		return false;
 
-	return SetNextGameState(prevState.first, reInitPrev, exitCurr);
+	return SetNextGameState(prevState.first, reInitPrev, exitCurr, false);
 }
 
 void GameStateManager::UpdateCurrState(double dt)

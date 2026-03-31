@@ -20,7 +20,7 @@ namespace {
         }
         AEVec2 poolPos{ pet->GetWhirlpool()->GetPos() }, otherPos{other->GetPos()};
         float dist{ AEVec2Distance(&poolPos, &otherPos)};
-        caster->DealDamage(other, dmg * AEClamp(dist / pet->GetWhirlpool()->GetColSize().x, pet->GetMinDmgMult(), 1.f), data.dmgTypes.at(0));
+        caster->DealDamage(other, dmg * AEClamp(1.f - dist / pet->GetWhirlpool()->GetColSize().x, pet->GetMinDmgMult(), 1.f), data.dmgTypes.at(0));
         Elements::ApplyElement(element, caster, other);
     }
 }

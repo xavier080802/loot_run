@@ -19,9 +19,12 @@ namespace {
 void InputManager::Init() {
 	receivers.reserve(5);
 	keys.reserve(10);
+	SetMinPrio(-10000);
 }
 
 void InputManager::Update() {
+	if (!enabled) return;
+
 	using Input::INPUT_TYPE;
 	//Mouse
 	for (u8 m : mouseKeys) {
@@ -30,6 +33,7 @@ void InputManager::Update() {
 
 		bool consumed{ false };
 		for (Receiver const& r : receiversMouse) {
+			if (r.priority < minPrio) break;
 			r.sub->SubscriptionAlert({ m, type, consumed });
 			if (consumed) break;
 		}
@@ -39,6 +43,7 @@ void InputManager::Update() {
 	if (scroll) {
 		bool consumed{ false };
 		for (Receiver const& r : receiversMouse) {
+			if (r.priority < minPrio) break;
 			r.sub->SubscriptionAlert({ VK_SCROLL, scroll > 0 ? Input::INPUT_TYPE::SCROLL_UP : Input::INPUT_TYPE::SCROLL_DOWN, consumed });
 			if (consumed) break;
 		}
@@ -51,6 +56,7 @@ void InputManager::Update() {
 
 		bool consumed{ false };
 		for (Receiver const& r : receivers) {
+			if (r.priority < minPrio) break;
 			r.sub->SubscriptionAlert({ k, type, consumed });
 			if (consumed) break;
 		}

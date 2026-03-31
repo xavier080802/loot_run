@@ -37,10 +37,12 @@ public:
 	UIElement& SetHoverCallback(std::function<void(bool)>const& _callback);
 	UIElement& SetEnabled(bool enable = true);
 	UIElement& ReInit(AEVec2 _pos, AEVec2 _size, int _z, Collision::SHAPE _shape, bool _blockInteraction = true, bool resetCallbacks = true);
+	UIElement& ReInit(Json::Value const& json);
 
 	//Flags this UIElement as reusable that can be used by anyone.
 	//Orphans can be "adopted" once disabled.
 	UIElement& SetOrphaned();
+	UIElement& SetPriority(int z);
 
 	int GetZ()const { return z; }
 	Collision::SHAPE GetShape() const { return shape; }

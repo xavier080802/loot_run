@@ -44,7 +44,8 @@ void AnimationData::Init(MESH_SHAPE shape)
 	manager = RenderingManager::GetInstance();
 	RenderData::Init(shape);
 	if (shape != MESH_SQUARE_ANIM) {
-		isPaused = true;
+		is
+			d = true;
 	}
 }
 

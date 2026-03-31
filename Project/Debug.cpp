@@ -10,8 +10,7 @@
 #include "../Project/TileMap.h"
 #include <sstream>
 #include <cmath>
-#include <iostream>
-#include "../Project/GameObjects/LootChest.h"
+
 
 
 // Draws a semi-transparent dark panel background at the given top-left position
@@ -35,11 +34,10 @@ void DrawPanel(const DebugContext& ctx, float screenX, float screenY, float w, f
 // Keybind overlay – shown when player presses K
 void DrawKeybindOverlay(const DebugContext& ctx)
 {
-	// MASTER TOGGLE: Return immediately if debug is globally disabled
-	if (!ctx.masterDebugEnabled || ctx.font < 0) return;
+	if (ctx.font < 0) return;
 
 	// Calculate panel positioning relative to camera and window bounds
-	AEVec2 camPos;
+	AEVec2 camPos{};
 	AEGfxGetCamPosition(&camPos.x, &camPos.y);
 
 	float winW = (float)(AEGfxGetWinMaxX() - AEGfxGetWinMinX());
@@ -117,11 +115,10 @@ void DrawKeybindOverlay(const DebugContext& ctx)
 // Debug overlay – shown when TAB is pressed in debug mode
 void DrawDebugOverlay(const DebugContext& ctx)
 {
-	// MASTER TOGGLE: Return immediately if debug is globally disabled
-	if (!ctx.masterDebugEnabled || ctx.font < 0 || !ctx.gPlayer) return;
+	if (ctx.font < 0 || !ctx.gPlayer) return;
 
 	// Screen and Camera positioning
-	AEVec2 camPos;
+	AEVec2 camPos{};
 	AEGfxGetCamPosition(&camPos.x, &camPos.y);
 
 	float winW = (float)(AEGfxGetWinMaxX() - AEGfxGetWinMinX());
@@ -236,7 +233,7 @@ void DrawDebugOverlay(const DebugContext& ctx)
 // Displays names and health above active enemy actors
 void DrawEnemyStats(const DebugContext& ctx)
 {
-	if (!ctx.masterDebugEnabled || ctx.font < 0) return;
+	if (ctx.font < 0) return;
 
 	auto& gos = GameObjectManager::GetInstance()->GetGameObjects();
 	for (GameObject* go : gos) {
@@ -261,7 +258,7 @@ void DrawEnemyStats(const DebugContext& ctx)
 // Highlights chest locations with a visual box and label
 void DrawChestHighlights(const DebugContext& ctx)
 {
-	if (!ctx.masterDebugEnabled || !ctx.debugShowChests || ctx.font < 0) return;
+	if (!ctx.debugShowChests || ctx.font < 0) return;
 
 	auto& gos = GameObjectManager::GetInstance()->GetGameObjects();
 	for (GameObject* go : gos) {

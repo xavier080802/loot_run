@@ -35,11 +35,12 @@ namespace StatEffects {
 		MATH_TYPE mathType;
 		//Stat to affect
 		STAT_TYPE stat;
+		std::string tag;
 
-		Mod(float _val, MATH_TYPE _mathType, STAT_TYPE _statToAffect) 
-			: value(_val), mathType(_mathType), stat(_statToAffect){}
+		Mod(float _val, MATH_TYPE _mathType, STAT_TYPE _statToAffect, std::string _tag="")
+			: value(_val), mathType(_mathType), stat(_statToAffect), tag(_tag) {}
 
-		Mod() : value{ 0 }, mathType{ FLAT }, stat{ STAT_TYPE::ATT } {}
+		Mod() : value{ 0 }, mathType{ FLAT }, stat{ STAT_TYPE::ATT }, tag{""} {}
 
 		//Get this Mod's true value based on actor's base stats.
 		//if mathType is MULT, returns value

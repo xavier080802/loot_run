@@ -593,6 +593,54 @@ namespace {
         AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
     }
 
+    void DrawGearTooltip(EquipmentData const& eq) {
+        AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+        AEGfxTextureSet(nullptr, 0, 0);
+
+        s32 mX, mY;
+        AEInputGetCursorPosition(&mX, &mY);
+
+        float winW = (float)AEGfxGetWinMaxX() - AEGfxGetWinMinX();
+        float winH = (float)AEGfxGetWinMaxY() - AEGfxGetWinMinY();
+        float screenX = (float)mX - (winW * 0.5f);
+        float screenY = (winH * 0.5f) - (float)mY;
+
+        //Min width = fit whole name + padding*2
+        float _tw, _th;
+        AEGfxGetPrintSize(font, eq.name, 0.45f, &_tw, &_th);
+        AEVec2 bgSize = { max(300.0f, _tw*0.5f*AEGfxGetWindowWidth() + 30.f), 220.0f};
+        AEVec2 bgPos = { screenX + bgSize.x * 0.5f + 15.0f, screenY - bgSize.y * 0.5f - 15.0f };
+
+        if (bgPos.x + bgSize.x * 0.5f > winW * 0.5f) bgPos.x = winW * 0.5f - bgSize.x * 0.5f;
+        if (bgPos.y - bgSize.y * 0.5f < -winH * 0.5f) bgPos.y = -winH * 0.5f + bgSize.y * 0.5f;
+
+        DrawTintedMesh(GetTransformMtx(bgPos, 0.0f, bgSize), squareMesh, nullptr, { 0, 0, 0, 220 }, 255);
+
+        AEVec2 textPos = { bgPos.x - bgSize.x * 0.5f + 15.0f, bgPos.y + bgSize.y * 0.5f - 25.0f };
+        Color rColor = GetRarityColor(eq.rarity);
+
+        DrawAEText(font, eq.name, textPos, 0.45f, rColor, TEXT_MIDDLE_LEFT);
+        textPos.y -= 30.0f;
+
+        DrawAEText(font, ("Sell Price: " + std::to_string(eq.sellPrice)).c_str(), textPos, 0.35f, { 255, 215, 0, 255 }, TEXT_MIDDLE_LEFT);
+
+        if (eq.element != Elements::ELEMENT_TYPE::NONE) {
+            textPos.y -= 30.0f;
+            DrawAEText(font, ("Element: " + Elements::GetElementName(eq.element)).c_str(), textPos, 0.35f, Elements::GetElementCol(eq.element), TEXT_MIDDLE_LEFT);
+        }
+        textPos.y -= 35.f;
+
+        if (eq.mods.additive.maxHP != 0) { DrawAEText(font, ("Max HP: +" + std::to_string((int)eq.mods.additive.maxHP)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+        if (eq.mods.additive.attack != 0) { DrawAEText(font, ("Attack: +" + std::to_string((int)eq.mods.additive.attack)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+        if (eq.mods.additive.defense != 0) { DrawAEText(font, ("Defense: +" + std::to_string((int)eq.mods.additive.defense)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+        if (eq.mods.additive.moveSpeed != 0) { DrawAEText(font, ("Speed: +" + std::to_string((int)eq.mods.additive.moveSpeed)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+        if (eq.mods.additive.attackSpeed != 0) {
+            std::string aSpdStr = std::to_string(eq.mods.additive.attackSpeed);
+            aSpdStr = aSpdStr.substr(0, aSpdStr.find('.') + 3);
+            DrawAEText(font, ("Atk Speed: +" + aSpdStr).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f;
+        }
+    }
+
     void DrawPlayerUI() {
         int fontSz = RenderingManager::GetInstance()->GetFontSize();
         if (gPlayer->ShowStatsUI()) {
@@ -703,39 +751,10 @@ namespace {
                mInventory.GetMainWeapon(0),mInventory.GetMainWeapon(1),mInventory.GetBow(),
                mInventory.GetArmor(ArmorSlot::Head), mInventory.GetArmor(ArmorSlot::Body),mInventory.GetArmor(ArmorSlot::Hands),mInventory.GetArmor(ArmorSlot::Feet)
         };
-        EquipmentData const* eq{ arr[ind] };
-        if (!eq) return;
-
-        //Draw tooltip
-        float winW = (float)AEGfxGetWinMaxX() - AEGfxGetWinMinX();
-        float winH = (float)AEGfxGetWinMaxY() - AEGfxGetWinMinY();
-        AEVec2 bgSize = { 300.0f, 220.0f };
-        AEVec2 bgPos = { mP.x + bgSize.x * 0.5f + 15.0f, mP.y - bgSize.y * 0.5f - 15.0f };
-
-        if (bgPos.x + bgSize.x * 0.5f > winW * 0.5f) bgPos.x = winW * 0.5f - bgSize.x * 0.5f;
-        if (bgPos.y - bgSize.y * 0.5f < -winH * 0.5f) bgPos.y = -winH * 0.5f + bgSize.y * 0.5f;
-
-        DrawTintedMesh(GetTransformMtx(bgPos, 0.0f, bgSize), squareMesh, nullptr, { 0, 0, 0, 220 }, 255);
-
-        AEVec2 textPos = { bgPos.x - bgSize.x * 0.5f + 15.0f, bgPos.y + bgSize.y * 0.5f - 25.0f };
-        Color rColor = GetRarityColor(eq->rarity);
-
-        DrawAEText(font, eq->name, textPos, 0.45f, rColor, TEXT_MIDDLE_LEFT);
-        textPos.y -= 30.0f;
-
-        DrawAEText(font, ("Sell Price: " + std::to_string(eq->sellPrice)).c_str(), textPos, 0.35f, { 255, 215, 0, 255 }, TEXT_MIDDLE_LEFT);
-        textPos.y -= 35.0f;
-
-        if (eq->mods.additive.maxHP != 0) { DrawAEText(font, ("Max HP: +" + std::to_string((int)eq->mods.additive.maxHP)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
-        if (eq->mods.additive.attack != 0) { DrawAEText(font, ("Attack: +" + std::to_string((int)eq->mods.additive.attack)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
-        if (eq->mods.additive.defense != 0) { DrawAEText(font, ("Defense: +" + std::to_string((int)eq->mods.additive.defense)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
-        if (eq->mods.additive.moveSpeed != 0) { DrawAEText(font, ("Speed: +" + std::to_string((int)eq->mods.additive.moveSpeed)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
-        if (eq->mods.additive.attackSpeed != 0) {
-            std::string aSpdStr = std::to_string(eq->mods.additive.attackSpeed);
-            aSpdStr = aSpdStr.substr(0, aSpdStr.find('.') + 3);
-            DrawAEText(font, ("Atk Speed: +" + aSpdStr).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f;
+        EquipmentData const* eq{arr[ind]};
+        if (eq) {
+            DrawGearTooltip(*eq);
         }
-
         //Reset hover state
         ind = -1;
     }
@@ -749,42 +768,8 @@ namespace {
                 if (payload.type == DropType::Equipment && payload.equipment) {
                     const EquipmentData* eq = payload.equipment;
 
-                    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-                    AEGfxTextureSet(nullptr, 0, 0);
-
-                    s32 mX, mY;
-                    AEInputGetCursorPosition(&mX, &mY);
-
-                    float winW = (float)AEGfxGetWinMaxX() - AEGfxGetWinMinX();
-                    float winH = (float)AEGfxGetWinMaxY() - AEGfxGetWinMinY();
-                    float screenX = (float)mX - (winW * 0.5f);
-                    float screenY = (winH * 0.5f) - (float)mY;
-
-                    AEVec2 bgSize = { 300.0f, 220.0f };
-                    AEVec2 bgPos = { screenX + bgSize.x * 0.5f + 15.0f, screenY - bgSize.y * 0.5f - 15.0f };
-
-                    if (bgPos.x + bgSize.x * 0.5f > winW * 0.5f) bgPos.x = winW * 0.5f - bgSize.x * 0.5f;
-                    if (bgPos.y - bgSize.y * 0.5f < -winH * 0.5f) bgPos.y = -winH * 0.5f + bgSize.y * 0.5f;
-
-                    DrawTintedMesh(GetTransformMtx(bgPos, 0.0f, bgSize), squareMesh, nullptr, { 0, 0, 0, 220 }, 255);
-
-                    AEVec2 textPos = { bgPos.x - bgSize.x * 0.5f + 15.0f, bgPos.y + bgSize.y * 0.5f - 25.0f };
-                    Color rColor = GetRarityColor(eq->rarity);
-
-                    DrawAEText(font, eq->name, textPos, 0.45f, rColor, TEXT_MIDDLE_LEFT);
-                    textPos.y -= 30.0f;
-
-                    DrawAEText(font, ("Sell Price: " + std::to_string(eq->sellPrice)).c_str(), textPos, 0.35f, { 255, 215, 0, 255 }, TEXT_MIDDLE_LEFT);
-                    textPos.y -= 35.0f;
-
-                    if (eq->mods.additive.maxHP != 0) { DrawAEText(font, ("Max HP: +" + std::to_string((int)eq->mods.additive.maxHP)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
-                    if (eq->mods.additive.attack != 0) { DrawAEText(font, ("Attack: +" + std::to_string((int)eq->mods.additive.attack)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
-                    if (eq->mods.additive.defense != 0) { DrawAEText(font, ("Defense: +" + std::to_string((int)eq->mods.additive.defense)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
-                    if (eq->mods.additive.moveSpeed != 0) { DrawAEText(font, ("Speed: +" + std::to_string((int)eq->mods.additive.moveSpeed)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
-                    if (eq->mods.additive.attackSpeed != 0) {
-                        std::string aSpdStr = std::to_string(eq->mods.additive.attackSpeed);
-                        aSpdStr = aSpdStr.substr(0, aSpdStr.find('.') + 3);
-                        DrawAEText(font, ("Atk Speed: +" + aSpdStr).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f;
+                    if (eq) {
+                        DrawGearTooltip(*eq);
                     }
                 }
             }

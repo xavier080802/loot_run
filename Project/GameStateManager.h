@@ -44,7 +44,7 @@ public:
 	/// <param name="initNext">If true, the next state will have its Init called.</param>
 	/// <param name="exitCurr">If true, the next state will have its Exit called</param>
 	/// <returns>Whether the operation is successful/state exists</returns>
-	bool SetNextGameState(std::string nextName, bool initNext = true, bool exitCurr = true);
+	bool SetNextGameState(std::string nextName, bool initNext = true, bool exitCurr = true, bool disableGOs = true);
 	/// <summary>
 	/// Changes the game state to the previous state (if any)
 	/// </summary>

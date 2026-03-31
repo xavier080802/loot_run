@@ -20,7 +20,8 @@ public:
 	AEVec2 GetTexOffset() override;
 
 	void UpdateAnimation(double dt);
-	void PauseAnim(bool pause = true);
+	void 
+		Anim(bool pause = true);
 	//Set animation to given frame and restart anim timer
 	void SetFrame(unsigned frameIndex);
 

@@ -61,7 +61,7 @@
         "isRanged": true,
         "element": "NONE",
         "knockback": 80.0,
-        "attackSize": 6.0,
+        "attackSize": 7.0,
         "rarity": "Epic",
         "stats": {
             "attack": 35.0
@@ -78,7 +78,7 @@
         "isRanged": true,
         "element": "NONE",
         "knockback": 100.0,
-        "attackSize": 8.0,
+        "attackSize": 10.0,
         "rarity": "Legendary",
         "stats": {
             "attack": 65.0
@@ -95,10 +95,61 @@
         "isRanged": true,
         "element": "MOON",
         "knockback": 150.0,
-        "attackSize": 10.0,
+        "attackSize": 20.0,
         "rarity": "Mythical",
         "stats": {
             "attack": 120.0
+        }
+    },
+    {
+        "id": 7,
+        "name": "Epic Tidal Bow",
+        "sellPrice": 250,
+        "texturePath": "Assets/sprites/weapons/range/bow.png",
+        "slot": "Weapon",
+        "weaponType": "Bow",
+        "attackType": "Projectile",
+        "isRanged": true,
+        "element": "MOON",
+        "knockback": 70.0,
+        "attackSize": 5.0,
+        "rarity": "Epic",
+        "stats": {
+            "attack": 25.0
+        }
+    },
+    {
+        "id": 8,
+        "name": "Epic Sanguine Bow",
+        "sellPrice": 250,
+        "texturePath": "Assets/sprites/weapons/range/bow.png",
+        "slot": "Weapon",
+        "weaponType": "Bow",
+        "attackType": "Projectile",
+        "isRanged": true,
+        "element": "BLOOD",
+        "knockback": 80.0,
+        "attackSize": 5.0,
+        "rarity": "Epic",
+        "stats": {
+            "attack": 20.0
+        }
+    },
+    {
+        "id": 9,
+        "name": "Epic Icarian Bow",
+        "sellPrice": 250,
+        "texturePath": "Assets/sprites/weapons/range/bow.png",
+        "slot": "Weapon",
+        "weaponType": "Bow",
+        "attackType": "Projectile",
+        "isRanged": true,
+        "element": "SUN",
+        "knockback": 70.0,
+        "attackSize": 5.0,
+        "rarity": "Epic",
+        "stats": {
+            "attack": 25.0
         }
     }
 ]
