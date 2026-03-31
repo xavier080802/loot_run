@@ -419,12 +419,106 @@
                         "contentLineSpace": 0.015
                     },
                     {
-                        "text": "The rarer a pet, the stronger it becomes!\n\nAll pets passively grant a buff to your stats. Different pets have different buffs.\n\nEach pet also has an active skill that you can cast. Read more about each pet's skills mid-run by hovering over the skill icon",
+                        "text": "The rarer a pet, the stronger it becomes!\n\nAll pets passively grant a buff to your stats. Different pets have different buffs.\n\nEach pet also has an active skill that you can cast. Read more about each pet's skills mid-run by hovering over the skill icon.\n\nSome pets can apply elements to enemies.",
                         "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
                         "contentCol": [ 255, 255, 255, 255 ],
                         "contentPos": [ -400, 200 ],
                         "contentWidth": 800,
                         "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015
+                    }
+                ]
+            },
+            {
+                "titleText": "Equipment",
+                "titleCol": [ 255, 255, 255, 255 ],
+                "content": [
+                    {
+                        "text": "Equipment like armor and weapons can be looted from chests and enemies.\n\nYou have several inventory slots - 1 for each kind of armor, 2 for melee weapons, and 1 for a ranged weapon.\n\nPicking up gear automatically fills the slot if available.\n\nEquipment comes in several rarities, so go for the rarest items as they are stronger!\n\nSome weapons can apply an element to enemies hit.",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 255, 255, 255 ],
+                        "contentPos": [ 0, 275 ],
+                        "contentWidth": 1000,
+                        "contentFontSize": 0.5,
+                        "imgPaths": [
+                            {
+                                "path": "Assets/sprites/weapons/melee/sword.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ -125, 325 ]
+                            },
+                            {
+                                "path": "Assets/sprites/weapons/range/bow.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ -75, 325 ]
+                            },
+                            {
+                                "path": "Assets/sprites/armor/body.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ -25, 325 ]
+                            },
+                            {
+                                "path": "Assets/sprites/armor/feet.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ 25, 325 ]
+                            },
+                            {
+                                "path": "Assets/sprites/armor/hands.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ 75, 325 ]
+                            },
+                            {
+                                "path": "Assets/sprites/armor/head.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ 125, 325 ]
+                            }
+                        ]
+                    },
+                    { //Rarity
+                        "text": "Common",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 139, 69, 19, 255 ],
+                        "contentPos": [ -750, 150 ],
+                        "contentFontSize": 0.4,
+                        "contentLineSpace": 0.015
+                    },
+                    { //Rarity
+                        "text": "Uncommon",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 100, 220, 100, 255 ],
+                        "contentPos": [ -750, 125 ],
+                        "contentFontSize": 0.4,
+                        "contentLineSpace": 0.015
+                    },
+                    { //Rarity
+                        "text": "Rare",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 100, 150, 255, 255 ],
+                        "contentPos": [ -750, 100 ],
+                        "contentFontSize": 0.4,
+                        "contentLineSpace": 0.015
+                    },
+                    { //Rarity
+                        "text": "Epic",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 180, 80, 255, 255 ],
+                        "contentPos": [ -750, 75 ],
+                        "contentFontSize": 0.4,
+                        "contentLineSpace": 0.015
+                    },
+                    { //Rarity
+                        "text": "Legendary",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 255, 165, 0, 255 ],
+                        "contentPos": [ -750, 50 ],
+                        "contentFontSize": 0.4,
+                        "contentLineSpace": 0.015
+                    },
+                    { //Rarity
+                        "text": "Mythical",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 255, 215, 0, 255 ],
+                        "contentPos": [ -750, 25 ],
+                        "contentFontSize": 0.4,
                         "contentLineSpace": 0.015
                     }
                 ]
