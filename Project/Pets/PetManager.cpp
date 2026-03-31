@@ -89,7 +89,7 @@ void PetManager::InitPetForGame(TileMap const& tilemap)
 	//Generate description for the skills
 	if (PetHasSkill()) {
 		//Cooldown
-		s << "\n[Cooldown " << std::fixed << std::setprecision(1) << d.skillCooldown << "s]\n";
+		s << "\n[Cooldown " << std::fixed << std::setprecision(1) << d.skillCooldown << "s]\n\n";
 		//Scalings
 		bool flag = false; //False = First of the line
 		std::string currTag{};

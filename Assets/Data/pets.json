@@ -163,7 +163,7 @@
                     "tag": "Revenge damage"
                 },
                 { //4 - Revenge dmg
-                    "value": 0,
+                    "value": 1,
                     "mathType": "flat"
                 }
             ],
