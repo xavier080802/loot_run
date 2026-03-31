@@ -8,8 +8,6 @@
 #include "RenderingManager.h"
 #include "ShopFunctions.h"
 #include "UIConfig.h"
-#include <cstdio>
-#include "AEEngine.h"
 
 // =====================================================================
 // Internal state
@@ -59,13 +57,14 @@ namespace
 	const char* hintTexts[] = {
 		"You can use the coins you earn to buy upgrades in the shop!",
 		"Collect heath pickups to survive longer!",
-		"It is ok to skip strong enemies!",
+		"It is ok to retreat from strong enemies!",
 		"Keep an eye on your ammo and use your ranged attacks wisely!",
 		"Your dodge has invincibility frames! Use it to avoid damage and reposition yourself!",
 		"Try attacking and dodging at the same time!",
 		"Pets can be helpful companions in battle. Press R to use your pet's ability!",
 		"You can press and hold Left Click to auto attack!",
-		"Skill issue. Get Gud. L + Ratio"
+		"Try kiting enemies using ranged weapons!"
+		//"Skill issue. Get Gud. L + Ratio"
 	};
 	constexpr int HINT_COUNT = sizeof(hintTexts) / sizeof(hintTexts[0]);
 	int hintIndex = 0;
