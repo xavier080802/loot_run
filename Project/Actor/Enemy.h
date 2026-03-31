@@ -15,6 +15,9 @@ enum class EnemyState {
 class Enemy : public Actor
 {
 public:
+    // Stat multiplier for endless mode
+    float mDifficultyMultiplier = 1.0f;
+    void OnStatEffectChange() override;
     GameObject* Init(AEVec2 _pos, AEVec2 _scale, int _z,
         MESH_SHAPE _meshShape, Collision::SHAPE _colShape, AEVec2 _colSize,
         Bitmask _collideWithLayers, Collision::LAYER _isInLayers) override;
@@ -34,7 +37,6 @@ protected:
     // Spawns drops and disables the enemy; actual deletion is manager-controlled
     void OnDeath(Actor* killer = nullptr) override;
 
-    void OnStatEffectChange() override;
     ActorStats CalculateStatusEffectStats();
 
 private:
