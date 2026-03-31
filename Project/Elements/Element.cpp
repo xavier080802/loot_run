@@ -27,6 +27,7 @@ namespace Elements {
 	std::string bloodName;
 	std::vector<StatEffects::Mod> bloodDmgMods;
 	std::string bloodIcon;
+	Color bloodTextCol;
 
 	//Sun
 	std::string sunName;
@@ -36,6 +37,7 @@ namespace Elements {
 	unsigned sunLowRange, sunHighRange; //Range for number of stacks to apply
 	std::vector<StatEffects::Mod> sunBuffMods;
 	std::string sunIcon;
+	Color sunTextCol;
 
 	//Moon
 	std::string moonName;
@@ -45,6 +47,7 @@ namespace Elements {
 	float moonMeleeHealMult{};
 	std::vector<StatEffects::Mod> moonDebuffMods;
 	std::string moonIcon;
+	Color moonTextCol;
 
 	//Blood+Sun reaction
 	std::string bloodSunName;
@@ -111,6 +114,12 @@ namespace Elements {
 			bloodDmgMods.push_back(StatEffects::Mod::ParseFromJSON(m));
 		}
 		bloodIcon = blood.get("icon", "").asString();
+		if (blood["textCol"].isArray() && blood["textCol"].size() == 4) {
+			bloodTextCol = Color{
+				blood["textCol"][0].asFloat(), blood["textCol"][1].asFloat(),
+				blood["textCol"][2].asFloat(),blood["textCol"][3].asFloat()
+			};
+		}
 
 		//Parse Sun
 		Json::Value sun{ root["sun"] };
@@ -124,6 +133,12 @@ namespace Elements {
 			sunBuffMods.push_back(StatEffects::Mod::ParseFromJSON(m));
 		}
 		sunIcon = sun.get("icon", "").asString();
+		if (sun["textCol"].isArray() && sun["textCol"].size() == 4) {
+			sunTextCol = Color{
+				sun["textCol"][0].asFloat(), sun["textCol"][1].asFloat(),
+				sun["textCol"][2].asFloat(),sun["textCol"][3].asFloat()
+			};
+		}
 
 		//Parse Moon
 		Json::Value moon{ root["moon"] };
@@ -140,6 +155,12 @@ namespace Elements {
 			moonDebuffMods.push_back(StatEffects::Mod::ParseFromJSON(m));
 		}
 		moonIcon = moon.get("icon", "").asString();
+		if (moon["textCol"].isArray() && moon["textCol"].size() == 4) {
+			moonTextCol = Color{
+				moon["textCol"][0].asFloat(), moon["textCol"][1].asFloat(),
+				moon["textCol"][2].asFloat(),moon["textCol"][3].asFloat()
+			};
+		}
 
 		//Parse Blood+Sun reaction
 		Json::Value bloodSun{ root["blood_sun"] };
@@ -299,6 +320,34 @@ namespace Elements {
 		}
 		//Failed to find other element
 		return false;
+	}
+	std::string GetElementName(ELEMENT_TYPE ele)
+	{
+		switch (ele)
+		{
+		case Elements::ELEMENT_TYPE::BLOOD:
+			return "Blood";
+		case Elements::ELEMENT_TYPE::SUN:
+			return "Sun";
+		case Elements::ELEMENT_TYPE::MOON:
+			return "Moon";
+		default:
+			return "None";
+		}
+	}
+	Color const& GetElementCol(ELEMENT_TYPE ele)
+	{
+		switch (ele)
+		{
+		case Elements::ELEMENT_TYPE::BLOOD:
+			return bloodTextCol;
+		case Elements::ELEMENT_TYPE::SUN:
+			return sunTextCol;
+		case Elements::ELEMENT_TYPE::MOON:
+			return moonTextCol;
+		default:
+			return {255,255,255,255};
+		}
 	}
 }
 

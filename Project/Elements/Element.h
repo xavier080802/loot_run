@@ -33,6 +33,10 @@ namespace Elements {
 	extern bool CheckReaction(Actor* actor, Actor* caster, std::map<std::string, StatEffects::StatusEffect*>& dict,
 		StatEffects::StatusEffect* eff);
 
+	extern std::string GetElementName(ELEMENT_TYPE ele);
+
+	extern Color const& GetElementCol(ELEMENT_TYPE ele);
+
 	//All element Settings
 	extern float elementDur;
 
@@ -40,6 +44,7 @@ namespace Elements {
 	extern std::string bloodName;
 	extern std::vector<StatEffects::Mod> bloodDmgMods;
 	extern std::string bloodIcon;
+	extern Color bloodTextCol;
 
 	//Sun
 	extern std::string sunName;
@@ -49,6 +54,7 @@ namespace Elements {
 	extern unsigned sunLowRange, sunHighRange;
 	extern std::vector<StatEffects::Mod> sunBuffMods;
 	extern std::string sunIcon;
+	extern Color sunTextCol;
 
 	//Moon
 	extern std::string moonName;
@@ -58,6 +64,7 @@ namespace Elements {
 	extern float moonMeleeHealMult;
 	extern std::vector<StatEffects::Mod> moonDebuffMods;
 	extern std::string moonIcon;
+	extern Color moonTextCol;
 
 	//Blood+Sun reaction
 	extern std::string bloodSunName;

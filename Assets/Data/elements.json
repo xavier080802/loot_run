@@ -29,7 +29,8 @@
                 "stat": "hp"
             }
         ],
-        "icon": "Assets/bloodEle.png"
+        "icon": "Assets/bloodEle.png",
+        "textCol": [171,40,40,255]
     },
     "sun": {
         "name": "Under The Sun",
@@ -45,7 +46,8 @@
                 "stat": "att"
             }
         ],
-        "icon": "Assets/sunEle.png"
+        "icon": "Assets/sunEle.png",
+        "textCol": [ 255, 215, 13, 255 ]
     },
     "moon": {
         "name": "Wax and Wane",
@@ -72,7 +74,8 @@
             }
         ],
         "meleeHealMult": 1.25,
-        "icon": "Assets/moonEle.png"
+        "icon": "Assets/moonEle.png",
+        "textCol": [ 111, 169, 181, 255 ]
     },
     "blood_sun": { //Note: 1 tick per second, over elementDur
         "name": "Boiling Blood",

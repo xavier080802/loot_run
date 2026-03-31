@@ -35,19 +35,19 @@
     },
     {
         "id": 3,
-        "name": "Rare Iron Sword",
+        "name": "Rare Serrated Iron Sword",
         "sellPrice": 100,
         "texturePath": "Assets/sprites/weapons/melee/sword.png",
         "slot": "Weapon",
         "weaponType": "Sword",
         "attackType": "SwingArc",
         "isRanged": false,
-        "element": "NONE",
+        "element": "BLOOD",
         "knockback": 140.0,
         "attackSize": 16.0,
         "rarity": "Rare",
         "stats": {
-            "attack": 25.0
+            "attack": 20.0
         }
     },
     {
@@ -101,7 +101,7 @@
             "attack": 150.0
         }
     },
-    {
+    { //For lycan pet
         "id": 7,
         "name": "Midnight Scourge",
         "sellPrice": 0,
@@ -116,6 +116,40 @@
         "rarity": "Unique",
         "stats": {
             "attack": 0.0
+        }
+    },
+    {
+        "id": 8,
+        "name": "Rare Heated Iron Sword",
+        "sellPrice": 100,
+        "texturePath": "Assets/sprites/weapons/melee/sword.png",
+        "slot": "Weapon",
+        "weaponType": "Sword",
+        "attackType": "SwingArc",
+        "isRanged": false,
+        "element": "SUN",
+        "knockback": 140.0,
+        "attackSize": 16.0,
+        "rarity": "Rare",
+        "stats": {
+            "attack": 25.0
+        }
+    },
+    {
+        "id": 9,
+        "name": "Rare Moonlit Iron Sword",
+        "sellPrice": 100,
+        "texturePath": "Assets/sprites/weapons/melee/sword.png",
+        "slot": "Weapon",
+        "weaponType": "Sword",
+        "attackType": "SwingArc",
+        "isRanged": false,
+        "element": "MOON",
+        "knockback": 140.0,
+        "attackSize": 16.0,
+        "rarity": "Rare",
+        "stats": {
+            "attack": 25.0
         }
     }
 ]
