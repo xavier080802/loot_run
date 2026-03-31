@@ -53,20 +53,20 @@
         "btnTextCol": [ 0, 0, 0, 255 ],
         "titlePos": [ 0, 400 ],
         "titleFontSize": 1.2,
-        "pageIndicator": {
+        "pageIndicator": { //The thing that shows what page they are on
             "pos": [ 0, -400 ],
             "fontSize": 0.7,
             "color": [ 200, 200, 200, 255 ],
             "format": "%i / %i",
             "origin": "TEXT_MIDDLE"
         },
-        "prevBtn": {
-            "pos": [ -300, -375 ],
+        "prevBtn": { //Previous page
+            "pos": [ -300, -400 ],
             "size": [ 100, 67 ],
             "text": "<"
         },
-        "nextBtn": {
-            "pos": [ 300, -375 ],
+        "nextBtn": { //next page
+            "pos": [ 300, -400 ],
             "size": [ 100, 67 ],
             "text": ">"
         },
@@ -79,24 +79,28 @@
             
         {
             "titleText": "",
-            "contentText": "",
-            "contentTxtOrigin": "TEXT_MIDDLE",
-            "titleCol": [255,255,255,255],
-            "contentCol": [ 255, 255, 255, 255 ],
-            "contentPos": [ 0, 0 ],
-            "contentWidth": 0,
-            "contentFontSize": 0.5,
-            "contentLineSpace": 0.015,
-            "imgPaths": [
+            "titleCol": [ 255, 255, 255, 255 ],
+            "content": [
                 {
-                    "path": "Assets/",
-                    "size": [0,0],
-                    "pos": [0,0],
+                    "text": "",
+                    "contentTxtOrigin": "TEXT_MIDDLE",
+                    "contentCol": [ 255, 255, 255, 255 ],
+                    "contentPos": [ 0, 0 ],
+                    "contentWidth": 1000,
+                    "contentFontSize": 0.5,
+                    "contentLineSpace": 0.015,
+                    "imgPaths": [
+                        {
+                            "path": "Assets/",
+                            "size": [ 0, 0 ],
+                            "pos": [ 0, 0 ]
+                        }
+                    ]
                 }
             ]
         }
 
-        If hardcoding, put a bool "hardcodeInstead" to true,
+        If hardcoding content, put a bool "hardcodeInstead" to true,
         which will disable the normal rendering.
         Dev needs to go to GuideState and hardcode. Use Title as id
 
@@ -104,30 +108,241 @@
         "pages": [
             {
                 "titleText": "Intro",
-                "contentText": "Welcome to Loot Run!\nCollect coins from defeating enemies and collecting loot.\nUse these coins to gacha for pets.",
-                "contentTxtOrigin": "TEXT_MIDDLE",
                 "titleCol": [ 255, 255, 255, 255 ],
-                "contentCol": [ 255, 255, 255, 255 ],
-                "contentPos": [ 0, 300 ],
-                "contentWidth": 500,
-                "contentFontSize": 0.5,
-                "contentLineSpace": 0.015,
-                "imgPaths": []
+                "content": [
+                    {
+                        "text": "Welcome to Loot Run!\nCollect coins from defeating enemies and collecting loot.\nUse these coins to gacha for pets in the Pets menu or upgrade your stats in Shop.",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 255, 255, 255 ],
+                        "contentPos": [ 0, 300 ],
+                        "contentWidth": 1000,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": []
+                    }
+                ]
             },
             {
                 "titleText": "Basic Controls",
-                "contentText": "",
-                "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
                 "titleCol": [ 255, 255, 255, 255 ],
-                "contentCol": [ 255, 255, 255, 255 ],
-                "contentPos": [ 0, 300 ],
-                "contentWidth": 0,
-                "contentFontSize": 0.5,
-                "imgPaths": [
+                "content": [
                     {
-                        "path": "Assets/sprites/keyboard.png",
-                        "size": [ 960, 640 ],
-                        "pos": [ 0, 0 ]
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 255, 255, 255 ],
+                        "contentPos": [ 0, 300 ],
+                        "contentWidth": 1000,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": [
+                            {
+                                "path": "Assets/sprites/keyboard.png",
+                                "size": [ 960, 640 ],
+                                "pos": [ 0, 0 ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            { //Elements page that covers the basic elements. Each element has 2 content: header(with image), and the desc text.
+                "titleText": "Elements - Basics",
+                "titleCol": [ 255, 255, 255, 255 ],
+                "content": [
+                    { // Overview
+                        "text": "There are 3 elements.\nDifferent weapons and pets can inflict these elements on their targets",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 200, 255, 200, 255 ],
+                        "contentPos": [ 0, 300 ],
+                        "contentWidth": 0,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": []
+                    },
+                    // ============ BLOOD =============
+                    {
+                        "text": "Blood",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 200, 200, 255 ],
+                        "contentPos": [ -500, 200 ],
+                        "contentWidth": 350,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": [
+                            {
+                                "path": "Assets/bloodEle.png",
+                                "size": [ 100, 100 ],
+                                "pos": [ -500, 100 ]
+                            }
+                        ]
+                    },
+                    {
+                        "text": "While applied, deals damage-over-time (DoT) to its bearer.\n\nReapplying this element triggers 1 instance of the DoT immediately.",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 255, 255, 255 ],
+                        "contentPos": [ -500, 40 ],
+                        "contentWidth": 350,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": []
+                    },
+                    // ============== SUN ================
+                    {
+                        "text": "Sun",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 255, 200, 255 ],
+                        "contentPos": [ 0, 200 ],
+                        "contentWidth": 350,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": [
+                            {
+                                "path": "Assets/sunEle.png",
+                                "size": [ 100, 100 ],
+                                "pos": [ 0, 100 ]
+                            }
+                        ]
+                    },
+                    {
+                        "text": "When applied, it has a certain number of stacks.\n\nEach time the bearer is hit, the attacker removes 1 stack off the bearer to gain an equal number of stacks of a buff.\n\nAll remaining stacks are transferred to the killer on-death",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 255, 255, 255 ],
+                        "contentPos": [ 0, 40 ],
+                        "contentWidth": 350,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": []
+                    },
+                    // ============== MOON ================
+                    {
+                        "text": "Moon",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 200, 200, 255, 255 ],
+                        "contentPos": [ 500, 200 ],
+                        "contentWidth": 350,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": [
+                            {
+                                "path": "Assets/moonEle.png",
+                                "size": [ 100, 100 ],
+                                "pos": [ 500, 100 ]
+                            }
+                        ]
+                    },
+                    {
+                        "text": "Reduces the defense of its bearer.\n\nWhen hitting the bearer, the attacker is healed.\n\nIf the weapon is melee, the heal is increased.",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 255, 255, 255 ],
+                        "contentPos": [ 500, 40 ],
+                        "contentWidth": 350,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": []
+                    }
+                ]
+            },
+            {
+                "titleText": "Elements - Combinations",
+                "titleCol": [ 255, 255, 255, 255 ],
+                "content": [
+                    { //Overview
+                        "text": "When 2 elements are applied to the same target, they combine, removing the original elements from the target.",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 200, 255, 200, 255 ],
+                        "contentPos": [ 0, 300 ],
+                        "contentWidth": 1000,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": []
+                    },
+                    { // ========= BLOOD + SUN =========
+                        "text": "Blood + Sun",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 220, 200, 255 ],
+                        "contentPos": [ -350, 200 ],
+                        "contentWidth": 700,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": [
+                            {
+                                "path": "Assets/bloodEle.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ -525, 200 ]
+                            },
+                            {
+                                "path": "Assets/sunEle.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ -475, 200 ]
+                            }
+                        ]
+                    },
+                    {
+                        "text": "Applies an enhanced DoT effect on the bearer, dealing a % of their max-hp.\n\nOn death, deals damage in an area.",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 255, 255, 255 ],
+                        "contentPos": [ -350, 150 ],
+                        "contentWidth": 650,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015
+                    },
+                    { // ========= BLOOD + MOON =========
+                        "text": "Blood + Moon",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 230, 170, 200, 255 ],
+                        "contentPos": [ 350, 200 ],
+                        "contentWidth": 700,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": [
+                            {
+                                "path": "Assets/bloodEle.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ 475, 200 ]
+                            },
+                            {
+                                "path": "Assets/moonEle.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ 525, 200 ]
+                            }
+                        ]
+                    },
+                    {
+                        "text": "The Blood Moon casts its shadow on the ground centered on the target.\n\nTargets inside are debuffed and damaged.",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 255, 255, 255 ],
+                        "contentPos": [ 350, 150 ],
+                        "contentWidth": 650,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015
+                    },
+                    { // ========= SUN + MOON=========
+                        "text": "Sun + Moon",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 185, 155, 10, 255 ],
+                        "contentPos": [ 0, -50 ],
+                        "contentWidth": 700,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": [
+                            {
+                                "path": "Assets/sunEle.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ -125, -50 ]
+                            },
+                            {
+                                "path": "Assets/moonEle.png",
+                                "size": [ 50, 50 ],
+                                "pos": [ 125, -50 ]
+                            }
+                        ]
+                    },
+                    {
+                        "text": "The Eclipse's shadow is cast onto the target.\n\nBased on who triggered the combo, their opponents inside are slowed and their debuffs are refreshed.\n\nAllies (or player) have their buffs refreshed while inside.\n\nWhen the Eclipse ends, opponents inside are damaged.",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 255, 255, 255, 255 ],
+                        "contentPos": [ 0, -100 ],
+                        "contentWidth": 1000,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.01
                     }
                 ]
             }

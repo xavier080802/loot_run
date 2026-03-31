@@ -43,15 +43,23 @@ private:
 		AEVec2 size, pos;
 	};
 
-	struct Page {
-		std::string titleText, contentText;
+	struct Content {
+		std::string text;
 		TextOriginPos contentTxtOrigin;
-		Color titleCol{ 255,255,255,255 }, contentCol{255,255,255,255};
+		Color contentCol{ 255,255,255,255 };
 		//Filepath + size
 		std::vector<Img> imgPaths;
 		AEVec2 contentPos;
 		float contentFontSize, contentWidth, contentLineSpace;
+		//Hardcode content
 		bool hardcodeInstead;
+	};
+
+	struct Page {
+		std::string titleText;
+		Color titleCol{ 255,255,255,255 };
+
+		std::vector<Content> content;
 	};
 	std::vector<Page> pages;
 

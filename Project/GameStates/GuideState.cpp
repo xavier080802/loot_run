@@ -36,6 +36,9 @@ void GuideState::Update(double dt) {
 	if (AEInputCheckTriggered(AEVK_F5)) {
 		pages.clear();
 		LoadUIJSON();
+		if (currPage >= pages.size()) {
+			currPage = pages.size() - 1;
+		}
 	}
 }
 
@@ -52,20 +55,22 @@ void GuideState::Draw() {
 
 	//===================== Draw the current page =====================
 	Page const& p{ pages.at(currPage) };
-	if (!p.hardcodeInstead) {
-		//Title
-		DrawAEText(font, p.titleText.c_str(), titlePos, titleFontSz, p.titleCol, TEXT_MIDDLE);
-		//Content
-		DrawAETextbox(font, p.contentText, p.contentPos, p.contentWidth, p.contentFontSize, p.contentLineSpace, p.contentCol, p.contentTxtOrigin, TextboxOriginPos::TOP);
-		//Images
-		for (Img const& img : p.imgPaths) {
-			DrawMesh(GetTransformMtx(img.pos, 0, img.size), rm->GetMesh(MESH_SQUARE), rm->LoadTexture(img.path), 255);
+	//Title
+	DrawAEText(font, p.titleText.c_str(), titlePos, titleFontSz, p.titleCol, TEXT_MIDDLE);
+	for (Content const& c : p.content) {
+		if (!c.hardcodeInstead) {
+			//Content
+			DrawAETextbox(font, c.text, c.contentPos, c.contentWidth, c.contentFontSize, c.contentLineSpace, c.contentCol, c.contentTxtOrigin, TextboxOriginPos::TOP);
+			//Images
+			for (Img const& img : c.imgPaths) {
+				DrawMesh(GetTransformMtx(img.pos, 0, img.size), rm->GetMesh(MESH_SQUARE), rm->LoadTexture(img.path), 255);
+			}
 		}
-	}
-	else {
-		// First, Check if the current page is the correct page
-		// Then, put your code to render
+		else {
+			// First, Check if the current page is the correct page
+			// Then, put your code to render
 
+		}
 	}
 
 	//===================== Buttons =====================
@@ -183,40 +188,46 @@ void GuideState::LoadUIJSON() {
 		pages.reserve(pgs.size());
 		for (Json::Value& v : pgs) {
 			Page p{};
-			p.hardcodeInstead = v.get("hardcodeInstead", false).asBool();
 			p.titleText = v.get("titleText", "").asString();
-			p.contentText = v.get("contentText", "").asString();
-			p.contentTxtOrigin = ParseTextAlignment(v.get("contentTxtOrigin", "").asString());
+
+			if (v.isMember("content") && v["content"].isArray()) {
+				for (Json::Value& c : v["content"]) {
+					Content ct{};
+					ct.hardcodeInstead = c.get("hardcodeInstead", false).asBool();
+					if (c.isMember("contentCol") && c["contentCol"].size() == 4) {
+						ct.contentCol = Color{ c["contentCol"][0].asFloat(), c["contentCol"][1].asFloat(),
+							c["contentCol"][2].asFloat() ,c["contentCol"][3].asFloat() };
+					}
+					ct.text = c.get("text", "").asString();
+					ct.contentTxtOrigin = ParseTextAlignment(c.get("contentTxtOrigin", "").asString());
+					if (c.isMember("imgPaths") && c["imgPaths"].isArray()) {
+						for (Json::Value& i : c["imgPaths"]) {
+							Img img{};
+							img.path = i.get("path", "").asString();
+							if (i.isMember("size") && i["size"].size() == 2) {
+								img.size = AEVec2{ i["size"][0].asFloat(), i["size"][1].asFloat() };
+							}
+							if (i.isMember("pos") && i["pos"].size() == 2) {
+								img.pos = AEVec2{ i["pos"][0].asFloat(), i["pos"][1].asFloat() };
+							}
+							ct.imgPaths.push_back(img);
+						}
+					}
+					if (c.isMember("contentPos") && c["contentPos"].size() == 2) {
+						ct.contentPos = AEVec2{ c["contentPos"][0].asFloat(), c["contentPos"][1].asFloat() };
+					}
+					ct.contentWidth = c.get("contentWidth", 0.5f).asFloat();
+					ct.contentFontSize = c.get("contentFontSize", 0.5f).asFloat();
+					ct.contentLineSpace = c.get("contentLineSpace", 0.15f).asFloat();
+
+					p.content.push_back(ct);
+				}
+			}
 			
 			if (v.isMember("titleCol") && v["titleCol"].size() == 4) {
 				p.titleCol = Color{ v["titleCol"][0].asFloat(), v["titleCol"][1].asFloat(),
 					v["titleCol"][2].asFloat() ,v["titleCol"][3].asFloat() };
 			}
-			if (v.isMember("contentCol") && v["contentCol"].size() == 4) {
-				p.contentCol = Color{ v["contentCol"][0].asFloat(), v["contentCol"][1].asFloat(),
-					v["contentCol"][2].asFloat() ,v["contentCol"][3].asFloat() };
-			}
-
-			if (v.isMember("imgPaths") && v["imgPaths"].isArray()) {
-				for (Json::Value& i : v["imgPaths"]) {
-					Img img{};
-					img.path = i.get("path", "").asString();
-					if (i.isMember("size") && i["size"].size() == 2) {
-						img.size = AEVec2{ i["size"][0].asFloat(), i["size"][1].asFloat() };
-					}
-					if (i.isMember("pos") && i["pos"].size() == 2) {
-						img.pos = AEVec2{ i["pos"][0].asFloat(), i["pos"][1].asFloat() };
-					}
-					p.imgPaths.push_back(img);
-				}
-			}
-
-			if (v.isMember("contentPos") && v["contentPos"].size() == 2) {
-				p.contentPos = AEVec2{ v["contentPos"][0].asFloat(), v["contentPos"][1].asFloat() };
-			}
-			p.contentWidth = v.get("contentWidth", 0.5f).asFloat();
-			p.contentFontSize = v.get("contentFontSize", 0.5f).asFloat();
-			p.contentLineSpace = v.get("contentLineSpace", 0.15f).asFloat();
 
 			pages.push_back(p);
 		}
