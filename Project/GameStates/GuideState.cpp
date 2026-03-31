@@ -216,9 +216,9 @@ void GuideState::LoadUIJSON() {
 					if (c.isMember("contentPos") && c["contentPos"].size() == 2) {
 						ct.contentPos = AEVec2{ c["contentPos"][0].asFloat(), c["contentPos"][1].asFloat() };
 					}
-					ct.contentWidth = c.get("contentWidth", 0.5f).asFloat();
+					ct.contentWidth = c.get("contentWidth", 1000.f).asFloat();
 					ct.contentFontSize = c.get("contentFontSize", 0.5f).asFloat();
-					ct.contentLineSpace = c.get("contentLineSpace", 0.15f).asFloat();
+					ct.contentLineSpace = c.get("contentLineSpace", 0.015f).asFloat();
 
 					p.content.push_back(ct);
 				}

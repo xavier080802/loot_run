@@ -46,9 +46,10 @@
         "textAlignment": "TEXT_LOWER_LEFT",
         "max": 5 //Max to display
     },
+    //GuideState content
     "guide": {
-        "btnCol": [ 200, 200, 200, 255 ],
-        "btnHoverCol": [ 240, 240, 240, 255 ],
+        "btnCol": [ 229.5, 229.5, 229.5, 255 ],
+        "btnHoverCol": [ 191, 191, 191, 255 ],
         "btnFontSize": 0.5,
         "btnTextCol": [ 0, 0, 0, 255 ],
         "titlePos": [ 0, 400 ],
@@ -343,6 +344,88 @@
                         "contentWidth": 1000,
                         "contentFontSize": 0.5,
                         "contentLineSpace": 0.01
+                    }
+                ]
+            },
+            {
+                "titleText": "Pets",
+                "titleCol": [ 255, 255, 255, 255 ],
+                "content": [
+                    {
+                        "text": "Equip a pet from the Main Menu -> Pets -> Inventory\nPets are obtained from the Gacha in Main Menu -> Shop",
+                        "contentTxtOrigin": "TEXT_MIDDLE",
+                        "contentCol": [ 200, 255, 200, 255 ],
+                        "contentPos": [ 0, 300 ],
+                        "contentWidth": 1000,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015,
+                        "imgPaths": []
+                    },
+                    { //Section header 1 - Rarity
+                        "text": "Rarities:",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 240, 240, 240, 255 ],
+                        "contentPos": [ -700, 200 ],
+                        "contentWidth": 300,
+                        "contentFontSize": 0.45,
+                        "contentLineSpace": 0.01
+                    },
+                    { //Rarity
+                        "text": "Common",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 200, 200, 200, 255 ],
+                        "contentPos": [ -700, 150 ],
+                        "contentFontSize": 0.4,
+                        "contentLineSpace": 0.015
+                    },
+                    { //Rarity
+                        "text": "Uncommon",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 30, 255, 0, 255 ],
+                        "contentPos": [ -700, 125 ],
+                        "contentFontSize": 0.4,
+                        "contentLineSpace": 0.015
+                    },
+                    { //Rarity
+                        "text": "Rare",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 0, 112, 221, 255 ],
+                        "contentPos": [ -700, 100 ],
+                        "contentFontSize": 0.4,
+                        "contentLineSpace": 0.015
+                    },
+                    { //Rarity
+                        "text": "Epic",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 163, 53, 238, 255 ],
+                        "contentPos": [ -700, 75 ],
+                        "contentFontSize": 0.4,
+                        "contentLineSpace": 0.015
+                    },
+                    { //Rarity
+                        "text": "Legendary",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 255, 128, 0, 255 ],
+                        "contentPos": [ -700, 50 ],
+                        "contentFontSize": 0.4,
+                        "contentLineSpace": 0.015
+                    },
+                    { //Rarity
+                        "text": "Mythical",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 255, 0, 0, 255 ],
+                        "contentPos": [ -700, 25 ],
+                        "contentFontSize": 0.4,
+                        "contentLineSpace": 0.015
+                    },
+                    {
+                        "text": "The rarer a pet, the stronger it becomes!\n\nAll pets passively grant a buff to your stats. Different pets have different buffs.\n\nEach pet also has an active skill that you can cast. Read more about each pet's skills mid-run by hovering over the skill icon",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 255, 255, 255, 255 ],
+                        "contentPos": [ -400, 200 ],
+                        "contentWidth": 800,
+                        "contentFontSize": 0.5,
+                        "contentLineSpace": 0.015
                     }
                 ]
             }
