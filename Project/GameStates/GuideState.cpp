@@ -23,6 +23,7 @@ void GuideState::InitState() {
 	exitHovered = prevHovered = nextHovered = false;
 
 	//Disable input manager, this state's priority should be very high
+	//Prevents inputs on the previous state from still triggering while this state is here.
 	prevInputPrio = InputManager::GetInstance()->GetMinPrio();
 	InputManager::GetInstance()->SetMinPrio(inputPrio);
 }
@@ -32,7 +33,7 @@ void GuideState::Update(double dt) {
 		GameStateManager::GetInstance()->ReturnToPrevState(false);
 	}
 
-	//Refresh
+	//Refresh - hot reload json data
 	if (AEInputCheckTriggered(AEVK_F5)) {
 		pages.clear();
 		LoadUIJSON();
@@ -43,12 +44,12 @@ void GuideState::Update(double dt) {
 }
 
 void GuideState::Draw() {
-	if (pages.empty()) {
+	if (pages.empty()) { //Fallback display if there are no pages
 		DrawAEText(font, "Oops! There's no content here... JSON exploded? :<", {}, 1, Color{ 255,100,100,255 }, TextOriginPos::TEXT_MIDDLE);
 		return;
 	}
 
-	// ===================== Page indicator =====================
+	// ===================== Pagination text =====================
 	char buf[20];
 	sprintf_s(buf, pageIndicator.format.c_str(), currPage + 1, pages.size());
 	DrawAEText(font, buf, pageIndicator.pos, pageIndicator.fontSize, pageIndicator.color, pageIndicator.origin);
@@ -74,27 +75,28 @@ void GuideState::Draw() {
 	}
 
 	//===================== Buttons =====================
-	if (prevBtn) {
+	if (prevBtn) { //Pagination previous
 		DrawTintedMesh(GetTransformMtx(prevBtn->GetPos(), 0, prevBtn->GetSize()),
 			rm->GetMesh(MESH_SQUARE), nullptr, prevHovered ? btnHoverCol : btnCol, 255);
 		DrawAEText(font, prevText.c_str(), prevBtn->GetPos(), btnFontSz, btnTextCol, TEXT_MIDDLE);
 	}
-	if (nextBtn) {
+	if (nextBtn) { //Pagination next
 		DrawTintedMesh(GetTransformMtx(nextBtn->GetPos(), 0, nextBtn->GetSize()),
 			rm->GetMesh(MESH_SQUARE), nullptr, nextHovered ? btnHoverCol : btnCol, 255);
 		DrawAEText(font, nextText.c_str(), nextBtn->GetPos(), btnFontSz, btnTextCol, TEXT_MIDDLE);
 	}
-	if (exitBtn) {
+	if (exitBtn) { //Leave state
 		DrawTintedMesh(GetTransformMtx(exitBtn->GetPos(), 0, exitBtn->GetSize()),
 			rm->GetMesh(MESH_SQUARE), nullptr, exitHovered ? btnHoverCol : btnCol, 255);
 		DrawAEText(font, exitText.c_str(), exitBtn->GetPos(), btnFontSz, btnTextCol, TEXT_MIDDLE);
 	}
 
-	//Reset hover state for btns
+	//Reset hover state for btns at the end of the frame
 	exitHovered = prevHovered = nextHovered = false;
 }
 
 void GuideState::ExitState() {
+	//Set input manager value back to original
 	InputManager::GetInstance()->SetMinPrio(prevInputPrio);
 }
 
@@ -136,9 +138,11 @@ void GuideState::LoadUIJSON() {
 
 	if (root.isMember("prevBtn")) {
 		prevText = root["prevBtn"].get("text", "Previous").asString();
+		//Setup the btn from UIElement
 		prevBtn = prevBtn ? &prevBtn->ReInit(root["prevBtn"]) : new UIElement{root["prevBtn"]};
 		prevBtn->SetHoverCallback([this](bool) {prevHovered = true;})
 			.SetClickCallback([this]() {
+				//Go back a page
 				--currPage;
 				if (currPage == -1) {
 					currPage = pages.size()-1;
@@ -151,6 +155,7 @@ void GuideState::LoadUIJSON() {
 		nextBtn = nextBtn ? &nextBtn->ReInit(root["nextBtn"]) : new UIElement{ root["nextBtn"] };
 		nextBtn->SetHoverCallback([this](bool) {nextHovered = true;})
 			.SetClickCallback([this]() {
+				//Go forward a page
 				++currPage;
 				if (currPage > pages.size() -1) {
 					currPage = 0;
@@ -162,6 +167,8 @@ void GuideState::LoadUIJSON() {
 		exitText = root["exitBtn"].get("text", "Exit").asString();
 		exitBtn = exitBtn ? &exitBtn->ReInit(root["exitBtn"]) : new UIElement{ root["exitBtn"] };
 		exitBtn->SetClickCallback([]() {
+			//Leave state. Do not call Init as it is assumed that the prev state is
+			//in a paused state
 			GameStateManager::GetInstance()->ReturnToPrevState(false);
 			bgm.PlayUIClick();
 		})
