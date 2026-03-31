@@ -91,8 +91,19 @@ void PetManager::InitPetForGame(TileMap const& tilemap)
 		//Cooldown
 		s << "\n[Cooldown " << std::fixed << std::setprecision(1) << d.skillCooldown << "s]\n";
 		//Scalings
-		bool flag = false; //First listing
+		bool flag = false; //False = First of the line
+		std::string currTag{};
 		for (StatEffects::Mod const& m : d.multipliers) {
+			//Print the mod tag.
+			//For each mod with a different tag, print on new line. No tag means its with the previous tagged mod.
+			if (m.tag != "") {
+				if (m.tag != currTag && flag) {
+					s << '\n';
+					flag = false; //Reset flag to indicate new line
+				}
+				s << m.tag << ": ";
+				currTag = m.tag;
+			}
 			s << (flag ? " + " : "") << std::fixed << std::setprecision(1) << m.value
 				<< (m.mathType == StatEffects::MATH_TYPE::MULTIPLICATIVE ? "% " : " ")
 				<< (m.mathType == StatEffects::MATH_TYPE::MULTIPLICATIVE ? StatTypeToString(m.stat) : "");

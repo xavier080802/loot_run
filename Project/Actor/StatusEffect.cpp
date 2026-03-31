@@ -163,7 +163,7 @@ float StatEffects::Mod::GetValFromActor(Actor const& actor) const
 {
 	if (mathType == FLAT) return value;
 
-	const ActorStats& stats{ actor.GetBaseStats() };
+	const ActorStats& stats{ actor.GetStats() };
 	float out{};
 	switch (stat)
 	{
@@ -207,5 +207,6 @@ StatEffects::Mod StatEffects::Mod::ParseFromJSON(Json::Value const& v)
 		else out.mathType = MATH_TYPE::FLAT;
 	}
 	else out.mathType = static_cast<StatEffects::MATH_TYPE>(v.get("mathType", StatEffects::MATH_TYPE::MULTIPLICATIVE).asInt());
+	out.tag = v.get("tag", "").asString();
 	return out;
 }
