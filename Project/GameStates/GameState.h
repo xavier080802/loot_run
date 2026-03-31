@@ -19,8 +19,9 @@ public:
 
 private:
 	void HandleTutorialDialogueRender();
-
 	void SubscriptionAlert(ActorDeadSubContent content) override;
+	int   mLastMinuteMark = 0;
+	float mNotificationTimer = 0.0f;
 };
 bool getBossAlive();
 float getBossHPProgressBar();

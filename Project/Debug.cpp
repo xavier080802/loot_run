@@ -12,6 +12,7 @@
 #include <sstream>
 #include <cmath>
 
+
 // Draws a semi-transparent dark panel background at the given top-left position
 void DrawPanel(const DebugContext& ctx,
     float screenX, float screenY,
@@ -27,7 +28,7 @@ void DrawPanel(const DebugContext& ctx,
     AEGfxMeshDraw(ctx.squareMesh, AE_GFX_MDM_TRIANGLES);
 }
 
-// Keybind overlay — shown when player presses K
+// Keybind overlay ï¿½ shown when player presses K
 void DrawKeybindOverlay(const DebugContext& ctx)
 {
     if (ctx.font < 0) return;
@@ -104,7 +105,7 @@ void DrawKeybindOverlay(const DebugContext& ctx)
     KV("[F7]", "Highlight chests");
 }
 
-// Debug overlay — shown when TAB is pressed in debug mode
+// Debug overlay ï¿½ shown when TAB is pressed in debug mode
 void DrawDebugOverlay(const DebugContext& ctx)
 {
     if (ctx.font < 0 || !ctx.gPlayer) return;
@@ -152,9 +153,9 @@ void DrawDebugOverlay(const DebugContext& ctx)
     auto Toggle = [&](const char* key, const char* label, bool state) {
         std::ostringstream lbl;
         lbl << key << "  " << label;
-        DrawAEText(fnt, lbl.str().c_str(), { x,          y }, sz, CreateColor(176, 176, 176, 255), TEXT_MIDDLE_LEFT);
+        DrawAEText(fnt, lbl.str().c_str(), { x, y }, sz, CreateColor(176, 176, 176, 255), TEXT_MIDDLE_LEFT);
         DrawAEText(fnt, state ? "[ON]" : "[off]", { x + 200.f, y }, sz,
-            CreateColor(state ? 80 : 102, state ? 238 : 102, state ? 80 : 102, 255), TEXT_MIDDLE_LEFT);
+            CreateColor(state ? 80.f : 102.f, state ? 238.f : 102.f, state ? 80.f : 102.f, 255.f), TEXT_MIDDLE_LEFT);
         y -= lineH;
         };
     auto ActKV = [&](const char* key, const char* desc) {
@@ -215,7 +216,6 @@ void DrawDebugOverlay(const DebugContext& ctx)
     ActKV("[N]", "Spawn enemy at cursor");
 }
 
-// Shows live HP above each enemy's head — always on
 void DrawEnemyStats(const DebugContext& ctx)
 {
     if (ctx.font < 0) return;
@@ -228,7 +228,8 @@ void DrawEnemyStats(const DebugContext& ctx)
         pos.y += e->GetDefinition().render.radius + 20.f;
         std::ostringstream oss;
         oss << e->GetDefinition().name
-            << " HP:" << (int)std::ceilf(e->GetHP()) << "/" << (int)e->GetMaxHP();
+            << " HP:" << (int)std::ceilf(e->GetHP())
+            << "/" << (int)std::ceilf(e->GetStats().maxHP);
         DrawAEText(ctx.font, oss.str().c_str(), pos, 0.45f,
             CreateColor(255, 255, 100, 255), TEXT_MIDDLE, 0);
     }

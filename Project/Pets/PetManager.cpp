@@ -126,6 +126,13 @@ void PetManager::PlacePet(AEVec2 const& pos)
 	equippedPet->ResetPathfinder();
 }
 
+void PetManager::UnsetPet()
+{
+	if (equippedPet) {
+		equippedPet->isSet = false;
+	}
+}
+
 //Call when selecting pet in main menu
 void PetManager::SetPet(Pets::PET_TYPE pet, Pets::PET_RANK rank)
 {

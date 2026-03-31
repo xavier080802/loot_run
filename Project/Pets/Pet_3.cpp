@@ -6,7 +6,9 @@
 #include "../Actor/Actor.h"
 #include "../Actor/Combat.h"
 #include "../GameDB.h"
+#include "../Music.h"
 
+extern BGMManager bgm;
 void Pet_3::Setup(Player& _player)
 {
     player = &_player;
@@ -38,6 +40,7 @@ bool Pet_3::DoSkill(const Pets::SkillCastData& _data)
     }
     //Target acquired.
     target = other;
+    bgm.PlayClip("Assets/Audio/lycan_lockon.wav", 0.6f);
     PostOffice::GetInstance()->Send("WorldTextManager", new ShowWorldTextMsg{ "LOCKED", mpos, {40, 200, 50, 255} });
     SetPathRefreshTime(0.5f); //Chase more accurately
     return true;
@@ -97,6 +100,7 @@ void Pet_3::Attack()
     if (attackTimer > 0 || !player || !weap || !target) return;
     attackTimer = attackCooldown;
     attackAnimTimer = attImgTime;
+    bgm.PlayClip("Assets/Audio/lycan_attack.wav", 0.8f);
     Combat::ExecuteAttack(player, pos, weap, target->GetPos());
 }
 

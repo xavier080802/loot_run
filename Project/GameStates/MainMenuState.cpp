@@ -41,7 +41,8 @@ namespace {
 		{{ 200.f, 700.f }, { 235.f, 67.f }, "Credits"},
 		{{ 200.f, 800.f }, { 235.f, 67.f }, "Exit Game"}
 	};
-	Title title = { { DEFAULT_W / 2, 100.f }, { 675.f, 110.f }, "LOOT RUN" };
+	Title title = { { DEFAULT_W *0.5f, 200.f}, {800,600}, "LOOT RUN"};
+	std::string logoTex{ "Assets/sprites/logo.png" };
 
 	constexpr int MENU_BTN_COUNT = sizeof(menuButtons) / sizeof(Button);
 
@@ -97,10 +98,8 @@ void MainMenuState::UnloadState()
 	// Unload button audio
 }
 
-void MainMenuState::Update(double dt)
+void MainMenuState::Update(double /*dt*/)
 {
-	(void)dt;
-
 	// Settings popup gets first dibs on input.
 	// Returns true if it is open and consumed the frame.
 	if (Settings::Update(scale))
@@ -167,14 +166,8 @@ void MainMenuState::Draw()
 		title.size.y * scale
 	};
 
-	AEMtx33 mtx;
-	GetTransformMtx(mtx, titlePos, 0.f, labelSize);
-	AEGfxSetTransform(mtx.m);
-	AEGfxSetColorToMultiply(0.75f, 0.75f, 0.75f, 1.f);
-	AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
-
-	DrawAEText(BigFont, title.label, titlePos, scale,
-		CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
+	DrawMesh(GetTransformMtx(titlePos, 0, labelSize), squareMesh, RenderingManager::GetInstance()->LoadTexture(logoTex), 255);
+	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 	// ----------------
 	// Draw Buttons
 	// ----------------
