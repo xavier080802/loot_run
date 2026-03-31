@@ -690,7 +690,7 @@ namespace {
     }
 
     //Hovering over equipment in inventory UI
-    void DrawUIHoveredGearTooltip(int ind) {
+    void DrawUIHoveredGearTooltip(int& ind) {
         if (ind == -1) return;
         //Cursor pos
         s32 mx{}, my{};
