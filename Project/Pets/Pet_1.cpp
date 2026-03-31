@@ -6,8 +6,11 @@
 #include "PetManager.h"
 #include "../DesignPatterns/PostOffice.h"
 #include "../GameObjects/AttackHitboxGO.h"
+#include "../Music.h"
 #include <cmath>
 #include <sstream>
+
+extern BGMManager bgm;
 
 namespace {
     float lerp(float a, float b, float t) {
@@ -76,6 +79,8 @@ void Pet_1::OnProjHit(Actor& caster, AEVec2 impactPos, bool allowAOE)
 
     if (allowAOE)
         DoAOE(caster, impactPos);
+
+    bgm.PlayClip("Assets/Audio/Explosion CTE01_56.1.wav", 0.5f);
 }
 
 bool Pet_1::ShowRecastUI() const
@@ -107,6 +112,7 @@ bool Pet_1::DoSkill(const Pets::SkillCastData& _data)
     if (!charging) {
         charging = true;
         chargeTimer = 0.f;
+        bgm.PlayClip("Assets/Audio/ChimesComedy CTE10_10.1.wav", 0.5f);
         PostOffice::GetInstance()->Send("WorldTextManager", new ShowWorldTextMsg{ "CHARGING", pos + AEVec2{0, scale.y * 0.5f} });
         return false;
     }
@@ -151,6 +157,7 @@ bool Pet_1::DoSkill(const Pets::SkillCastData& _data)
             rock->OnProjHit(*p.GetOwner(), p.GetPos(), false);
         });
 
+    bgm.PlayClip("Assets/Audio/PoofCartoon CTE02_04.1.wav", 0.5f);
     charging = returned = hasDoneChargeAlert = false;
     return true;
 }
@@ -171,6 +178,7 @@ void Pet_1::SkillUpdate(float dt)
 
     if (!hasDoneChargeAlert && chargeTimer >= maxChargeDur) {
         hasDoneChargeAlert = true;
+        bgm.PlayClip("Assets/Audio/ChimesComedy CTE10_08.3.wav", 0.65f);
         PostOffice::GetInstance()->Send("WorldTextManager", new ShowWorldTextMsg{ "FULL POWER [R]", PetManager::GetInstance()->GetPlayer().GetPos(), Color{200, 0,0, 255}, 2.5f, 30.f });
     }
     else if (std::ceilf(chargeTimer) - chargeTimer <= dt){
