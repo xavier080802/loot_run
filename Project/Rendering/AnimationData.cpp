@@ -33,7 +33,7 @@ AnimationData* AnimationData::SetAnimRange(unsigned start, unsigned end)
 	return this;
 }
 
-AnimationData* AnimationData::SetFrameCallback(void(*callback)(unsigned,bool))
+AnimationData* AnimationData::SetFrameCallback(void(*callback)(unsigned, bool))
 {
 	animFrameCallback = callback;
 	return this;
@@ -44,8 +44,7 @@ void AnimationData::Init(MESH_SHAPE shape)
 	manager = RenderingManager::GetInstance();
 	RenderData::Init(shape);
 	if (shape != MESH_SQUARE_ANIM) {
-		is
-			d = true;
+		isPaused = true;
 	}
 }
 

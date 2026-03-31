@@ -13,15 +13,14 @@ public:
 	//Change what frames the anim starts/ends on. [start, end]
 	AnimationData* SetAnimRange(unsigned start, unsigned end);
 	//Set the function to call when a new frame plays
-	AnimationData* SetFrameCallback(void (*callback)(unsigned,bool));
+	AnimationData* SetFrameCallback(void (*callback)(unsigned, bool));
 
 	void Init(MESH_SHAPE shape = MESH_SQUARE_ANIM) override;
 	void Free() override;
 	AEVec2 GetTexOffset() override;
 
 	void UpdateAnimation(double dt);
-	void 
-		Anim(bool pause = true);
+	void PauseAnim(bool pause = true);
 	//Set animation to given frame and restart anim timer
 	void SetFrame(unsigned frameIndex);
 
@@ -46,6 +45,5 @@ private:
 	unsigned animCurrFrame{};
 	//Calls once per frame. Args is the current frame that's playing, and if that frame is the endFrame
 	//For animation events.
-	void (*animFrameCallback)(unsigned frame, bool isDone) {nullptr};
+	void (*animFrameCallback)(unsigned frame, bool isDone) { nullptr };
 };
-
