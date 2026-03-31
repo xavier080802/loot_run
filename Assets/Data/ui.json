@@ -48,8 +48,8 @@
     },
     //GuideState content
     "guide": {
-        "btnCol": [ 229.5, 229.5, 229.5, 255 ],
-        "btnHoverCol": [ 191, 191, 191, 255 ],
+        "btnCol": [ 191, 191, 191, 255 ],
+        "btnHoverCol": [ 229.5, 229.5, 229.5, 255 ],
         "btnFontSize": 0.5,
         "btnTextCol": [ 0, 0, 0, 255 ],
         "titlePos": [ 0, 400 ],
