@@ -1252,6 +1252,7 @@ void GameState::Update(double dt)
     GameEnd::Update(dt);
     if (GameEnd::IsOpen()) return;
 
+    // M or ESC opens the pause menu (but not while the loading screen is up)
     if (loadingTimer <= 0.f &&
         (AEInputCheckTriggered(AEVK_M) || AEInputCheckTriggered(AEVK_ESCAPE)))
     {
@@ -1259,7 +1260,9 @@ void GameState::Update(double dt)
         return;
     }
 
-    if (Pause::Update()) return;
+    // Pause zeroes dt and handles its own input; skip all game logic while open
+    Pause::Update(dt);
+    if (Pause::IsOpen()) return;
 
     // freeze all game logic while the loading screen is showing
     if (loadingTimer > 0.f) {

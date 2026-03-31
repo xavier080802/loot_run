@@ -21,12 +21,11 @@ void BGMManager::Init() {
 	creditsTrack = AEAudioLoadMusic("Assets/Audio/PROSPECTUS - Corporate MSCCRP1_50.wav");
 
 	// Load UI sounds
-	uiClickSound = AEAudioLoadMusic("");
+	uiHoverSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17767.wav");
+	uiClickSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17766.wav");
 
 	// Load SFX
-	attackSound = AEAudioLoadMusic("");
-
-	AEAudioSetGroupVolume(bgmGroup, 0.5f);
+	attackSound = AEAudioLoadSound("");
 }
 
 // --- Music methods ---
@@ -75,8 +74,11 @@ void BGMManager::PlayClip(std::string const& filepath, float vol, float pitch, b
 }
 
 // --- UI methods ---
+void BGMManager::PlayUIHover() {
+	AEAudioPlay(uiHoverSound, uiGroup, 0.2f, 0.7f, 0);
+}
 void BGMManager::PlayUIClick() {
-	AEAudioPlay(uiClickSound, uiGroup, 1.0f, 1.0f, 0);
+	AEAudioPlay(uiClickSound, uiGroup, 0.6f, 0.6f, 0);
 }
 
 // --- SFX methods ---

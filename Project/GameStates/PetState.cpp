@@ -79,8 +79,7 @@ namespace {
 	// -------------------------------------------------------------------------
 	// Audio
 	// -------------------------------------------------------------------------
-	AEAudioGroup petAudioGroup;
-	AEAudio      hoverSound, clickSound;
+
 	bool         btnHoverStates[PET_BTN_COUNT] = { false };
 
 	// -------------------------------------------------------------------------
@@ -158,9 +157,7 @@ namespace {
 void PetState::LoadState()
 {
 	squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
-	petAudioGroup = AEAudioCreateGroup();
-	hoverSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17767.wav");
-	clickSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17766.wav");
+
 	gachaFont = AEGfxCreateFont(SECONDARY_FONT_PATH, 32);
 	petManager = PetManager::GetInstance();
 	EnsureOverlayMesh();
@@ -281,12 +278,12 @@ void PetState::Update(double dt)
 			bool isHovered = IsCursorOverWorld(worldPos, sSize, sSize, true);
 			if (index < (int)slotHover.size()) {
 				if (isHovered && !slotHover[index])
-					AEAudioPlay(hoverSound, petAudioGroup, 0.2f, 0.7f, 0);
+					bgm.PlayUIHover();
 				slotHover[index] = isHovered;
 			}
 
 			if (isHovered && AEInputCheckTriggered(AEVK_LBUTTON)) {
-				AEAudioPlay(clickSound, petAudioGroup, 0.6f, 0.6f, 0);
+				bgm.PlayUIClick();
 				auto clickedType = static_cast<Pets::PET_TYPE>(slot.petId);
 				auto clickedRank = static_cast<Pets::PET_RANK>(slot.rank);
 
@@ -324,11 +321,11 @@ void PetState::Update(double dt)
 		bool buttonHover = IsCursorOverWorld(worldPos, worldSize.x, worldSize.y, true);
 
 		if (buttonHover && !btnHoverStates[i])
-			AEAudioPlay(hoverSound, petAudioGroup, 0.2f, 0.7f, 0);
+			bgm.PlayUIHover();
 		btnHoverStates[i] = buttonHover;
 
 		if (buttonHover && AEInputCheckTriggered(AEVK_LBUTTON)) {
-			AEAudioPlay(clickSound, petAudioGroup, 0.6f, 0.6f, 0);
+			bgm.PlayUIClick();
 			switch (i) {
 			case 0: // Pet Inventory
 				currentView = PetView::INVENTORY;
@@ -581,8 +578,6 @@ void PetState::UnloadState()
 	if (Font >= 0) AEGfxDestroyFont(Font);
 	if (BigFont >= 0) AEGfxDestroyFont(BigFont);
 	if (gachaFont >= 0) { AEGfxDestroyFont(gachaFont); gachaFont = -1; }
-	AEAudioUnloadAudio(hoverSound);
-	AEAudioUnloadAudio(clickSound);
-	AEAudioUnloadAudioGroup(petAudioGroup);
+
 	UnloadGacha();
 }

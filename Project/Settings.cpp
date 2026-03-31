@@ -6,6 +6,9 @@
 #include "Helpers/RenderUtils.h"
 #include "Helpers/ColorUtils.h"
 #include "RenderingManager.h"
+#include <fstream>
+#include <json/json.h>
+#include <iostream>
 
 // Internal state
 namespace
@@ -40,6 +43,67 @@ namespace
     int  bgmVolume = 5;  // 0-10. Note: Initial value set in Music.cpp Init, match this value with that
     int  uiVolume    = 10;  // 0-10
     int  sfxVolume   = 10;  // 0-10
+
+    static constexpr const char* SETTINGS_PATH = "Assets/Data/Player/player_data.json";
+
+    void SaveSettings()
+    {
+        // Read existing file first so other nodes are preserved
+        Json::Value root;
+        {
+            std::ifstream in(SETTINGS_PATH);
+            if (in.is_open())
+            {
+                Json::CharReaderBuilder builder;
+                std::string errs;
+                Json::parseFromStream(builder, in, &root, &errs);
+            }
+        }
+
+        Json::Value settingsNode(Json::objectValue);
+        settingsNode["bgmVolume"] = bgmVolume;
+        settingsNode["uiVolume"]  = uiVolume;
+        settingsNode["sfxVolume"] = sfxVolume;
+        root["settings"]  = settingsNode;
+
+        std::ofstream out(SETTINGS_PATH);
+        if (!out.is_open())
+        {
+            std::cout << "[Settings] Could not open " << SETTINGS_PATH << " for writing.\n";
+            return;
+        }
+        Json::StreamWriterBuilder writer;
+        writer["indentation"] = "    ";
+        out << Json::writeString(writer, root);
+        std::cout << "[Settings] Saved volumes BGM=" << bgmVolume
+                  << " UI=" << uiVolume << " SFX=" << sfxVolume << "\n";
+    }
+
+    void LoadSettings()
+    {
+        std::ifstream in(SETTINGS_PATH);
+        if (!in.is_open())
+        {
+            std::cout << "[Settings] " << SETTINGS_PATH << " not found, using defaults.\n";
+            return;
+        }
+        Json::Value root;
+        Json::CharReaderBuilder builder;
+        std::string errs;
+        if (!Json::parseFromStream(builder, in, &root, &errs))
+        {
+            std::cout << "[Settings] Parse error: " << errs << "\n";
+            return;
+        }
+        const Json::Value& node = root["settings"];
+        if (!node.isObject()) return;
+
+        bgmVolume = node.get("bgmVolume", bgmVolume).asInt();
+        uiVolume  = node.get("uiVolume",  uiVolume).asInt();
+        sfxVolume = node.get("sfxVolume", sfxVolume).asInt();
+        std::cout << "[Settings] Loaded volumes BGM=" << bgmVolume
+                  << " UI=" << uiVolume << " SFX=" << sfxVolume << "\n";
+    }
 
     // Hover tracking
     // [0]=close
@@ -122,15 +186,13 @@ namespace
     void UpdateVolumeRow(float rowY, float scale,
                          int& volume, void (BGMManager::*setter)(float),
                          int minusIdx, int plusIdx,
-                         AEAudioGroup audioGroup,
-                         AEAudio clickSound, AEAudio hoverSound,
                          bool clicked)
     {
         bool minus = Hovered(POP_CX - SIDE_OFFSET, rowY, SIDE_W, SIDE_H, scale);
         bool plus  = Hovered(POP_CX + SIDE_OFFSET, rowY, SIDE_W, SIDE_H, scale);
 
-        if (minus && !hoverStates[minusIdx]) AEAudioPlay(hoverSound, audioGroup, 0.2f, 0.7f, 0);
-        if (plus  && !hoverStates[plusIdx])  AEAudioPlay(hoverSound, audioGroup, 0.2f, 0.7f, 0);
+        if (minus && !hoverStates[minusIdx]) bgm.PlayUIHover();
+        if (plus  && !hoverStates[plusIdx])  bgm.PlayUIHover();
         hoverStates[minusIdx] = minus;
         hoverStates[plusIdx]  = plus;
 
@@ -140,13 +202,15 @@ namespace
             {
                 --volume;
                 (bgm.*setter)(volume / 10.f);
-                AEAudioPlay(clickSound, audioGroup, 0.6f, 0.6f, 0);
+                bgm.PlayUIClick();
+                SaveSettings();
             }
             else if (plus && volume < 10)
             {
                 ++volume;
                 (bgm.*setter)(volume / 10.f);
-                AEAudioPlay(clickSound, audioGroup, 0.6f, 0.6f, 0);
+                bgm.PlayUIClick();
+                SaveSettings();
             }
         }
     }
@@ -156,7 +220,7 @@ namespace
 // Public interface
 namespace Settings
 {
-    void Open()  { popupOpen = true; }
+    void Open()  { LoadSettings(); popupOpen = true; }
     void Close() { popupOpen = false; }
     bool IsOpen(){ return popupOpen;  }
 
@@ -164,10 +228,15 @@ namespace Settings
     int GetUIVolume()    { return uiVolume;    }
     int GetSFXVolume()   { return sfxVolume;   }
 
-    bool Update(float scale,
-                AEAudioGroup audioGroup,
-                AEAudio      clickSound,
-                AEAudio      hoverSound)
+    void Load()
+    {
+        LoadSettings();
+        bgm.SetBGMVolume(bgmVolume / 10.f);
+        bgm.SetUIVolume(uiVolume   / 10.f);
+        bgm.SetSFXVolume(sfxVolume / 10.f);
+    }
+
+    bool Update(float scale)
     {
         if (!popupOpen) return false;
 
@@ -176,25 +245,25 @@ namespace Settings
         // Music row  -- hoverStates[1], [2]
         UpdateVolumeRow(ROW_BGM, scale,
                         bgmVolume, &BGMManager::SetBGMVolume,
-                        1, 2, audioGroup, clickSound, hoverSound, clicked);
+                        1, 2, clicked);
 
         // UI row  -- hoverStates[3], [4]
         UpdateVolumeRow(ROW_UI, scale,
                         uiVolume, &BGMManager::SetUIVolume,
-                        3, 4, audioGroup, clickSound, hoverSound, clicked);
+                        3, 4, clicked);
 
         // SFX row  -- hoverStates[5], [6]
         UpdateVolumeRow(ROW_SFX, scale,
                         sfxVolume, &BGMManager::SetSFXVolume,
-                        5, 6, audioGroup, clickSound, hoverSound, clicked);
+                        5, 6, clicked);
 
         // Close button  -- hoverStates[0]
         bool closeHov = Hovered(POP_CX, ROW_CLOSE, 235.f, 67.f, scale);
-        if (closeHov && !hoverStates[0]) AEAudioPlay(hoverSound, audioGroup, 0.2f, 0.7f, 0);
+        if (closeHov && !hoverStates[0]) bgm.PlayUIHover();
         hoverStates[0] = closeHov;
         if (closeHov && clicked)
         {
-            AEAudioPlay(clickSound, audioGroup, 0.6f, 0.6f, 0);
+            bgm.PlayUIClick();
             popupOpen = false;
         }
 
