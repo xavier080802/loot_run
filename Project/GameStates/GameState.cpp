@@ -1349,10 +1349,6 @@ void GameState::Update(double dt)
     }
 #endif
 
-    //Cast pet skill — always available regardless of debug mode
-    if (AEInputCheckTriggered(AEVK_R))
-        PostOffice::GetInstance()->Send("PetManager", new PetSkillMsg(PetSkillMsg::CAST_SKILL));
-
     // --- NON-DEBUG INPUTS ---
     // keyboard toggle — X shows/hides the keybind image popup
     if (AEInputCheckTriggered(AEVK_X)) {
