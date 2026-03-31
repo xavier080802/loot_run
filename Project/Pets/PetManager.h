@@ -26,6 +26,9 @@ public:
 	Player const& GetPlayer() const { return *player; }
 	Player& GetPlayer() { return *player; }
 
+	// Set status as "Pet not set" without de-equipping the pet
+	void UnsetPet();
+
 	//Sets the pet based on the type.
 	void SetPet(Pets::PET_TYPE pet, Pets::PET_RANK rank);
 	Pet* GetEquippedPet() { return equippedPet; }
@@ -40,14 +43,14 @@ public:
 	// Returns the PET_TYPE of the currently equipped pet, or NONE if nothing is set
 	Pets::PET_TYPE GetEquippedType() const
 	{
-		if (!equippedPet || !equippedPet->isSet) return Pets::PET_TYPE::NONE;
+		if (!equippedPet) return Pets::PET_TYPE::NONE;
 		return equippedPet->GetPetData().id;
 	}
 
 	// Returns the rank the pet was equipped at
 	Pets::PET_RANK GetEquippedRank() const
 	{
-		return equippedRank;
+		return equippedPet ? equippedPet->GetRank() : Pets::PET_RANK::COMMON;
 	}
 
 private:
@@ -62,7 +65,6 @@ private:
 	std::string extraDesc{};
 	std::map<int, std::map<int, int>> ownedPets{};
 	// Stores the rank passed to SetPet so PetState can restore the highlight on re-entry
-	Pets::PET_RANK equippedRank{ Pets::COMMON };
 	UIElement* skillUI{};
 	bool showTooltip{ false };
 	void ShowPetTooltip();

@@ -116,9 +116,7 @@ void LevelSelectState::Update(double dt) {
 
 		// Play hover sound only when pointer enters button
 		if (buttonHover && !btnHoverStates[i])
-		{
-			bgm.PlayUIClick();
-		}
+			bgm.PlayUIHover();
 		btnHoverStates[i] = buttonHover;
 
 		if (buttonHover)
@@ -131,16 +129,37 @@ void LevelSelectState::Update(double dt) {
 				switch (i)
 				{
 				case 0: //tutorial
+					if (selectedBtn == i)
+					{
+						// Double-click: already selected, start immediately
+						GameStateManager::GetInstance()
+							->SetNextGameState("GameState", true, true);
+						return;
+					}
 					mapSelected = "Assets/TutorialMap.csv";
 					selectedBtn = i;
 					std::cout << "tutorial: " << mapSelected << std::endl;
 					break;
 				case 1: //normal - CSV dungeon + procedural rooms
+					if (selectedBtn == i)
+					{
+						// Double-click: already selected, start immediately
+						GameStateManager::GetInstance()
+							->SetNextGameState("GameState", true, true);
+						return;
+					}
 					mapSelected = "Assets/Dungeon.csv";
 					selectedBtn = i;
 					std::cout << "normal: " << mapSelected << std::endl;
 					break;
 				case 2: //endless - procedural only, no CSV map
+					if (selectedBtn == i)
+					{
+						// Double-click: already selected, start immediately
+						GameStateManager::GetInstance()
+							->SetNextGameState("GameState", true, true);
+						return;
+					}
 					mapSelected = "Assets/Endless.csv";
 					selectedBtn = i;
 					std::cout << "endless: " << mapSelected << std::endl;
@@ -235,19 +254,14 @@ void LevelSelectState::Draw() {
 
 		// Selected has strongest highlight. Hover still shows a lighter highlight.
 		float tint = selected ? 1.0f : (hover ? 0.9f : 0.75f);
-		AEGfxSetColorToMultiply(
-			tint,
-			tint,
-			tint,
-			1.0f
-		);
+		i == 3 ? AEGfxSetColorToMultiply(tint * 0.6f, tint * 0.9f, tint * 0.6f, 1.0f) : AEGfxSetColorToMultiply(tint, tint, tint, 1.0f);
 
 		AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
-
-		DrawAEText(
-			Font, levelButtons[i].label, worldPos, scale,
-			CreateColor(10, 10, 10, 255),
-			TEXT_MIDDLE
-		);
+		if (i == 3) {
+			DrawAEText(Font, levelButtons[i].label, worldPos, scale * 1.5f, CreateColor(10, 30, 30, 255), TEXT_MIDDLE);
+		}
+		else {
+			DrawAEText(Font, levelButtons[i].label, worldPos, scale, CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
+		}
 	}
 }

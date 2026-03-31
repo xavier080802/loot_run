@@ -9,7 +9,7 @@
 #include "../Helpers/ColorUtils.h"
 #include "../main.h"
 #include <iostream>
-#include "../gacha.h"
+//#include "../gacha.h"
 #include "../Music.h"
 #include "../Pets/PetManager.h"
 #include "../UIConfig.h"
@@ -104,24 +104,19 @@ namespace {
 		DrawAEText(Font, "+", plusPos, scale, CreateColor(255, 255, 255, 255), TEXT_MIDDLE);
 	}
 
-	AEAudio hoverSound;
-	AEAudio clickSound;
-
 	// Track previous hover state
 	bool btnHoverStates[SHOP_BTN_COUNT] = { false };
-	static GachaAnimation gStateAnim;
-	static s8 gachaFont = -1;
-	bool isGachaActive = false;
+	//static GachaAnimation gStateAnim;
+	//static s8 gachaFont = -1;
+	//bool isGachaActive = false;
 }
 
 void ShopState::LoadState()
 {
 	squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
 
-	hoverSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17767.wav");
-	clickSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17766.wav");
-	gachaFont = AEGfxCreateFont(SECONDARY_FONT_PATH, 32);
-	EnsureOverlayMesh();
+	//gachaFont = AEGfxCreateFont(SECONDARY_FONT_PATH, 32);
+	//EnsureOverlayMesh();
 }
 
 void ShopState::InitState()
@@ -136,37 +131,37 @@ void ShopState::InitState()
 
 	// Reset hover tracking when entering state
 	for (int i = 0; i < SHOP_BTN_COUNT; ++i) btnHoverStates[i] = false;
-	isGachaActive = false;
+	//isGachaActive = false;
 }
 
 void ShopState::Update(double dt)
 {
-	if (isGachaActive)
-	{
-		bool openPressed = AEInputCheckTriggered(AEVK_LBUTTON) || AEInputCheckTriggered(0x4F);
-		bool skipPressed = AEInputCheckTriggered(AEVK_SPACE);
-		bool pull10 = AEInputCheckTriggered(AEVK_LBUTTON) || AEInputCheckTriggered(0x52);
-		bool pull100 = AEInputCheckTriggered(AEVK_T) || AEInputCheckTriggered(0x54);
-		bool exitPressed = AEInputCheckTriggered(AEVK_ESCAPE);
+	//if (isGachaActive)
+	//{
+	//	bool openPressed = AEInputCheckTriggered(AEVK_LBUTTON) || AEInputCheckTriggered(0x4F);
+	//	bool skipPressed = AEInputCheckTriggered(AEVK_SPACE);
+	//	bool pull10 = AEInputCheckTriggered(AEVK_LBUTTON) || AEInputCheckTriggered(0x52);
+	//	bool pull100 = AEInputCheckTriggered(AEVK_T) || AEInputCheckTriggered(0x54);
+	//	bool exitPressed = AEInputCheckTriggered(AEVK_ESCAPE);
 
-		if (exitPressed) {
-			isGachaActive = false;
-			bgm.StopGacha(0.2f);
-			return;
-		}
+	//	if (exitPressed) {
+	//		isGachaActive = false;
+	//		bgm.StopGacha(0.2f);
+	//		return;
+	//	}
 
-		// Main Button Logic
-		if (gStateAnim.phase == GachaPhase::Done) {
-			PetManager::GetInstance()->SaveInventoryToJSON();
-			if (pull10) BeginGachaOverlay(gStateAnim, 10, 0.1f, 0.8f, 0.3f);
-			else if (pull100) BeginGachaOverlay(gStateAnim, 100, 0.1f, 1.2f, 0.2f);
-		}
+	//	// Main Button Logic
+	//	if (gStateAnim.phase == GachaPhase::Done) {
+	//		PetManager::GetInstance()->SaveInventoryToJSON();
+	//		if (pull10) BeginGachaOverlay(gStateAnim, 10, 0.1f, 0.8f, 0.3f);
+	//		else if (pull100) BeginGachaOverlay(gStateAnim, 100, 0.1f, 1.2f, 0.2f);
+	//	}
 
-		UpdateGachaOverlay(gStateAnim, static_cast<float>(dt), skipPressed, openPressed);
-		if (gStateAnim.isFinished) gStateAnim.phase = GachaPhase::Done;
-	}
-	else
-	{
+	//	UpdateGachaOverlay(gStateAnim, static_cast<float>(dt), skipPressed, openPressed);
+	//	if (gStateAnim.isFinished) gStateAnim.phase = GachaPhase::Done;
+	//}
+	//else
+	//{
 		for (int i = 0; i < SHOP_BTN_COUNT; ++i)
 		{
 			AEVec2 worldPos = DefaultToWorld(shopButtons[i].pos.x, shopButtons[i].pos.y);
@@ -178,9 +173,7 @@ void ShopState::Update(double dt)
 
 			// Play hover sound only when pointer enters button
 			if (buttonHover && !btnHoverStates[i])
-			{
-				AEAudioPlay(hoverSound, bgm.uiGroup, 0.2f, 0.7f, 0);
-			}
+			bgm.PlayUIHover();
 			btnHoverStates[i] = buttonHover;
 
 			if (buttonHover)
@@ -188,7 +181,7 @@ void ShopState::Update(double dt)
 				buttonClick = AEInputCheckTriggered(AEVK_LBUTTON);
 				if (buttonClick)
 				{
-					AEAudioPlay(clickSound, bgm.uiGroup, 0.6f, 0.6f, 0);
+				bgm.PlayUIClick();
 					switch (i) {
 					case 0: // Damage
 						break;
@@ -201,19 +194,11 @@ void ShopState::Update(double dt)
 					case 4: // Defense
 						break;
 					case 5: // Gacha Trigger
-<<<<<<< HEAD
-						/*isGachaActive = true;
+						isGachaActive = true;
 						bgm.StopGameplayBGM();
 						bgm.PlayGacha();
 						BeginGachaOverlay(gStateAnim, 10, 0.6f, 1.2f, 0.3f);
-						break;*/
-=======
-						//isGachaActive = true;
-						//bgm.StopGameplayBGM();
-						//bgm.PlayGacha();
-						//BeginGachaOverlay(gStateAnim, 10, 0.6f, 1.2f, 0.3f);
-						//break;
->>>>>>> 6eb6c61ef08f0f7f482625915580eb0a06ec4c53
+						break;
 					case 6: //back
 						GameStateManager::GetInstance()
 							->SetNextGameState("MainMenuState", true, true);
@@ -253,11 +238,9 @@ void ShopState::Update(double dt)
 				AEVec2 minusPos = { worldPos.x - sideOffset, worldPos.y };
 				if (IsCursorOverWorld(minusPos, sideBtnSize, shopButtons[i].size.y, true)) {
 					if (AEInputCheckTriggered(AEVK_LBUTTON)) {
-						AEAudioPlay(clickSound, bgm.uiGroup, 0.6f, 0.6f, 0);
+					bgm.PlayUIClick();
 						for (size_t x = 0; x < ShopFunctions::GetInstance()->getPurchaseMultiplier(); x++)
-						{
 							ShopFunctions::GetInstance()->sellShopUpgrade(currentStat);
-						}
 						std::cout << "Decreased " << shopButtons[i].label << " to " << ShopFunctions::GetInstance()->getStatBonus(currentStat) << std::endl;
 					}
 				}
@@ -266,23 +249,20 @@ void ShopState::Update(double dt)
 				AEVec2 plusPos = { worldPos.x + sideOffset, worldPos.y };
 				if (IsCursorOverWorld(plusPos, sideBtnSize, shopButtons[i].size.y, true)) {
 					if (AEInputCheckTriggered(AEVK_LBUTTON)) {
-						AEAudioPlay(clickSound, bgm.uiGroup, 0.6f, 0.6f, 0);
+					bgm.PlayUIClick();
 						for (size_t x = 0; x < ShopFunctions::GetInstance()->getPurchaseMultiplier(); x++)
-						{
 							ShopFunctions::GetInstance()->buyShopUpgrade(currentStat);
-						}
-						
 						std::cout << "Increased " << shopButtons[i].label << " to " << ShopFunctions::GetInstance()->getStatBonus(currentStat) << std::endl;
 					}
 				}
 			}
 		}
-	}
+	//}
 }
 
 void ShopState::Draw()
 {
-	if (isGachaActive)
+	/*if (isGachaActive)
 	{
 		AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 		AEGfxStart();
@@ -290,7 +270,7 @@ void ShopState::Draw()
 		DrawGachaOverlay(gStateAnim, gachaFont);
 	}
 	else
-	{
+	{*/
 		AEGfxSetBackgroundColor(0.2f, 0.2f, 0.2f);
 		AEGfxStart();
 		AEGfxSetBlendMode(AE_GFX_BM_BLEND);
@@ -372,14 +352,14 @@ void ShopState::Draw()
 				}
 			}
 		}
-	}
+	//}
 }
 
 void ShopState::ExitState()
 {
 	std::cout << "Exit shop state\n";
-	bgm.StopGacha(0.2f);
-	gStateAnim.Reset();
+	//bgm.StopGacha(0.2f);
+	//gStateAnim.Reset();
 }
 
 void ShopState::UnloadState() {
@@ -387,10 +367,5 @@ void ShopState::UnloadState() {
 	if (Font >= 0) AEGfxDestroyFont(Font);
 	if (BigFont >= 0) AEGfxDestroyFont(BigFont);
 
-	// Unload button audio
-	AEAudioUnloadAudio(hoverSound);
-	AEAudioUnloadAudio(clickSound);
-
-	gachaFont = -1;
-	UnloadGacha();
+	//gachaFont = -1;
 }

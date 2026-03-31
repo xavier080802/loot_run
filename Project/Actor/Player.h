@@ -40,6 +40,8 @@ public:
     // Retrieves the currently wielded equipment based on the 'heldWeapon' slot state.
     const EquipmentData* GetHeldWeaponData() const;
 
+	void SetHeldWeapon(int i) { heldWeapon = static_cast<HeldWeapon>(i); }
+
     // Returns the normalized vector representing the direction the player is trying to move.
     AEVec2 GetMoveDirNorm() const;
 
@@ -89,4 +91,7 @@ private:
     //UI stuff
     bool mShowStatsUI = true;
     AEGfxVertexList* squareMesh{};
+    
+    GameObject* weaponSpriteGO = nullptr;
+    GameObject* aimArrowGO = nullptr;
 };

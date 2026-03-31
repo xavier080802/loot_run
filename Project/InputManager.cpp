@@ -1,5 +1,6 @@
 #include "InputManager.h"
 #include <algorithm>
+#include <iostream>
 
 namespace {
 	//Checks if k is pressed/triggered/released, and sets out to the type.
@@ -33,6 +34,16 @@ void InputManager::Update() {
 			if (consumed) break;
 		}
 	}
+	s32 scroll{};
+	AEInputMouseWheelDelta(&scroll);
+	if (scroll) {
+		bool consumed{ false };
+		for (Receiver const& r : receiversMouse) {
+			r.sub->SubscriptionAlert({ VK_SCROLL, scroll > 0 ? Input::INPUT_TYPE::SCROLL_UP : Input::INPUT_TYPE::SCROLL_DOWN, consumed });
+			if (consumed) break;
+		}
+	}
+
 	//Keyboard
 	for (u8 k : keys) {
 		INPUT_TYPE type{};

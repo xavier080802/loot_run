@@ -26,11 +26,13 @@
 #include "../TileMap.h"
 #include "../UI/Minimap.h"
 #include "../Drops/DropSystem.h"
+#include "../Drops/PickupGO.h"
 #include "../Debug.h"
 #include "../GameStates/LevelSelectState.h"
 #include "../ShopFunctions.h"
 #include "../Pause.h"
 #include "../GameEnd.h"
+#include "../UI/UIElement.h"
 #include <json/json.h>
 
 namespace {
@@ -43,7 +45,6 @@ namespace {
     AEVec2  playerPos;
     AEVec2  playerDir = { 1.0f, 0.0f };
     Player* gPlayer = nullptr;
-    //float   playerRadius = 15.0f;
     float   playerSpeed = 300.0f;
 
     static AEVec2 GetPlayerPos()
@@ -52,15 +53,26 @@ namespace {
     }
 
     struct {
+        //-----Healthbar----
         AEVec2 hpBarSize{};
         Color hpBgCol{}, hpFillCol{}, hpShieldCol{};
         float seIconSize{};
         unsigned maxIcons{};
 
-        //Not loaded from json
+        //----Inventory----
+        AEVec2 invPos, invSize;
+        Color invBGCol{}, invCoinCol, invAmmoCol, invStatTxtCol;
+        AEVec2 invGearIconSz{}, invStatIconSz{};
+        AEVec2 invEdgePadding{};
+        float invIconGap, invSectionGap, invStatFontSz, invStatGap;
+
+        // Not loaded from json
         AEVec2 hpBarPos{};
         AEMtx33 hpBarTrans{};
     } playerUISettings;
+
+    std::array<UIElement*, 7> invGearElements{};
+    int invGearHoverInd{ -1 };
 
     // --- BOSS / ENEMY TRACKING ---
     bool   bossAlive = true;
@@ -75,7 +87,8 @@ namespace {
     int   enemiesRequiredForBoss = 0;
 
     // kill progress for the top bar
-    // totalKillTarget is picked randomly (20-50) once per run and never changes
+    // totalKillTarget is picked randomly between (20-39) once per run and never changes for endless mode
+    // For nomal mode is it picked randomly between (14-20) 
     // previousRoomsKilled snapshots the count before we wipe the enemy lists on room transition
     // so the bar doesn't jump back to 0
     int   totalEnemiesKilled = 0;
@@ -86,11 +99,11 @@ namespace {
     float bossSpawnThreshold = 1.0f;
 
     // enemy waves in proc rooms
-    // first wave (wave 0) fires straight away with 8 enemies when you enter
-    // after that one more enemy is added per wave: wave 1=2, wave 2=3, etc.
+    // first wave (wave 0) fires straight away with 12 enemies when you enter
+    // after that one more enemy is added per wave: wave 1=5, wave 2=6, etc.
     float procWaveTimer = 0.0f;
     int   procWaveNumber = 0;
-    const float PROC_WAVE_INTERVAL = 8.0f;
+    const float PROC_WAVE_INTERVAL = 4.0f;
 
     // chest waves in proc rooms
     // 4 chests drop on room entry, then 1 more every CHEST_WAVE_INTERVAL seconds
@@ -141,6 +154,14 @@ namespace {
     // endless mode survival clock
     float endlessRunTimer = 0.f;
     bool endlessTimerActive = false;
+
+    float screenFlashTimer = 0.0f;
+    float maxFlashDuration = 0.5f;
+
+    // keyboard popup — shown once on first non-tutorial run, toggled with X after that
+    AEGfxTexture* keyboardTex = nullptr;
+    bool showKeyboardMenu = false;
+    bool keyboardShownOnce = false;
 
     DebugContext MakeDebugCtx()
     {
@@ -226,7 +247,8 @@ namespace {
 
     // Builds a pool of valid spawn positions for the proc map.
     // Skips walls, the centre (where the player spawns), and anything too close to a corridor.
-    std::vector<AEVec2> CollectProcSafePositions(TileMap const& tilemap)
+    // clearance param lets callers ask for a tighter bubble — chests use 2, enemies use 1.
+    std::vector<AEVec2> CollectProcSafePositions(TileMap const& tilemap, int clearance = 1)
     {
         std::vector<AEVec2> positions;
         auto mapSz = tilemap.GetMapSize();
@@ -239,7 +261,7 @@ namespace {
             for (unsigned c = 5; c < cols - 5; ++c) {
                 const TileMap::Tile* t = tilemap.QueryTile(r, c);
                 if (!t || t->type != TileMap::TILE_NONE || t->isSolid) continue;
-                if (!tilemap.HasClearance(r, c, 3)) continue;
+                if (!tilemap.HasClearance(r, c, clearance)) continue;
 
                 int dr = (int)r - midR, dc = (int)c - midC;
                 if (dr >= -5 && dr <= 5 && dc >= -5 && dc <= 5) continue;
@@ -274,6 +296,7 @@ namespace {
                     CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE);
                 std::cout << "[SpawnCsvChests] Chest at (" << pos.x << ", " << pos.y << ")\n";
 
+                // tutorial has its own drop table with beginner-friendly loot
                 if (doTutorial) {
                     chest->SetDropTable(2);
                 }
@@ -287,7 +310,7 @@ namespace {
     // so they don't all pile up in the same corner.
     void SpawnProcChestWave(TileMap const& tilemap, int count = 1)
     {
-        std::vector<AEVec2> safePool = CollectProcSafePositions(tilemap);
+        std::vector<AEVec2> safePool = CollectProcSafePositions(tilemap, 2);
         if (safePool.empty()) return;
 
         const float MIN_CHEST_SPACING = 115.f * 5.f;
@@ -370,18 +393,30 @@ namespace {
         std::cout << "[ClearChests] All chests disabled.\n";
     }
 
-    // first wave is 8 enemies and fires the moment you step into a proc room
-    // after that each wave is 1 bigger than the last: wave 1=2, wave 2=3, etc.
-    // caps at 30 live enemies at once so it doesn't get insane
+    // first wave is 12 enemies and fires the moment you step into a proc room
+    // after that each wave is 1 bigger than the last: wave 1=5, wave 2=6, etc.
+    // caps at 50 live enemies at once so it doesn't get insane
+    // in endless mode enemies also scale 5% stronger per minute survived
     void SpawnProcWave(TileMap const& tilemap)
     {
-        const int MAX_LIVE_ENEMIES = 30;
+        const int MAX_LIVE_ENEMIES = 50;
         const float MIN_SPAWN_SPACING = 32.f * 3.f; // ~3 tiles gap between spawns
+
+        // scale enemy stats up every 60 seconds in endless (5% per minute)
+        float currentDifficulty = 1.0f;
+        if (mapSelected == "Assets/Endless.csv") {
+            currentDifficulty = 1.0f + (endlessRunTimer / 60.0f) * 0.05f;
+        }
 
         // don't add more if we're already at the cap
         int liveCount = 0;
-        for (Enemy* e : procEnemies)
-            if (e && e->IsEnabled() && e->GetHP() > 0.f) ++liveCount;
+        std::vector<AEVec2> chosen;
+        for (Enemy* e : procEnemies) {
+            if (e && e->IsEnabled() && e->GetHP() > 0.f) {
+                ++liveCount;
+                chosen.push_back(e->GetPos());
+            }
+        }
 
         int canSpawn = MAX_LIVE_ENEMIES - liveCount;
         if (canSpawn <= 0) {
@@ -390,26 +425,19 @@ namespace {
             return;
         }
 
-        int waveSize = (procWaveNumber == 0) ? 8 : (1 + procWaveNumber);
+        int waveSize = (procWaveNumber == 0) ? 12 : (4 + procWaveNumber);
         waveSize = (waveSize < canSpawn) ? waveSize : canSpawn;
-        std::cout << "[ProcWave] procWaveNumber=" << procWaveNumber
-            << " waveSize=" << waveSize << " (live=" << liveCount << ")\n";
         ++procWaveNumber;
 
-        std::vector<AEVec2> safePool = CollectProcSafePositions(tilemap);
-        if (safePool.empty()) {
-            std::cout << "[ProcWave] No safe positions found!\n";
-            return;
-        }
+        std::vector<AEVec2> safePool = CollectProcSafePositions(tilemap, 1);
+        if (safePool.empty()) return;
 
-        std::vector<AEVec2> chosen;
         int spawned = 0;
-
         for (int i = 0; i < waveSize && !safePool.empty(); ++i) {
             // try up to 20 picks per enemy slot to find a well-spaced one
             bool placed = false;
             for (int attempt = 0; attempt < 20 && !safePool.empty(); ++attempt) {
-                int    idx = rand() % (int)safePool.size();
+                int idx = rand() % (int)safePool.size();
                 AEVec2 pos = safePool[idx];
 
                 // skip if it's too close to something we already picked this wave
@@ -417,8 +445,7 @@ namespace {
                 for (AEVec2 const& c : chosen) {
                     float dx = pos.x - c.x, dy = pos.y - c.y;
                     if ((dx * dx + dy * dy) < MIN_SPAWN_SPACING * MIN_SPAWN_SPACING) {
-                        tooClose = true;
-                        break;
+                        tooClose = true; break;
                     }
                 }
 
@@ -426,17 +453,21 @@ namespace {
                 if (tooClose) continue;
 
                 Enemy* e = SpawnWeightedEnemy(pos, 0.70f, 0.30f);
-                if (!e) continue;
-                procEnemies.push_back(e);
-                chosen.push_back(pos);
-                ++spawned;
-                placed = true;
-                break;
+                if (e) {
+                    // apply the difficulty multiplier so endless enemies get harder over time
+                    e->mDifficultyMultiplier = currentDifficulty;
+                    e->OnStatEffectChange();
+                    e->Heal(e->GetStats().maxHP);
+
+                    procEnemies.push_back(e);
+                    chosen.push_back(pos);
+                    ++spawned;
+                    placed = true;
+                    break;
+                }
             }
-            if (!placed) break; // pool dried up
+            if (!placed) continue; // pool dried up
         }
-        std::cout << "[ProcWave " << procWaveNumber << "] Spawned "
-            << spawned << " enemies (wave size " << waveSize << ").\n";
     }
 
     // once the kill target is hit, wipe the remaining enemies and drop the boss in
@@ -563,65 +594,64 @@ namespace {
     }
 
     void DrawPlayerUI() {
+        int fontSz = RenderingManager::GetInstance()->GetFontSize();
         if (gPlayer->ShowStatsUI()) {
             Inventory const& mInventory{ gPlayer->GetInventory() };
-            // Draw Black Background Box
-            AEVec2 bgPos = { -700.0f, 45.0f }; // Centered at left middle (somewhat)
-            AEVec2 bgSize = { 600.0f, 520.0f };
-            DrawTintedMesh(GetTransformMtx(bgPos, 0.0f, bgSize), squareMesh, nullptr, { 0, 0, 0, 180 }, 255);
 
-            // Coin Counter in Top Left
-            std::string coinText = "Coins: " + std::to_string(mInventory.GetCoins());
-            DrawAEText(font, coinText.c_str(), { -780.0f, 280.0f }, 0.5f, { 255, 215, 0, 255 }, TEXT_MIDDLE_LEFT);
-            // Ammo Counter
-            std::string ammoText = "Ammo: " + std::to_string(mInventory.GetAmmo());
-            DrawAEText(font, ammoText.c_str(), { -780.0f,  250.0f }, 0.5f, { 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT);
+            //Draw background
+            DrawTintedMesh(GetTransformMtx(playerUISettings.invPos, 0.0f, playerUISettings.invSize), squareMesh, nullptr, { 0, 0, 0, 180 }, 255);
 
-            // Stats & Equipment UI on the Left
-            AEVec2 textPos = { -780.0f, 200.0f };
-            float yLineSpc = -20.0f;
-
-            ActorStats const& mStats{ gPlayer->GetStats() };
-            DrawAEText(font, "--- STATS ---", textPos, 0.4f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("Max HP: " + std::to_string((int)mStats.maxHP)).c_str(), textPos, 0.4f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("Attack: " + std::to_string((int)mStats.attack)).c_str(), textPos, 0.4f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("Defense: " + std::to_string((int)mStats.defense)).c_str(), textPos, 0.4f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("Move Speed: " + std::to_string((int)mStats.moveSpeed)).c_str(), textPos, 0.4f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-
-            std::string tSpd = std::to_string(mStats.attackSpeed);
-            size_t spdLen = tSpd.length() > 4 ? 4 : tSpd.length();
-            DrawAEText(font, ("Atk Speed: " + tSpd.substr(0, spdLen)).c_str(), textPos, 0.4f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc * 2.0f;
-
-            DrawAEText(font, "--- EQUIPMENT ---", textPos, 0.4f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-
-            auto w1 = mInventory.GetMainWeapon(0);
-            auto w2 = mInventory.GetMainWeapon(1);
-            auto bow = mInventory.GetBow();
-            auto head = mInventory.GetArmor(ArmorSlot::Head);
-            auto body = mInventory.GetArmor(ArmorSlot::Body);
-            auto hands = mInventory.GetArmor(ArmorSlot::Hands);
-            auto feet = mInventory.GetArmor(ArmorSlot::Feet);
+            //Draw equipped gear
             EquipmentData const* held{ gPlayer->GetHeldWeaponData() };
             int ind{ mInventory.GetActiveWeaponIndex() };
 
-            DrawAEText(font, ("WPN 1: " + (std::string(w1 ? w1->name : "None")) + std::string{ (held && ind == 0) ? " <" : "" }).c_str(), textPos, 0.35f, (held && ind == 0) ? Color{ 200, 255,200,255 } : Color{ 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("WPN 2: " + (std::string(w2 ? w2->name : "None")) + std::string{ (held && ind == 1) ? " <" : "" }).c_str(), textPos, 0.35f, (held && ind == 1) ? Color{ 200, 255,200,255 } : Color{ 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("BOW: " + (std::string(bow ? bow->name : "None")) + std::string{ (held && ind == 2) ? " <" : "" }).c_str(), textPos, 0.35f, (held && ind == 2) ? Color{ 200, 255,200,255 } : Color{ 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("HEAD: " + std::string(head ? head->name : "None")).c_str(), textPos, 0.35f, { 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("BODY: " + std::string(body ? body->name : "None")).c_str(), textPos, 0.35f, { 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("HANDS: " + std::string(hands ? hands->name : "None")).c_str(), textPos, 0.35f, { 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
-            DrawAEText(font, ("FEET: " + std::string(feet ? feet->name : "None")).c_str(), textPos, 0.35f, { 200, 200, 200, 255 }, TEXT_MIDDLE_LEFT); textPos.y += yLineSpc;
+            std::array<EquipmentData const*, 7> gear{
+                mInventory.GetMainWeapon(0),mInventory.GetMainWeapon(1),mInventory.GetBow(),
+                mInventory.GetArmor(ArmorSlot::Head), mInventory.GetArmor(ArmorSlot::Body),mInventory.GetArmor(ArmorSlot::Hands),mInventory.GetArmor(ArmorSlot::Feet)
+            };
+
+            for (int i{}; i < gear.size(); ++i) {
+                AEMtx33 mtx{ GetTransformMtx(invGearElements[i]->GetPos(), 0, invGearElements[i]->GetSize()) };
+                //Draw background — highlight green if this slot is the currently held weapon
+                DrawTintedMesh(mtx,
+                    squareMesh, nullptr, (held && ind == i) ? Color{ 0,255,0,255 } : Color{ 100,100,0,255 }, 200);
+
+                if (!gear[i]) continue;
+                //Draw item texture
+                DrawMesh(mtx, squareMesh, RenderingManager::GetInstance()->LoadTexture(gear[i]->texturePath), 255);
+            }
+
+            //Draw the player's stats
+            float yLineSpc{ playerUISettings.invStatFontSz * fontSz + playerUISettings.invStatGap };
+            AEVec2 textPos{ AEGfxGetWinMinX() + playerUISettings.invEdgePadding.x,
+                invGearElements.back()->GetPos().y - playerUISettings.invGearIconSz.y * 0.5f - playerUISettings.invSectionGap };
+            ActorStats const& mStats{ gPlayer->GetStats() };
+
+            DrawAEText(font, ("Max HP: " + std::to_string((int)mStats.maxHP)).c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invStatTxtCol, TEXT_MIDDLE_LEFT); textPos.y -= yLineSpc;
+            DrawAEText(font, ("Att: " + std::to_string((int)mStats.attack)).c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invStatTxtCol, TEXT_MIDDLE_LEFT); textPos.y -= yLineSpc;
+            DrawAEText(font, ("Def: " + std::to_string((int)mStats.defense)).c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invStatTxtCol, TEXT_MIDDLE_LEFT); textPos.y -= yLineSpc;
+            DrawAEText(font, ("Spd: " + std::to_string((int)mStats.moveSpeed)).c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invStatTxtCol, TEXT_MIDDLE_LEFT); textPos.y -= yLineSpc;
+            std::string tSpd = std::to_string(mStats.attackSpeed);
+            size_t spdLen = tSpd.length() > 4 ? 4 : tSpd.length();
+            DrawAEText(font, ("Atk Spd: " + tSpd.substr(0, spdLen)).c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invStatTxtCol, TEXT_MIDDLE_LEFT); textPos.y -= yLineSpc;
+
+            //Coin Counter
+            std::string coinText = "Coins: " + std::to_string(mInventory.GetCoins());
+            DrawAEText(font, coinText.c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invCoinCol, TEXT_MIDDLE_LEFT); textPos.y -= yLineSpc;
+            // Ammo Counter
+            std::string ammoText = "Ammo: " + std::to_string(mInventory.GetAmmo());
+            DrawAEText(font, ammoText.c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invAmmoCol, TEXT_MIDDLE_LEFT);
         }
 
         //Healthbar Container
         DrawTintedMesh(playerUISettings.hpBarTrans, squareMesh, nullptr, playerUISettings.hpBgCol, playerUISettings.hpBgCol.a);
-        //Health indicator fill
+        //Health indicator fill — shrinks left as HP drops
         AEVec2 hpBarFillSize{ playerUISettings.hpBarSize.x * (gPlayer->GetHP() / gPlayer->GetMaxHP()), playerUISettings.hpBarSize.y };
         AEVec2 hpBarFillPos = playerUISettings.hpBarPos;
         hpBarFillPos.x -= (playerUISettings.hpBarSize.x - hpBarFillSize.x) * 0.5f;
         DrawTintedMesh(GetTransformMtx(hpBarFillPos, 0, hpBarFillSize),
             squareMesh, nullptr, playerUISettings.hpFillCol, playerUISettings.hpFillCol.a);
-        //Shield value (if any)
+        //Shield value (if any) — drawn on top of the HP fill
         if (gPlayer->GetShieldVal()) {
             float shieldFill{ playerUISettings.hpBarSize.x * min(gPlayer->GetShieldVal() / gPlayer->GetMaxHP(), 1.f) };
             DrawTintedMesh(GetTransformMtx(playerUISettings.hpBarPos - AEVec2{ (playerUISettings.hpBarSize.x - shieldFill) * 0.5f,0 }, 0, { shieldFill, playerUISettings.hpBarSize.y }),
@@ -631,11 +661,11 @@ namespace {
         DrawAEText(font,
             std::string{ std::to_string((int)gPlayer->GetHP()) + (gPlayer->GetShieldVal() ? (" (+" + std::to_string((int)gPlayer->GetShieldVal()) + ")") : "")
             + " / " + std::to_string((int)gPlayer->GetMaxHP()) }.c_str(),
-            playerUISettings.hpBarPos, playerUISettings.hpBarSize.y / RenderingManager::GetInstance()->GetFontSize(), Color{ 0,0,0,255 }, TEXT_MIDDLE);
+            playerUISettings.hpBarPos, playerUISettings.hpBarSize.y / fontSz, Color{ 0,0,0,255 }, TEXT_MIDDLE);
 
-        //Status effects above hp bar
+        //Status effect icons sit just above the HP bar
         gPlayer->DrawStatusEffectIcons(playerUISettings.seIconSize,
-            playerUISettings.hpBarPos + AEVec2{ 0, playerUISettings.hpBarSize.y * 0.5f + playerUISettings.seIconSize*0.5f },
+            playerUISettings.hpBarPos + AEVec2{ 0, playerUISettings.hpBarSize.y * 0.5f + playerUISettings.seIconSize * 0.5f },
             playerUISettings.maxIcons, true, true);
 
         PickupGO* mInteractablePickup{ gPlayer->GetNearestPickup() };
@@ -645,18 +675,119 @@ namespace {
             std::string nameStr = std::string(eq->name);
             std::string promptStr = "[E] Swap   [C] Sell (" + std::to_string(eq->sellPrice) + " Coins)";
 
-            AEVec2 itemPos = { 0.0f, -55.0f }; // Centered below player and HP bar
+            AEVec2 itemPos = { 0.0f, -55.0f };
             DrawAEText(font, nameStr.c_str(), itemPos, 0.4f, { 255,255,255,255 }, TEXT_MIDDLE);
             itemPos.y -= 20.0f;
             DrawAEText(font, promptStr.c_str(), itemPos, 0.4f, { 255,255,255,255 }, TEXT_MIDDLE);
         }
 
-        //Tooltip
+        //Tooltip for SE
         std::map<std::string, StatEffects::StatusEffect*> statusEffectsDict{ gPlayer->GetStatusEffects() };
         for (auto it{ statusEffectsDict.rbegin() }; it != statusEffectsDict.rend(); ++it) {
             StatEffects::StatusEffect& se = *(*it).second;
-
             se.UpdateUI(true);
+        }
+    }
+
+    //Hovering over equipment in inventory UI
+    void DrawUIHoveredGearTooltip(int& ind) {
+        if (ind == -1) return;
+        //Cursor pos
+        s32 mx{}, my{};
+        AEInputGetCursorPosition(&mx, &my);
+        AEVec2 mP = ScreenToWorld(AEVec2{ (float)mx, (float)my });
+
+        //Tooltip text
+        Inventory const& mInventory{ gPlayer->GetInventory() };
+        std::array<EquipmentData const*, 7> arr{
+               mInventory.GetMainWeapon(0),mInventory.GetMainWeapon(1),mInventory.GetBow(),
+               mInventory.GetArmor(ArmorSlot::Head), mInventory.GetArmor(ArmorSlot::Body),mInventory.GetArmor(ArmorSlot::Hands),mInventory.GetArmor(ArmorSlot::Feet)
+        };
+        EquipmentData const* eq{ arr[ind] };
+        if (!eq) return;
+
+        //Draw tooltip
+        float winW = (float)AEGfxGetWinMaxX() - AEGfxGetWinMinX();
+        float winH = (float)AEGfxGetWinMaxY() - AEGfxGetWinMinY();
+        AEVec2 bgSize = { 300.0f, 220.0f };
+        AEVec2 bgPos = { mP.x + bgSize.x * 0.5f + 15.0f, mP.y - bgSize.y * 0.5f - 15.0f };
+
+        if (bgPos.x + bgSize.x * 0.5f > winW * 0.5f) bgPos.x = winW * 0.5f - bgSize.x * 0.5f;
+        if (bgPos.y - bgSize.y * 0.5f < -winH * 0.5f) bgPos.y = -winH * 0.5f + bgSize.y * 0.5f;
+
+        DrawTintedMesh(GetTransformMtx(bgPos, 0.0f, bgSize), squareMesh, nullptr, { 0, 0, 0, 220 }, 255);
+
+        AEVec2 textPos = { bgPos.x - bgSize.x * 0.5f + 15.0f, bgPos.y + bgSize.y * 0.5f - 25.0f };
+        Color rColor = GetRarityColor(eq->rarity);
+
+        DrawAEText(font, eq->name, textPos, 0.45f, rColor, TEXT_MIDDLE_LEFT);
+        textPos.y -= 30.0f;
+
+        DrawAEText(font, ("Sell Price: " + std::to_string(eq->sellPrice)).c_str(), textPos, 0.35f, { 255, 215, 0, 255 }, TEXT_MIDDLE_LEFT);
+        textPos.y -= 35.0f;
+
+        if (eq->mods.additive.maxHP != 0) { DrawAEText(font, ("Max HP: +" + std::to_string((int)eq->mods.additive.maxHP)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+        if (eq->mods.additive.attack != 0) { DrawAEText(font, ("Attack: +" + std::to_string((int)eq->mods.additive.attack)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+        if (eq->mods.additive.defense != 0) { DrawAEText(font, ("Defense: +" + std::to_string((int)eq->mods.additive.defense)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+        if (eq->mods.additive.moveSpeed != 0) { DrawAEText(font, ("Speed: +" + std::to_string((int)eq->mods.additive.moveSpeed)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+        if (eq->mods.additive.attackSpeed != 0) {
+            std::string aSpdStr = std::to_string(eq->mods.additive.attackSpeed);
+            aSpdStr = aSpdStr.substr(0, aSpdStr.find('.') + 3);
+            DrawAEText(font, ("Atk Speed: +" + aSpdStr).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f;
+        }
+
+        //Reset hover state
+        ind = -1;
+    }
+
+    void DrawHoveredItemStats() {
+        GameObject* hovered = GameObjectManager::GetInstance()->QueryOnMouse();
+        if (hovered && hovered->GetGOType() == GO_TYPE::ITEM) {
+            PickupGO* pickup = dynamic_cast<PickupGO*>(hovered);
+            if (pickup) {
+                const PickupPayload& payload = pickup->GetPayload();
+                if (payload.type == DropType::Equipment && payload.equipment) {
+                    const EquipmentData* eq = payload.equipment;
+
+                    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+                    AEGfxTextureSet(nullptr, 0, 0);
+
+                    s32 mX, mY;
+                    AEInputGetCursorPosition(&mX, &mY);
+
+                    float winW = (float)AEGfxGetWinMaxX() - AEGfxGetWinMinX();
+                    float winH = (float)AEGfxGetWinMaxY() - AEGfxGetWinMinY();
+                    float screenX = (float)mX - (winW * 0.5f);
+                    float screenY = (winH * 0.5f) - (float)mY;
+
+                    AEVec2 bgSize = { 300.0f, 220.0f };
+                    AEVec2 bgPos = { screenX + bgSize.x * 0.5f + 15.0f, screenY - bgSize.y * 0.5f - 15.0f };
+
+                    if (bgPos.x + bgSize.x * 0.5f > winW * 0.5f) bgPos.x = winW * 0.5f - bgSize.x * 0.5f;
+                    if (bgPos.y - bgSize.y * 0.5f < -winH * 0.5f) bgPos.y = -winH * 0.5f + bgSize.y * 0.5f;
+
+                    DrawTintedMesh(GetTransformMtx(bgPos, 0.0f, bgSize), squareMesh, nullptr, { 0, 0, 0, 220 }, 255);
+
+                    AEVec2 textPos = { bgPos.x - bgSize.x * 0.5f + 15.0f, bgPos.y + bgSize.y * 0.5f - 25.0f };
+                    Color rColor = GetRarityColor(eq->rarity);
+
+                    DrawAEText(font, eq->name, textPos, 0.45f, rColor, TEXT_MIDDLE_LEFT);
+                    textPos.y -= 30.0f;
+
+                    DrawAEText(font, ("Sell Price: " + std::to_string(eq->sellPrice)).c_str(), textPos, 0.35f, { 255, 215, 0, 255 }, TEXT_MIDDLE_LEFT);
+                    textPos.y -= 35.0f;
+
+                    if (eq->mods.additive.maxHP != 0) { DrawAEText(font, ("Max HP: +" + std::to_string((int)eq->mods.additive.maxHP)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+                    if (eq->mods.additive.attack != 0) { DrawAEText(font, ("Attack: +" + std::to_string((int)eq->mods.additive.attack)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+                    if (eq->mods.additive.defense != 0) { DrawAEText(font, ("Defense: +" + std::to_string((int)eq->mods.additive.defense)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+                    if (eq->mods.additive.moveSpeed != 0) { DrawAEText(font, ("Speed: +" + std::to_string((int)eq->mods.additive.moveSpeed)).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f; }
+                    if (eq->mods.additive.attackSpeed != 0) {
+                        std::string aSpdStr = std::to_string(eq->mods.additive.attackSpeed);
+                        aSpdStr = aSpdStr.substr(0, aSpdStr.find('.') + 3);
+                        DrawAEText(font, ("Atk Speed: +" + aSpdStr).c_str(), textPos, 0.35f, { 255, 255, 255, 255 }, TEXT_MIDDLE_LEFT); textPos.y -= 25.0f;
+                    }
+                }
+            }
         }
     }
 }
@@ -690,33 +821,63 @@ void GameState::LoadState()
     circleMesh = RenderingManager::GetInstance()->GetMesh(MESH_CIRCLE);
     squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
 
-    //Player UI
+    //Player UI — load settings from json so designers can tweak without recompiling
     std::ifstream ifs{ "Assets/Data/ui.json", std::ios_base::binary };
     if (ifs.is_open()) {
         Json::Value root;
         Json::CharReaderBuilder builder;
         std::string errs;
 
-        if (Json::parseFromStream(builder, ifs, &root, &errs) && root.isMember("pet_ui"))
+        if (Json::parseFromStream(builder, ifs, &root, &errs))
         {
-            Json::Value ui = root["player_healthbar"];
-            if (ui.isMember("size") && ui["size"].size() == 2) {
-                playerUISettings.hpBarSize = AEVec2{ ui["size"][0].asFloat(), ui["size"][1].asFloat() };
+            if (root.isMember("player_healthbar")) {
+                Json::Value ui = root["player_healthbar"];
+                if (ui.isMember("size") && ui["size"].size() == 2) {
+                    playerUISettings.hpBarSize = AEVec2{ ui["size"][0].asFloat(), ui["size"][1].asFloat() };
+                }
+                if (ui.isMember("bgCol") && ui["bgCol"].size() == 4) {
+                    playerUISettings.hpBgCol = Color{ ui["bgCol"][0].asFloat(), ui["bgCol"][1].asFloat(),
+                    ui["bgCol"][2].asFloat() ,ui["bgCol"][3].asFloat() };
+                }
+                if (ui.isMember("fillCol") && ui["fillCol"].size() == 4) {
+                    playerUISettings.hpFillCol = Color{ ui["fillCol"][0].asFloat(), ui["fillCol"][1].asFloat(),
+                    ui["fillCol"][2].asFloat() ,ui["fillCol"][3].asFloat() };
+                }
+                if (ui.isMember("shieldCol") && ui["shieldCol"].size() == 4) {
+                    playerUISettings.hpShieldCol = Color{ ui["shieldCol"][0].asFloat(), ui["shieldCol"][1].asFloat(),
+                    ui["shieldCol"][2].asFloat() ,ui["shieldCol"][3].asFloat() };
+                }
+                playerUISettings.maxIcons = ui.get("maxIcons", 6).asUInt();
+                playerUISettings.seIconSize = ui.get("seIconSize", 30).asFloat();
             }
-            if (ui.isMember("bgCol") && ui["bgCol"].size() == 4) {
-                playerUISettings.hpBgCol = Color{ ui["bgCol"][0].asFloat(), ui["bgCol"][1].asFloat(),
-                ui["bgCol"][2].asFloat() ,ui["bgCol"][3].asFloat() };
+            if (root.isMember("player_inventory")) {
+                Json::Value ui = root["player_inventory"];
+                if (ui.isMember("bgCol") && ui["bgCol"].size() == 4) {
+                    playerUISettings.invBGCol = Color{ ui["bgCol"][0].asFloat(), ui["bgCol"][1].asFloat(),
+                    ui["bgCol"][2].asFloat() ,ui["bgCol"][3].asFloat() };
+                }
+                if (ui.isMember("statTxtCol") && ui["statTxtCol"].size() == 4) {
+                    playerUISettings.invStatTxtCol = Color{ ui["statTxtCol"][0].asFloat(), ui["statTxtCol"][1].asFloat(),
+                    ui["statTxtCol"][2].asFloat() ,ui["statTxtCol"][3].asFloat() };
+                }
+                if (ui.isMember("coinTxtCol") && ui["coinTxtCol"].size() == 4) {
+                    playerUISettings.invCoinCol = Color{ ui["coinTxtCol"][0].asFloat(), ui["coinTxtCol"][1].asFloat(),
+                    ui["coinTxtCol"][2].asFloat() ,ui["coinTxtCol"][3].asFloat() };
+                }
+                if (ui.isMember("ammoTxtCol") && ui["ammoTxtCol"].size() == 4) {
+                    playerUISettings.invAmmoCol = Color{ ui["ammoTxtCol"][0].asFloat(), ui["ammoTxtCol"][1].asFloat(),
+                    ui["ammoTxtCol"][2].asFloat() ,ui["ammoTxtCol"][3].asFloat() };
+                }
+                playerUISettings.invGearIconSz.x = playerUISettings.invGearIconSz.y = ui.get("iconSize", 75).asFloat();
+                if (ui.isMember("edgePadding") && ui["edgePadding"].size() == 2) {
+                    playerUISettings.invEdgePadding = AEVec2{ ui["edgePadding"][0].asFloat(), ui["edgePadding"][1].asFloat() };
+                }
+                playerUISettings.invIconGap = ui.get("iconGap", 10).asFloat();
+                playerUISettings.invSectionGap = ui.get("sectionGap", 10).asFloat();
+                playerUISettings.invStatIconSz.x = playerUISettings.invStatIconSz.y = ui.get("statIconSize", 30).asFloat();
+                playerUISettings.invStatFontSz = ui.get("statFontSize", 1).asFloat();
+                playerUISettings.invStatGap = ui.get("statGap", 5).asFloat();
             }
-            if (ui.isMember("fillCol") && ui["fillCol"].size() == 4) {
-                playerUISettings.hpFillCol = Color{ ui["fillCol"][0].asFloat(), ui["fillCol"][1].asFloat(),
-                ui["fillCol"][2].asFloat() ,ui["fillCol"][3].asFloat() };
-            }
-            if (ui.isMember("shieldCol") && ui["shieldCol"].size() == 4) {
-                playerUISettings.hpShieldCol = Color{ ui["shieldCol"][0].asFloat(), ui["shieldCol"][1].asFloat(),
-                ui["shieldCol"][2].asFloat() ,ui["shieldCol"][3].asFloat() };
-            }
-            playerUISettings.maxIcons = ui.get("maxIcons", 6).asUInt();
-            playerUISettings.seIconSize = ui.get("seIconSize", 30).asFloat();
         }
     }
     else {
@@ -743,6 +904,8 @@ void GameState::LoadState()
     float    procTileSize = 115.f;
     unsigned procRows = 50, procCols = 50;
     nextMap = new TileMap({ 0.f, 0.f }, procTileSize, procTileSize);
+    keyboardTex = RenderingManager::GetInstance()->LoadTexture("Assets/sprites/keyboard.png");
+
     srand(1234);
     nextMap->GenerateProcedural(procRows, procCols, 1234);
 
@@ -824,6 +987,57 @@ void GameState::InitState()
     bossHPProgressBar = 0.f;
     inProceduralMap = false;
 
+    //Load Inventory UI variables — recalculate layout in case window was resized
+    playerUISettings.invSize = { 2 * (playerUISettings.invEdgePadding.x + playerUISettings.invGearIconSz.x) + playerUISettings.invIconGap,
+                7 * (RenderingManager::GetInstance()->GetFontSize() * playerUISettings.invStatFontSz) + 6 * playerUISettings.invStatGap
+        + 4 * (playerUISettings.invGearIconSz.y) + 3 * playerUISettings.invIconGap + 2 * playerUISettings.invEdgePadding.y };
+    playerUISettings.invPos = { AEGfxGetWinMinX() + playerUISettings.invSize.x * 0.5f,0 };
+
+    float y{ playerUISettings.invSize.y * 0.5f - (playerUISettings.invEdgePadding.y + playerUISettings.invGearIconSz.y * 0.5f) };
+    invGearElements[0] = new UIElement{
+        AEVec2{playerUISettings.invPos.x - (playerUISettings.invIconGap + playerUISettings.invGearIconSz.x) * 0.5f, y},
+        playerUISettings.invGearIconSz, 2, Collision::COL_RECT
+    };
+    invGearElements[1] = new UIElement{
+        AEVec2{playerUISettings.invPos.x + (playerUISettings.invIconGap + playerUISettings.invGearIconSz.x) * 0.5f, y},
+        playerUISettings.invGearIconSz, 2, Collision::COL_RECT
+    };
+    y -= playerUISettings.invIconGap + playerUISettings.invGearIconSz.y;
+    invGearElements[2] = new UIElement{
+        AEVec2{playerUISettings.invPos.x, y},
+        playerUISettings.invGearIconSz, 2, Collision::COL_RECT
+    };
+    y -= playerUISettings.invIconGap + playerUISettings.invGearIconSz.y;
+    invGearElements[3] = new UIElement{
+        AEVec2{playerUISettings.invPos.x - (playerUISettings.invIconGap + playerUISettings.invGearIconSz.x) * 0.5f, y},
+        playerUISettings.invGearIconSz, 2, Collision::COL_RECT
+    };
+    invGearElements[4] = new UIElement{
+        AEVec2{playerUISettings.invPos.x + (playerUISettings.invIconGap + playerUISettings.invGearIconSz.x) * 0.5f, y},
+        playerUISettings.invGearIconSz, 2, Collision::COL_RECT
+    };
+    y -= playerUISettings.invIconGap + playerUISettings.invGearIconSz.y;
+    invGearElements[5] = new UIElement{
+        AEVec2{playerUISettings.invPos.x - (playerUISettings.invIconGap + playerUISettings.invGearIconSz.x) * 0.5f, y},
+        playerUISettings.invGearIconSz, 2, Collision::COL_RECT
+    };
+    invGearElements[6] = new UIElement{
+        AEVec2{playerUISettings.invPos.x + (playerUISettings.invIconGap + playerUISettings.invGearIconSz.x) * 0.5f, y},
+        playerUISettings.invGearIconSz, 2, Collision::COL_RECT
+    };
+    for (int i{}; i < invGearElements.size(); ++i) {
+        invGearElements[i]->SetHoverCallback([i](bool) {invGearHoverInd = i; });
+    }
+
+    // pop up keyboard menu on first entry of any non-tutorial stage in a session
+    if (!doTutorial && !keyboardShownOnce) {
+        showKeyboardMenu = true;
+        keyboardShownOnce = true;
+    }
+    else {
+        showKeyboardMenu = false;
+    }
+
     // player init is the same across all three modes
     Bitmask collideMask = CreateBitmask(3,
         Collision::LAYER::ENEMIES,
@@ -843,7 +1057,7 @@ void GameState::InitState()
     // no CSV, just drop straight into a proc room
     if (mapSelected == "Assets/Endless.csv") {
         std::cout << "[InitState] Endless mode.\n";
-
+        gPlayer->SetHeldWeapon(0);
         totalKillTarget = 20 + rand() % 20;
         totalEnemiesRequired = totalKillTarget;
         std::cout << "[InitState] Kill target: " << totalKillTarget << "\n";
@@ -876,22 +1090,23 @@ void GameState::InitState()
         procWaveNumber = 0;
         SpawnProcWave(*nextMap);
         procWaveTimer = 0.0f;
-
-        // drop 4 chests as soon as the room loads
         procChestWaveNumber = 0;
-        SpawnProcChestWave(*nextMap, 4);
+        SpawnProcChestWave(*nextMap, 4);  // drop 4 chests as soon as the room loads
         procChestWaveTimer = 0.0f;
 
         loadingTimer = LOADING_DURATION;
         endlessRunTimer = 0.f;
         endlessTimerActive = true;
 
+        // when player dies, alert game state so the end screen shows
+        gPlayer->SubToOnDeath(this);
+
         PetManager::GetInstance()->SetTilemap(*nextMap);
         minimap->Reset();
         return;
     }
 
-    // ── TUTORIAL and NORMAL — find a safe spawn tile in the CSV ──
+    // ── TUTORIAL and NORMAL — find safe spawn in CSV map ─────
     unsigned csvCols = map->GetMapSize().first;
     unsigned csvRows = map->GetMapSize().second;
     AEVec2 safeSpawnPos = map->GetTilePosition(1, 1);
@@ -934,6 +1149,14 @@ void GameState::InitState()
     //Call pet stuff after player setup
     PetManager::GetInstance()->InitPetForGame(*map);
 
+    // pets don't follow in tutorial so the player isn't overwhelmed early on
+    if (!doTutorial) {
+        PetManager::GetInstance()->InitPetForGame(*map);
+    }
+    else {
+        PetManager::GetInstance()->UnsetPet();
+    }
+
     // place all the designer-authored chests from the CSV
     SpawnCsvChests(*map);
 
@@ -944,6 +1167,7 @@ void GameState::InitState()
     // ── TUTORIAL MODE ─────────────────────────────────────────
     if (doTutorial) {
         std::cout << "[InitState] Tutorial mode.\n";
+        gPlayer->SetHeldWeapon(0);
 
         // find the door so the fairy knows where to guide the player after the boss dies
         for (unsigned r = 0; r < csvRows; ++r) {
@@ -959,7 +1183,7 @@ void GameState::InitState()
             }
         }
 
-        // pre-spawn the boss but keep it hidden until the fairy reaches the BOSS stage
+        // find the boss spawn tile — boss starts hidden and gets enabled when stage reaches BOSS
         for (unsigned r = 0; r < csvRows; ++r) {
             for (unsigned c = 0; c < csvCols; ++c) {
                 const TileMap::Tile* t = map->QueryTile(r, c);
@@ -971,7 +1195,7 @@ void GameState::InitState()
                         bossAlive = true;
                         bossMaxHPProgressBar = boss->GetDefinition().baseStats.maxHP;
                         bossHPProgressBar = bossMaxHPProgressBar;
-                        boss->SetEnabled(false);
+                        boss->SetEnabled(false); // hidden until fairy reaches BOSS stage
                     }
                     break;
                 }
@@ -981,23 +1205,22 @@ void GameState::InitState()
         std::vector<AEVec2> csvSpawnPool = FindSafeSpawnPositions(*map, 0, true);
         csvEnemies.clear();
         for (AEVec2 const& pos : csvSpawnPool) {
-            Enemy* e = SpawnWeightedEnemy(pos, 0.70f, 0.30f);
+            // tutorial only spawns normals, no elites — keep it manageable for new players
+            Enemy* e = SpawnWeightedEnemy(pos, 1.f, 0.f);
             if (!e) continue;
             csvEnemies.push_back(e);
             std::cout << "[Tutorial] Spawned " << e->GetDefinition().name
                 << " at (" << pos.x << ", " << pos.y << ")\n";
         }
         std::cout << "[Tutorial] Spawned " << csvEnemies.size() << " enemies total.\n";
-        if (doTutorial) {
-            fairy->InitTutorial(gPlayer, *map, currentLevel);
-            fairy->tilemap = map;
-        }
+        fairy->InitTutorial(gPlayer, *map, currentLevel);
+        fairy->tilemap = map; // give fairy access to tilemap for door detection
         return;
     }
 
     // ── NORMAL MODE ───────────────────────────────────────────
-    // CSV enemies first, proc rooms open up once you walk through the connector
-    totalKillTarget = 20 + rand() % 31;
+    // CSV enemies first, then proc rooms after walking through connector
+    totalKillTarget = 14 + rand() % 7;
     totalEnemiesRequired = totalKillTarget;
     std::cout << "[InitState] Kill target: " << totalKillTarget << "\n";
 
@@ -1005,7 +1228,7 @@ void GameState::InitState()
     csvEnemies.clear();
 
     std::cout << "[InitState] csvSpawnPool has " << csvSpawnPool.size() << " positions.\n";
-
+    gPlayer->SetHeldWeapon(0);
     for (AEVec2 const& pos : csvSpawnPool) {
         Enemy* e = SpawnWeightedEnemy(pos, 0.70f, 0.30f);
         if (!e) {
@@ -1020,6 +1243,9 @@ void GameState::InitState()
             << " (" << tier << ") at (" << pos.x << ", " << pos.y << ")\n";
     }
     std::cout << "[InitState] Spawned " << csvEnemies.size() << " CSV enemies total.\n";
+
+    // when player dies, alert game state so the end screen shows
+    gPlayer->SubToOnDeath(this);
 }
 
 // =============================================================
@@ -1036,85 +1262,110 @@ void GameState::Update(double dt)
         return;
     }
 
-    // pause eats all game logic while it's open
-    if (Pause::Update()) return;
+    // Pause zeroes dt and handles its own input; skip all game logic while open
+    Pause::Update(dt);
+    if (Pause::IsOpen()) return;
 
-    // sit here doing nothing until the loading timer runs out
+    // freeze all game logic while the loading screen is showing
     if (loadingTimer > 0.f) {
         loadingTimer -= (float)dt;
         if (loadingTimer < 0.f) loadingTimer = 0.f;
         return;
     }
 
-    // TAB toggles the debug overlay
+    // --- DEBUG INPUTS ---
+#ifdef _DEBUG //only exists in debug
     if (AEInputCheckTriggered(AEVK_TAB)) {
-        showDebugOverlay = !showDebugOverlay;
-        std::cout << "[Debug] Overlay " << (showDebugOverlay ? "ON" : "OFF") << "\n";
+        debugMode = !debugMode;
+        showDebugOverlay = debugMode; // overlay follows debug mode
+        if (!debugMode) {
+            // reset all debug state when turning off
+            showDebugOverlay = false;
+            debugGodMode = false;
+            debugFreezeEnemies = false;
+            debugShowChests = false;
+        }
+        std::cout << "[Debug] Mode " << (debugMode ? "ON" : "OFF") << "\n";
     }
 
-    if (AEInputCheckTriggered(AEVK_K))
-        showKeybindOverlay = !showKeybindOverlay;
-
-    if (AEInputCheckTriggered(AEVK_F5)) {
-        debugGodMode = !debugGodMode;
-        std::cout << "[Debug] God mode " << (debugGodMode ? "ON" : "OFF") << "\n";
-    }
-    if (AEInputCheckTriggered(AEVK_F6)) {
-        debugFreezeEnemies = !debugFreezeEnemies;
-        std::cout << "[Debug] Freeze AI " << (debugFreezeEnemies ? "ON" : "OFF") << "\n";
-    }
-    if (AEInputCheckTriggered(AEVK_F7)) {
-        debugShowChests = !debugShowChests;
-        std::cout << "[Debug] Show chests " << (debugShowChests ? "ON" : "OFF") << "\n";
-    }
-    if (AEInputCheckTriggered(AEVK_F1)) {
-        for (Enemy* e : procEnemies) if (e && e->IsEnabled()) e->TakeDamage({ 99999.f, nullptr, DAMAGE_TYPE::TRUE_DAMAGE, nullptr });
-        for (Enemy* e : csvEnemies)  if (e && e->IsEnabled()) e->TakeDamage({ 99999.f, nullptr, DAMAGE_TYPE::TRUE_DAMAGE, nullptr });
-        std::cout << "[Debug] All enemies killed.\n";
-    }
-    if (AEInputCheckTriggered(AEVK_F2)) {
-        if (!bossSpawned && inProceduralMap && nextMap) {
-            totalEnemiesKilled = totalKillTarget;
-            TrySpawnBoss(*nextMap);
-            std::cout << "[Debug] Boss force-spawned.\n";
+    // all debug keys below are only active when debug mode is on
+    if (debugMode) {
+        if (AEInputCheckTriggered(AEVK_F5)) {
+            debugGodMode = !debugGodMode;
+            std::cout << "[Debug] God mode " << (debugGodMode ? "ON" : "OFF") << "\n";
+        }
+        if (AEInputCheckTriggered(AEVK_F6)) {
+            debugFreezeEnemies = !debugFreezeEnemies;
+            std::cout << "[Debug] Freeze AI " << (debugFreezeEnemies ? "ON" : "OFF") << "\n";
+        }
+        if (AEInputCheckTriggered(AEVK_F7)) {
+            debugShowChests = !debugShowChests;
+            std::cout << "[Debug] Show chests " << (debugShowChests ? "ON" : "OFF") << "\n";
+        }
+        if (AEInputCheckTriggered(AEVK_F1)) {
+            for (Enemy* e : procEnemies) if (e && e->IsEnabled()) e->TakeDamage({ 99999.f, nullptr, DAMAGE_TYPE::TRUE_DAMAGE, nullptr });
+            for (Enemy* e : csvEnemies)  if (e && e->IsEnabled()) e->TakeDamage({ 99999.f, nullptr, DAMAGE_TYPE::TRUE_DAMAGE, nullptr });
+            std::cout << "[Debug] All enemies killed.\n";
+        }
+        if (AEInputCheckTriggered(AEVK_F2)) {
+            if (!bossSpawned && inProceduralMap && nextMap) {
+                totalEnemiesKilled = totalKillTarget;
+                TrySpawnBoss(*nextMap);
+                std::cout << "[Debug] Boss force-spawned.\n";
+            }
+        }
+        if (AEInputCheckTriggered(AEVK_F3)) {
+            if (gPlayer) {
+                TileMap* cur = inProceduralMap ? nextMap : map;
+                AEVec2 sp = cur ? cur->GetSpawnPoint() : AEVec2{ 0,0 };
+                gPlayer->SetPos(sp);
+                camPos = sp;
+                std::cout << "[Debug] Teleported to spawn.\n";
+            }
+        }
+        if (AEInputCheckTriggered(AEVK_F4)) {
+            if (gPlayer) { gPlayer->Heal(gPlayer->GetMaxHP()); std::cout << "[Debug] HP refilled.\n"; }
+        }
+        // spawn chest at cursor
+        if (AEInputCheckTriggered(AEVK_L)) {
+            LootChest* chest = dynamic_cast<LootChest*>(
+                GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
+            AEVec2 m = GetMouseWorldVec();
+            chest->Init(m, { 75,75 }, 1, MESH_SQUARE, Collision::COL_RECT, { 75,75 },
+                CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE);
+        }
+        //spawn chest at cursor
+        if (AEInputCheckTriggered(AEVK_N)) {
+            AEVec2 m = GetMouseWorldVec();
+            Enemy* e = SpawnWeightedEnemy(m, 0.70f, 0.30f);
+            if (e) {
+                const char* tier = (e->GetDefinition().category == EnemyCategory::Elite) ? "Elite" : "Normal";
+                std::cout << "[Spawn N] " << e->GetDefinition().name << " (" << tier << ")\n";
+                if (inProceduralMap) procEnemies.push_back(e);
+                else                 csvEnemies.push_back(e);
+                ++enemiesRequiredForBoss;
+            }
         }
     }
-    if (AEInputCheckTriggered(AEVK_F3)) {
-        if (gPlayer) {
-            TileMap* cur = inProceduralMap ? nextMap : map;
-            AEVec2 sp = cur ? cur->GetSpawnPoint() : AEVec2{ 0,0 };
-            gPlayer->SetPos(sp);
-            camPos = sp;
-            std::cout << "[Debug] Teleported to spawn.\n";
-        }
-    }
-    if (AEInputCheckTriggered(AEVK_F4)) {
-        if (gPlayer) { gPlayer->Heal(gPlayer->GetMaxHP()); std::cout << "[Debug] HP refilled.\n"; }
-    }
+#endif
 
-#pragma region inputs_for_testing
-    if (AEInputCheckTriggered(AEVK_L)) {
-        LootChest* chest = dynamic_cast<LootChest*>(
-            GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
-        AEVec2 m = GetMouseWorldVec();
-        chest->Init(m, { 75,75 }, 1, MESH_SQUARE, Collision::COL_RECT, { 75,75 },
-            CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE);
-    }
+    //Cast pet skill — always available regardless of debug mode
     if (AEInputCheckTriggered(AEVK_R))
         PostOffice::GetInstance()->Send("PetManager", new PetSkillMsg(PetSkillMsg::CAST_SKILL));
 
-    if (AEInputCheckTriggered(AEVK_N)) {
-        AEVec2 m = GetMouseWorldVec();
-        Enemy* e = SpawnWeightedEnemy(m, 0.70f, 0.30f);
-        if (e) {
-            const char* tier = (e->GetDefinition().category == EnemyCategory::Elite) ? "Elite" : "Normal";
-            std::cout << "[Spawn N] " << e->GetDefinition().name << " (" << tier << ")\n";
-            if (inProceduralMap) procEnemies.push_back(e);
-            else                 csvEnemies.push_back(e);
-            ++enemiesRequiredForBoss;
-        }
+    // --- NON-DEBUG INPUTS ---
+    // keyboard toggle — X shows/hides the keybind image popup
+    if (AEInputCheckTriggered(AEVK_X)) {
+        showKeyboardMenu = !showKeyboardMenu;
+        std::cout << "[Menu] Keyboard " << (showKeyboardMenu ? "ON" : "OFF") << "\n";
     }
-#pragma endregion
+
+    // block all other input while the keyboard popup is showing
+    if (showKeyboardMenu) return;
+
+    // Cast pet skill (Standard gameplay, not debug)
+    if (AEInputCheckTriggered(AEVK_R))
+        PostOffice::GetInstance()->Send("PetManager", new PetSkillMsg(PetSkillMsg::CAST_SKILL));
 
     if (!gPlayer) return;
 
@@ -1123,7 +1374,7 @@ void GameState::Update(double dt)
 
     if (teleportCooldown > 0.f) teleportCooldown -= (float)dt;
 
-    // keep sending enemy waves until the boss shows up
+    // tick the wave timer — wave 0 already fired on room entry, this handles subsequent waves
     if (inProceduralMap && !bossSpawned && nextMap) {
         procWaveTimer += (float)dt;
         if (procWaveTimer >= PROC_WAVE_INTERVAL) {
@@ -1132,7 +1383,7 @@ void GameState::Update(double dt)
         }
     }
 
-    // drip feed chests in the same way, stops when the boss spawns
+    // tick the chest wave timer — one extra chest every 15 seconds while grinding
     if (inProceduralMap && !bossSpawned && nextMap) {
         procChestWaveTimer += (float)dt;
         if (procChestWaveTimer >= CHEST_WAVE_INTERVAL) {
@@ -1142,7 +1393,6 @@ void GameState::Update(double dt)
     }
 
     if (teleportCooldown <= 0.f && nextMap) {
-        // walked from CSV into the proc connector
         if (!inProceduralMap && map->IsConnector(gPlayer->GetPos())) {
             nextMap->GenerateProcedural(50, 50, rand());
             AEVec2 procSpawn = nextMap->GetSpawnPoint();
@@ -1156,25 +1406,26 @@ void GameState::Update(double dt)
             inProceduralMap = true;
             teleportCooldown = 2.f;
             previousRoomsKilled = totalEnemiesKilled;
+            // clear CSV enemies and any leftover drops so they don't bleed into the proc map
             DisableAndClearEnemies(csvEnemies);
             DisableAndClearEnemies(procEnemies);
             DropSystem::ClearAllPickups();
             DisableAndClearChests();
             procWaveNumber = 0;
-            SpawnProcWave(*nextMap); // first wave, fires right away
+            SpawnProcWave(*nextMap);
             procWaveTimer = 0.0f;
             procChestWaveNumber = 0;
-            SpawnProcChestWave(*nextMap, 4); // drop 4 chests as soon as the room loads
+            SpawnProcChestWave(*nextMap, 4); // drop 4 chests as soon as room load
             procChestWaveTimer = 0.0f;
             minimap->Reset();
             PetManager::GetInstance()->SetTilemap(*nextMap);
         }
-        // already in proc, walked into the next connector
         else if (inProceduralMap && nextMap->IsConnector(gPlayer->GetPos())) {
             nextMap->GenerateProcedural(50, 50, rand());
             AEVec2 procSpawn = nextMap->GetSpawnPoint();
             gPlayer->SetPos(procSpawn);
             gPlayer->Move({ 0,0 });
+            PetManager::GetInstance()->SetTilemap(*nextMap);
             PetManager::GetInstance()->PlacePet(gPlayer->GetPos());
             camPos = procSpawn; camVel = { 0, 0 };
             halfMapWidth = nextMap->GetFullMapSize().x * 0.5f;
@@ -1182,14 +1433,15 @@ void GameState::Update(double dt)
             SetCameraPos(camPos);
             teleportCooldown = 2.f;
             previousRoomsKilled = totalEnemiesKilled;
+            // clear previous room's enemies and drops before the new ones spawn
             DisableAndClearEnemies(procEnemies);
             DropSystem::ClearAllPickups();
             DisableAndClearChests();
             procWaveNumber = 0;
-            SpawnProcWave(*nextMap); // first wave, fires right away
+            SpawnProcWave(*nextMap);
             procWaveTimer = 0.0f;
             procChestWaveNumber = 0;
-            SpawnProcChestWave(*nextMap, 4); // drop 4 chests as soon as the room loads
+            SpawnProcChestWave(*nextMap, 4); // drop 4 chests as soon as room load
             procChestWaveTimer = 0.0f;
             minimap->Reset();
         }
@@ -1202,7 +1454,7 @@ void GameState::Update(double dt)
     if (len > 0 || gPlayer->HasForceApplied())
         playerDir = gPlayer->GetMoveDirNorm();
 
-    // update the kill counter every frame so the progress bar stays accurate
+    // count dead enemies every frame to keep the progress bar accurate
     if (!(debugFreezeEnemies))
         CountAllDeadEnemies();
 
@@ -1214,35 +1466,63 @@ void GameState::Update(double dt)
         bossAlive = !boss->IsDead();
     }
 
+    // tutorial boss is hidden until the fairy reaches the BOSS stage,
+    // then it gets enabled and we watch for it to die
     if (doTutorial && fairy->data.stage == Tutorial::BOSS) {
-        if (boss && !boss->IsDead())
+        if (boss && !boss->IsDead()) {
             boss->SetEnabled(true);
-        if (!bossAlive || (boss && (boss->IsDead() || boss->GetHP() <= 0.f))) {
+            bossAlive = true;
+        }
+        if (boss && (boss->IsDead() || boss->GetHP() <= 0.f)) {
             bossAlive = false;
+            boss->SetEnabled(false);
             fairy->ChangeStage(Tutorial::END);
         }
     }
 
+    // tick the endless survival clock and notify the player each new minute
     if (endlessTimerActive) {
         endlessRunTimer += (float)dt;
+        int currentMinute = (int)(endlessRunTimer / 60.0f);
+        if (currentMinute > mLastMinuteMark) {
+            mLastMinuteMark = currentMinute;
+            mNotificationTimer = 5.0f; // show the "enemies are X% stronger" flash for 5 seconds
+        }
     }
 
-    // boss is dead — figure out what happens next
-    if (!doTutorial && bossSpawned && !bossAlive) {
-        if (mapSelected != "Assets/Endless.csv") {
-            GameEnd::Show(true, false, 0.f, gPlayer->GetInventory().GetCoins(), totalEnemiesKilled);
-            std::cout << "BOSS SLAYED\n";
+    if (mNotificationTimer > 0.0f) {
+        mNotificationTimer -= (float)dt;
+    }
+
+    // death check before UpdateObjects so any heal-on-death doesn't undo it
+    if (gPlayer && gPlayer->GetHP() <= 0.f && !GameEnd::IsOpen()) {
+        if (mapSelected == "Assets/Endless.csv") {
+            GameEnd::Show(false, true, endlessRunTimer, gPlayer->GetInventory().GetCoins(), totalEnemiesKilled);
+            std::cout << "PLAYER DIED — Endless over.\n";
         }
         else {
-            // in endless we just reset and keep going
+            GameEnd::Show(false, false, 0.f, gPlayer->GetInventory().GetCoins(), totalEnemiesKilled);
+            std::cout << "PLAYER DIED.\n";
+        }
+        return; // stop all further update logic this frame
+    }
+
+    // ── BOSS DEFEATED ─────────────────────────────────────────────────────────
+    if (!doTutorial && bossSpawned && !bossAlive && !GameEnd::IsOpen()) {
+        if (mapSelected != "Assets/Endless.csv") {
+            // normal mode — show the win screen
+            GameEnd::Show(true, false, 0.f, gPlayer->GetInventory().GetCoins(), totalEnemiesKilled);
+            std::cout << "BOSS SLAYED\n";
+            return;
+        }
+        else {
+            // endless mode — reset and keep going, player stays in place
             std::cout << "BOSS SLAYED — Endless continues!\n";
             bossSpawned = false;
             bossAlive = true;
             boss = nullptr;
             bossHPProgressBar = 0.f;
             bossMaxHPProgressBar = 100.f;
-
-            // fresh kill target for the next cycle
             totalKillTarget = 20 + rand() % 31;
             totalEnemiesRequired = totalKillTarget;
             previousRoomsKilled = 0;
@@ -1252,28 +1532,21 @@ void GameState::Update(double dt)
             DropSystem::ClearAllPickups();
             DisableAndClearChests();
             std::cout << "[Endless] New kill target: " << totalKillTarget << "\n";
-
+            // cooldown stops the connector check from firing on the freshly generated map
             teleportCooldown = 2.f;
             if (nextMap) {
                 nextMap->GenerateProcedural(50, 50, rand());
                 procWaveNumber = 0;
                 SpawnProcWave(*nextMap);
                 procWaveTimer = 0.0f;
+                // drop 4 chests on the new room entry
                 procChestWaveNumber = 0;
-                SpawnProcChestWave(*nextMap, 4); // drop 4 chests as soon as the room loads
+                SpawnProcChestWave(*nextMap, 4);
                 procChestWaveTimer = 0.0f;
                 minimap->Reset();
                 PetManager::GetInstance()->SetTilemap(*nextMap);
             }
         }
-    }
-    if (mapSelected != "Assets/Endless.csv" && gPlayer && gPlayer->GetHP() <= 0.f) {
-        GameEnd::Show(false, false, 0.f, gPlayer->GetInventory().GetCoins(), totalEnemiesKilled);
-        std::cout << "PLAYER DIED - not Endless. \n";
-    }
-    if (mapSelected == "Assets/Endless.csv" && gPlayer && gPlayer->GetHP() <= 0.f) {
-        GameEnd::Show(false, true, endlessRunTimer, gPlayer->GetInventory().GetCoins(), totalEnemiesKilled);
-        std::cout << "PLAYER DIED — Endless over.\n";
     }
     minimap->Update(dt, *currentMap, *gPlayer);
     UpdateWorldMap((float)dt);
@@ -1299,18 +1572,19 @@ void GameState::Update(double dt)
         GameObjectManager::GetInstance()->UpdateObjects(dt, currentMap);
     }
 
+    if (screenFlashTimer > 0.0f) screenFlashTimer -= (float)dt;
+
     DropSystem::UpdatePickupDisplay(static_cast<float>(dt));
 }
 
 // =============================================================
 void GameState::Draw()
 {
-    // loading screen blocks all other rendering until the timer runs out
+    // loading screen — black background with a progress bar while assets settle
     if (loadingTimer > 0.f) {
         float winW = (float)(AEGfxGetWinMaxX() - AEGfxGetWinMinX());
         float winH = (float)(AEGfxGetWinMaxY() - AEGfxGetWinMinY());
 
-        // black background
         AEMtx33 bgMtx;
         GetTransformMtx(bgMtx, { 0, 0 }, 0, { winW, winH });
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
@@ -1319,7 +1593,6 @@ void GameState::Draw()
         AEGfxSetColorToMultiply(0.f, 0.f, 0.f, 1.f);
         AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 
-        // progress bar
         float barW = winW * 0.5f, barH = 24.f;
         float filled = (1.f - loadingTimer / LOADING_DURATION) * barW;
         AEMtx33 barBgMtx, barFillMtx;
@@ -1336,21 +1609,18 @@ void GameState::Draw()
         if (font >= 0)
             AEGfxPrint(font, "LOADING...", -0.12f, 0.05f, 1.2f, 1.f, 1.f, 1.f, 1.f);
 
-        return;
+        return; // skip all other rendering while loading
     }
 
     RenderWorldMap();
     GameObjectManager::GetInstance()->DrawObjects();
+    DrawEnemyStats(MakeDebugCtx());
     DrawBossHPProgressBar();
-
     TileMap* currentMap = inProceduralMap ? nextMap : map;
     minimap->Render(*currentMap, *gPlayer);
-
-    DrawEnemyStats(MakeDebugCtx());
-
     DebugContext dbg = MakeDebugCtx();
 
-    // F7 — draw yellow dots on the minimap where chests are
+    // chest dots on minimap — only visible when F7 is toggled in debug
     if (dbg.debugShowChests) {
         TileMap* currentMapForChests = inProceduralMap ? nextMap : map;
         AEVec2 const& mapSize = currentMapForChests->GetFullMapSize();
@@ -1380,8 +1650,15 @@ void GameState::Draw()
     if (showKeybindOverlay) DrawKeybindOverlay(dbg);
 
     if (gPlayer) DrawPlayerUI();
+    DrawHoveredItemStats();
 
-    // survival clock at the top for endless mode
+    // [X] hint in bottom-right so players know the keybind popup exists
+    if (!doTutorial && font >= 0) {
+        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        AEGfxPrint(font, "[X] Keybinds", 0.62f, -0.88f, 0.5f, 1.f, 1.f, 1.f, 0.7f);
+    }
+
+    // endless survival timer at the top center, plus the difficulty notification flash
     if (endlessTimerActive && font >= 0) {
         int minutes = (int)endlessRunTimer / 60;
         int seconds = (int)endlessRunTimer % 60;
@@ -1389,15 +1666,61 @@ void GameState::Draw()
         snprintf(timeText, sizeof(timeText), "SURVIVED: %02d:%02d", minutes, seconds);
         AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
         AEGfxPrint(font, timeText, -0.4f, 0.75f, 1.0f, 1.f, 1.f, 1.f, 1.f);
+        if (mNotificationTimer > 0.0f) {
+            char flashText[128];
+            int totalBuff = mLastMinuteMark * 5;
+            snprintf(flashText, sizeof(flashText), "WARNING: ENEMIES ARE %d%% STRONGER!", totalBuff);
+            float alpha = mNotificationTimer / 5.0f;
+            AEGfxPrint(font, flashText, -0.80f, 0.5f, 1.2f, 1.0f, 0.2f, 0.2f, alpha);
+        }
     }
 
     HandleTutorialDialogueRender();
     PetManager::GetInstance()->DrawUI();
     DropSystem::PrintPickupDisplay();
 
+    // brief red flash when the player takes a hit
+    if (screenFlashTimer > 0.0f) {
+        float winW = (float)AEGfxGetWinMaxX() - (float)AEGfxGetWinMinX();
+        float winH = (float)AEGfxGetWinMaxY() - (float)AEGfxGetWinMinY();
+        AEMtx33 mtx;
+        GetTransformMtx(mtx, { 0, 0 }, 0, { winW, winH });
+        AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+        AEGfxTextureSet(nullptr, 0, 0);
+        AEGfxSetTransform(mtx.m);
+        float alpha = (screenFlashTimer / maxFlashDuration) * 0.3f; // max 30% opacity
+        AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, alpha);
+        AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
+    }
+
+    DrawUIHoveredGearTooltip(invGearHoverInd);
+
+    // keyboard popup — full-screen overlay showing all keybinds as an image
+    if (showKeyboardMenu && keyboardTex) {
+        float winW = (float)(AEGfxGetWinMaxX() - AEGfxGetWinMinX());
+        float winH = (float)(AEGfxGetWinMaxY() - AEGfxGetWinMinY());
+
+        float drawH = winH * 0.8f;
+        float drawW = winW * 0.6f;
+        AEMtx33 trans;
+        GetTransformMtx(trans, { 0, 0 }, 0, { drawW, drawH });
+
+        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+        AEGfxTextureSet(keyboardTex, 0, 0);
+        AEGfxSetTransform(trans.m);
+        AEGfxSetTransparency(1.f);
+        AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
+        AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
+    }
+
     // pause and end screens sit on top of everything else
     Pause::Draw();
     GameEnd::Draw();
+}
+
+void GameState::TriggerScreenFlash(float duration) {
+    screenFlashTimer = maxFlashDuration = duration;
 }
 
 void GameState::HandleTutorialDialogueRender()
@@ -1409,10 +1732,17 @@ void GameState::HandleTutorialDialogueRender()
         TextboxBgCfg{ AEVec2{0.005f, 0.025f}, Color{255,255,255,255}, 255, RenderingManager::GetInstance()->GetMesh(MESH_SQUARE), nullptr });
 }
 
+// subscribed to player death events — shows the appropriate end screen
+void GameState::SubscriptionAlert(ActorDeadSubContent content)
+{
+    if (content.victim != gPlayer) return;
+    GameEnd::Show(false, mapSelected == "Assets/Endless.csv", endlessRunTimer, gPlayer->GetInventory().GetCoins(), totalEnemiesKilled);
+}
+
 // =============================================================
 void GameState::ExitState()
 {
-    // save coins and update the endless high score before we tear anything down
+    // save coins and endless high score before destroying anything
     if (gPlayer) {
         ShopFunctions::GetInstance()->addMoney(gPlayer->GetInventory().GetCoins());
         gPlayer->GetInventory().Clear();

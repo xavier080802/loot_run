@@ -8,6 +8,7 @@
 #include "../Helpers/RenderUtils.h"
 #include "../Helpers/ColorUtils.h"
 #include "../UIConfig.h"
+#include "../Music.h"
 #include <iostream>
 
 namespace {
@@ -22,7 +23,6 @@ namespace {
     float winW, winH, scale;
 
     AEAudioGroup audioGroup;
-    AEAudio clickSound;
     AEAudio bgMusic;
 
     enum ScrollState { STATE_WAITING, STATE_UNROLLING, STATE_SCROLLING };
@@ -32,25 +32,21 @@ namespace {
     const float SCROLL_FULL_HEIGHT = 680.0f;
     const float SCROLL_UNROLL_SPEED = 10.0f;
     const float SCROLL_W = 580.0f;
-
-    // Sprite is 35x75px.
-    // SPRITE_CAP_TOP  — pixels from top of sprite to where parchment starts
-    // SPRITE_CAP_BOT  — pixels from bottom of sprite to where parchment ends
-    // Only edit these two numbers to move the clip boundaries independently.
     const float SPRITE_H = 75.0f;
     const float SPRITE_CAP_TOP = 14.0f;
     const float SPRITE_CAP_BOT = 14.0f;
-    // Extra world-unit padding pulled inward from the bottom clip — increase to
-    // make text disappear higher, decrease to let it go lower.
-    const float BOTTOM_PADDING = 50.0f;
-
+    const float TOP_PADDING = 80.0f;
+    const float BOTTOM_PADDING = 80.0f;
     const float CAP_H = SCROLL_FULL_HEIGHT * (SPRITE_CAP_TOP / SPRITE_H);
-
     float yPos_credits = 0.0f;
     const float LINE_H = 58.0f;
     const float SCROLL_SPEED = 1.0f;
-
     float flashTimer = 0.0f;
+
+    AEGfxTexture* logoTex = nullptr;
+    const float LOGO_DISPLAY_W = 320.0f;
+    const float LOGO_DISPLAY_H = 110.0f;
+    const float LOGO_GAP = 180.0f;
 
     AEVec2 DefaultToWorld(float x, float y)
     {
@@ -61,46 +57,42 @@ namespace {
     }
 
     const char* credits[] = {
-       "(C) MetaDigger",
-       "(C) Kenney Assets",
-       "Copyrights for software, tools and libraries",
-       " ",
-       "Mandy WONG   Johnny DEEK",
-       "TAN Chek Ming   Prasanna Kumar GHALI",
-       "Claude COMAIR   CHU Jason Yeu Tat   Michael GATS",
-       "EXECUTIVES",
-       " ",
-       "Claude COMAIR",
-       "PRESIDENT",
-       " ",
-       "DigiPen Institute of Technology Singapore",
-       "Created at",
-       " ",
-       "NParks falcon chicks cam",
-       "SPECIAL THANKS TO",
-       " ",
-       "DR Soroor Malekmohammadi Faradounbeh",
-       "MR Tan Chee Wei, Tommy",
-       "MR Wong Han Feng, Gerald",
-       "Instructors",
-       " ",
-       "Faculty and Advisors",
-       " ",
+       "Team STD::Null",
+       "Team Members:",
+       "Xavier Lim",
+       "TEAM LEAD and PROGRAMMER",
+       "Edna Sim",
+       "TECH LEAD and PROGRAMMER",
+       "Hong Teck",
+       "GAMEPLAY LEAD and PROGRAMMER",
        "Joon Hin",
        "UI LEAD and PROGRAMMER",
        " ",
-       "Hong Teck",
-       "GAMEPLAY LEAD and PROGRAMMER",
+       "Faculty and Advisors",
+       "Instructors",
+       "DR Soroor Malekmohammadi Faradounbeh",
+       "MR Tan Chee Wei, Tommy",
+       "MR Wong Han Feng, Gerald",
        " ",
-       "Edna Sim",
-       "TECH LEAD and PROGRAMMER",
+       "SPECIAL THANKS TO",
+       "NParks falcon chicks cam",
+       "Cookie (Xavier's dog)",
+       "Pepper (Edna's pet bird)",
        " ",
-       "Xavier Lim",
-       "TEAM LEAD and PROGRAMMER",
+       "Created at",
+       "DigiPen Institute of Technology Singapore",
+       "PRESIDENT",
+       "Claude COMAIR",
+       "EXECUTIVES",
+       "Mandy WONG   Johnny DEEK",
+       "TAN Chek Ming   Prasanna Kumar GHALI",
+       "Claude COMAIR   CHU Jason Yeu Tat   Michael GATS",
        " ",
-       "Team Members:",
+       "Copyrights for software, tools and libraries",
+       "(C) MetaDigger",
+       "(C) Kenney Assets",
        " ",
-       "Team STD::Null",
+       "All content © 2026 DigiPen Institute of Technology Singapore. All Rights Reserved",
        nullptr
     };
 
@@ -130,25 +122,21 @@ namespace {
     }
 }
 
-// =============================================================
 void CreditState::LoadState()
 {
-    // =============================================================
     squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
     Font = AEGfxCreateFont(PRIMARY_FONT_PATH, 28);
     texClosed = RenderingManager::GetInstance()->LoadTexture("Assets/scroll_closed.png");
     texOpen = RenderingManager::GetInstance()->LoadTexture("Assets/scroll_open.png");
-    std::cout << "[CreditState] scroll_closed: " << (texClosed ? "OK" : "FAILED") << "\n";
-    std::cout << "[CreditState] scroll_open:   " << (texOpen ? "OK" : "FAILED") << "\n";
+    logoTex = RenderingManager::GetInstance()->LoadTexture("Assets/digipen.png");
+
     audioGroup = AEAudioCreateGroup();
-    clickSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17766.wav");
+
     bgMusic = AEAudioLoadSound("Assets/Audio/PROSPECTUS - Corporate MSCCRP1_50.wav");
 }
 
-// =============================================================
 void CreditState::InitState()
 {
-    // =============================================================
     winW = static_cast<float>(AEGfxGetWinMaxX());
     winH = static_cast<float>(AEGfxGetWinMaxY());
     scale = (winW * 2.0f / DEFAULT_W) < (winH * 2.0f / DEFAULT_H)
@@ -162,12 +150,8 @@ void CreditState::InitState()
     AEAudioPlay(bgMusic, audioGroup, 1.0f, 1.0f, -1);
 }
 
-// =============================================================
 void CreditState::Update(double dt)
 {
-    // =============================================================
-    (void)dt;
-
     if (AEInputCheckTriggered(AEVK_ESCAPE)) {
         GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
         return;
@@ -178,29 +162,46 @@ void CreditState::Update(double dt)
         if (AEInputCheckTriggered(AEVK_LBUTTON) ||
             AEInputCheckTriggered(AEVK_SPACE) ||
             AEInputCheckTriggered(AEVK_RETURN)) {
-            AEAudioPlay(clickSound, audioGroup, 0.6f, 0.6f, 0);
+            bgm.PlayUIClick();
             state = STATE_UNROLLING;
             scrollBodyHeight = 0.0f;
         }
         return;
     }
 
+    float fullH = SCROLL_FULL_HEIGHT * scale;
+
+    // Bottom clip in world space — text disappears here
+    float clipWorldBottom = (fullH * 0.5f
+        - SCROLL_FULL_HEIGHT * (SPRITE_CAP_BOT / SPRITE_H) * scale)
+        - BOTTOM_PADDING * scale;
+
     if (state == STATE_UNROLLING) {
         scrollBodyHeight += SCROLL_UNROLL_SPEED * scale;
-        float fullH = SCROLL_FULL_HEIGHT * scale;
         if (scrollBodyHeight >= fullH) {
             scrollBodyHeight = fullH;
             state = STATE_SCROLLING;
-            int totalLines = 0;
-            for (int i = 0; credits[i] != nullptr; ++i) totalLines++;
-            float cy = 0.0f;
-            yPos_credits = cy - fullH * 0.5f + CAP_H * scale + totalLines * LINE_H * scale;
+            // Start logo just below the bottom clip so it scrolls up into view
+            yPos_credits = -clipWorldBottom - (LOGO_DISPLAY_H * 0.5f) * scale;
         }
         return;
     }
 
     if (state == STATE_SCROLLING) {
-        yPos_credits -= SCROLL_SPEED * scale;
+        yPos_credits += SCROLL_SPEED * scale;
+
+        int totalLines = 0;
+        for (int i = 0; credits[i] != nullptr; ++i) totalLines++;
+
+        // Top clip in world space — text disappears here
+        float clipWorldTop = (-fullH * 0.5f
+            + SCROLL_FULL_HEIGHT * (SPRITE_CAP_TOP / SPRITE_H) * scale)
+            + TOP_PADDING * scale;
+
+        // Reset when the last text line has fully scrolled past the top clip
+        if (yPos_credits - (LOGO_GAP * scale) - (totalLines * LINE_H * scale) > -clipWorldTop) {
+            yPos_credits = -clipWorldBottom - (LOGO_DISPLAY_H * 0.5f) * scale;
+        }
     }
 }
 
@@ -225,8 +226,10 @@ void CreditState::Draw()
         return;
     }
 
+    float fullH = SCROLL_FULL_HEIGHT * scale;
+    DrawScroll(cx, cy, (state == STATE_UNROLLING) ? scrollBodyHeight : fullH);
+
     if (state == STATE_UNROLLING) {
-        DrawScroll(cx, cy, scrollBodyHeight);
         AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
         AEVec2 hintPos = DefaultToWorld(80.0f, DEFAULT_H - 40.0f);
         DrawAEText(Font, "[ESC] Back", hintPos, scale * 0.75f,
@@ -234,23 +237,33 @@ void CreditState::Draw()
         return;
     }
 
-    float fullH = SCROLL_FULL_HEIGHT * scale;
-    float scaledW = SCROLL_W * scale;
+    // Clip region matches the red circle in the screenshot
+    float clipWorldTop = cy - fullH * 0.5f
+        + SCROLL_FULL_HEIGHT * (SPRITE_CAP_TOP / SPRITE_H) * scale
+        + TOP_PADDING * scale;
+    float clipWorldBottom = cy + fullH * 0.5f
+        - SCROLL_FULL_HEIGHT * (SPRITE_CAP_BOT / SPRITE_H) * scale
+        - BOTTOM_PADDING * scale;
 
-    DrawScroll(cx, cy, fullH);
-    float clipWorldTop = cy - fullH * 0.5f + SCROLL_FULL_HEIGHT * (SPRITE_CAP_TOP / SPRITE_H) * scale;
-    float clipWorldBottom = cy + fullH * 0.5f - SCROLL_FULL_HEIGHT * (SPRITE_CAP_BOT / SPRITE_H) * scale - BOTTOM_PADDING;
+    // Draw DigiPen logo — clipped to scroll content area
+    float logoY = yPos_credits;
+    if (logoY > clipWorldTop && logoY < clipWorldBottom) {
+        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        AEVec2 logoPos = { cx, logoY };
+        AEVec2 logoSize = { LOGO_DISPLAY_W * scale, LOGO_DISPLAY_H * scale };
+        DrawTintedMesh(GetTransformMtx(logoPos, 0.0f, logoSize),
+            squareMesh, logoTex, { 255, 255, 255, 255 }, 255);
+    }
 
+    // Draw text lines below the logo
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-
     int totalLines = 0;
     for (int i = 0; credits[i] != nullptr; ++i) totalLines++;
 
     for (int i = 0; i < totalLines; ++i) {
-        float y = yPos_credits - i * LINE_H * scale;  // subtract so lines go upward
+        float y = yPos_credits - (LOGO_GAP * scale) - (i * LINE_H * scale);
 
-        if (y < clipWorldTop)    continue;
-        if (y > clipWorldBottom) continue;
+        if (y < clipWorldTop || y > clipWorldBottom) continue;
 
         if (IsHeader(credits[i])) {
             DrawAEText(Font, credits[i], { cx, y }, scale * 0.9f,
@@ -260,11 +273,6 @@ void CreditState::Draw()
             DrawAEText(Font, credits[i], { cx, y }, scale * 0.72f,
                 CreateColor(40, 25, 10, 255), TEXT_MIDDLE);
         }
-    }
-
-    if (yPos_credits - totalLines * LINE_H * scale > clipWorldBottom) {
-        int totalLinesReset = totalLines;
-        yPos_credits = clipWorldBottom + totalLinesReset * LINE_H * scale;
     }
 
     AEVec2 hintPos = DefaultToWorld(80.0f, DEFAULT_H - 40.0f);
@@ -280,7 +288,6 @@ void CreditState::ExitState()
 void CreditState::UnloadState()
 {
     if (Font >= 0) AEGfxDestroyFont(Font);
-    AEAudioUnloadAudio(clickSound);
     AEAudioUnloadAudio(bgMusic);
     AEAudioUnloadAudioGroup(audioGroup);
 }

@@ -41,7 +41,8 @@ namespace {
 		{{ 200.f, 700.f }, { 235.f, 67.f }, "Credits"},
 		{{ 200.f, 800.f }, { 235.f, 67.f }, "Exit Game"}
 	};
-	Title title = { { DEFAULT_W / 2, 100.f }, { 675.f, 110.f }, "LOOT RUN" };
+	Title title = { { DEFAULT_W *0.5f, 200.f}, {800,600}, "LOOT RUN"};
+	std::string logoTex{ "Assets/sprites/logo.png" };
 
 	constexpr int MENU_BTN_COUNT = sizeof(menuButtons) / sizeof(Button);
 
@@ -57,9 +58,6 @@ namespace {
 		};
 	}
 
-	AEAudio hoverSound;
-	AEAudio clickSound;
-
 	// Track previous hover state
 	bool btnHoverStates[MENU_BTN_COUNT] = { false };
 }
@@ -68,10 +66,11 @@ void MainMenuState::LoadState()
 {
 	squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
 
-	hoverSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17767.wav");
-	clickSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17766.wav");
 	Font = AEGfxCreateFont(PRIMARY_FONT_PATH, 38);
 	BigFont = AEGfxCreateFont(PRIMARY_FONT_PATH, 75);
+
+	bgm.Init();
+	Settings::Load(); // load saved volumes and apply to bgm groups immediately
 }
 
 void MainMenuState::InitState()
@@ -97,17 +96,13 @@ void MainMenuState::UnloadState()
 		AEGfxDestroyFont(BigFont);
 
 	// Unload button audio
-	AEAudioUnloadAudio(hoverSound);
-	AEAudioUnloadAudio(clickSound);
 }
 
-void MainMenuState::Update(double dt)
+void MainMenuState::Update(double /*dt*/)
 {
-	(void)dt;
-
 	// Settings popup gets first dibs on input.
 	// Returns true if it is open and consumed the frame.
-	if (Settings::Update(scale, bgm.uiGroup, clickSound, hoverSound))
+	if (Settings::Update(scale))
 		return;
 
 	// ESC quits when popup is not open
@@ -128,7 +123,7 @@ void MainMenuState::Update(double dt)
 
 		// Play hover sound only when pointer enters button
 		if (buttonHover && !btnHoverStates[i])
-			AEAudioPlay(hoverSound, bgm.uiGroup, 0.2f, 0.7f, 0);
+			bgm.PlayUIHover();
 		btnHoverStates[i] = buttonHover;
 
 		if (buttonHover)
@@ -136,7 +131,7 @@ void MainMenuState::Update(double dt)
 			buttonClick = AEInputCheckTriggered(AEVK_LBUTTON);
 			if (buttonClick)
 			{
-				AEAudioPlay(clickSound, bgm.uiGroup, 0.6f, 0.6f, 0);
+				bgm.PlayUIClick();
 
 				switch (i)
 				{
@@ -171,14 +166,8 @@ void MainMenuState::Draw()
 		title.size.y * scale
 	};
 
-	AEMtx33 mtx;
-	GetTransformMtx(mtx, titlePos, 0.f, labelSize);
-	AEGfxSetTransform(mtx.m);
-	AEGfxSetColorToMultiply(0.75f, 0.75f, 0.75f, 1.f);
-	AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
-
-	DrawAEText(BigFont, title.label, titlePos, scale,
-		CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
+	DrawMesh(GetTransformMtx(titlePos, 0, labelSize), squareMesh, RenderingManager::GetInstance()->LoadTexture(logoTex), 255);
+	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 	// ----------------
 	// Draw Buttons
 	// ----------------

@@ -37,10 +37,6 @@ namespace {
 		AEVec2      pos;
 		AEVec2      size;
 		const char* label;
-<<<<<<< HEAD
-		bool        hasSideButtons;
-=======
->>>>>>> 6eb6c61ef08f0f7f482625915580eb0a06ec4c53
 	};
 
 	struct Title
@@ -53,19 +49,6 @@ namespace {
 	Button petButtons[] =
 	{
 		// idx 0 — Pet Inventory  (left column)
-<<<<<<< HEAD
-		{{ 500.f,  500.f }, { 450.f, 144.f }, "PET INVENTORY", false },
-		// idx 1 — Gacha          (right column)
-		{{ 1100.f, 500.f }, { 450.f, 144.f }, "GACHA",         false },
-		// idx 2 — Back           (top-left, same as ShopState)
-		{{ 300.f,  100.f }, { 225.f, 110.f }, "back",          false },
-	};
-
-	Title title = { { DEFAULT_W / 2, 100.f }, { 675.f, 110.f }, "PETS" };
-
-	constexpr int PET_BTN_COUNT = sizeof(petButtons) / sizeof(Button);
-	// =========================================================================
-=======
 		{{ 500.f,  500.f }, { 450.f, 144.f }, "PET INVENTORY" },
 		// idx 1 — Gacha          (right column)
 		{{ 1100.f, 500.f }, { 450.f, 144.f }, "GACHA"         },
@@ -76,7 +59,6 @@ namespace {
 	Title titleCfg = { { DEFAULT_W / 2, 100.f }, { 675.f, 110.f }, "PETS" };
 
 	constexpr int PET_BTN_COUNT = sizeof(petButtons) / sizeof(Button);
->>>>>>> 6eb6c61ef08f0f7f482625915580eb0a06ec4c53
 
 	float winW, winH, scale;
 
@@ -97,19 +79,14 @@ namespace {
 	// -------------------------------------------------------------------------
 	// Audio
 	// -------------------------------------------------------------------------
-	AEAudioGroup petAudioGroup;
-	AEAudio      hoverSound, clickSound;
+
 	bool         btnHoverStates[PET_BTN_COUNT] = { false };
 
 	// -------------------------------------------------------------------------
 	// Gacha
 	// -------------------------------------------------------------------------
 	static GachaAnimation gStateAnim;
-<<<<<<< HEAD
-	static s8 gachaFont = -1;
-=======
 	static s8             gachaFont = -1;
->>>>>>> 6eb6c61ef08f0f7f482625915580eb0a06ec4c53
 
 	// -------------------------------------------------------------------------
 	// Inventory
@@ -180,9 +157,7 @@ namespace {
 void PetState::LoadState()
 {
 	squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
-	petAudioGroup = AEAudioCreateGroup();
-	hoverSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17767.wav");
-	clickSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17766.wav");
+
 	gachaFont = AEGfxCreateFont(SECONDARY_FONT_PATH, 32);
 	petManager = PetManager::GetInstance();
 	EnsureOverlayMesh();
@@ -303,12 +278,12 @@ void PetState::Update(double dt)
 			bool isHovered = IsCursorOverWorld(worldPos, sSize, sSize, true);
 			if (index < (int)slotHover.size()) {
 				if (isHovered && !slotHover[index])
-					AEAudioPlay(hoverSound, petAudioGroup, 0.2f, 0.7f, 0);
+					bgm.PlayUIHover();
 				slotHover[index] = isHovered;
 			}
 
 			if (isHovered && AEInputCheckTriggered(AEVK_LBUTTON)) {
-				AEAudioPlay(clickSound, petAudioGroup, 0.6f, 0.6f, 0);
+				bgm.PlayUIClick();
 				auto clickedType = static_cast<Pets::PET_TYPE>(slot.petId);
 				auto clickedRank = static_cast<Pets::PET_RANK>(slot.rank);
 
@@ -344,17 +319,13 @@ void PetState::Update(double dt)
 		AEVec2 worldSize = { petButtons[i].size.x * scale, petButtons[i].size.y * scale };
 
 		bool buttonHover = IsCursorOverWorld(worldPos, worldSize.x, worldSize.y, true);
-<<<<<<< HEAD
-		bool buttonClick = false;
-=======
->>>>>>> 6eb6c61ef08f0f7f482625915580eb0a06ec4c53
 
 		if (buttonHover && !btnHoverStates[i])
-			AEAudioPlay(hoverSound, petAudioGroup, 0.2f, 0.7f, 0);
+			bgm.PlayUIHover();
 		btnHoverStates[i] = buttonHover;
 
 		if (buttonHover && AEInputCheckTriggered(AEVK_LBUTTON)) {
-			AEAudioPlay(clickSound, petAudioGroup, 0.6f, 0.6f, 0);
+			bgm.PlayUIClick();
 			switch (i) {
 			case 0: // Pet Inventory
 				currentView = PetView::INVENTORY;
@@ -402,11 +373,7 @@ void PetState::Draw()
 		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
 
 		// Coin HUD
-<<<<<<< HEAD
-		int coins = ShopFunctions::GetInstance()->getMoney();
-=======
 		int    coins = ShopFunctions::GetInstance()->getMoney();
->>>>>>> 6eb6c61ef08f0f7f482625915580eb0a06ec4c53
 		AEVec2 coinLabelPos = DefaultToWorld(1500.f, 50.f);
 		DrawAEText(Font, "COINS:", coinLabelPos, scale, CreateColor(255, 215, 0, 255), TEXT_MIDDLE);
 		char coinBuf[32];
@@ -611,8 +578,6 @@ void PetState::UnloadState()
 	if (Font >= 0) AEGfxDestroyFont(Font);
 	if (BigFont >= 0) AEGfxDestroyFont(BigFont);
 	if (gachaFont >= 0) { AEGfxDestroyFont(gachaFont); gachaFont = -1; }
-	AEAudioUnloadAudio(hoverSound);
-	AEAudioUnloadAudio(clickSound);
-	AEAudioUnloadAudioGroup(petAudioGroup);
+
 	UnloadGacha();
 }
