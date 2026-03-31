@@ -1271,19 +1271,87 @@ void GameState::Update(double dt)
         return;
     }
 
+    // --- DEBUG INPUTS ---
+#ifdef _DEBUG //only exists in debug
     if (AEInputCheckTriggered(AEVK_TAB)) {
-        showDebugOverlay = !showDebugOverlay;
-        std::cout << "[Debug] Overlay " << (showDebugOverlay ? "ON" : "OFF") << "\n";
+        debugMode = !debugMode;
+        showDebugOverlay = debugMode; // overlay follows debug mode
+        if (!debugMode) {
+            // reset all debug state when turning off
+            showDebugOverlay = false;
+            debugGodMode = false;
+            debugFreezeEnemies = false;
+            debugShowChests = false;
+        }
+        std::cout << "[Debug] Mode " << (debugMode ? "ON" : "OFF") << "\n";
     }
 
-    if (AEInputCheckTriggered(AEVK_K))
-        showKeybindOverlay = !showKeybindOverlay;
-
-    if (AEInputCheckTriggered(AEVK_F5)) {
-        debugGodMode = !debugGodMode;
-        std::cout << "[Debug] God mode " << (debugGodMode ? "ON" : "OFF") << "\n";
+    // all debug keys below are only active when debug mode is on
+    if (debugMode) {
+        if (AEInputCheckTriggered(AEVK_F5)) {
+            debugGodMode = !debugGodMode;
+            std::cout << "[Debug] God mode " << (debugGodMode ? "ON" : "OFF") << "\n";
+        }
+        if (AEInputCheckTriggered(AEVK_F6)) {
+            debugFreezeEnemies = !debugFreezeEnemies;
+            std::cout << "[Debug] Freeze AI " << (debugFreezeEnemies ? "ON" : "OFF") << "\n";
+        }
+        if (AEInputCheckTriggered(AEVK_F7)) {
+            debugShowChests = !debugShowChests;
+            std::cout << "[Debug] Show chests " << (debugShowChests ? "ON" : "OFF") << "\n";
+        }
+        if (AEInputCheckTriggered(AEVK_F1)) {
+            for (Enemy* e : procEnemies) if (e && e->IsEnabled()) e->TakeDamage({ 99999.f, nullptr, DAMAGE_TYPE::TRUE_DAMAGE, nullptr });
+            for (Enemy* e : csvEnemies)  if (e && e->IsEnabled()) e->TakeDamage({ 99999.f, nullptr, DAMAGE_TYPE::TRUE_DAMAGE, nullptr });
+            std::cout << "[Debug] All enemies killed.\n";
+        }
+        if (AEInputCheckTriggered(AEVK_F2)) {
+            if (!bossSpawned && inProceduralMap && nextMap) {
+                totalEnemiesKilled = totalKillTarget;
+                TrySpawnBoss(*nextMap);
+                std::cout << "[Debug] Boss force-spawned.\n";
+            }
+        }
+        if (AEInputCheckTriggered(AEVK_F3)) {
+            if (gPlayer) {
+                TileMap* cur = inProceduralMap ? nextMap : map;
+                AEVec2 sp = cur ? cur->GetSpawnPoint() : AEVec2{ 0,0 };
+                gPlayer->SetPos(sp);
+                camPos = sp;
+                std::cout << "[Debug] Teleported to spawn.\n";
+            }
+        }
+        if (AEInputCheckTriggered(AEVK_F4)) {
+            if (gPlayer) { gPlayer->Heal(gPlayer->GetMaxHP()); std::cout << "[Debug] HP refilled.\n"; }
+        }
+        // spawn chest at cursor
+        if (AEInputCheckTriggered(AEVK_L)) {
+            LootChest* chest = dynamic_cast<LootChest*>(
+                GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
+            AEVec2 m = GetMouseWorldVec();
+            chest->Init(m, { 75,75 }, 1, MESH_SQUARE, Collision::COL_RECT, { 75,75 },
+                CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE);
+        }
+        //spawn chest at cursor
+        if (AEInputCheckTriggered(AEVK_N)) {
+            AEVec2 m = GetMouseWorldVec();
+            Enemy* e = SpawnWeightedEnemy(m, 0.70f, 0.30f);
+            if (e) {
+                const char* tier = (e->GetDefinition().category == EnemyCategory::Elite) ? "Elite" : "Normal";
+                std::cout << "[Spawn N] " << e->GetDefinition().name << " (" << tier << ")\n";
+                if (inProceduralMap) procEnemies.push_back(e);
+                else                 csvEnemies.push_back(e);
+                ++enemiesRequiredForBoss;
+            }
+        }
     }
+#endif
 
+    //Cast pet skill — always available regardless of debug mode
+    if (AEInputCheckTriggered(AEVK_R))
+        PostOffice::GetInstance()->Send("PetManager", new PetSkillMsg(PetSkillMsg::CAST_SKILL));
+
+    // --- NON-DEBUG INPUTS ---
     // keyboard toggle — X shows/hides the keybind image popup
     if (AEInputCheckTriggered(AEVK_X)) {
         showKeyboardMenu = !showKeyboardMenu;
@@ -1293,64 +1361,9 @@ void GameState::Update(double dt)
     // block all other input while the keyboard popup is showing
     if (showKeyboardMenu) return;
 
-    if (AEInputCheckTriggered(AEVK_F6)) {
-        debugFreezeEnemies = !debugFreezeEnemies;
-        std::cout << "[Debug] Freeze AI " << (debugFreezeEnemies ? "ON" : "OFF") << "\n";
-    }
-    if (AEInputCheckTriggered(AEVK_F7)) {
-        debugShowChests = !debugShowChests;
-        std::cout << "[Debug] Show chests " << (debugShowChests ? "ON" : "OFF") << "\n";
-    }
-    if (AEInputCheckTriggered(AEVK_F1)) {
-        for (Enemy* e : procEnemies) if (e && e->IsEnabled()) e->TakeDamage({ 99999.f, nullptr, DAMAGE_TYPE::TRUE_DAMAGE, nullptr });
-        for (Enemy* e : csvEnemies)  if (e && e->IsEnabled()) e->TakeDamage({ 99999.f, nullptr, DAMAGE_TYPE::TRUE_DAMAGE, nullptr });
-        std::cout << "[Debug] All enemies killed.\n";
-    }
-    if (AEInputCheckTriggered(AEVK_F2)) {
-        if (!bossSpawned && inProceduralMap && nextMap) {
-            totalEnemiesKilled = totalKillTarget;
-            TrySpawnBoss(*nextMap);
-            std::cout << "[Debug] Boss force-spawned.\n";
-        }
-    }
-    if (AEInputCheckTriggered(AEVK_F3)) {
-        if (gPlayer) {
-            TileMap* cur = inProceduralMap ? nextMap : map;
-            AEVec2 sp = cur ? cur->GetSpawnPoint() : AEVec2{ 0,0 };
-            gPlayer->SetPos(sp);
-            camPos = sp;
-            std::cout << "[Debug] Teleported to spawn.\n";
-        }
-    }
-    if (AEInputCheckTriggered(AEVK_F4)) {
-        if (gPlayer) { gPlayer->Heal(gPlayer->GetMaxHP()); std::cout << "[Debug] HP refilled.\n"; }
-    }
-
-    //Cast pet skill
+    // Cast pet skill (Standard gameplay, not debug)
     if (AEInputCheckTriggered(AEVK_R))
         PostOffice::GetInstance()->Send("PetManager", new PetSkillMsg(PetSkillMsg::CAST_SKILL));
-
-#pragma region inputs_for_testing
-    if (AEInputCheckTriggered(AEVK_L)) {
-        LootChest* chest = dynamic_cast<LootChest*>(
-            GameObjectManager::GetInstance()->FetchGO(GO_TYPE::LOOT_CHEST));
-        AEVec2 m = GetMouseWorldVec();
-        chest->Init(m, { 75,75 }, 1, MESH_SQUARE, Collision::COL_RECT, { 75,75 },
-            CreateBitmask(1, Collision::PLAYER), Collision::INTERACTABLE);
-    }
-
-    if (AEInputCheckTriggered(AEVK_N)) {
-        AEVec2 m = GetMouseWorldVec();
-        Enemy* e = SpawnWeightedEnemy(m, 0.70f, 0.30f);
-        if (e) {
-            const char* tier = (e->GetDefinition().category == EnemyCategory::Elite) ? "Elite" : "Normal";
-            std::cout << "[Spawn N] " << e->GetDefinition().name << " (" << tier << ")\n";
-            if (inProceduralMap) procEnemies.push_back(e);
-            else                 csvEnemies.push_back(e);
-            ++enemiesRequiredForBoss;
-        }
-    }
-#pragma endregion
 
     if (!gPlayer) return;
 
