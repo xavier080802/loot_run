@@ -1266,7 +1266,8 @@ void GameState::Update(double dt)
     Pause::Update(dt);
     if (Pause::IsOpen()) return;
 
-    // freeze all game logic while the loading screen is showing
+    // sit here doing nothing until the loading timer runs out 
+    // (ps to prof this loading screen is artifical to let our gamestate load and prevent the user from seeing the lagspike on load)
     if (loadingTimer > 0.f) {
         loadingTimer -= (float)dt;
         if (loadingTimer < 0.f) loadingTimer = 0.f;
@@ -1603,7 +1604,7 @@ void GameState::Draw()
 
         AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
         if (font >= 0)
-            AEGfxPrint(font, "LOADING...", -0.12f, 0.05f, 1.2f, 1.f, 1.f, 1.f, 1.f);
+            AEGfxPrint(font, "LOADING...", -0.2f, 0.05f, 1.2f, 1.f, 1.f, 1.f, 1.f);
 
         return; // skip all other rendering while loading
     }
