@@ -112,7 +112,7 @@
                 "titleCol": [ 255, 255, 255, 255 ],
                 "content": [
                     {
-                        "text": "Welcome to Loot Run!\nCollect coins from defeating enemies and collecting loot.\nUse these coins to gacha for pets in the Pets menu or upgrade your stats in Shop.",
+                        "text": "Welcome to Loot Run!\nCollect coins from defeating enemies and collecting loot.\nUse these coins to gacha for pets in the Pets menu or upgrade your stats in Shop.\n\n\nDefeat enemies to summon to boss, then kill that boss!",
                         "contentTxtOrigin": "TEXT_MIDDLE",
                         "contentCol": [ 255, 255, 255, 255 ],
                         "contentPos": [ 0, 300 ],
