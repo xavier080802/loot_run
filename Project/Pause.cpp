@@ -29,6 +29,7 @@ namespace
     constexpr float ROW_SETTINGS = POP_TOP + 265.f;
     constexpr float ROW_GUIDE = POP_TOP + 365.f;
     constexpr float ROW_MAINMENU = POP_TOP + 465.f;
+    constexpr float ROW_HINT = POP_TOP + 600.f;
 
     // Button dimensions -- slightly wider than Settings close button (235)
     constexpr float BTN_W = 300.f;
