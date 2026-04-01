@@ -29,9 +29,6 @@ namespace {
 	constexpr float DEFAULT_W = 1600.0f;
 	constexpr float DEFAULT_H = 900.0f;
 
-	// =========================================================================
-	// LAYOUT CONFIG
-	// =========================================================================
 	struct Button
 	{
 		AEVec2      pos;
@@ -46,14 +43,17 @@ namespace {
 		const char* label;
 	};
 
+	bool gachaNoCoinWarning = false;
+
+	// Main menu buttons for the Pet system
 	Button petButtons[] =
 	{
 		// idx 0 — Pet Inventory  (left column)
 		{{ 500.f,  500.f }, { 450.f, 144.f }, "PET INVENTORY" },
 		// idx 1 — Gacha          (right column)
-		{{ 1100.f, 500.f }, { 450.f, 144.f }, "GACHA"         },
+		{{ 1100.f, 500.f }, { 450.f, 144.f }, "GACHA"          },
 		// idx 2 — Back           (top-left)
-		{{ 300.f,  100.f }, { 225.f, 110.f }, "back"          },
+		{{ 300.f,  100.f }, { 225.f, 110.f }, "back"           },
 	};
 
 	Title titleCfg = { { DEFAULT_W / 2, 100.f }, { 675.f, 110.f }, "PETS" };
@@ -61,6 +61,7 @@ namespace {
 	constexpr int PET_BTN_COUNT = sizeof(petButtons) / sizeof(Button);
 
 	float winW, winH, scale;
+
 
 	AEVec2 DefaultToWorld(float x, float y)
 	{
@@ -70,27 +71,17 @@ namespace {
 		};
 	}
 
-	// -------------------------------------------------------------------------
-	// View state
-	// -------------------------------------------------------------------------
+	// Navigation states for the Pet UI
 	enum class PetView { MAIN, INVENTORY, GACHA };
 	PetView currentView = PetView::MAIN;
 
-	// -------------------------------------------------------------------------
-	// Audio
-	// -------------------------------------------------------------------------
+	bool btnHoverStates[PET_BTN_COUNT] = { false };
 
-	bool         btnHoverStates[PET_BTN_COUNT] = { false };
-
-	// -------------------------------------------------------------------------
-	// Gacha
-	// -------------------------------------------------------------------------
+	// Gacha animation and font resources
 	static GachaAnimation gStateAnim;
-	static s8             gachaFont = -1;
+	static s8 gachaFont = -1;
 
-	// -------------------------------------------------------------------------
-	// Inventory
-	// -------------------------------------------------------------------------
+	// Grid layout settings for the pet collection screen
 	const int    COLUMNS = 6;
 	const float  SLOT_SIZE = 140.0f;
 	const float  PADDING = 30.0f;
@@ -100,15 +91,13 @@ namespace {
 	std::vector<PetSlot> sortedInventory;
 	std::vector<bool>    slotHover;
 
-	int            selectedIndex = -1;
+	int selectedIndex = -1;
 	Pets::PET_TYPE selectedType = Pets::PET_TYPE::NONE;
 	Pets::PET_RANK selectedRank = Pets::COMMON;
 
 	PetManager* petManager = nullptr;
 
-	// -------------------------------------------------------------------------
-	// Helpers
-	// -------------------------------------------------------------------------
+	// UI visuals: Colors associated with pet rarity
 	Color GetRarityColor(Pets::PET_RANK rank) {
 		switch (rank) {
 		case Pets::COMMON:    return CreateColor(200, 200, 200, 255);
@@ -121,6 +110,7 @@ namespace {
 		}
 	}
 
+	// String conversion for rarity ranks
 	const char* RankName(Pets::PET_RANK rank) {
 		switch (rank) {
 		case Pets::COMMON:    return "Common";
@@ -133,6 +123,7 @@ namespace {
 		}
 	}
 
+	// Refreshes the display list to show newest pets or updated counts
 	void RebuildSortedInventory() {
 		sortedInventory.clear();
 		auto const& inv = petManager->GetInventory();
@@ -141,7 +132,7 @@ namespace {
 				if (inner.second > 0)
 					sortedInventory.push_back({ outer.first, inner.first, inner.second });
 
-		// Lowest rarity first, then by petId
+		// Keep lower rarities at the top, then sort by ID
 		std::sort(sortedInventory.begin(), sortedInventory.end(),
 			[](PetSlot const& a, PetSlot const& b) {
 				return (a.rank != b.rank) ? (a.rank < b.rank) : (a.petId < b.petId);
@@ -149,7 +140,7 @@ namespace {
 		slotHover.assign(sortedInventory.size(), false);
 	}
 
-} // anonymous namespace
+} 
 
 // =============================================================================
 // LoadState
@@ -157,7 +148,6 @@ namespace {
 void PetState::LoadState()
 {
 	squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
-
 	gachaFont = AEGfxCreateFont(SECONDARY_FONT_PATH, 32);
 	petManager = PetManager::GetInstance();
 	EnsureOverlayMesh();
@@ -172,7 +162,6 @@ void PetState::InitState()
 	AEGfxFontSystemStart();
 	Font = AEGfxCreateFont(PRIMARY_FONT_PATH, 30);
 	BigFont = AEGfxCreateFont(PRIMARY_FONT_PATH, 75);
-
 	winW = static_cast<float>(AEGfxGetWinMaxX());
 	winH = static_cast<float>(AEGfxGetWinMaxY());
 	scale = (winW * 2 / DEFAULT_W) < (winH * 2 / DEFAULT_H)
@@ -190,7 +179,7 @@ void PetState::InitState()
 
 	RebuildSortedInventory();
 
-	// Restore equipped highlight if returning to this screen
+	// Check if a pet is already equipped so we can highlight it in the UI
 	for (int idx = 0; idx < (int)sortedInventory.size(); ++idx) {
 		auto t = static_cast<Pets::PET_TYPE>(sortedInventory[idx].petId);
 		auto rk = static_cast<Pets::PET_RANK>(sortedInventory[idx].rank);
@@ -207,22 +196,26 @@ void PetState::InitState()
 // =============================================================================
 void PetState::Update(double dt)
 {
-	// ---- GACHA VIEW ----------------------------------------------------------
+	// ---- GACHA VIEW ------------------------
 	if (currentView == PetView::GACHA)
 	{
+		// Back to main pet menu
 		if (AEInputCheckTriggered(AEVK_ESCAPE)) {
 			bgm.StopGacha(0.2f);
 			gStateAnim.Reset();
+			gachaNoCoinWarning = false;
 			currentView = PetView::MAIN;
 			for (int i = 0; i < PET_BTN_COUNT; ++i) btnHoverStates[i] = false;
 			return;
 		}
 
+		// Input handling for gacha interaction
 		bool openPressed = AEInputCheckTriggered(0x4F);
 		bool skipPressed = AEInputCheckTriggered(AEVK_SPACE);
 		bool pull10 = AEInputCheckTriggered(0x52);
-		bool pull100 = AEInputCheckTriggered(AEVK_T) || AEInputCheckTriggered(0x54);
+		bool pull100 = AEInputCheckTriggered(0x54);
 
+		// Logic for re-rolling while already in the gacha screen
 		if (gStateAnim.phase == GachaPhase::Done) {
 			petManager->SaveInventoryToJSON();
 			RebuildSortedInventory();
@@ -230,20 +223,26 @@ void PetState::Update(double dt)
 			int coins = ShopFunctions::GetInstance()->getMoney();
 			if (pull10) {
 				if (coins >= GACHA_COST_10) {
+					gachaNoCoinWarning = false;
 					ShopFunctions::GetInstance()->addMoney(-GACHA_COST_10);
+					bgm.PlayGacha();
 					BeginGachaOverlay(gStateAnim, 10, 0.1f, 0.8f, 0.3f);
 				}
 				else {
+					gachaNoCoinWarning = true;
 					std::cout << "[Gacha] Not enough coins for x10 (need "
 						<< GACHA_COST_10 << ", have " << coins << ")\n";
 				}
 			}
 			else if (pull100) {
 				if (coins >= GACHA_COST_100) {
+					gachaNoCoinWarning = false;
 					ShopFunctions::GetInstance()->addMoney(-GACHA_COST_100);
+					bgm.PlayGacha();
 					BeginGachaOverlay(gStateAnim, 100, 0.1f, 1.2f, 0.2f);
 				}
 				else {
+					gachaNoCoinWarning = true;
 					std::cout << "[Gacha] Not enough coins for x100 (need "
 						<< GACHA_COST_100 << ", have " << coins << ")\n";
 				}
@@ -255,7 +254,7 @@ void PetState::Update(double dt)
 		return;
 	}
 
-	// ---- INVENTORY VIEW ------------------------------------------------------
+	// ---- INVENTORY VIEW ------------------------
 	if (currentView == PetView::INVENTORY)
 	{
 		if (AEInputCheckTriggered(AEVK_ESCAPE)) {
@@ -264,6 +263,7 @@ void PetState::Update(double dt)
 			return;
 		}
 
+		// mouse interaction for selecting pets
 		for (int index = 0; index < (int)sortedInventory.size(); ++index) {
 			PetSlot const& slot = sortedInventory[index];
 			int row = index / COLUMNS;
@@ -282,6 +282,7 @@ void PetState::Update(double dt)
 				slotHover[index] = isHovered;
 			}
 
+			// Toggle equip/unequip on click
 			if (isHovered && AEInputCheckTriggered(AEVK_LBUTTON)) {
 				bgm.PlayUIClick();
 				auto clickedType = static_cast<Pets::PET_TYPE>(slot.petId);
@@ -307,7 +308,7 @@ void PetState::Update(double dt)
 		return;
 	}
 
-	// ---- MAIN VIEW -----------------------------------------------------------
+	// ---- MAIN VIEW -------------------------
 	if (AEInputCheckTriggered(AEVK_ESCAPE)) {
 		GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
 		return;
@@ -331,17 +332,19 @@ void PetState::Update(double dt)
 				currentView = PetView::INVENTORY;
 				RebuildSortedInventory();
 				break;
-			case 1: // Gacha
+			case 1: // Gacha: checks for enough coin before initiating animation
 			{
 				currentView = PetView::GACHA;
 				bgm.StopGameplayBGM();
-				bgm.PlayGacha();
 				int coins = ShopFunctions::GetInstance()->getMoney();
 				if (coins >= GACHA_COST_10) {
+					gachaNoCoinWarning = false;
 					ShopFunctions::GetInstance()->addMoney(-GACHA_COST_10);
+					bgm.PlayGacha();
 					BeginGachaOverlay(gStateAnim, 10, 0.6f, 1.2f, 0.3f);
 				}
 				else {
+					gachaNoCoinWarning = true;
 					gStateAnim.Reset();
 					gStateAnim.phase = GachaPhase::Done;
 					std::cout << "[Gacha] Not enough coins (need " << GACHA_COST_10 << ")\n";
@@ -362,7 +365,7 @@ void PetState::Update(double dt)
 // =============================================================================
 void PetState::Draw()
 {
-	// ---- GACHA VIEW ----------------------------------------------------------
+	// ---- GACHA VIEW --------------------------
 	if (currentView == PetView::GACHA)
 	{
 		AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
@@ -372,7 +375,7 @@ void PetState::Draw()
 
 		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
 
-		// Coin HUD
+		// Show currency while pulling
 		int    coins = ShopFunctions::GetInstance()->getMoney();
 		AEVec2 coinLabelPos = DefaultToWorld(1500.f, 50.f);
 		DrawAEText(Font, "COINS:", coinLabelPos, scale, CreateColor(255, 215, 0, 255), TEXT_MIDDLE);
@@ -381,17 +384,15 @@ void PetState::Draw()
 		AEVec2 coinAmtPos = DefaultToWorld(1500.f, 95.f);
 		DrawAEText(Font, coinBuf, coinAmtPos, scale, CreateColor(255, 215, 0, 255), TEXT_MIDDLE);
 
-		if (gStateAnim.phase == GachaPhase::Done) {
-			if (coins < GACHA_COST_10) {
-				AEVec2 warnPos = DefaultToWorld(DEFAULT_W * 0.5f, DEFAULT_H - 220.f);
-				DrawAEText(Font, "NOT ENOUGH COINS!", warnPos, scale * 2.0f,
-					CreateColor(255, 60, 60, 255), TEXT_MIDDLE);
-			}
+		if (gachaNoCoinWarning) {
+			AEVec2 warnPos = DefaultToWorld(DEFAULT_W * 0.5f, DEFAULT_H - 220.f);
+			DrawAEText(Font, "NOT ENOUGH COINS!", warnPos, scale * 2.0f,
+				CreateColor(255, 60, 60, 255), TEXT_MIDDLE);
 		}
 		return;
 	}
 
-	// ---- INVENTORY VIEW ------------------------------------------------------
+	// ---- INVENTORY VIEW ------------------
 	if (currentView == PetView::INVENTORY)
 	{
 		AEGfxSetBackgroundColor(0.15f, 0.15f, 0.15f);
@@ -399,7 +400,7 @@ void PetState::Draw()
 		AEGfxSetBlendMode(AE_GFX_BM_BLEND);
 		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
-		// Title
+		// Render the header bar
 		{
 			AEVec2  invTitlePos = DefaultToWorld(DEFAULT_W / 2, 100.f);
 			AEVec2  invTitleSize = { 675.f * scale, 110.f * scale };
@@ -415,6 +416,7 @@ void PetState::Draw()
 
 		auto const& petDataMap = petManager->GetPetDataMap();
 
+		// Draw the pet grid
 		for (int index = 0; index < (int)sortedInventory.size(); ++index) {
 			PetSlot const& slot = sortedInventory[index];
 			int row = index / COLUMNS;
@@ -431,7 +433,7 @@ void PetState::Draw()
 
 			AEMtx33 mtx;
 
-			// Gold border for selected slot
+			// Highlight the currently active pet with a gold border
 			if (isSelected) {
 				AEVec2 borderSize = { worldSize.x + 8.f * scale, worldSize.y + 8.f * scale };
 				GetTransformMtx(mtx, worldPos, 0.0f, borderSize);
@@ -440,15 +442,15 @@ void PetState::Draw()
 				AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 			}
 
-			// Slot background
+			// Render the box background for each slot
 			GetTransformMtx(mtx, worldPos, 0.0f, worldSize);
 			AEGfxSetTransform(mtx.m);
 			if (isSelected)      AEGfxSetColorToMultiply(0.5f, 0.45f, 0.1f, 1.0f);
 			else if (hover)      AEGfxSetColorToMultiply(0.4f, 0.4f, 0.4f, 1.0f);
-			else                 AEGfxSetColorToMultiply(0.2f, 0.2f, 0.2f, 1.0f);
+			else                  AEGfxSetColorToMultiply(0.2f, 0.2f, 0.2f, 1.0f);
 			AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 
-			// Pet name, count, labels
+			// Overlay pet details (Name, quantity, rarity color)
 			auto it = petDataMap.find(static_cast<Pets::PET_TYPE>(slot.petId));
 			if (it != petDataMap.end()) {
 				AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
@@ -470,7 +472,7 @@ void PetState::Draw()
 			}
 		}
 
-		// Skill description textbox
+		// Tooltip: show the pet's ability description when selected
 		if (selectedIndex != -1) {
 			auto it = petManager->GetPetDataMap().find(selectedType);
 			if (it != petManager->GetPetDataMap().end()) {
@@ -482,7 +484,7 @@ void PetState::Draw()
 			}
 		}
 
-		// Bottom hint bar
+		// Status bar at the bottom for quick reference
 		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
 		AEVec2 hintPos = DefaultToWorld(DEFAULT_W * 0.5f, DEFAULT_H - 40.f);
 		if (selectedType != Pets::PET_TYPE::NONE) {
@@ -499,13 +501,13 @@ void PetState::Draw()
 		return;
 	}
 
-	// ---- MAIN VIEW -----------------------------------------------------------
+	// ---- MAIN VIEW -----------
 	AEGfxSetBackgroundColor(0.2f, 0.2f, 0.2f);
 	AEGfxStart();
 	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
 	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
-	// Title
+	// Render Main Menu title box
 	{
 		AEVec2  titlePos = DefaultToWorld(titleCfg.pos.x, titleCfg.pos.y);
 		AEVec2  titleSize = { titleCfg.size.x * scale, titleCfg.size.y * scale };
@@ -519,7 +521,7 @@ void PetState::Draw()
 		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 	}
 
-	// Coin HUD
+	// Render current gold amount
 	{
 		AEVec2 coinLabelPos = DefaultToWorld(1500.f, 50.f);
 		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
@@ -531,7 +533,7 @@ void PetState::Draw()
 		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 	}
 
-	// Buttons
+	// Render the primary navigation buttons
 	for (int i = 0; i < PET_BTN_COUNT; ++i)
 	{
 		AEVec2  worldPos = DefaultToWorld(petButtons[i].pos.x, petButtons[i].pos.y);
@@ -549,7 +551,7 @@ void PetState::Draw()
 		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 	}
 
-	// Cost hint below the Gacha button
+	// Cost display for Gacha pulls
 	{
 		float  bottom = petButtons[1].pos.y + petButtons[1].size.y * 0.5f + 20.f;
 		AEVec2 costPos = DefaultToWorld(petButtons[1].pos.x, bottom);
@@ -568,6 +570,7 @@ void PetState::Draw()
 void PetState::ExitState()
 {
 	std::cout << "Exit pet state\n";
+	// save the pet collection when leaving this state
 	Pets::SaveInventory(petManager->GetInventory());
 	bgm.StopGacha(0.2f);
 	gStateAnim.Reset();
@@ -575,6 +578,7 @@ void PetState::ExitState()
 
 void PetState::UnloadState()
 {
+	// Cleanup 
 	if (Font >= 0) AEGfxDestroyFont(Font);
 	if (BigFont >= 0) AEGfxDestroyFont(BigFont);
 	if (gachaFont >= 0) { AEGfxDestroyFont(gachaFont); gachaFont = -1; }

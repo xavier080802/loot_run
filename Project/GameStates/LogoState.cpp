@@ -1,5 +1,6 @@
 #include "LogoState.h"
 #include "../RenderingManager.h"
+#include "../Helpers/RenderUtils.h"
 
 void LogoState::LoadState() {
     pLogoTex = AEGfxTextureLoad("Assets/digipen.png");
@@ -64,6 +65,15 @@ void LogoState::Draw() {
         RenderingManager::GetInstance()->GetMesh(MESH_SQUARE),
         AE_GFX_MDM_TRIANGLES
     );
+    s8 fnt = RenderingManager::GetInstance()->GetFont();
+    if (fnt >= 0) {
+        float winH = (float)(AEGfxGetWinMaxY() - AEGfxGetWinMinY());
+        AEVec2 textPos = { 0.0f, -(winH * 0.5f) + 20.0f };
+        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        DrawAEText(fnt,
+            "All content (c) 2026 DigiPen Institute of Technology Singapore. All Rights Reserved",
+            textPos, 0.35f, CreateColor(200, 200, 200, (u8)(alpha * 255)), TEXT_MIDDLE);
+    }
 }
 
 void LogoState::ExitState() {}
