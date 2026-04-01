@@ -123,6 +123,7 @@ void Enemy::OnStatEffectChange()
     mStats = mDef->baseStats;
     mStats.maxHP *= mDifficultyMultiplier;
     mStats.attack *= mDifficultyMultiplier;
+    mStats.defense *= mDifficultyMultiplier;
     //Recalc stat changes
     ActorStats seStats = CalculateStatusEffectStats();
     mStats.attack += seStats.attack;
