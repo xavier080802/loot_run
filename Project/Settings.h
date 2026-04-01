@@ -8,13 +8,13 @@
 /// Usage from any state:
 ///
 ///   Update():
-///     if (Settings::Update(scale, audioGroup, clickSound, hoverSound)) return;
+///     if (Settings::Update(scale)) return;
 ///
 ///   Draw():
 ///     // draw your state content first, then:
 ///     Settings::Draw(font, bigFont, scale);
 ///
-/// The caller owns all font and audio handles -- Settings never loads or
+/// The caller owns all font handles and audio -- Settings never loads or
 /// frees them, so there is no double-load and no lifetime issue.
 /// </summary>
 namespace Settings
@@ -34,18 +34,16 @@ namespace Settings
     int GetUIVolume();
     int GetSFXVolume();
 
+    /// Load saved volumes from disk and apply them to bgm.
+    /// Call once during application startup before the first frame.
+    void Load();
+
     /// Handle popup input for one frame.
     /// Returns true if the popup is open and consumed input this frame --
     /// the caller should skip all other input processing when true.
     ///
     /// @param scale        The calling state's current UI scale factor.
-    /// @param audioGroup   Audio group used for button feedback sounds.
-    /// @param clickSound   Sound played on button click.
-    /// @param hoverSound   Sound played when cursor enters a button.
-    bool Update(float scale,
-                AEAudioGroup audioGroup,
-                AEAudio      clickSound,
-                AEAudio      hoverSound);
+    bool Update(float scale);
 
     /// Render the popup overlay.
     /// Call at the very end of Draw() so the popup sits on top of everything.

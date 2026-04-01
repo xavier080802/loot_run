@@ -1,5 +1,11 @@
 {
     "endlessHighScore" : 0.0,
+    "settings" : 
+    {
+        "bgmVolume" : 5,
+        "sfxVolume" : 10,
+        "uiVolume" : 10
+    },
     "totalCoins" : 0,
     "upgrades" : 
     {

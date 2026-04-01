@@ -17,6 +17,7 @@ struct BGMManager {
     AEAudio creditsTrack;
 
     // UI Sound Tracks
+    AEAudio uiHoverSound;
     AEAudio uiClickSound;
 
     // SFX Tracks
@@ -40,6 +41,7 @@ struct BGMManager {
     void PlayClip(std::string const& filepath, float vol = 1.f, float pitch = 1.f, bool isUI = false);
 
     // UI Methods
+    void PlayUIHover();
     void PlayUIClick();
 
     // SFX Methods

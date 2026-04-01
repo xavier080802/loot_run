@@ -60,9 +60,6 @@ namespace {
 		};
 	}
 
-	AEAudio hoverSound;
-	AEAudio clickSound;
-
 	// Track previous hover state
 	bool btnHoverStates[MENU_BTN_COUNT] = { false };
 
@@ -97,8 +94,6 @@ void MainMenuState::LoadState()
 {
 	squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
 
-	hoverSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17767.wav");
-	clickSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17766.wav");
 	Font = AEGfxCreateFont(PRIMARY_FONT_PATH, 38);
 	BigFont = AEGfxCreateFont(PRIMARY_FONT_PATH, 75);
 
@@ -113,6 +108,8 @@ void MainMenuState::LoadState()
 		exitCancelbtn->SetClickCallback([]() {showExitConfirmation = false;})
 			.SetHoverCallback([](bool) {cancelHovered = true;});
 	}
+	bgm.Init();
+	Settings::Load(); // load saved volumes and apply to bgm groups immediately
 }
 
 void MainMenuState::InitState()
@@ -138,15 +135,13 @@ void MainMenuState::UnloadState()
 		AEGfxDestroyFont(BigFont);
 
 	// Unload button audio
-	AEAudioUnloadAudio(hoverSound);
-	AEAudioUnloadAudio(clickSound);
 }
 
 void MainMenuState::Update(double /*dt*/)
 {
 	// Settings popup gets first dibs on input.
 	// Returns true if it is open and consumed the frame.
-	if (Settings::Update(scale, bgm.uiGroup, clickSound, hoverSound))
+	if (Settings::Update(scale))
 		return;
 
 	//If exit dialog is open, dont update the main UI
@@ -173,7 +168,7 @@ void MainMenuState::Update(double /*dt*/)
 
 		// Play hover sound only when pointer enters button
 		if (buttonHover && !btnHoverStates[i])
-			AEAudioPlay(hoverSound, bgm.uiGroup, 0.2f, 0.7f, 0);
+			bgm.PlayUIHover();
 		btnHoverStates[i] = buttonHover;
 
 		if (buttonHover)
@@ -181,7 +176,7 @@ void MainMenuState::Update(double /*dt*/)
 			buttonClick = AEInputCheckTriggered(AEVK_LBUTTON);
 			if (buttonClick)
 			{
-				AEAudioPlay(clickSound, bgm.uiGroup, 0.6f, 0.6f, 0);
+				bgm.PlayUIClick();
 
 				switch (i)
 				{
