@@ -10,6 +10,7 @@
 #include "../Helpers/ColorUtils.h"
 #include "../main.h"
 #include "../UIConfig.h"
+#include "../UI/UIElement.h"
 #include <iostream>
 
 //helpers
@@ -64,6 +65,32 @@ namespace {
 
 	// Track previous hover state
 	bool btnHoverStates[MENU_BTN_COUNT] = { false };
+
+	// Exit confirmation dialog
+	bool showExitConfirmation{ false }, exitGame{ false }, confirmHovered{ false }, cancelHovered{ false };
+	const AEVec2 exitDialogSize{600, 300};
+	UIElement* exitConfirmBtn, * exitCancelbtn;
+
+	void DrawExitConfirmation() {
+		//Cover whole screen
+		DrawTintedMesh(GetTransformMtx(AEVec2{}, 0, AEVec2{ (float)AEGfxGetWindowWidth(), (float)AEGfxGetWindowHeight() }),
+			squareMesh, nullptr, Color{0,0,0,255}, 100);
+
+		//Draw Dialog BG
+		DrawTintedMesh(GetTransformMtx(AEVec2{}, 0, exitDialogSize), squareMesh, nullptr, Color{ 150,150,150,255 }, 255);
+
+		//Draw text
+		DrawAEText(Font, "Exit Loot Run?", AEVec2{ 0, 100 }, 1.3f, Color{ 0,0,0,255 }, TextOriginPos::TEXT_MIDDLE);
+
+		//Draw btns
+		DrawTintedMesh(GetTransformMtx(exitConfirmBtn->GetPos(), 0, exitConfirmBtn->GetSize()), squareMesh, nullptr, confirmHovered ? Color{255,50,50,255} : Color{ 200,50,50, 255 }, 255);
+		DrawAEText(Font, "Exit", exitConfirmBtn->GetPos(), 1.f, Color{ 0,0,0,255 }, TextOriginPos::TEXT_MIDDLE);
+
+		DrawTintedMesh(GetTransformMtx(exitCancelbtn->GetPos(), 0, exitCancelbtn->GetSize()), squareMesh, nullptr, cancelHovered ? Color{50,255,50,255}: Color{ 50,200,50, 255 }, 255);
+		DrawAEText(Font, "Go Back", exitCancelbtn->GetPos(), 1.f, Color{ 0,0,0,255 }, TextOriginPos::TEXT_MIDDLE);
+		//Reset hover state
+		cancelHovered = confirmHovered = false;
+	}
 }
 
 void MainMenuState::LoadState()
@@ -74,6 +101,18 @@ void MainMenuState::LoadState()
 	clickSound = AEAudioLoadSound("Assets/Audio/MOUSETRAP_GEN-HDF-17766.wav");
 	Font = AEGfxCreateFont(PRIMARY_FONT_PATH, 38);
 	BigFont = AEGfxCreateFont(PRIMARY_FONT_PATH, 75);
+
+	//Load Exit dialog btns
+	if (!exitConfirmBtn) {
+		exitConfirmBtn = new UIElement{ AEVec2{-150, -50}, { 200.f, 67.f }, 0, Collision::COL_RECT };
+		// Cant terminate in the callback. UIManager explodes. Set a flag instead
+		exitConfirmBtn->SetClickCallback([]() {exitGame = true;}).SetHoverCallback([](bool) {confirmHovered = true;});
+	}
+	if (!exitCancelbtn) {
+		exitCancelbtn = new UIElement{ AEVec2{150, -50}, { 200.f, 67.f }, 0, Collision::COL_RECT };
+		exitCancelbtn->SetClickCallback([]() {showExitConfirmation = false;})
+			.SetHoverCallback([](bool) {cancelHovered = true;});
+	}
 }
 
 void MainMenuState::InitState()
@@ -110,10 +149,16 @@ void MainMenuState::Update(double /*dt*/)
 	if (Settings::Update(scale, bgm.uiGroup, clickSound, hoverSound))
 		return;
 
+	//If exit dialog is open, dont update the main UI
+	if (showExitConfirmation) {
+		if (exitGame) Terminate(); //Confirm exit clicked
+		return;
+	}
+
 	// ESC quits when popup is not open
 	if (AEInputCheckTriggered(AEVK_ESCAPE))
 	{
-		Terminate();
+		showExitConfirmation = true;
 		return;
 	}
 
@@ -145,7 +190,7 @@ void MainMenuState::Update(double /*dt*/)
 				case 2: GameStateManager::GetInstance()->SetNextGameState("ShopState", true, true); break;
 				case 3: Settings::Open(); break;
 				case 4: GameStateManager::GetInstance()->SetNextGameState("CreditState", true, true); break;
-				case 5: Terminate(); break;
+				case 5: showExitConfirmation = true; break;
 				case 6: GameStateManager::GetInstance()->SetNextGameState("GuideState", true, false, false); break;
 				}
 			}
@@ -191,7 +236,8 @@ void MainMenuState::Draw()
 			ToVec2(scale, scale)
 		);
 
-		bool hover = IsCursorOverWorld(worldPos, worldSize.x, worldSize.y, true);
+		//If exit dialog is open, dont do hover behavior
+		bool hover = !showExitConfirmation && IsCursorOverWorld(worldPos, worldSize.x, worldSize.y, true);
 
 		AEMtx33 _mtx;
 		GetTransformMtx(_mtx, worldPos, 0.f, worldSize);
@@ -211,6 +257,10 @@ void MainMenuState::Draw()
 			CreateColor(10, 10, 10, 255),
 			TEXT_MIDDLE
 		);
+	}
+
+	if (showExitConfirmation) {
+		DrawExitConfirmation();
 	}
 
 	// Settings popup (drawn on top of everything)
