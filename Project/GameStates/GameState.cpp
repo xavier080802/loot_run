@@ -668,8 +668,9 @@ namespace {
                     squareMesh, nullptr, (held && ind == i) ? Color{ 0,255,0,255 } : Color{ 100,100,0,255 }, 200);
 
                 if (!gear[i]) continue;
-                //Draw item texture
-                DrawMesh(mtx, squareMesh, RenderingManager::GetInstance()->LoadTexture(gear[i]->texturePath), 255);
+                //Draw item texure
+                mtx = GetTransformMtx(invGearElements[i]->GetPos(), 0, invGearElements[i]->GetSize());
+                DrawTintedMesh(mtx, squareMesh, RenderingManager::GetInstance()->LoadTexture(gear[i]->texturePath), GetRarityColor(gear[i]->rarity), 255);
             }
 
             //Draw the player's stats
@@ -1134,9 +1135,6 @@ void GameState::InitState()
     gPlayer->InitPlayerRuntime(base);
     gPlayer->ApplyShopUpgrades();
     gPlayer->Heal(gPlayer->GetMaxHP());
-    //Call pet stuff after player setup
-    PetManager::GetInstance()->InitPetForGame(*map);
-
     // pets don't follow in tutorial so the player isn't overwhelmed early on
     if (!doTutorial) {
         PetManager::GetInstance()->InitPetForGame(*map);
