@@ -168,8 +168,7 @@ void GuideState::LoadUIJSON() {
 		exitBtn = exitBtn ? &exitBtn->ReInit(root["exitBtn"]) : new UIElement{ root["exitBtn"] };
 		exitBtn->SetClickCallback([]() {
 			//Leave state. Do not call Init as it is assumed that the prev state is
-			//in a 
-			// d state
+			//in a paused state
 			GameStateManager::GetInstance()->ReturnToPrevState(false);
 			bgm.PlayUIClick();
 		})

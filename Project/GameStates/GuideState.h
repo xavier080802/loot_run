@@ -10,8 +10,7 @@
 /*	Guide State
 	
 	Purpose: Show content to guide the player through some stuff.
-			Accessed from the main menu and 
-			menu
+			Accessed from the main menu and pause menu
 
 	NOTE: When entering this state from GameState, DO NOT exit the current state in the parameters,
 	and set disableGOs to false, otherwise GameState will explode.

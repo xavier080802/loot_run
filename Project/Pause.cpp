@@ -18,8 +18,8 @@ namespace
     // Popup dimensions (default-space)
     constexpr float POP_CX = DEFAULT_W / 2.f;
     constexpr float POP_CY = DEFAULT_H / 2.f;
-    constexpr float POP_W = 500.f;
-    constexpr float POP_H = 450.f;
+    constexpr float POP_W  = 500.f;
+    constexpr float POP_H  = 550.f;
 
     constexpr float POP_TOP = POP_CY - POP_H / 2.f;
 
@@ -27,8 +27,8 @@ namespace
     constexpr float ROW_TITLE = POP_TOP + 50.f;
     constexpr float ROW_RESUME = POP_TOP + 165.f;
     constexpr float ROW_SETTINGS = POP_TOP + 265.f;
-    constexpr float ROW_MAINMENU = POP_TOP + 365.f;
-    constexpr float ROW_HINT = POP_TOP + 600.f;
+    constexpr float ROW_GUIDE = POP_TOP + 365.f;
+    constexpr float ROW_MAINMENU = POP_TOP + 465.f;
 
     // Button dimensions -- slightly wider than Settings close button (235)
     constexpr float BTN_W = 300.f;
@@ -57,9 +57,8 @@ namespace
     // Hint rotation timer (seconds)
     constexpr float HINT_INTERVAL = 8.f;
     float hintTimer = 0.f;
-
-    // Hover tracking: [0]=resume  [1]=settings  [2]=mainmenu
-    bool hoverStates[3] = { false };
+    // Hover tracking: [0]=resume  [1]=settings  [2]=mainmenu [3]=guide
+    bool hoverStates[4] = { false };
 
     float GetScale()
     {
@@ -145,14 +144,17 @@ namespace Pause
         bool hovResume = Hovered(POP_CX, ROW_RESUME, BTN_W, BTN_H, scale);
         bool hovSettings = Hovered(POP_CX, ROW_SETTINGS, BTN_W, BTN_H, scale);
         bool hovMainMenu = Hovered(POP_CX, ROW_MAINMENU, BTN_W, BTN_H, scale);
+        bool hovGuide = Hovered(POP_CX, ROW_GUIDE, BTN_W, BTN_H, scale);
 
-        if (hovResume && !hoverStates[0]) bgm.PlayUIHover();
-        if (hovSettings && !hoverStates[1]) bgm.PlayUIHover();
-        if (hovMainMenu && !hoverStates[2]) bgm.PlayUIHover();
+        if (hovResume   && !hoverStates[0]) bgm.PlayUIClick();
+        if (hovSettings && !hoverStates[1]) bgm.PlayUIClick();
+        if (hovMainMenu && !hoverStates[2]) bgm.PlayUIClick();
+        if (hovGuide && !hoverStates[3]) bgm.PlayUIClick();
 
         hoverStates[0] = hovResume;
         hoverStates[1] = hovSettings;
         hoverStates[2] = hovMainMenu;
+        hoverStates[3] = hovGuide;
 
         if (clicked)
         {
@@ -171,6 +173,10 @@ namespace Pause
                 bgm.PlayUIClick();
                 Close();
                 GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
+            }
+            else if (hovGuide) {
+                bgm.PlayUIClick();
+                GameStateManager::GetInstance()->SetNextGameState("GuideState", true, false, false);
             }
         }
 
@@ -219,6 +225,15 @@ namespace Pause
         DrawAEText(font, "Settings",
             D2W(POP_CX, ROW_SETTINGS, scale), scale * 0.7f,
             CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
+        AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+
+        // Guide button
+        float gTint = hoverStates[3] ? 0.9f : 0.75f;
+        DrawRect(POP_CX, ROW_GUIDE, BTN_W, BTN_H, scale, gTint, gTint, gTint);
+        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        DrawAEText(font, "Guide",
+                   D2W(POP_CX, ROW_GUIDE, scale), scale * 0.7f,
+                   CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
         // Main Menu button
