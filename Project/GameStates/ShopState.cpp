@@ -47,7 +47,7 @@ namespace {
 		{{ 800.f, 750.f }, { 1000.f, 100.f }, "Defense", true},
 		//{{ 1100.f, 700.f }, { 450.f, 144.f }, "Enter Gacha", false},
 		{{ 150.f, 100.f }, { 225.f, 110.f }, "back", false},
-		{{ 150.f, 745.f }, { 225.f, 110.f }, "REFUND", false},
+		{{ 150.f, 745.f }, { 225.f, 110.f }, "REFUND ALL", false},
 		{{ 1450.f, 530.f }, { 80.f, 60.f }, "x1", false},
 		{{ 1450.f, 610.f }, { 80.f, 60.f }, "x10", false},
 		{{ 1450.f, 690.f }, { 80.f, 60.f }, "x25", false},
@@ -62,6 +62,7 @@ namespace {
 	float winW;
 	float winH;
 	float scale;
+	int selectedBtn = -1;
 
 	AEVec2 DefaultToWorld(float x, float y)
 	{
@@ -135,6 +136,11 @@ void ShopState::InitState()
 	// Reset hover tracking when entering state
 	for (int i = 0; i < SHOP_BTN_COUNT; ++i) btnHoverStates[i] = false;
 	//isGachaActive = false;
+
+	if (ShopFunctions::GetInstance()->getPurchaseMultiplier() == 1)selectedBtn = 7;
+	else if (ShopFunctions::GetInstance()->getPurchaseMultiplier() == 10)selectedBtn = 8;
+	else if (ShopFunctions::GetInstance()->getPurchaseMultiplier() == 25)selectedBtn = 9;
+	else if (ShopFunctions::GetInstance()->getPurchaseMultiplier() == 50)selectedBtn = 10;
 }
 
 void ShopState::Update(double dt)
@@ -165,6 +171,13 @@ void ShopState::Update(double dt)
 	//}
 	//else
 	//{
+	
+
+	//esc key to main menu
+	if (AEInputCheckTriggered(AEVK_ESCAPE)) {
+			GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
+		}
+
 		for (int i = 0; i < SHOP_BTN_COUNT; ++i)
 		{
 			AEVec2 worldPos = DefaultToWorld(shopButtons[i].pos.x, shopButtons[i].pos.y);
@@ -178,9 +191,7 @@ void ShopState::Update(double dt)
 			if (buttonHover && !btnHoverStates[i])
 			bgm.PlayUIHover();
 			btnHoverStates[i] = buttonHover;
-			if (AEInputCheckTriggered(AEVK_ESCAPE)) {
-				GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
-			}
+			
 			if (buttonHover)
 			{
 				buttonClick = AEInputCheckTriggered(AEVK_LBUTTON);
@@ -207,15 +218,19 @@ void ShopState::Update(double dt)
 						break;
 					case 7: //x1
 						ShopFunctions::GetInstance()->setPurchaseMultiplier(1);
+						selectedBtn = 7;
 						break;
 					case 8: //x10
 						ShopFunctions::GetInstance()->setPurchaseMultiplier(10);
+						selectedBtn = 8;
 						break;
 					case 9: //x25
 						ShopFunctions::GetInstance()->setPurchaseMultiplier(25);
+						selectedBtn = 9;
 						break;
 					case 10: //x50
 						ShopFunctions::GetInstance()->setPurchaseMultiplier(50);
+						selectedBtn = 10;
 						break;
 					}
 					std::cout << "Clicked Shop Button: " << shopButtons[i].label << std::endl;
@@ -314,7 +329,17 @@ void ShopState::Draw()
 			// Main Button Rect
 			GetTransformMtx(mtx, worldPos, 0.0f, worldSize);
 			AEGfxSetTransform(mtx.m);
-			AEGfxSetColorToMultiply(hover ? 0.9f : 0.75f, hover ? 0.9f : 0.75f, hover ? 0.9f : 0.75f, 1.0f);
+			
+			if (i == selectedBtn) //high light current buy multiplier
+			{
+				AEGfxSetColorToMultiply(1.f,1.f,1.f, 1.0f);
+			}else if (i == 6) //red refund btn
+			{
+				AEGfxSetColorToMultiply(hover ? 0.9f : 0.75f, hover ? 0.3f : 0.2f, hover ? 0.3f : 0.2f, 1.0f);
+			}else{
+				AEGfxSetColorToMultiply(hover ? 0.9f : 0.75f, hover ? 0.9f : 0.75f, hover ? 0.9f : 0.75f, 1.0f);
+			}
+			
 			AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 			DrawAEText(Font, shopButtons[i].label, worldPos, scale, CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
 
