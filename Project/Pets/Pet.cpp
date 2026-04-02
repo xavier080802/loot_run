@@ -10,7 +10,7 @@ namespace {
 	//Speed of pet when moving
 	const float petMoveSpeed{ 300.f };
 	//Distance from a point to consider it as "at" that point
-	const float pointTolerance{ 10 };
+	const float pointTolerance{ 20 };
 	//Max number of path nodes till pet is considered too far
 	const unsigned maxPathLength{ 10 };
 }

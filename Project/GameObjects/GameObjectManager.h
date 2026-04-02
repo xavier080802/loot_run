@@ -72,9 +72,6 @@ public:
 	//Note: currently does not take into account the size of the other GOs
 	GameObject* FindClosestGO(AEVec2 pos, float range, GO_TYPE type);
 
-	//TODO: redo wtih copy swap idiom, and proper copy ctor
-	GameObject* Clone(GameObject* const original);
-
 	//Fetches an inactive gameobject of the given type, and enables it.
 	//If no existing go is found, creates a new one. Returns nullptr if type is invalid/unimplemented
 	//Always init the go returned.
@@ -83,11 +80,12 @@ public:
 	std::vector<GameObject*> const& GetGameObjects() const { return goList; }
 
 private:
+	GameObjectManager();
 	//z sorted in ascending order
-	std::vector<GameObject*> goList;
-	std::queue<GameObject*> goRegistrationQ;
+	std::vector<GameObject*> goList{};
+	std::queue<GameObject*> goRegistrationQ{};
 
-	GOCollision::SpatialGrid grid;
+	GOCollision::SpatialGrid grid{};
 
 	bool isLoopingThrList{ false };
 

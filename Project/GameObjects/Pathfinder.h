@@ -84,7 +84,7 @@ private:
 	std::vector<Node> closedList{};
 	std::deque<AEVec2> path{};
 	//Optimization: Prevent pathfinding every frame
-	float pathfindTimer{}, pathFindCooldown{ 1.25f };
+	float pathfindTimer{}, pathFindCooldown{ 1.f };
 	//Keep track of Node IDs. 0 is basically "null"
 	unsigned nextId{ 0 };
 };

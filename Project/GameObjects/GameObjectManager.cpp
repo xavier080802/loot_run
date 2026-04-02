@@ -19,6 +19,10 @@
 #include <iostream>
 #include <limits>
 
+GameObjectManager::GameObjectManager() {
+	goList.reserve(250);
+}
+
 void GameObjectManager::RegisterGO(GameObject* go)
 {
 	//Modifying the goList while it's looping will explode.
@@ -270,22 +274,6 @@ GameObject* GameObjectManager::FindClosestGO(AEVec2 pos, float range, GO_TYPE ty
 	}
 
 	return nearest;
-}
-
-//BROKEN
-GameObject* GameObjectManager::Clone(GameObject* const original)
-{
-	GameObject* newGo = new GameObject(*original);
-	//Re-init pointers (otherwise they point to the original's members, and this will crash when original deletes its memory)
-	newGo->renderingData = new AnimationData(*original->renderingData);
-	//newGo->renderingData->texList = new AEGfxTexture* {*original->renderingData->texList};
-	//Rebuild mesh
-	newGo->renderingData->mesh = nullptr;
-	newGo->renderingData->InitAnimation(original->renderingData->spriteSheetRows, original->renderingData->spriteSheetCols);
-	
-	original->CompleteClone(newGo);
-	RegisterGO(newGo);
-	return newGo;
 }
 
 GameObject* GameObjectManager::FetchGO(GO_TYPE type)

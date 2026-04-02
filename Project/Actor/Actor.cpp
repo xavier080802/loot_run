@@ -185,7 +185,7 @@ void Actor::TakeDamage(DamageData const& data)
     }
     PostOffice::GetInstance()->Send("WorldTextManager", new ShowWorldTextMsg{ std::to_string((int)actualDmg),
         pos + AEVec2{static_cast<float>(rand() % 20 - 10), static_cast<float>(rand() % 20 - 10)},
-        DmgTypeToCol(data.dmgType)});
+        DmgTypeToCol(data.dmgType), 1.5f, 30.f});
 
     if (mCurrentHP <= 0.0f)
     {

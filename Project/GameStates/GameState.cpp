@@ -1057,7 +1057,7 @@ void GameState::InitState()
 
         gPlayer->Init(procSpawn,
             AEVec2{ playerRadius * 2.f, playerRadius * 2.f },
-            0, MESH_CIRCLE, Collision::SHAPE::COL_CIRCLE,
+            2, MESH_CIRCLE, Collision::SHAPE::COL_CIRCLE,
             AEVec2{ playerRadius * 2.f, playerRadius * 2.f },
             collideMask, Collision::LAYER::PLAYER);
 
