@@ -105,8 +105,8 @@ void Pet::DoMovement(double dt)
 
 	//If not following player, complete path.
 	if (!followPlayer) {
-		std::deque<AEVec2> const& path{ GetFoundPath() }; //Previous path
-		targetPos = path.empty() ? pos : path.front();
+		std::deque<AEVec2> const& _path{ GetFoundPath() }; //Previous _path
+		targetPos = _path.empty() ? pos : _path.front();
 		MoveToTarget(dt);
 		return;
 	}
@@ -118,15 +118,15 @@ void Pet::DoMovement(double dt)
 	bool isNearPlayer = sqrDistFromPlayer <= playerStopDist * playerStopDist;
 	if (!isNearPlayer && tilemap) {
 		Pathfinder::RESULT res = DoPathFinding(*tilemap, pos, playerPos);
-		std::deque<AEVec2> const& path{ GetFoundPath() };
+		std::deque<AEVec2> const& _path{ GetFoundPath() };
 		//Pet too far from player (in terms of path nodes) - TP to player
-		if (res == Pathfinder::RESULT::FAILED || path.size() >= maxPathLength) {
+		if (res == Pathfinder::RESULT::FAILED || _path.size() >= maxPathLength) {
 			SetPos(playerPos);
 			ResetPathfinder();
 		}
 		else {
 			//Follow the path created by the pathfinder
-			targetPos = path.empty() ? pos : path.front();
+			targetPos = _path.empty() ? pos : _path.front();
 			MoveToTarget(dt);
 		}
 	}

@@ -134,7 +134,7 @@ void ShopState::InitState()
 	//isGachaActive = false;
 }
 
-void ShopState::Update(double dt)
+void ShopState::Update(double /*dt*/)
 {
 	//if (isGachaActive)
 	//{

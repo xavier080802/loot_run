@@ -12,7 +12,7 @@
 #include <sstream>
 
 namespace {
-	void ProjHit(GameObject::CollisionData& other, Actor* caster, Elements::ELEMENT_TYPE element, float /*knockback*/) {
+	void ProjHit(GameObject::CollisionData& other, Actor* caster, Elements::ELEMENT_TYPE /*element*/, float /*knockback*/) {
 		if (!caster) return;
 
 		if (other.other.GetGOType() != GO_TYPE::ENEMY) return;
@@ -73,7 +73,7 @@ void Pet_6::Setup(Player& p)
 	player = &p;
 }
 
-bool Pet_6::DoSkill(const Pets::SkillCastData& _data)
+bool Pet_6::DoSkill(const Pets::SkillCastData& /*_data*/)
 {
 	GameObject* go{ GameObjectManager::GetInstance()->FetchGO(GO_TYPE::ATTACK_HITBOX) };
 	AttackHitboxGO* hb{ dynamic_cast<AttackHitboxGO*>(go) };

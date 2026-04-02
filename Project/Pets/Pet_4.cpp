@@ -58,7 +58,7 @@ bool Pet_4::DoSkill(const Pets::SkillCastData& _data)
         .Init(mouse, poolSize, -4, MESH_CIRCLE, Collision::SHAPE::COL_CIRCLE, poolSize,
         _data.player->GetCollisionLayers(), _data.player->GetColliderLayer());
     pool->GetRenderData().tint = poolCol;
-    pool->GetRenderData().alpha = poolCol.a;
+    pool->GetRenderData().alpha = static_cast<u8>(poolCol.a);
 
     recastTimer = duration;
     poolActive = true;

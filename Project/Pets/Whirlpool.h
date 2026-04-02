@@ -11,8 +11,8 @@ public:
 	Whirlpool& SetupWhirlpool(float _duration, float _strength);
 
 private:
-	float duration, timer, strength;
-	float deltaTime;
+	float duration{}, timer{}, strength{};
+	float deltaTime{};
 };
 
 #endif // !_WHIRLPOOL_H_

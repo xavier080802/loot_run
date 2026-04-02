@@ -438,7 +438,7 @@ void PetManager::CreatePet()
 	//equippedPet->GetRenderData().ReplaceTexture(data.textures.at(0).c_str(), 0);
 	size_t i{};
 	for (std::string const& tex : data.textures) {
-		equippedPet->GetRenderData().ReplaceTexture(tex.c_str(), i);
+		equippedPet->GetRenderData().ReplaceTexture(tex.c_str(), static_cast<int>(i));
 		++i;
 	}
 	equippedPet->isSet = true;

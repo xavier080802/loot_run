@@ -28,7 +28,7 @@ void GuideState::InitState() {
 	InputManager::GetInstance()->SetMinPrio(inputPrio);
 }
 
-void GuideState::Update(double dt) {
+void GuideState::Update(double /*dt*/) {
 	if (AEInputCheckTriggered(AEVK_ESCAPE)) {
 		GameStateManager::GetInstance()->ReturnToPrevState(false);
 	}
@@ -38,7 +38,7 @@ void GuideState::Update(double dt) {
 		pages.clear();
 		LoadUIJSON();
 		if (currPage >= pages.size()) {
-			currPage = pages.size() - 1;
+			currPage = static_cast<int>(pages.size()) - 1;
 		}
 	}
 }
@@ -145,7 +145,7 @@ void GuideState::LoadUIJSON() {
 				//Go back a page
 				--currPage;
 				if (currPage == -1) {
-					currPage = pages.size()-1;
+					currPage = static_cast<int>(pages.size()) - 1;
 				}
 				bgm.PlayUIClick();
 			}).SetPriority(inputPrio);

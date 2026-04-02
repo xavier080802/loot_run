@@ -24,7 +24,7 @@ STAT_TYPE ParseStatTypeFromStr(const char* str)
 {
 	//Change to uppercase first
 	std::string cmp{ str };
-	std::transform(cmp.begin(), cmp.end(), cmp.begin(), std::toupper);
+	std::transform(cmp.begin(), cmp.end(), cmp.begin(), [](char c) {return static_cast<char>(std::toupper(c));});
 
 	if (cmp == "HP" || cmp == "MAXHP" || cmp == "MAX HP" || cmp == "MAX_HP") return MAX_HP;
 	if (cmp == "DEF") return DEF;
@@ -39,7 +39,7 @@ DAMAGE_TYPE ParseDmgTypeFromStr(const char* str)
 {
 	//Change to uppercase first
 	std::string cmp{ str };
-	std::transform(cmp.begin(), cmp.end(), cmp.begin(), std::toupper);
+	std::transform(cmp.begin(), cmp.end(), cmp.begin(), [](char c) {return static_cast<char>(std::toupper(c));});
 
 	if (cmp.find("PHY") != std::string::npos) return DAMAGE_TYPE::PHYSICAL;
 	if (cmp.find("MAG") != std::string::npos) return DAMAGE_TYPE::MAGICAL;

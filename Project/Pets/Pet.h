@@ -87,6 +87,6 @@ protected:
 	//Movement
 	AEVec2 targetPos{};
 	bool followPlayer{ true };
-	TileMap const* tilemap;
+	TileMap const* tilemap{};
 };
 #endif // !_PETS_H_

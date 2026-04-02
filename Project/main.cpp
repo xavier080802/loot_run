@@ -39,10 +39,10 @@ namespace {
 }
 
 //Entry point
-int APIENTRY WinMain(HINSTANCE hInstance,
-    HINSTANCE hPrevInstance,
-    LPSTR lpCmdLine,
-    int nCmdShow) {
+int APIENTRY WinMain(_In_ HINSTANCE hInstance,
+	_In_opt_ HINSTANCE hPrevInstance,
+	_In_ LPSTR lpCmdLine,
+	_In_ int nShowCmd) {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
@@ -51,9 +51,9 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 #endif
 
 #if _DEBUG
-	AESysInit(hInstance, nCmdShow, 1600, 900, 1, 60, false, NULL);
+	AESysInit(hInstance, nShowCmd, 1600, 900, 1, 60, false, NULL);
 #else
-    AESysInit(hInstance, nCmdShow, 1600, 900, 0, 60, false, NULL);
+    AESysInit(hInstance, nShowCmd, 1600, 900, 0, 60, false, NULL);
 #endif
     AESysSetWindowTitle("Loot Run");
     AESysReset();

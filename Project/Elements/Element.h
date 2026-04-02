@@ -35,7 +35,7 @@ namespace Elements {
 
 	extern std::string GetElementName(ELEMENT_TYPE ele);
 
-	extern Color const& GetElementCol(ELEMENT_TYPE ele);
+	extern Color GetElementCol(ELEMENT_TYPE ele);
 
 	//All element Settings
 	extern float elementDur;

@@ -45,7 +45,7 @@ float Pet_1::GetAOEChargeMult() const
     return AEClamp((chargeTimer - aoeChargeThreshold) / (maxChargeDur - aoeChargeThreshold), 0, 1);
 }
 
-void Pet_1::DoAOE(Actor& caster, AEVec2 impactPos)
+void Pet_1::DoAOE(Actor& /*caster*/, AEVec2 impactPos)
 {
     //Check charge time
     if (chargeTimer < aoeChargeThreshold) return;
@@ -88,7 +88,7 @@ bool Pet_1::ShowRecastUI() const
     return charging;
 }
 
-void Pet_1::Setup(Player& player)
+void Pet_1::Setup(Player& /*player*/)
 {
     chargeTimer = 0.f;
     charging = false;

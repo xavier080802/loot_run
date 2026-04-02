@@ -60,11 +60,11 @@ namespace {
         unsigned maxIcons{};
 
         //----Inventory----
-        AEVec2 invPos, invSize;
+        AEVec2 invPos{}, invSize{};
         Color invBGCol{}, invCoinCol, invAmmoCol, invStatTxtCol;
         AEVec2 invGearIconSz{}, invStatIconSz{};
         AEVec2 invEdgePadding{};
-        float invIconGap, invSectionGap, invStatFontSz, invStatGap;
+        float invIconGap{}, invSectionGap{}, invStatFontSz{}, invStatGap{};
 
         // Not loaded from json
         AEVec2 hpBarPos{};
@@ -1519,8 +1519,8 @@ void GameState::Update(double dt)
         if (gPlayer) {
             gPlayer->Update(dt);
             AEVec2 target = gPlayer->GetPos();
-            camPos.x += (target.x - camPos.x) * (dt / camSmoothTime);
-            camPos.y += (target.y - camPos.y) * (dt / camSmoothTime);
+            camPos.x += (target.x - camPos.x) * ((float)dt / camSmoothTime);
+            camPos.y += (target.y - camPos.y) * ((float)dt / camSmoothTime);
             SetCameraPos(camPos);
         }
         if (bossRespawnTimer <= 0.f) {

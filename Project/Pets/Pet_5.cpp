@@ -74,7 +74,7 @@ void Pet_5::Setup(Player& player)
 	player.SubToSEGain(this);
 }
 
-bool Pet_5::DoSkill(const Pets::SkillCastData& _data)
+bool Pet_5::DoSkill(const Pets::SkillCastData& /*_data*/)
 {
 	GameObject* go = GameObjectManager::GetInstance()->FetchGO(GO_TYPE::ATTACK_HITBOX);
 	AttackHitboxGO* hb = dynamic_cast<AttackHitboxGO*>(go);

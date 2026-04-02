@@ -67,48 +67,48 @@ private:
 	RenderingManager* rm{};
 	s8 font{};
 	int currPage{};
-	Color btnCol, btnHoverCol, btnTextCol;
-	bool exitHovered, prevHovered, nextHovered;
+	Color btnCol{}, btnHoverCol{}, btnTextCol{};
+	bool exitHovered{}, prevHovered{}, nextHovered{};
 
-	AEVec2 titlePos;
-	float titleFontSz;
+	AEVec2 titlePos{};
+	float titleFontSz{};
 
 	struct Img {
-		std::string path;
-		AEVec2 size, pos;
+		std::string path{};
+		AEVec2 size{}, pos{};
 	};
 
 	struct Content {
-		std::string text;
-		TextOriginPos contentTxtOrigin;
+		std::string text{};
+		TextOriginPos contentTxtOrigin{};
 		Color contentCol{ 255,255,255,255 };
 		//Filepath + size
-		std::vector<Img> imgPaths;
-		AEVec2 contentPos;
-		float contentFontSize, contentWidth, contentLineSpace;
+		std::vector<Img> imgPaths{};
+		AEVec2 contentPos{};
+		float contentFontSize{}, contentWidth{}, contentLineSpace{};
 		//Hardcode content
-		bool hardcodeInstead;
+		bool hardcodeInstead{};
 	};
 
 	struct Page {
-		std::string titleText;
+		std::string titleText{};
 		Color titleCol{ 255,255,255,255 };
 
-		std::vector<Content> content;
+		std::vector<Content> content{};
 	};
-	std::vector<Page> pages;
+	std::vector<Page> pages{};
 
 	struct {
-		AEVec2 pos;
-		float fontSize;
-		Color color;
-		std::string format;
-		TextOriginPos origin;
+		AEVec2 pos{};
+		float fontSize{};
+		Color color{};
+		std::string format{};
+		TextOriginPos origin{};
 	} pageIndicator;
 
-	std::string nextText, prevText, exitText;
-	float btnFontSz;
-	UIElement* nextBtn, * prevBtn, *exitBtn;
+	std::string nextText{}, prevText{}, exitText{};
+	float btnFontSz{};
+	UIElement* nextBtn{}, * prevBtn{}, * exitBtn{};
 };
 
 #endif // !_GUIDE_STATE_H

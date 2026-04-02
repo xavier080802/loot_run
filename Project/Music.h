@@ -5,24 +5,24 @@
 
 struct BGMManager {
     // Audio Groups
-    AEAudioGroup bgmGroup;       // Music: normal, boss, credits
-    AEAudioGroup gachaGroup;  // Music: gacha track
-    AEAudioGroup uiGroup;     // UI: button clicks, hover sounds
-    AEAudioGroup sfxGroup;    // SFX: attack, explosion, gameplay sounds
+    AEAudioGroup bgmGroup{};       // Music: normal, boss, credits
+    AEAudioGroup gachaGroup{};  // Music: gacha track
+    AEAudioGroup uiGroup{};     // UI: button clicks, hover sounds
+    AEAudioGroup sfxGroup{};    // SFX: attack, explosion, gameplay sounds
 
     // Background Music Tracks
-    AEAudio normalTrack;
-    AEAudio bossTrack;
-    AEAudio gachaTrack;
-    AEAudio creditsTrack;
+    AEAudio normalTrack{};
+    AEAudio bossTrack{};
+    AEAudio gachaTrack{};
+    AEAudio creditsTrack{};
 
     // UI Sound Tracks
-    AEAudio uiHoverSound;
-    AEAudio uiClickSound;
+    AEAudio uiHoverSound{};
+    AEAudio uiClickSound{};
 
     // SFX Tracks
-    AEAudio attackSound;
-    AEAudio explosionSound;
+    AEAudio attackSound{};
+    AEAudio explosionSound{};
 
     std::map<std::string, AEAudio> sfxMap;
 

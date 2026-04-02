@@ -92,7 +92,7 @@ void LevelSelectState::UnloadState() {
 		AEGfxDestroyFont(BigFont);
 }
 
-void LevelSelectState::Update(double dt) {
+void LevelSelectState::Update(double /*dt*/) {
 	if (AEInputCheckTriggered(AEVK_ESCAPE))
 	{
 		GameStateManager::GetInstance()->SetNextGameState("MainMenuState");
@@ -196,9 +196,7 @@ void LevelSelectState::Draw() {
 		title.size.y * scale
 	};
 
-	AEMtx33 mtx;
-	GetTransformMtx(mtx, titlePos, 0.0f, labelSize);
-	AEGfxSetTransform(mtx.m);
+	AEGfxSetTransform(GetTransformMtx(titlePos, 0.0f, labelSize).m);
 
 	AEGfxSetColorToMultiply(
 		0.75f,
@@ -248,9 +246,7 @@ void LevelSelectState::Draw() {
 		bool hover = IsCursorOverWorld(worldPos, worldSize.x, worldSize.y, true);
 		bool selected = (i == selectedBtn);
 
-		AEMtx33 mtx;
-		GetTransformMtx(mtx, worldPos, 0.0f, worldSize);
-		AEGfxSetTransform(mtx.m);
+		AEGfxSetTransform(GetTransformMtx(worldPos, 0.0f, worldSize).m);
 
 		// Selected has strongest highlight. Hover still shows a lighter highlight.
 		float tint = selected ? 1.0f : (hover ? 0.9f : 0.75f);
@@ -258,10 +254,10 @@ void LevelSelectState::Draw() {
 
 		AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 		if (i == 3) {
-			DrawAEText(Font, levelButtons[i].label, worldPos, scale * 1.5f, CreateColor(10, 30, 30, 255), TEXT_MIDDLE);
+			DrawAEText(Font, levelButtons[i].label, worldPos, scale * 1.5f, Color(10, 30, 30, 255), TEXT_MIDDLE);
 		}
 		else {
-			DrawAEText(Font, levelButtons[i].label, worldPos, scale, CreateColor(10, 10, 10, 255), TEXT_MIDDLE);
+			DrawAEText(Font, levelButtons[i].label, worldPos, scale, Color(10, 10, 10, 255), TEXT_MIDDLE);
 		}
 	}
 }

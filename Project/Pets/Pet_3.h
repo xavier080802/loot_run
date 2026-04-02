@@ -3,7 +3,7 @@
 #include "Pet.h"
 #include "../Actor/ActorSubscriptions.h"
 class Actor;
-class EquipmentData;
+struct EquipmentData;
 
 /*	Lycan
 

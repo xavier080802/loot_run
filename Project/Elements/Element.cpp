@@ -335,7 +335,7 @@ namespace Elements {
 			return "None";
 		}
 	}
-	Color const& GetElementCol(ELEMENT_TYPE ele)
+	Color GetElementCol(ELEMENT_TYPE ele)
 	{
 		switch (ele)
 		{

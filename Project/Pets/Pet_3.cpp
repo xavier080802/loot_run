@@ -24,7 +24,7 @@ void Pet_3::Setup(Player& _player)
     attackAnimTimer = 0.f;
 }
 
-bool Pet_3::DoSkill(const Pets::SkillCastData& _data)
+bool Pet_3::DoSkill(const Pets::SkillCastData& /*_data*/)
 {
     if (!weap) {
         return false;
@@ -82,9 +82,9 @@ void Pet_3::DoMovement(double dt)
     else{ //Move closer to target
         Pathfinder::RESULT res = DoPathFinding(*tilemap, pos, tpos);
         if (res != Pathfinder::RESULT::FAILED) {
-            std::deque<AEVec2> const& path{ GetFoundPath() };
+            std::deque<AEVec2> const& _path{ GetFoundPath() };
             //Follow the path created by the pathfinder
-            targetPos = path.empty() ? pos : path.front();
+            targetPos = _path.empty() ? pos : _path.front();
             MoveToTarget(dt);
         }
     }

@@ -166,7 +166,7 @@ float ShopFunctions::getStatBonus(STAT_TYPE stat)
     return upgradeLevels[stat] * 0.1f;
 }
 
-ShopFunctions::ShopStat ShopFunctions::getStatSettings(STAT_TYPE stat)
+ShopFunctions::ShopStat ShopFunctions::getStatSettings(STAT_TYPE /*stat*/)
 {
     ShopStat s;
     s.basePrice = 100;

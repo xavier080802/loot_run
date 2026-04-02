@@ -40,11 +40,10 @@ private:
 	bool DoSkill(const Pets::SkillCastData& _data) override;
 
 	//Aura stuff
-	unsigned sunCounter{};
+	unsigned sunCounter{}, sunRequired{5};
 
 	//Cache from json extras
 
-	int sunRequired{5};
 	float auraSize{}, auraDur{}, auraHitCd{};
 	Color auraColor{};
 };

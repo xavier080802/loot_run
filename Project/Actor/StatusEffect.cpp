@@ -142,7 +142,7 @@ StatEffects::StatusEffect StatEffects::StatusEffect::ParseFromJson(Json::Value c
 	//Parse eff type string by changing to upper case first
 	EFF_TYPE et{NONE};
 	std::string _typeStr{ v.get("type", "").asString() };
-	std::transform(_typeStr.begin(), _typeStr.end(), _typeStr.begin(), std::toupper);
+	std::transform(_typeStr.begin(), _typeStr.end(), _typeStr.begin(), [](char c) {return static_cast<char>(std::toupper(c));});
 	if (_typeStr == "BUFF") et = BUFF;
 	else if (_typeStr == "DEBUFF") et = DEBUFF;
 	//Create copy to store
@@ -202,7 +202,7 @@ StatEffects::Mod StatEffects::Mod::ParseFromJSON(Json::Value const& v)
 
 	if (v["mathType"].isString()) {
 		std::string s{ v.get("mathType", "flat").asString() };
-		std::transform(s.begin(), s.end(), s.begin(), std::toupper);
+		std::transform(s.begin(), s.end(), s.begin(), [](char c) {return static_cast<char>(std::toupper(c));});
 		if (s == "MULT" || s == "MULTIPLICATIVE" || s == "*" || s == "%") out.mathType = MATH_TYPE::MULTIPLICATIVE;
 		else out.mathType = MATH_TYPE::FLAT;
 	}

@@ -70,7 +70,7 @@ void Projectile::OnCollide(CollisionData& other)
 	}
 }
 
-void Projectile::OnCollideTile(std::pair<TileMap::Tile const&, AEVec2> tile)
+void Projectile::OnCollideTile(std::pair<TileMap::Tile const&, AEVec2> /*tile*/)
 {
 	if (OnHitTile) OnHitTile(*this, stopRule == STOP_RULE::ON_FIRST);
 
