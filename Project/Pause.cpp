@@ -58,7 +58,8 @@ namespace
     // Hint rotation timer (seconds)
     constexpr float HINT_INTERVAL = 8.f;
     float hintTimer = 0.f;
-    // Hover tracking: [0]=resume  [1]=settings  [2]=mainmenu [3]=guide
+
+    // Hover tracking: [0]=resume  [1]=settings  [2]=mainmenu   [3]=guide
     bool hoverStates[4] = { false };
 
     float GetScale()
@@ -147,10 +148,10 @@ namespace Pause
         bool hovMainMenu = Hovered(POP_CX, ROW_MAINMENU, BTN_W, BTN_H, scale);
         bool hovGuide = Hovered(POP_CX, ROW_GUIDE, BTN_W, BTN_H, scale);
 
-        if (hovResume   && !hoverStates[0]) bgm.PlayUIClick();
-        if (hovSettings && !hoverStates[1]) bgm.PlayUIClick();
-        if (hovMainMenu && !hoverStates[2]) bgm.PlayUIClick();
-        if (hovGuide && !hoverStates[3]) bgm.PlayUIClick();
+        if (hovResume && !hoverStates[0]) bgm.PlayUIHover();
+        if (hovSettings && !hoverStates[1]) bgm.PlayUIHover();
+        if (hovMainMenu && !hoverStates[2]) bgm.PlayUIHover();
+        if (hovGuide && !hoverStates[3]) bgm.PlayUIHover();
 
         hoverStates[0] = hovResume;
         hoverStates[1] = hovSettings;

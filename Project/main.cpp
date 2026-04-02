@@ -50,7 +50,11 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-    AESysInit(hInstance, nCmdShow, 1600, 900, 1, 60, false, NULL);
+#if _DEBUG
+	AESysInit(hInstance, nCmdShow, 1600, 900, 1, 60, false, NULL);
+#else
+    AESysInit(hInstance, nCmdShow, 1600, 900, 0, 60, false, NULL);
+#endif
     AESysSetWindowTitle("Loot Run");
     AESysReset();
 	gameRunningFlag = true;

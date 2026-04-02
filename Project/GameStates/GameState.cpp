@@ -1131,9 +1131,6 @@ void GameState::InitState()
     gPlayer->InitPlayerRuntime(base);
     gPlayer->ApplyShopUpgrades();
     gPlayer->Heal(gPlayer->GetMaxHP());
-    //Call pet stuff after player setup
-    PetManager::GetInstance()->InitPetForGame(*map);
-
     // pets don't follow in tutorial so the player isn't overwhelmed early on
     if (!doTutorial) {
         PetManager::GetInstance()->InitPetForGame(*map);
