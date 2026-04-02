@@ -489,9 +489,19 @@ namespace {
         boss = SpawnRandomBossEnemy(bossPos);
         if (!boss) return;
 
+        // Only in endless mode boss stats scale with time as well.
+        if (mapSelected == "Assets/Endless.csv") {
+            float bossDifficulty = 1.0f + (endlessRunTimer / 60.0f) * 0.10f;
+            boss->mDifficultyMultiplier = bossDifficulty;
+            boss->OnStatEffectChange();
+            boss->Heal(boss->GetStats().maxHP);
+            std::cout << "[Boss] Difficulty multiplier: " << bossDifficulty
+                << "x (at " << (int)endlessRunTimer << "s)\n";
+        }
+
         bossSpawned = true;
         bossAlive = true;
-        bossMaxHPProgressBar = boss->GetDefinition().baseStats.maxHP;
+        bossMaxHPProgressBar = boss->GetDefinition().baseStats.maxHP * boss->mDifficultyMultiplier;
         bossHPProgressBar = bossMaxHPProgressBar;
 
         // clear out the regular enemies so the player is 1v1 with the boss
@@ -1505,6 +1515,7 @@ void GameState::Update(double dt)
             boss = nullptr;
             bossHPProgressBar = 0.f;
             bossMaxHPProgressBar = 100.f;
+            DisableAndClearEnemies(procEnemies);
         }
     }
 
@@ -1512,13 +1523,6 @@ void GameState::Update(double dt)
     // tick down after boss dies — actual map reset fires when timer hits zero
     if (bossRespawnPending) {
         bossRespawnTimer -= (float)dt;
-        if (gPlayer) {
-            gPlayer->Update(dt);
-            AEVec2 target = gPlayer->GetPos();
-            camPos.x += (target.x - camPos.x) * (dt / camSmoothTime);
-            camPos.y += (target.y - camPos.y) * (dt / camSmoothTime);
-            SetCameraPos(camPos);
-        }
         if (bossRespawnTimer <= 0.f) {
             // timer expired — reset kill tracking and generate fresh room
             bossRespawnPending = false;
@@ -1527,11 +1531,9 @@ void GameState::Update(double dt)
             previousRoomsKilled = 0;
             totalEnemiesKilled = 0;
             enemiesKilledInRoom = 0;
-            DisableAndClearEnemies(procEnemies);
             DropSystem::ClearAllPickups();
             DisableAndClearChests();
             std::cout << "[Endless] New kill target: " << totalKillTarget << "\n";
-            // cooldown stops the connector check from firing on the freshly generated map
             teleportCooldown = 2.f;
             if (nextMap) {
                 nextMap->GenerateProcedural(50, 50, rand());
@@ -1551,7 +1553,13 @@ void GameState::Update(double dt)
                 PetManager::GetInstance()->SetTilemap(*nextMap);
             }
         }
-        return; // freeze all other logic during the countdown
+        else {
+            minimap->Update(dt, *currentMap, *gPlayer);
+            UpdateWorldMap((float)dt);
+            GameObjectManager::GetInstance()->UpdateObjects(dt, currentMap);
+            DropSystem::UpdatePickupDisplay(static_cast<float>(dt));
+            return;
+        }
     }
 
     minimap->Update(dt, *currentMap, *gPlayer);
