@@ -178,7 +178,9 @@ void ShopState::Update(double dt)
 			if (buttonHover && !btnHoverStates[i])
 			bgm.PlayUIHover();
 			btnHoverStates[i] = buttonHover;
-
+			if (AEInputCheckTriggered(AEVK_ESCAPE)) {
+				GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
+			}
 			if (buttonHover)
 			{
 				buttonClick = AEInputCheckTriggered(AEVK_LBUTTON);
@@ -198,8 +200,7 @@ void ShopState::Update(double dt)
 						break;
 					//case 5: // Gacha Trigger
 					case 5: //back
-						GameStateManager::GetInstance()
-							->SetNextGameState("MainMenuState", true, true);
+						GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
 						break;
 					case 6: // Refund
 						ShopFunctions::GetInstance()->sellAllShopUpgrades();
