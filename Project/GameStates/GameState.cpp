@@ -405,10 +405,10 @@ namespace {
         const int MAX_LIVE_ENEMIES = 50;
         const float MIN_SPAWN_SPACING = 115.f * 2.5f; // ~5 tiles gap between spawns
 
-        // scale enemy stats up every 60 seconds in endless (10% per minute)
+        // scale enemy stats up every 60 seconds in endless (5% per minute)
         float currentDifficulty = 1.0f;
         if (mapSelected == "Assets/Endless.csv") {
-            currentDifficulty = 1.0f + (endlessRunTimer / 60.0f) * 0.10f;
+            currentDifficulty = 1.0f + (endlessRunTimer / 60.0f) * 0.05f;
         }
 
         // don't add more if we're already at the cap
@@ -491,7 +491,7 @@ namespace {
 
         // Only in endless mode boss stats scale with time as well.
         if (mapSelected == "Assets/Endless.csv") {
-            float bossDifficulty = 1.0f + (endlessRunTimer / 60.0f) * 0.10f;
+            float bossDifficulty = 1.0f + (endlessRunTimer / 60.0f) * 0.05f;
             boss->mDifficultyMultiplier = bossDifficulty;
             boss->OnStatEffectChange();
             boss->Heal(boss->GetStats().maxHP);
@@ -1682,14 +1682,14 @@ void GameState::Draw()
         AEGfxPrint(font, timeText, -0.4f, 0.75f, 1.0f, 1.f, 1.f, 1.f, 1.f);
         if (mNotificationTimer > 0.0f) {
             char flashText[128];
-            int totalBuff = mLastMinuteMark * 10;
+            int totalBuff = mLastMinuteMark * 5;
             snprintf(flashText, sizeof(flashText), "WARNING: ENEMIES ARE %d%% STRONGER!", totalBuff);
             float alpha = mNotificationTimer / 5.0f;
             AEGfxPrint(font, flashText, -0.80f, 0.5f, 1.2f, 1.0f, 0.2f, 0.2f, alpha);
         }
     }
 
-    // --- ENDLESS RESPAWN COUNTDOWN TEXT ---
+    // --- Teleport to next room TEXT ---
     if (bossRespawnPending && font >= 0) {
         int displaySecs = (int)std::ceilf(bossRespawnTimer);
         char cdText[64];
