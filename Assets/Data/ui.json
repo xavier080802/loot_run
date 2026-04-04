@@ -476,7 +476,7 @@
                     { //Rarity
                         "text": "Common",
                         "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
-                        "contentCol": [ 139, 69, 19, 255 ],
+                        "contentCol": [ 200, 200, 200, 255 ],
                         "contentPos": [ -750, 150 ],
                         "contentFontSize": 0.4,
                         "contentLineSpace": 0.015
@@ -508,7 +508,7 @@
                     { //Rarity
                         "text": "Legendary",
                         "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
-                        "contentCol": [ 255, 165, 0, 255 ],
+                        "contentCol": [ 255, 128, 0, 255 ],
                         "contentPos": [ -750, 50 ],
                         "contentFontSize": 0.4,
                         "contentLineSpace": 0.015
@@ -516,7 +516,7 @@
                     { //Rarity
                         "text": "Mythical",
                         "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
-                        "contentCol": [ 255, 215, 0, 255 ],
+                        "contentCol": [ 255, 50, 50, 255 ],
                         "contentPos": [ -750, 25 ],
                         "contentFontSize": 0.4,
                         "contentLineSpace": 0.015

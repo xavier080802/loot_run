@@ -68,12 +68,12 @@ enum class ITEM_RARITY : uint8_t
 inline Color GetRarityColor(ITEM_RARITY r)
 {
     switch (r) {
-    case ITEM_RARITY::COMMON:    return Color{ 139, 69, 19, 255 }; // Brown
+    case ITEM_RARITY::COMMON:    return Color{ 200, 200, 200, 255 }; // Light Gray
     case ITEM_RARITY::UNCOMMON:  return Color{ 100, 220, 100, 255 }; // Green
     case ITEM_RARITY::RARE:      return Color{ 100, 150, 255, 255 }; // Blue
     case ITEM_RARITY::EPIC:      return Color{ 180,  80, 255, 255 }; // Purple
-    case ITEM_RARITY::LEGENDARY: return Color{ 255, 165,   0, 255 }; // Orange
-    case ITEM_RARITY::MYTHICAL:  return Color{ 255, 215,   0, 255 }; // Gold
+    case ITEM_RARITY::LEGENDARY: return Color{ 255, 128,   0, 255 }; // Orange
+    case ITEM_RARITY::MYTHICAL:  return Color{ 255, 50,   50, 255 }; // Red
     case ITEM_RARITY::UNIQUE:    return Color{ 255, 100, 180, 255 }; // Pink
     default:                return Color{ 255, 255, 255, 255 }; // White fallback
     }
