@@ -1,14 +1,14 @@
 #include "Pause.h"
 #include "Settings.h"
-#include "Music.h"
-#include "Helpers/Vec2Utils.h"
-#include "Helpers/CollisionUtils.h"
-#include "Helpers/MatrixUtils.h"
-#include "Helpers/RenderUtils.h"
-#include "Helpers/ColorUtils.h"
-#include "RenderingManager.h"
-#include "GameStateManager.h"
-#include "main.h"
+#include "../../Music.h"
+#include "../../Helpers/Vec2Utils.h"
+#include "../../Helpers/CollisionUtils.h"
+#include "../../Helpers/MatrixUtils.h"
+#include "../../Helpers/RenderUtils.h"
+#include "../../Helpers/ColorUtils.h"
+#include "../../Rendering/RenderingManager.h"
+#include "../GameStateManager.h"
+#include "../../main.h"
 
 namespace
 {

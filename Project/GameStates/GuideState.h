@@ -1,8 +1,8 @@
 #ifndef _GUIDE_STATE_H
 #define _GUIDE_STATE_H
-#include "../GameStateManager.h"
+#include "GameStateManager.h"
 #include "AEEngine.h"
-#include "../RenderingManager.h"
+#include "../Rendering/RenderingManager.h"
 #include "../Helpers/ColorUtils.h"
 #include "../Helpers/RenderUtils.h"
 #include <vector>

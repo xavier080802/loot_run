@@ -2,7 +2,7 @@
 #include <math.h>             
 #include "AEEngine.h"
 #include "main.h"
-#include "GameStateManager.h"
+#include "GameStates/GameStateManager.h"
 #include "./GameStates/MainMenuState.h"
 #include "./GameStates/LevelSelectState.h"
 #include "./GameStates/GameState.h"
@@ -11,7 +11,7 @@
 #include "./GameObjects/GameObjectManager.h"
 #include "UI/WorldText.h"
 #include "./Helpers/RenderUtils.h"
-#include "RenderingManager.h"
+#include "Rendering/RenderingManager.h"
 #include "./Pets/PetManager.h"
 #include "Elements/Element.h"
 #include "UI/UIManager.h"

@@ -2,8 +2,8 @@
 #include "MatrixUtils.h"
 #include "Vec2Utils.h"
 #include "CoordUtils.h"
-#include "../Camera.h"
-#include "../RenderingManager.h"
+#include "../Rendering/Camera.h"
+#include "../Rendering/RenderingManager.h"
 #include <sstream>
 
 // ------NOTE ABOUT ROTATION-------

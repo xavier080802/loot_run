@@ -1,6 +1,6 @@
 #include "Vec2Utils.h"
 #include "CoordUtils.h"
-#include "../camera.h"
+#include "../Rendering/camera.h"
 
 AEVec2 ToVec2(f32 x, f32 y)
 {

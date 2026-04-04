@@ -1,5 +1,5 @@
 #include "CoordUtils.h"
-#include "../Camera.h"
+#include "../Rendering/Camera.h"
 
 AEVec2 ScreenToNorm(AEVec2 screenCoords)
 {

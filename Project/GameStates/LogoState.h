@@ -1,7 +1,7 @@
 #ifndef LOGO_H
 #define LOGO_H
 #include "AEEngine.h"
-#include "../GameStateManager.h" 
+#include "GameStateManager.h" 
 
 class LogoState : public State
 {

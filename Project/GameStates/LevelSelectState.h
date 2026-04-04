@@ -1,6 +1,6 @@
 #ifndef _LEVEL_SELECT_STATE_H
 #define _LEVEL_SELECT_STATE_H
-#include "../GameStateManager.h"
+#include "GameStateManager.h"
 
 extern std::string mapSelected;
 

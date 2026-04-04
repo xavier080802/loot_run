@@ -2,7 +2,7 @@
 #define _RENDER_DATA_H_
 #include "AEEngine.h"
 #include "../Helpers/ColorUtils.h"
-#include "../RenderingManager.h"
+#include "RenderingManager.h"
 #include <vector>
 
 class RenderData

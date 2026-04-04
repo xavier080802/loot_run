@@ -5,9 +5,9 @@
 #include "../Helpers/BitmaskUtils.h"
 #include "../Rendering/AnimationData.h"
 #include "GameObjectManager.h"	
-#include "../Map.h"
-#include "../CollisionConstants.h"
-#include "../TileMap.h"
+#include "../GameStates/Related/Map.h"
+#include "CollisionConstants.h"
+#include "../GameStates/Related/TileMap.h"
 
 class GameObject {
 	friend class GameObjectManager; //Allow manager access to private members.

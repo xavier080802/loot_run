@@ -1,13 +1,13 @@
 #include "GameEnd.h"
-#include "GameStateManager.h"
-#include "Helpers/Vec2Utils.h"
-#include "Helpers/CollisionUtils.h"
-#include "Helpers/MatrixUtils.h"
-#include "Helpers/RenderUtils.h"
-#include "Helpers/ColorUtils.h"
-#include "RenderingManager.h"
+#include "../GameStateManager.h"
+#include "../../Helpers/Vec2Utils.h"
+#include "../../Helpers/CollisionUtils.h"
+#include "../../Helpers/MatrixUtils.h"
+#include "../../Helpers/RenderUtils.h"
+#include "../../Helpers/ColorUtils.h"
+#include "../../Rendering/RenderingManager.h"
 #include "ShopFunctions.h"
-#include "UIConfig.h"
+#include "../../UI/UIConfig.h"
 
 // =====================================================================
 // Internal state

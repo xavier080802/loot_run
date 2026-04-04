@@ -1,9 +1,9 @@
 #include "Pathfinder.h"
 #include "../Helpers/Vec2Utils.h"
-#include "../RenderingManager.h"
+#include "../Rendering/RenderingManager.h"
 #include "../Helpers/RenderUtils.h"
 #include "../Helpers/MatrixUtils.h"
-#include "../camera.h"
+#include "../Rendering/Camera.h"
 #include <algorithm>
 #include "../DebugTools.h"
 

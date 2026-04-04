@@ -3,11 +3,11 @@
 #include "Debug.h"
 #include "../Project/Helpers/RenderUtils.h"
 #include "../Project/Helpers/MatrixUtils.h"
-#include "../Project/RenderingManager.h"
+#include "../Project/Rendering/RenderingManager.h"
 #include "../Project/GameObjects/GameObjectManager.h"
 #include "../Project/GameObjects/GameObject.h"
 #include "../Project/Actor/Enemy.h"
-#include "../Project/TileMap.h"
+#include "../Project/GameStates/Related/TileMap.h"
 #include <sstream>
 #include <cmath>
 

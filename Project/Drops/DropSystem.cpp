@@ -1,7 +1,7 @@
 #include "DropSystem.h"
 #include "../GameDB.h"
 #include "PickupGO.h"
-#include "../RenderingManager.h"
+#include "../Rendering/RenderingManager.h"
 #include "../Helpers/RenderUtils.h"
 #include "../Helpers/CoordUtils.h"
 #include <cstdlib>

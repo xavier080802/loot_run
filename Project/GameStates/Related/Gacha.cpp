@@ -1,7 +1,7 @@
 #include "Gacha.h"
 #include "AEEngine.h"
-#include "Pets/PetManager.h"
-#include "Pets/PetInventory.h"
+#include "../../Pets/PetManager.h"
+#include "../../Pets/PetInventory.h"
 #include <cstdlib>
 #include <cmath>
 #include <vector>

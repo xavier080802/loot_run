@@ -1,7 +1,7 @@
 #include "GameObjectManager.h"
 #include "GameObject.h"
 #include "../helpers/CollisionUtils.h"
-#include "../TileMap.h"
+#include "../GameStates/Related/TileMap.h"
 #include "../Helpers/Vec2Utils.h"
 #include "../Helpers/RenderUtils.h"
 #include "Projectile.h"

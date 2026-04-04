@@ -3,13 +3,13 @@
 #include "../Helpers/Vec2Utils.h"
 #include "../helpers/CoordUtils.h"
 #include "../Helpers/CollisionUtils.h"
-#include "../helpers/MatrixUtils.h"
-#include "../RenderingManager.h"
+#include "../Helpers/MatrixUtils.h"
+#include "../Rendering/RenderingManager.h"
 #include "../Helpers/RenderUtils.h"
 #include "../Helpers/ColorUtils.h"
 #include "../Music.h"
 #include "../main.h"
-#include "../UIConfig.h"
+#include "../UI/UIConfig.h"
 #include <iostream>
 
 std::string mapSelected = "Assets/maps/TutorialMap.csv";

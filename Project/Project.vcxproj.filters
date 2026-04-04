@@ -91,6 +91,18 @@
     <Filter Include="Source Files\Pets\Props">
       <UniqueIdentifier>{c5a6b18d-eea9-4e8a-921d-45fbe9b0fe8d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Rendering">
+      <UniqueIdentifier>{09e42374-63f8-4cbb-b547-460126c6c626}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Rendering">
+      <UniqueIdentifier>{fbc27a8a-2398-452a-b947-7ab850e2ffd3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GameStates\Related">
+      <UniqueIdentifier>{ec648baf-be89-45dc-8853-45c649ef540e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GameStates\Related">
+      <UniqueIdentifier>{3f83da3d-3696-455a-a82d-fd10e83ea540}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -117,14 +129,8 @@
     <ClCompile Include="helpers\ColorUtils.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DesignPatterns\PostOffice.cpp">
       <Filter>Source Files\DesignPatterns</Filter>
-    </ClCompile>
-    <ClCompile Include="GameStateManager.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GameStates\MainMenuState.cpp">
       <Filter>Source Files\GameStates</Filter>
@@ -135,19 +141,10 @@
     <ClCompile Include="GameObjects\GameObject.cpp">
       <Filter>Source Files\GameObjects</Filter>
     </ClCompile>
-    <ClCompile Include="RenderingManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GameObjects\GameObjectManager.cpp">
       <Filter>Source Files\GameObjects</Filter>
     </ClCompile>
     <ClCompile Include="Music.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Rendering\AnimationData.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Rendering\RenderData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GameObjects\Projectile.cpp">
@@ -189,17 +186,11 @@
     <ClCompile Include="GameObjects\LootChest.cpp">
       <Filter>Source Files\GameObjects</Filter>
     </ClCompile>
-    <ClCompile Include="TutorialData.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GameStates\ShopState.cpp">
       <Filter>Source Files\GameStates</Filter>
     </ClCompile>
     <ClCompile Include="GameObjects\AttackHitboxGO.cpp">
       <Filter>Source Files\GameObjects</Filter>
-    </ClCompile>
-    <ClCompile Include="gacha.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="File\CSV.cpp">
       <Filter>Source Files\File</Filter>
@@ -212,12 +203,6 @@
     </ClCompile>
     <ClCompile Include="..\Extern\jsoncpp\src\lib_json\json_value.cpp">
       <Filter>Source Files\File</Filter>
-    </ClCompile>
-    <ClCompile Include="Map.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TileMap.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Elements\Element.cpp">
       <Filter>Source Files\Elements</Filter>
@@ -270,9 +255,6 @@
     <ClCompile Include="GameStates\PetState.cpp">
       <Filter>Source Files\GameStates</Filter>
     </ClCompile>
-    <ClCompile Include="ShopFunctions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Debug.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -309,20 +291,50 @@
     <ClCompile Include="GameStates\LevelSelectState.cpp">
       <Filter>Source Files\GameStates</Filter>
     </ClCompile>
-    <ClCompile Include="Settings.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GameEnd.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GameStates\LogoState.cpp">
       <Filter>Source Files\GameStates</Filter>
     </ClCompile>
-    <ClCompile Include="Pause.cpp">
-      <Filter>Source Files\UI</Filter>
-    </ClCompile>
     <ClCompile Include="GameStates\GuideState.cpp">
       <Filter>Source Files\GameStates</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\AnimationData.cpp">
+      <Filter>Source Files\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\RenderData.cpp">
+      <Filter>Source Files\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\Camera.cpp">
+      <Filter>Source Files\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\RenderingManager.cpp">
+      <Filter>Source Files\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStates\GameStateManager.cpp">
+      <Filter>Source Files\GameStates</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStates\Related\Gacha.cpp">
+      <Filter>Source Files\GameStates\Related</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStates\Related\GameEnd.cpp">
+      <Filter>Source Files\GameStates\Related</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStates\Related\Map.cpp">
+      <Filter>Source Files\GameStates\Related</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStates\Related\Pause.cpp">
+      <Filter>Source Files\GameStates\Related</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStates\Related\Settings.cpp">
+      <Filter>Source Files\GameStates\Related</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStates\Related\ShopFunctions.cpp">
+      <Filter>Source Files\GameStates\Related</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStates\Related\TileMap.cpp">
+      <Filter>Source Files\GameStates\Related</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStates\Related\TutorialData.cpp">
+      <Filter>Source Files\GameStates\Related</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -350,9 +362,6 @@
     <ClInclude Include="helpers\ColorUtils.h">
       <Filter>Header Files\Helpers</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DesignPatterns\Message.h">
       <Filter>Header Files\DesignPatterns</Filter>
     </ClInclude>
@@ -368,9 +377,6 @@
     <ClInclude Include="DesignPatterns\Singleton.h">
       <Filter>Header Files\DesignPatterns</Filter>
     </ClInclude>
-    <ClInclude Include="GameStateManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GameStates\MainMenuState.h">
       <Filter>Header Files\GameStates</Filter>
     </ClInclude>
@@ -380,19 +386,10 @@
     <ClInclude Include="GameObjects\GameObject.h">
       <Filter>Header Files\GameObjects</Filter>
     </ClInclude>
-    <ClInclude Include="RenderingManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GameObjects\GameObjectManager.h">
       <Filter>Header Files\GameObjects</Filter>
     </ClInclude>
     <ClInclude Include="Music.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Rendering\AnimationData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Rendering\RenderData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GameObjects\Projectile.h">
@@ -414,9 +411,6 @@
       <Filter>Header Files\GameObjects</Filter>
     </ClInclude>
     <ClInclude Include="GameDB.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Map.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Actor\Enemy.h">
@@ -458,9 +452,6 @@
     <ClInclude Include="Actor\Actor.h">
       <Filter>Header Files\Actors</Filter>
     </ClInclude>
-    <ClInclude Include="TutorialData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DesignPatterns\Subscriber.h">
       <Filter>Header Files\DesignPatterns</Filter>
     </ClInclude>
@@ -473,19 +464,10 @@
     <ClInclude Include="Actor\ActorSubscriptions.h">
       <Filter>Header Files\Actors</Filter>
     </ClInclude>
-    <ClInclude Include="gacha.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="File\CSV.h">
       <Filter>Header Files\File</Filter>
     </ClInclude>
     <ClInclude Include="Map.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TileMap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CollisionConstants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Elements\Element.h">
@@ -508,9 +490,6 @@
     </ClInclude>
     <ClInclude Include="Elements\SunMoonElement.h">
       <Filter>Header Files\Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="ShopFunctions.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Actor\ActorSubscriptions.h">
       <Filter>Header Files\Actors</Filter>
@@ -578,23 +557,56 @@
     <ClInclude Include="Pets\Pet_6.h">
       <Filter>Header Files\Pets\Derived</Filter>
     </ClInclude>
-    <ClInclude Include="UIConfig.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Settings.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameEnd.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GameStates\LogoState.h">
       <Filter>Header Files\GameStates</Filter>
     </ClInclude>
-    <ClInclude Include="Pause.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
     <ClInclude Include="GameStates\GuideState.h">
       <Filter>Header Files\GameStates</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\AnimationData.h">
+      <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\RenderData.h">
+      <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UIConfig.h">
+      <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\Camera.h">
+      <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjects\CollisionConstants.h">
+      <Filter>Header Files\GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\RenderingManager.h">
+      <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStates\GameStateManager.h">
+      <Filter>Header Files\GameStates</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStates\Related\Gacha.h">
+      <Filter>Header Files\GameStates\Related</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStates\Related\GameEnd.h">
+      <Filter>Header Files\GameStates\Related</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStates\Related\Map.h">
+      <Filter>Header Files\GameStates\Related</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStates\Related\Pause.h">
+      <Filter>Header Files\GameStates\Related</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStates\Related\Settings.h">
+      <Filter>Header Files\GameStates\Related</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStates\Related\ShopFunctions.h">
+      <Filter>Header Files\GameStates\Related</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStates\Related\TileMap.h">
+      <Filter>Header Files\GameStates\Related</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStates\Related\TutorialData.h">
+      <Filter>Header Files\GameStates\Related</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

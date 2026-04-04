@@ -1,5 +1,5 @@
 #include "Projectile.h"
-#include "../TileMap.h"
+#include "../GameStates/Related/TileMap.h"
 #include <iostream>
 
 Projectile* Projectile::Fire(Actor* const caster, AEVec2 fireDir, float radius, float spd, float lifetime, void (*onHitCallback)(CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float knockback), Elements::ELEMENT_TYPE elem, float kb)

@@ -1,10 +1,10 @@
 #include "ShopState.h"
-#include "../ShopFunctions.h"
+#include "Related/ShopFunctions.h"
 #include "../Helpers/Vec2Utils.h"
 #include "../helpers/CoordUtils.h"
 #include "../Helpers/CollisionUtils.h"
 #include "../helpers/MatrixUtils.h"
-#include "../RenderingManager.h"
+#include "../Rendering/RenderingManager.h"
 #include "../Helpers/RenderUtils.h"
 #include "../Helpers/ColorUtils.h"
 #include "../main.h"
@@ -12,7 +12,7 @@
 //#include "../gacha.h"
 #include "../Music.h"
 #include "../Pets/PetManager.h"
-#include "../UIConfig.h"
+#include "../UI/UIConfig.h"
 
 //helpers
 namespace {
@@ -175,104 +175,104 @@ void ShopState::Update(double /*dt*/)
 
 	//esc key to main menu
 	if (AEInputCheckTriggered(AEVK_ESCAPE)) {
-			GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
-		}
+		GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
+	}
 
-		for (int i = 0; i < SHOP_BTN_COUNT; ++i)
-		{
-			AEVec2 worldPos = DefaultToWorld(shopButtons[i].pos.x, shopButtons[i].pos.y);
-			AEVec2 worldSize = { shopButtons[i].size.x * scale, shopButtons[i].size.y * scale };
+	for (int i = 0; i < SHOP_BTN_COUNT; ++i)
+	{
+		AEVec2 worldPos = DefaultToWorld(shopButtons[i].pos.x, shopButtons[i].pos.y);
+		AEVec2 worldSize = { shopButtons[i].size.x * scale, shopButtons[i].size.y * scale };
 
-			// boolean check names reserved for input/hover checks
-			bool buttonHover = IsCursorOverWorld(worldPos, worldSize.x, worldSize.y, true);
-			bool buttonClick = false;
+		// boolean check names reserved for input/hover checks
+		bool buttonHover = IsCursorOverWorld(worldPos, worldSize.x, worldSize.y, true);
+		bool buttonClick = false;
 
-			// Play hover sound only when pointer enters button
-			if (buttonHover && !btnHoverStates[i])
-			bgm.PlayUIHover();
-			btnHoverStates[i] = buttonHover;
+		// Play hover sound only when pointer enters button
+		if (buttonHover && !btnHoverStates[i])
+		bgm.PlayUIHover();
+		btnHoverStates[i] = buttonHover;
 			
-			if (buttonHover)
+		if (buttonHover)
+		{
+			buttonClick = AEInputCheckTriggered(AEVK_LBUTTON);
+			if (buttonClick)
 			{
-				buttonClick = AEInputCheckTriggered(AEVK_LBUTTON);
-				if (buttonClick)
-				{
 				bgm.PlayUIClick();
-					switch (i) {
-					case 0: // Damage
-						break;
-					case 1: // Attack Speed
-						break;
-					case 2: // Move Speed
-						break;
-					case 3: // Health
-						break;
-					case 4: // Defense
-						break;
-					//case 5: // Gacha Trigger
-					case 5: //back
-						GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
-						break;
-					case 6: // Refund
-						ShopFunctions::GetInstance()->sellAllShopUpgrades();
-						break;
-					case 7: //x1
-						ShopFunctions::GetInstance()->setPurchaseMultiplier(1);
-						selectedBtn = 7;
-						break;
-					case 8: //x10
-						ShopFunctions::GetInstance()->setPurchaseMultiplier(10);
-						selectedBtn = 8;
-						break;
-					case 9: //x25
-						ShopFunctions::GetInstance()->setPurchaseMultiplier(25);
-						selectedBtn = 9;
-						break;
-					case 10: //x50
-						ShopFunctions::GetInstance()->setPurchaseMultiplier(50);
-						selectedBtn = 10;
-						break;
+				switch (i) {
+				case 0: // Damage
+					break;
+				case 1: // Attack Speed
+					break;
+				case 2: // Move Speed
+					break;
+				case 3: // Health
+					break;
+				case 4: // Defense
+					break;
+				//case 5: // Gacha Trigger
+				case 5: //back
+					GameStateManager::GetInstance()->SetNextGameState("MainMenuState", true, true);
+					break;
+				case 6: // Refund
+					ShopFunctions::GetInstance()->sellAllShopUpgrades();
+					break;
+				case 7: //x1
+					ShopFunctions::GetInstance()->setPurchaseMultiplier(1);
+					selectedBtn = 7;
+					break;
+				case 8: //x10
+					ShopFunctions::GetInstance()->setPurchaseMultiplier(10);
+					selectedBtn = 8;
+					break;
+				case 9: //x25
+					ShopFunctions::GetInstance()->setPurchaseMultiplier(25);
+					selectedBtn = 9;
+					break;
+				case 10: //x50
+					ShopFunctions::GetInstance()->setPurchaseMultiplier(50);
+					selectedBtn = 10;
+					break;
+				}
+				std::cout << "Clicked Shop Button: " << shopButtons[i].label << std::endl;
+			}
+		}
+		// Side Buttons Logic (Plus and Minus)
+		if (shopButtons[i].hasSideButtons) {
+			float sideBtnSize = 100.0f * scale;
+			float sideOffset = (shopButtons[i].size.x / 2.0f) * scale - sideBtnSize / 2;
+
+			// Identify which stat this specific button controls
+			STAT_TYPE currentStat =
+				(i == 0) ? STAT_TYPE::ATT :
+				(i == 1) ? STAT_TYPE::ATT_SPD :
+				(i == 2) ? STAT_TYPE::MOVE_SPD :
+				(i == 3) ? STAT_TYPE::MAX_HP : STAT_TYPE::DEF;
+
+			// Minus Button Check
+			AEVec2 minusPos = { worldPos.x - sideOffset, worldPos.y };
+			if (IsCursorOverWorld(minusPos, sideBtnSize, shopButtons[i].size.y, true)) {
+				if (AEInputCheckTriggered(AEVK_LBUTTON)) {
+					//bgm.PlayUIClick();
+					for (size_t x = 0; x < ShopFunctions::GetInstance()->getPurchaseMultiplier(); x++) {
+						ShopFunctions::GetInstance()->sellShopUpgrade(currentStat);
+						std::cout << "Decreased " << shopButtons[i].label << " to " << ShopFunctions::GetInstance()->getStatBonus(currentStat) << std::endl;
 					}
-					std::cout << "Clicked Shop Button: " << shopButtons[i].label << std::endl;
 				}
 			}
-			// Side Buttons Logic (Plus and Minus)
-			if (shopButtons[i].hasSideButtons) {
-				float sideBtnSize = 100.0f * scale;
-				float sideOffset = (shopButtons[i].size.x / 2.0f) * scale - sideBtnSize / 2;
 
-				// Identify which stat this specific button controls
-				STAT_TYPE currentStat =
-					(i == 0) ? STAT_TYPE::ATT :
-					(i == 1) ? STAT_TYPE::ATT_SPD :
-					(i == 2) ? STAT_TYPE::MOVE_SPD :
-					(i == 3) ? STAT_TYPE::MAX_HP : STAT_TYPE::DEF;
-
-				// Minus Button Check
-				AEVec2 minusPos = { worldPos.x - sideOffset, worldPos.y };
-				if (IsCursorOverWorld(minusPos, sideBtnSize, shopButtons[i].size.y, true)) {
-					if (AEInputCheckTriggered(AEVK_LBUTTON)) {
-						bgm.PlayUIClick();
-						for (size_t x = 0; x < ShopFunctions::GetInstance()->getPurchaseMultiplier(); x++) {
-							ShopFunctions::GetInstance()->sellShopUpgrade(currentStat);
-							std::cout << "Decreased " << shopButtons[i].label << " to " << ShopFunctions::GetInstance()->getStatBonus(currentStat) << std::endl;
-						}
-					}
-				}
-
-				// Plus Button Check
-				AEVec2 plusPos = { worldPos.x + sideOffset, worldPos.y };
-				if (IsCursorOverWorld(plusPos, sideBtnSize, shopButtons[i].size.y, true)) {
-					if (AEInputCheckTriggered(AEVK_LBUTTON)) {
-						bgm.PlayUIClick();
-						for (size_t x = 0; x < ShopFunctions::GetInstance()->getPurchaseMultiplier(); x++) {
-							ShopFunctions::GetInstance()->buyShopUpgrade(currentStat);
-							std::cout << "Increased " << shopButtons[i].label << " to " << ShopFunctions::GetInstance()->getStatBonus(currentStat) << std::endl;
-						}
+			// Plus Button Check
+			AEVec2 plusPos = { worldPos.x + sideOffset, worldPos.y };
+			if (IsCursorOverWorld(plusPos, sideBtnSize, shopButtons[i].size.y, true)) {
+				if (AEInputCheckTriggered(AEVK_LBUTTON)) {
+					//bgm.PlayUIClick();
+					for (size_t x = 0; x < ShopFunctions::GetInstance()->getPurchaseMultiplier(); x++) {
+						ShopFunctions::GetInstance()->buyShopUpgrade(currentStat);
+						std::cout << "Increased " << shopButtons[i].label << " to " << ShopFunctions::GetInstance()->getStatBonus(currentStat) << std::endl;
 					}
 				}
 			}
 		}
+	}
 	//}
 }
 

@@ -1,15 +1,15 @@
 #include "MainMenuState.h"
-#include "../Settings.h"
+#include "../GameStates/Related/Settings.h"
 #include "../Music.h"
 #include "../Helpers/Vec2Utils.h"
 #include "../helpers/CoordUtils.h"
 #include "../Helpers/CollisionUtils.h"
 #include "../helpers/MatrixUtils.h"
-#include "../RenderingManager.h"
+#include "../Rendering/RenderingManager.h"
 #include "../Helpers/RenderUtils.h"
 #include "../Helpers/ColorUtils.h"
 #include "../main.h"
-#include "../UIConfig.h"
+#include "../UI/UIConfig.h"
 #include "../UI/UIElement.h"
 #include <iostream>
 

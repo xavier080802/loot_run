@@ -1,6 +1,6 @@
 #include "RenderingManager.h"
-#include "./Helpers/RenderUtils.h"
-#include "UIConfig.h"
+#include "../Helpers/RenderUtils.h"
+#include "../UI/UIConfig.h"
 #include <iostream>
 
 void RenderingManager::Init()

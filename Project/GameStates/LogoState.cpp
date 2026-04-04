@@ -1,5 +1,5 @@
 #include "LogoState.h"
-#include "../RenderingManager.h"
+#include "../Rendering/RenderingManager.h"
 #include "../Helpers/RenderUtils.h"
 
 void LogoState::LoadState() {

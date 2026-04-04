@@ -1,7 +1,7 @@
 #include "Minimap.h"
 #include "../GameObjects/GameObjectManager.h"
 #include "../Helpers/RenderUtils.h"
-#include "../RenderingManager.h"
+#include "../Rendering/RenderingManager.h"
 #include "../Helpers/MatrixUtils.h"
 #include "../Helpers/Vec2Utils.h"
 

@@ -1,7 +1,7 @@
 #include "Pet.h"
 #include "PetManager.h"
 #include "../Helpers/Vec2Utils.h"
-#include "../TileMap.h"
+#include "../GameStates/Related/TileMap.h"
 #include <iostream>
 
 namespace {

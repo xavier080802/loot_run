@@ -1,7 +1,7 @@
 #ifndef _PET_STATE_H_
 #define _PET_STATE_H_
 
-#include "../GameStateManager.h"
+#include "GameStateManager.h"
 #include "AEEngine.h"
 
 class PetState : public State {

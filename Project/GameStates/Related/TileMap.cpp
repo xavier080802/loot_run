@@ -1,11 +1,11 @@
 #include "TileMap.h"
-#include "File/CSV.h"
-#include "RenderingManager.h"
-#include "Helpers/MatrixUtils.h"
-#include "Helpers/RenderUtils.h"
-#include "Helpers/CoordUtils.h"
-#include "Helpers/Vec2Utils.h"
-#include "camera.h"
+#include "../../File/CSV.h"
+#include "../../Rendering/RenderingManager.h"
+#include "../../Helpers/MatrixUtils.h"
+#include "../../Helpers/RenderUtils.h"
+#include "../../Helpers/CoordUtils.h"
+#include "../../Helpers/Vec2Utils.h"
+#include "../../Rendering/Camera.h"
 #include <cstdlib> 
 
 std::map<TileMap::TILE_TYPE, AEGfxTexture*> TileMap::textureMap{};

@@ -1,6 +1,6 @@
 #ifndef _PATHFINDER_H_
 #define _PATHFINDER_H_
-#include "../TileMap.h"
+#include "../GameStates/Related/TileMap.h"
 #include "AEEngine.h"
 #include <vector>
 #include <deque>

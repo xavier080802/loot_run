@@ -4,7 +4,7 @@
 #include <cstdio>
 #include <deque>
 #include "Helpers/RenderUtils.h"
-#include "RenderingManager.h"
+#include "Rendering/RenderingManager.h"
 
 namespace {
 	const size_t MaxBufferSize{ 256 };

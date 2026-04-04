@@ -1,6 +1,6 @@
 #ifndef _GAME_STATE_H
 #define _GAME_STATE_H
-#include "../GameStateManager.h"
+#include "GameStateManager.h"
 #include "AEEngine.h"
 #include "../Actor/ActorSubscriptions.h"
 

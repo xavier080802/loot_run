@@ -9,8 +9,8 @@
 #include "../DebugTools.h"
 #include "../Helpers/RenderUtils.h"
 #include "../Helpers/MatrixUtils.h"
-#include "../GameStateManager.h"
-#include "../ShopFunctions.h"
+#include "../GameStates/GameStateManager.h"
+#include "../GameStates/Related/ShopFunctions.h"
 #include "../Music.h"
 #include <iostream>
 
@@ -128,8 +128,7 @@ void Player::InitPlayerRuntime(const ActorStats& baseStats)
 
 	InputManager::GetInstance()->SubscribeMouse(this, 1)
 		.SubscribeKeyboard(this, 1)
-		.Key(AEVK_Q).Key(AEVK_1).Key(AEVK_2)
-		.Key(AEVK_G).Key(AEVK_B);
+		.Key(AEVK_Q).Key(AEVK_1).Key(AEVK_2).Key(AEVK_B);
 }
 
 /**
@@ -623,66 +622,6 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 		RecalculateStats();
 		break;
 	}
-	case AEVK_G: // Drop
-		if (content.type == Input::INPUT_TYPE::TRIGGERED) {
-			const EquipmentData* held = GetHeldWeaponData();
-			if (!held) return;
-
-			PickupPayload p{};
-			p.type = DROP_TYPE::EQUIPMENT;
-			p.amount = 1;
-			p.equipment = held;
-
-			AEVec2 dropDir = moveDirNorm;
-
-			// fallback if not moving
-			if (dropDir.x == 0.0f && dropDir.y == 0.0f)
-			{
-				AEVec2 m = GetMouseWorldVec();
-				dropDir = { m.x - pos.x, m.y - pos.y };
-
-				if (dropDir.x == 0.0f && dropDir.y == 0.0f)
-					dropDir = { 1.0f, 0.0f };
-				else
-					AEVec2Normalize(&dropDir, &dropDir);
-			}
-			else
-			{
-				AEVec2Normalize(&dropDir, &dropDir);
-			}
-
-
-			float dropDist = 50.0f;
-
-			AEVec2 dropPos = GetPos();
-			dropPos.x += dropDir.x * dropDist;
-			dropPos.y += dropDir.y * dropDist;
-
-			// Spawn generic item drop in the world representing what player dropped
-			PickupGO::Spawn(dropPos, p);
-			Debug::stream << "Dropped: " << SafeName(held) << "\n";
-			Debug::stream << "After unequip held ptr=" << GetHeldWeaponData() << " name=" << SafeName(GetHeldWeaponData()) << "\n";
-
-
-			// Remove the weapon completely from the active loadout slot
-			switch (heldWeapon)
-			{
-			case HELD_WEAPON::WEAPON1:
-				mInventory.UnequipMainWeapon(0);
-				break;
-
-			case HELD_WEAPON::WEAPON2:
-				mInventory.UnequipMainWeapon(1);
-				break;
-
-			case HELD_WEAPON::BOW:
-				mInventory.UnequipBow();
-				break;
-			}
-
-			RecalculateStats();
-		}
-		break;
 	case AEVK_Q:
 		if (content.type == Input::INPUT_TYPE::TRIGGERED) {
 			heldWeapon = HELD_WEAPON::BOW;

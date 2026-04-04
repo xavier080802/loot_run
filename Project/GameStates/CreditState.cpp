@@ -1,13 +1,13 @@
 #include "CreditState.h"
-#include "../GameStateManager.h"
+#include "GameStateManager.h"
 #include "../Helpers/Vec2Utils.h"
 #include "../Helpers/CoordUtils.h"
 #include "../Helpers/CollisionUtils.h"
 #include "../Helpers/MatrixUtils.h"
-#include "../RenderingManager.h"
+#include "../Rendering/RenderingManager.h"
 #include "../Helpers/RenderUtils.h"
 #include "../Helpers/ColorUtils.h"
-#include "../UIConfig.h"
+#include "../UI/UIConfig.h"
 #include "../Music.h"
 #include <iostream>
 

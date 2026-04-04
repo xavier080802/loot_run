@@ -2,8 +2,8 @@
 #include "../Helpers/MatrixUtils.h"
 #include "../helpers/RenderUtils.h"
 #include "../Helpers/Vec2Utils.h"
-#include "../RenderingManager.h"
-#include "../Camera.h"
+#include "../Rendering/RenderingManager.h"
+#include "../Rendering/Camera.h"
 #include <iostream>
 
 GameObject::GameObject(bool _register)

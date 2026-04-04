@@ -1,8 +1,8 @@
 #ifndef _TUTORIAL_DATA_H_
 #define _TUTORIAL_DATA_H_
-#include "./Pets/Pet.h"
-#include "./GameObjects/LootChest.h"
-#include "Actor/ActorSubscriptions.h"
+#include "../../Pets/Pet.h"
+#include "../../GameObjects/LootChest.h"
+#include "../../Actor/ActorSubscriptions.h"
 #include "TileMap.h"
 #include "Map.h"
 

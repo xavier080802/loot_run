@@ -1,7 +1,7 @@
 #ifndef _MINIMAP_H_
 #define _MINIMAP_H_
 #include "AEEngine.h"
-#include "../TileMap.h"
+#include "../GameStates/Related/TileMap.h"
 #include "../GameObjects/GameObject.h"
 #include "../Actor/Player.h"
 #include "../Helpers/RenderUtils.h"

@@ -1,6 +1,6 @@
 #ifndef _SHOP_STATE_H
 #define _SHOP_STATE_H
-#include "../GameStateManager.h"
+#include "GameStateManager.h"
 
 //The shop menu
 class ShopState : public State {

@@ -1,6 +1,6 @@
 #include "PetManager.h"
 #include "PetInventory.h" 
-#include "../RenderingManager.h"
+#include "../Rendering/RenderingManager.h"
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -12,7 +12,7 @@
 #include "../Helpers/MatrixUtils.h"
 #include "../Helpers/CoordUtils.h"
 #include "../Helpers/Vec2Utils.h"
-#include "../TileMap.h"
+#include "../GameStates/Related/TileMap.h"
 
 /* Flow
 1. App executes, loading pet manager and game state -> LinkPlayer

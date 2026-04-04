@@ -1,6 +1,6 @@
 #ifndef _RENDERING_MANAGER_H_
 #define _RENDERING_MANAGER_H_
-#include "./DesignPatterns/singleton.h"
+#include "../DesignPatterns/singleton.h"
 #include "AEEngine.h"
 #include <map>
 #include <string>

@@ -3,7 +3,7 @@
 #include "../Helpers/RenderUtils.h"
 #include "../Helpers/MatrixUtils.h"
 #include "../Helpers/Vec2Utils.h"
-#include "../camera.h"
+#include "../Rendering/Camera.h"
 #include "../DesignPatterns/PostOffice.h"
 #include "StatsCalc.h"
 #include <algorithm>

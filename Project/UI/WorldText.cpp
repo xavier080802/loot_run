@@ -1,7 +1,7 @@
 #include "WorldText.h"
 #include "../DesignPatterns/PostOffice.h"
 #include "../Helpers/RenderUtils.h"
-#include "../RenderingManager.h"
+#include "../Rendering/RenderingManager.h"
 
 void WorldTextManager::Init() {
 	PostOffice::GetInstance()->Register("WorldTextManager", this);

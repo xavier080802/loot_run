@@ -1,6 +1,6 @@
 #ifndef _CREDIT_STATE_H
 #define _CREDIT_STATE_H
-#include "../GameStateManager.h"
+#include "GameStateManager.h"
 // The credits screen
 class CreditState : public State {
 public:

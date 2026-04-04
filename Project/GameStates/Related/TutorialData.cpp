@@ -1,10 +1,10 @@
 #include "TutorialData.h"
 #include "AEEngine.h"
-#include "./Pets/PetManager.h"
-#include "./Helpers/CollisionUtils.h"
-#include "./DesignPatterns/PostOffice.h"
+#include "../../Pets/PetManager.h"
+#include "../../Helpers/CollisionUtils.h"
+#include "../../DesignPatterns/PostOffice.h"
 #include <iostream>
-#include "./GameStateManager.h"
+#include "../GameStateManager.h"
 
 namespace {
 	const float roomSize = 700.f;

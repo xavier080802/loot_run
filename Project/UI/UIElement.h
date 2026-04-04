@@ -2,7 +2,7 @@
 #define _UI_ELEMENT_H_
 #include "AEEngine.h"
 #include "../Helpers/ColorUtils.h"
-#include "../CollisionConstants.h"
+#include "../GameObjects/CollisionConstants.h"
 #include <string>
 #include <functional>
 

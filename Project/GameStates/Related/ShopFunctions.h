@@ -2,7 +2,7 @@
 #define _SHOP_FUNCTIONS_H
 
 #include "AEEngine.h"
-#include "Actor/StatsTypes.h"
+#include "../../Actor/StatsTypes.h"
 #include <string>
 #include <map>
 
@@ -44,8 +44,6 @@ public:
 	// Only updates and saves if 'seconds' is a new best.
 	void updateEndlessHighScore(float seconds);
 
-	//calculate price
-	void CalcPrice();
 private:
 	ShopFunctions(); // Private constructor for Singleton
 

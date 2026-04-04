@@ -1,6 +1,6 @@
 #ifndef _GAME_STATE_MANAGER_H_
 #define _GAME_STATE_MANAGER_H_
-#include "./DesignPatterns/singleton.h"
+#include "../DesignPatterns/singleton.h"
 #include <string>
 #include <map>
 
