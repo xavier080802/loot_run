@@ -353,6 +353,8 @@ namespace GameDB
             std::string wTypeStr = item.get("weaponType", "None").asString();
             if (wTypeStr == "Sword") e.weaponType = WEAPON_TYPE::SWORD;
             else if (wTypeStr == "Bow") e.weaponType = WEAPON_TYPE::BOW;
+            else if (wTypeStr == "Axe")    e.weaponType = WEAPON_TYPE::AXE;
+            else if (wTypeStr == "Hammer") e.weaponType = WEAPON_TYPE::HAMMER;
             else e.weaponType = WEAPON_TYPE::NONE;
 
             std::string aTypeStr = item.get("attackType", "None").asString();

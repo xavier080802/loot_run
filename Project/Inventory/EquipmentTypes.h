@@ -37,6 +37,8 @@ enum class WEAPON_TYPE : uint8_t
     NONE = 0,
     SWORD = 1,
     BOW = 2,
+    AXE = 3,
+    HAMMER = 4,
 };
 
 // Add on as needed

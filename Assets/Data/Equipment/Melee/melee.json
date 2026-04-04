@@ -1,155 +1,281 @@
 [
-    {
-        "id": 1,
-        "name": "Common Copper Sword",
-        "sellPrice": 15,
-        "texturePath": "Assets/sprites/weapons/melee/sword.png",
-        "slot": "Weapon",
-        "weaponType": "Sword",
-        "attackType": "SwingArc",
-        "isRanged": false,
-        "element": "NONE",
-        "knockback": 100.0,
-        "attackSize": 12.0,
-        "rarity": "Common",
-        "stats": {
-            "attack": 10.0
-        }
-    },
-    {
-        "id": 2,
-        "name": "Uncommon Bronze Sword",
-        "sellPrice": 40,
-        "texturePath": "Assets/sprites/weapons/melee/sword.png",
-        "slot": "Weapon",
-        "weaponType": "Sword",
-        "attackType": "SwingArc",
-        "isRanged": false,
-        "element": "NONE",
-        "knockback": 120.0,
-        "attackSize": 14.0,
-        "rarity": "Uncommon",
-        "stats": {
-            "attack": 15.0
-        }
-    },
-    {
-        "id": 3,
-        "name": "Rare Serrated Iron Sword",
-        "sellPrice": 100,
-        "texturePath": "Assets/sprites/weapons/melee/sword.png",
-        "slot": "Weapon",
-        "weaponType": "Sword",
-        "attackType": "SwingArc",
-        "isRanged": false,
-        "element": "BLOOD",
-        "knockback": 140.0,
-        "attackSize": 16.0,
-        "rarity": "Rare",
-        "stats": {
-            "attack": 20.0
-        }
-    },
-    {
-        "id": 4,
-        "name": "Epic Steel Sword",
-        "sellPrice": 250,
-        "texturePath": "Assets/sprites/weapons/melee/sword.png",
-        "slot": "Weapon",
-        "weaponType": "Sword",
-        "attackType": "SwingArc",
-        "isRanged": false,
-        "element": "MOON",
-        "knockback": 160.0,
-        "attackSize": 18.0,
-        "rarity": "Epic",
-        "stats": {
-            "attack": 45.0
-        }
-    },
-    {
-        "id": 5,
-        "name": "Legendary Mithril Sword",
-        "sellPrice": 800,
-        "texturePath": "Assets/sprites/weapons/melee/sword.png",
-        "slot": "Weapon",
-        "weaponType": "Sword",
-        "attackType": "SwingArc",
-        "isRanged": false,
-        "element": "NONE",
-        "knockback": 180.0,
-        "attackSize": 20.0,
-        "rarity": "Legendary",
-        "stats": {
-            "attack": 80.0
-        }
-    },
-    {
-        "id": 6,
-        "name": "Mythical Excalibur",
-        "sellPrice": 2500,
-        "texturePath": "Assets/sprites/weapons/melee/sword.png",
-        "slot": "Weapon",
-        "weaponType": "Sword",
-        "attackType": "SwingArc",
-        "isRanged": false,
-        "element": "SUN",
-        "knockback": 250.0,
-        "attackSize": 25.0,
-        "rarity": "Mythical",
-        "stats": {
-            "attack": 150.0
-        }
-    },
-    { //For lycan pet
-        "id": 7,
-        "name": "Midnight Scourge",
-        "sellPrice": 0,
-        "texturePath": "Assets/sprites/weapons/melee/sword.png",
-        "slot": "Weapon",
-        "weaponType": "Sword",
-        "attackType": "SwingArc",
-        "isRanged": false,
-        "element": "BLOOD",
-        "knockback": 150.0,
-        "attackSize": 12.5,
-        "rarity": "Unique",
-        "stats": {
-            "attack": 0.0
-        }
-    },
-    {
-        "id": 8,
-        "name": "Rare Heated Iron Sword",
-        "sellPrice": 100,
-        "texturePath": "Assets/sprites/weapons/melee/sword.png",
-        "slot": "Weapon",
-        "weaponType": "Sword",
-        "attackType": "SwingArc",
-        "isRanged": false,
-        "element": "SUN",
-        "knockback": 140.0,
-        "attackSize": 16.0,
-        "rarity": "Rare",
-        "stats": {
-            "attack": 25.0
-        }
-    },
-    {
-        "id": 9,
-        "name": "Rare Moonlit Iron Sword",
-        "sellPrice": 100,
-        "texturePath": "Assets/sprites/weapons/melee/sword.png",
-        "slot": "Weapon",
-        "weaponType": "Sword",
-        "attackType": "SwingArc",
-        "isRanged": false,
-        "element": "MOON",
-        "knockback": 140.0,
-        "attackSize": 16.0,
-        "rarity": "Rare",
-        "stats": {
-            "attack": 25.0
-        }
+  {
+    "id": 1,
+    "name": "Common Copper Sword",
+    "sellPrice": 15,
+    "texturePath": "Assets/sprites/weapons/melee/sword.png",
+    "slot": "Weapon",
+    "weaponType": "Sword",
+    "attackType": "SwingArc",
+    "isRanged": false,
+    "element": "NONE",
+    "knockback": 100.0,
+    "attackSize": 12.0,
+    "rarity": "Common",
+    "stats": {
+      "attack": 10.0
     }
+  },
+  {
+    "id": 2,
+    "name": "Uncommon Bronze Sword",
+    "sellPrice": 40,
+    "texturePath": "Assets/sprites/weapons/melee/sword.png",
+    "slot": "Weapon",
+    "weaponType": "Sword",
+    "attackType": "SwingArc",
+    "isRanged": false,
+    "element": "NONE",
+    "knockback": 120.0,
+    "attackSize": 14.0,
+    "rarity": "Uncommon",
+    "stats": {
+      "attack": 15.0
+    }
+  },
+  {
+    "id": 3,
+    "name": "Rare Serrated Iron Sword",
+    "sellPrice": 100,
+    "texturePath": "Assets/sprites/weapons/melee/sword.png",
+    "slot": "Weapon",
+    "weaponType": "Sword",
+    "attackType": "SwingArc",
+    "isRanged": false,
+    "element": "BLOOD",
+    "knockback": 140.0,
+    "attackSize": 16.0,
+    "rarity": "Rare",
+    "stats": {
+      "attack": 20.0
+    }
+  },
+  {
+    "id": 4,
+    "name": "Epic Steel Sword",
+    "sellPrice": 250,
+    "texturePath": "Assets/sprites/weapons/melee/sword.png",
+    "slot": "Weapon",
+    "weaponType": "Sword",
+    "attackType": "SwingArc",
+    "isRanged": false,
+    "element": "MOON",
+    "knockback": 160.0,
+    "attackSize": 18.0,
+    "rarity": "Epic",
+    "stats": {
+      "attack": 45.0
+    }
+  },
+  {
+    "id": 5,
+    "name": "Legendary Mithril Sword",
+    "sellPrice": 800,
+    "texturePath": "Assets/sprites/weapons/melee/sword.png",
+    "slot": "Weapon",
+    "weaponType": "Sword",
+    "attackType": "SwingArc",
+    "isRanged": false,
+    "element": "NONE",
+    "knockback": 180.0,
+    "attackSize": 20.0,
+    "rarity": "Legendary",
+    "stats": {
+      "attack": 80.0
+    }
+  },
+  {
+    "id": 6,
+    "name": "Mythical Excalibur",
+    "sellPrice": 2500,
+    "texturePath": "Assets/sprites/weapons/melee/sword.png",
+    "slot": "Weapon",
+    "weaponType": "Sword",
+    "attackType": "SwingArc",
+    "isRanged": false,
+    "element": "SUN",
+    "knockback": 250.0,
+    "attackSize": 25.0,
+    "rarity": "Mythical",
+    "stats": {
+      "attack": 150.0
+    }
+  },
+  { //For lycan pet
+    "id": 7,
+    "name": "Midnight Scourge",
+    "sellPrice": 0,
+    "texturePath": "Assets/sprites/weapons/melee/sword.png",
+    "slot": "Weapon",
+    "weaponType": "Sword",
+    "attackType": "SwingArc",
+    "isRanged": false,
+    "element": "BLOOD",
+    "knockback": 150.0,
+    "attackSize": 12.5,
+    "rarity": "Unique",
+    "stats": {
+      "attack": 0.0
+    }
+  },
+  {
+    "id": 8,
+    "name": "Rare Heated Iron Sword",
+    "sellPrice": 100,
+    "texturePath": "Assets/sprites/weapons/melee/sword.png",
+    "slot": "Weapon",
+    "weaponType": "Sword",
+    "attackType": "SwingArc",
+    "isRanged": false,
+    "element": "SUN",
+    "knockback": 140.0,
+    "attackSize": 16.0,
+    "rarity": "Rare",
+    "stats": {
+      "attack": 25.0
+    }
+  },
+  {
+    "id": 9,
+    "name": "Rare Moonlit Iron Sword",
+    "sellPrice": 100,
+    "texturePath": "Assets/sprites/weapons/melee/sword.png",
+    "slot": "Weapon",
+    "weaponType": "Sword",
+    "attackType": "SwingArc",
+    "isRanged": false,
+    "element": "MOON",
+    "knockback": 140.0,
+    "attackSize": 16.0,
+    "rarity": "Rare",
+    "stats": {
+      "attack": 25.0
+    }
+  },
+  {
+    "id": 10,
+    "name": "Uncommon Iron Axe",
+    "sellPrice": 40,
+    "texturePath": "Assets/sprites/weapons/melee/axe.png",
+    "slot": "Weapon",
+    "weaponType": "Axe",
+    "attackType": "SwingArc",
+    "isRanged": false,
+    "element": "NONE",
+    "knockback": 130.0,
+    "attackSize": 14.0,
+    "rarity": "Uncommon",
+    "stats": {
+      "maxHP": 0.0,
+      "attack": 18.0,
+      "defense": 0.0,
+      "moveSpeed": 0.0,
+      "attackSpeed": 0.0
+    }
+  },
+  {
+    "id": 11,
+    "name": "Rare Battle Axe",
+    "sellPrice": 100,
+    "texturePath": "Assets/sprites/weapons/melee/axe.png",
+    "slot": "Weapon",
+    "weaponType": "Axe",
+    "attackType": "SwingArc",
+    "isRanged": false,
+    "element": "NONE",
+    "knockback": 150.0,
+    "attackSize": 16.0,
+    "rarity": "Rare",
+    "stats": {
+      "maxHP": 0.0,
+      "attack": 28.0,
+      "defense": 0.0,
+      "moveSpeed": 0.0,
+      "attackSpeed": 0.0
+    }
+  },
+  {
+    "id": 12,
+    "name": "Epic Warmonger Axe",
+    "sellPrice": 250,
+    "texturePath": "Assets/sprites/weapons/melee/axe.png",
+    "slot": "Weapon",
+    "weaponType": "Axe",
+    "attackType": "SwingArc",
+    "isRanged": false,
+    "element": "BLOOD",
+    "knockback": 170.0,
+    "attackSize": 18.0,
+    "rarity": "Epic",
+    "stats": {
+      "maxHP": 0.0,
+      "attack": 50.0,
+      "defense": 0.0,
+      "moveSpeed": 0.0,
+      "attackSpeed": 0.0
+    }
+  },
+  {
+    "id": 13,
+    "name": "Legendary Thunderclap Hammer",
+    "sellPrice": 800,
+    "texturePath": "Assets/sprites/weapons/melee/hammer.png",
+    "slot": "Weapon",
+    "weaponType": "Hammer",
+    "attackType": "CircleAOE",
+    "isRanged": false,
+    "element": "SUN",
+    "knockback": 200.0,
+    "attackSize": 20.0,
+    "rarity": "Legendary",
+    "stats": {
+      "maxHP": 0.0,
+      "attack": 90.0,
+      "defense": 0.0,
+      "moveSpeed": 0.0,
+      "attackSpeed": 0.0
+    }
+  },
+  {
+    "id": 14,
+    "name": "Mythical Mjolnir",
+    "sellPrice": 2500,
+    "texturePath": "Assets/sprites/weapons/melee/hammer.png",
+    "slot": "Weapon",
+    "weaponType": "Hammer",
+    "attackType": "CircleAOE",
+    "isRanged": false,
+    "element": "MOON",
+    "knockback": 280.0,
+    "attackSize": 26.0,
+    "rarity": "Mythical",
+    "stats": {
+      "maxHP": 0.0,
+      "attack": 160.0,
+      "defense": 0.0,
+      "moveSpeed": 0.0,
+      "attackSpeed": 0.0
+    }
+  },
+  {
+    "id": 15,
+    "name": "Epic Battlehammer",
+    "sellPrice": 800,
+    "texturePath": "Assets/sprites/weapons/melee/hammer.png",
+    "slot": "Weapon",
+    "weaponType": "Hammer",
+    "attackType": "CircleAOE",
+    "isRanged": false,
+    "element": "BLOOD",
+    "knockback": 160.0,
+    "attackSize": 20.0,
+    "rarity": "Legendary",
+    "stats": {
+      "maxHP": 0.0,
+      "attack": 45.0,
+      "defense": 0.0,
+      "moveSpeed": 0.0,
+      "attackSpeed": 0.0
+    }
+  }
 ]

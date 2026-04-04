@@ -399,7 +399,7 @@ namespace {
     // first wave is 12 enemies and fires the moment you step into a proc room
     // after that each wave is 1 bigger than the last: wave 1=5, wave 2=6, etc.
     // caps at 50 live enemies at once so it doesn't get insane
-    // in endless mode enemies also scale 5% stronger per minute survived
+    // in endless mode enemies also scale 10% stronger per minute survived
     void SpawnProcWave(TileMap const& tilemap)
     {
         const int MAX_LIVE_ENEMIES = 50;
@@ -489,9 +489,19 @@ namespace {
         boss = SpawnRandomBossEnemy(bossPos);
         if (!boss) return;
 
+        // Only in endless mode boss stats scale with time as well.
+        if (mapSelected == "Assets/Endless.csv") {
+            float bossDifficulty = 1.0f + (endlessRunTimer / 60.0f) * 0.05f;
+            boss->mDifficultyMultiplier = bossDifficulty;
+            boss->OnStatEffectChange();
+            boss->Heal(boss->GetStats().maxHP);
+            std::cout << "[Boss] Difficulty multiplier: " << bossDifficulty
+                << "x (at " << (int)endlessRunTimer << "s)\n";
+        }
+
         bossSpawned = true;
         bossAlive = true;
-        bossMaxHPProgressBar = boss->GetDefinition().baseStats.maxHP;
+        bossMaxHPProgressBar = boss->GetDefinition().baseStats.maxHP * boss->mDifficultyMultiplier;
         bossHPProgressBar = bossMaxHPProgressBar;
 
         // clear out the regular enemies so the player is 1v1 with the boss
@@ -663,9 +673,9 @@ namespace {
 
             for (int i{}; i < gear.size(); ++i) {
                 AEMtx33 mtx{ GetTransformMtx(invGearElements[i]->GetPos(), 0, invGearElements[i]->GetSize()) };
-                //Draw background — highlight green if this slot is the currently held weapon
+                //Draw background
                 DrawTintedMesh(mtx,
-                    squareMesh, nullptr, (held && ind == i) ? Color{ 0,255,0,255 } : Color{ 100,100,0,255 }, 200);
+                    squareMesh, nullptr, (held && ind == i) ? Color{0,255,0,255} : Color{ 100,100,0,255 }, 200);
 
                 if (!gear[i]) continue;
                 //Draw item texure
@@ -675,7 +685,7 @@ namespace {
 
             //Draw the player's stats
             float yLineSpc{ playerUISettings.invStatFontSz * fontSz + playerUISettings.invStatGap };
-            AEVec2 textPos{ AEGfxGetWinMinX() + playerUISettings.invEdgePadding.x,
+            AEVec2 textPos{ AEGfxGetWinMinX()+ playerUISettings.invEdgePadding.x,
                 invGearElements.back()->GetPos().y - playerUISettings.invGearIconSz.y * 0.5f - playerUISettings.invSectionGap };
             ActorStats const& mStats{ gPlayer->GetStats() };
 
@@ -686,36 +696,31 @@ namespace {
             std::string tSpd = std::to_string(mStats.attackSpeed);
             size_t spdLen = tSpd.length() > 4 ? 4 : tSpd.length();
             DrawAEText(font, ("Atk Spd: " + tSpd.substr(0, spdLen)).c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invStatTxtCol, TEXT_MIDDLE_LEFT); textPos.y -= yLineSpc;
-
+            
             //Coin Counter
             std::string coinText = "Coins: " + std::to_string(mInventory.GetCoins());
-            DrawAEText(font, coinText.c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invCoinCol, TEXT_MIDDLE_LEFT); textPos.y -= yLineSpc;
+            DrawAEText(font, coinText.c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invCoinCol, TEXT_MIDDLE_LEFT);textPos.y -= yLineSpc;
             // Ammo Counter
             std::string ammoText = "Ammo: " + std::to_string(mInventory.GetAmmo());
             DrawAEText(font, ammoText.c_str(), textPos, playerUISettings.invStatFontSz, playerUISettings.invAmmoCol, TEXT_MIDDLE_LEFT);
         }
 
-        //Healthbar Container
         DrawTintedMesh(playerUISettings.hpBarTrans, squareMesh, nullptr, playerUISettings.hpBgCol, playerUISettings.hpBgCol.a);
-        //Health indicator fill — shrinks left as HP drops
         AEVec2 hpBarFillSize{ playerUISettings.hpBarSize.x * (gPlayer->GetHP() / gPlayer->GetMaxHP()), playerUISettings.hpBarSize.y };
         AEVec2 hpBarFillPos = playerUISettings.hpBarPos;
         hpBarFillPos.x -= (playerUISettings.hpBarSize.x - hpBarFillSize.x) * 0.5f;
         DrawTintedMesh(GetTransformMtx(hpBarFillPos, 0, hpBarFillSize),
             squareMesh, nullptr, playerUISettings.hpFillCol, playerUISettings.hpFillCol.a);
-        //Shield value (if any) — drawn on top of the HP fill
         if (gPlayer->GetShieldVal()) {
             float shieldFill{ playerUISettings.hpBarSize.x * min(gPlayer->GetShieldVal() / gPlayer->GetMaxHP(), 1.f) };
             DrawTintedMesh(GetTransformMtx(playerUISettings.hpBarPos - AEVec2{ (playerUISettings.hpBarSize.x - shieldFill) * 0.5f,0 }, 0, { shieldFill, playerUISettings.hpBarSize.y }),
                 squareMesh, nullptr, playerUISettings.hpShieldCol, playerUISettings.hpShieldCol.a);
         }
-        //Hp Text: "curr (+shield) / max"
         DrawAEText(font,
             std::string{ std::to_string((int)gPlayer->GetHP()) + (gPlayer->GetShieldVal() ? (" (+" + std::to_string((int)gPlayer->GetShieldVal()) + ")") : "")
             + " / " + std::to_string((int)gPlayer->GetMaxHP()) }.c_str(),
             playerUISettings.hpBarPos, playerUISettings.hpBarSize.y / fontSz, Color{ 0,0,0,255 }, TEXT_MIDDLE);
 
-        //Status effect icons sit just above the HP bar
         gPlayer->DrawStatusEffectIcons(playerUISettings.seIconSize,
             playerUISettings.hpBarPos + AEVec2{ 0, playerUISettings.hpBarSize.y * 0.5f + playerUISettings.seIconSize * 0.5f },
             playerUISettings.maxIcons, true, true);
@@ -740,6 +745,7 @@ namespace {
             se.UpdateUI(true);
         }
     }
+
 
     //Hovering over equipment in inventory UI
     void DrawUIHoveredGearTooltip(int& ind) {
@@ -1509,6 +1515,7 @@ void GameState::Update(double dt)
             boss = nullptr;
             bossHPProgressBar = 0.f;
             bossMaxHPProgressBar = 100.f;
+            DisableAndClearEnemies(procEnemies);
         }
     }
 
@@ -1516,13 +1523,6 @@ void GameState::Update(double dt)
     // tick down after boss dies — actual map reset fires when timer hits zero
     if (bossRespawnPending) {
         bossRespawnTimer -= (float)dt;
-        if (gPlayer) {
-            gPlayer->Update(dt);
-            AEVec2 target = gPlayer->GetPos();
-            camPos.x += (target.x - camPos.x) * ((float)dt / camSmoothTime);
-            camPos.y += (target.y - camPos.y) * ((float)dt / camSmoothTime);
-            SetCameraPos(camPos);
-        }
         if (bossRespawnTimer <= 0.f) {
             // timer expired — reset kill tracking and generate fresh room
             bossRespawnPending = false;
@@ -1531,11 +1531,9 @@ void GameState::Update(double dt)
             previousRoomsKilled = 0;
             totalEnemiesKilled = 0;
             enemiesKilledInRoom = 0;
-            DisableAndClearEnemies(procEnemies);
             DropSystem::ClearAllPickups();
             DisableAndClearChests();
             std::cout << "[Endless] New kill target: " << totalKillTarget << "\n";
-            // cooldown stops the connector check from firing on the freshly generated map
             teleportCooldown = 2.f;
             if (nextMap) {
                 nextMap->GenerateProcedural(50, 50, rand());
@@ -1555,7 +1553,13 @@ void GameState::Update(double dt)
                 PetManager::GetInstance()->SetTilemap(*nextMap);
             }
         }
-        return; // freeze all other logic during the countdown
+        else {
+            minimap->Update(dt, *currentMap, *gPlayer);
+            UpdateWorldMap((float)dt);
+            GameObjectManager::GetInstance()->UpdateObjects(dt, currentMap);
+            DropSystem::UpdatePickupDisplay(static_cast<float>(dt));
+            return;
+        }
     }
 
     minimap->Update(dt, *currentMap, *gPlayer);
@@ -1685,7 +1689,7 @@ void GameState::Draw()
         }
     }
 
-    // --- ENDLESS RESPAWN COUNTDOWN TEXT ---
+    // --- Teleport to next room TEXT ---
     if (bossRespawnPending && font >= 0) {
         int displaySecs = (int)std::ceilf(bossRespawnTimer);
         char cdText[64];
