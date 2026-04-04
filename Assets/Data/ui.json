@@ -141,6 +141,20 @@
                                 "pos": [ 0, 0 ]
                             }
                         ]
+                    },
+                    {
+                        "text": "*Dodging grants invincibility for a short duration.",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 240, 200, 50, 255 ],
+                        "contentPos": [ -400, -230 ],
+                        "contentWidth": 350
+                    },
+                    {
+                        "text": "*Press X during a run to open this menu",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentWidth": 240,
+                        "contentCol": [ 240, 200, 50, 255 ],
+                        "contentPos": [ 500, -260 ]
                     }
                 ]
             },
@@ -472,6 +486,15 @@
                                 "pos": [ 125, 325 ]
                             }
                         ]
+                    },
+                    { //Section header 1 - Rarity
+                        "text": "Rarities:",
+                        "contentTxtOrigin": "TEXT_MIDDLE_LEFT",
+                        "contentCol": [ 240, 240, 240, 255 ],
+                        "contentPos": [ -750, 200 ],
+                        "contentWidth": 300,
+                        "contentFontSize": 0.45,
+                        "contentLineSpace": 0.01
                     },
                     { //Rarity
                         "text": "Common",
