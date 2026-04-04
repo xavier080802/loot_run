@@ -77,14 +77,14 @@ namespace {
 		DrawTintedMesh(GetTransformMtx(AEVec2{}, 0, exitDialogSize), squareMesh, nullptr, Color{ 150,150,150,255 }, 255);
 
 		//Draw text
-		DrawAEText(Font, "Exit Loot Run?", AEVec2{ 0, 100 }, 1.3f, Color{ 0,0,0,255 }, TextOriginPos::TEXT_MIDDLE);
+		DrawAEText(Font, "Exit Loot Run?", AEVec2{ 0, 100 }, 1.3f, Color{ 0,0,0,255 }, TEXT_ORIGIN_POS::TEXT_MIDDLE);
 
 		//Draw btns
 		DrawTintedMesh(GetTransformMtx(exitConfirmBtn->GetPos(), 0, exitConfirmBtn->GetSize()), squareMesh, nullptr, confirmHovered ? Color{255,50,50,255} : Color{ 200,50,50, 255 }, 255);
-		DrawAEText(Font, "Exit", exitConfirmBtn->GetPos(), 1.f, Color{ 0,0,0,255 }, TextOriginPos::TEXT_MIDDLE);
+		DrawAEText(Font, "Exit", exitConfirmBtn->GetPos(), 1.f, Color{ 0,0,0,255 }, TEXT_ORIGIN_POS::TEXT_MIDDLE);
 
 		DrawTintedMesh(GetTransformMtx(exitCancelbtn->GetPos(), 0, exitCancelbtn->GetSize()), squareMesh, nullptr, cancelHovered ? Color{50,255,50,255}: Color{ 50,200,50, 255 }, 255);
-		DrawAEText(Font, "Go Back", exitCancelbtn->GetPos(), 1.f, Color{ 0,0,0,255 }, TextOriginPos::TEXT_MIDDLE);
+		DrawAEText(Font, "Go Back", exitCancelbtn->GetPos(), 1.f, Color{ 0,0,0,255 }, TEXT_ORIGIN_POS::TEXT_MIDDLE);
 		//Reset hover state
 		cancelHovered = confirmHovered = false;
 	}

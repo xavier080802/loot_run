@@ -94,7 +94,7 @@ void StatEffects::StatusEffect::DrawTooltip() const
 
 	//Draw text box
 	DrawAETextbox(rm->GetFont(), txt, AEVec2{ (float)mP.x, (float)mP.y },
-		AEGfxGetWinMaxX() * 0.4f, 0.35f, 0.015f, {0,0,0,255}, TEXT_LOWER_LEFT, TextboxOriginPos::BOTTOM,
+		AEGfxGetWinMaxX() * 0.4f, 0.35f, 0.015f, {0,0,0,255}, TEXT_LOWER_LEFT, TEXTBOX_ORIGIN_POS::BOTTOM,
 		TextboxBgCfg{ {0.03f, 0.03f}, Color{150,150,150,200}, 255, rm->GetMesh(MESH_SQUARE) });
 }
 

@@ -13,7 +13,7 @@ void Pet_3::Setup(Player& _player)
 {
     player = &_player;
     player->SubToBeforeDealingDmg(this);
-    weap = GameDB::GetEquipmentData(EquipmentCategory::Melee, 7);
+    weap = GameDB::GetEquipmentData(EQUIPMENT_CATEGORY::MELEE, 7);
     attackCooldown = std::stof(data.extra.at("attackCooldown"));
     attImgTime = std::stof(data.extra.at("attImgTime"));
     dmgMult = std::stof(data.extra.at("baseDmgMult")) * data.rarityScaling.at((int)rank);

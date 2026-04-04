@@ -36,9 +36,9 @@ namespace GameDB
     const EnemyDef* GetWeightedRandomEnemy(float normalChance = 0.70f, float eliteChance = 0.30f);
 
     // Equipment
-    bool LoadEquipmentDefs(const char* path, EquipmentCategory category);
+    bool LoadEquipmentDefs(const char* path, EQUIPMENT_CATEGORY category);
     // Retrieves immutable stats and definitions for a specific piece of equipment
-    const EquipmentData* GetEquipmentData(EquipmentCategory category, int id);
+    const EquipmentData* GetEquipmentData(EQUIPMENT_CATEGORY category, int id);
     const EquipmentData* GetRandomEquipment();
 
     void UnloadEquipmentReg();

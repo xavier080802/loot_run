@@ -81,7 +81,7 @@ void Pathfinder::DrawPath()
             {0,0});
 
         DrawAEText(font, std::string{ std::to_string((int)n.x) +"\n"+ std::to_string((int)n.y)},
-            { _pos.x, _pos.y - 10 }, 0.2f, 0.f, Color{ 255,255,10, 255 }, TextOriginPos::TEXT_UPPER_MIDDLE);
+            { _pos.x, _pos.y - 10 }, 0.2f, 0.f, Color{ 255,255,10, 255 }, TEXT_ORIGIN_POS::TEXT_UPPER_MIDDLE);
         ++i;
     }
 }

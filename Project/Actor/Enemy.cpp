@@ -50,16 +50,16 @@ void Enemy::Update(double dt)
         // Prevent enemy from walking into the player if the range is too small
         float minNonOverlapDist = (GetColSize().x * 0.5f) + (mTarget->GetColSize().x * 0.5f);
         if (attackRange < minNonOverlapDist) {
-            if (mDef && mDef->attack.mockWeapon.attackType == AttackType::SwingArc) {
+            if (mDef && mDef->attack.mockWeapon.attackType == ATTACK_TYPE::SWINGARC) {
                 // Auto calculate optimal stopping distance based on melee reach
                 attackRange = mDef->attack.mockWeapon.attackSize * 5.0f;
-            } else if (mDef && mDef->attack.mockWeapon.attackType == AttackType::Projectile) {
+            } else if (mDef && mDef->attack.mockWeapon.attackType == ATTACK_TYPE::PROJECTILE) {
                 // Auto calculate optimal shooting distance
                 attackRange = mDef->attack.mockWeapon.attackSize * 15.0f;
-            } else if (mDef && mDef->attack.mockWeapon.attackType == AttackType::Stab) {
+            } else if (mDef && mDef->attack.mockWeapon.attackType == ATTACK_TYPE::STAB) {
                 // Stab offset is 4.0x size, with a 1.5x physical radius.
                 attackRange = (mDef->attack.mockWeapon.attackSize * 4.0f) + (mDef->attack.mockWeapon.attackSize * 1.5f);
-            } else if (mDef && mDef->attack.mockWeapon.attackType == AttackType::CircleAOE) {
+            } else if (mDef && mDef->attack.mockWeapon.attackType == ATTACK_TYPE::CIRCLE_AOE) {
                 // Circle AOE is centered, simply based on its radius (half of its 8.0 size multiplier).
                 attackRange = mDef->attack.mockWeapon.attackSize * 4.0f;
             }
@@ -70,17 +70,17 @@ void Enemy::Update(double dt)
             }
         }
 
-        if (mState == EnemyState::IDLE) {
+        if (mState == ENEMY_STATE::IDLE) {
             // Wake up and chase if player enters aggro range
             float aggroRange = mDef ? mDef->attack.aggroRange : 500.0f;
             if (distSq <= aggroRange * aggroRange) {
-                mState = EnemyState::CHASE;
+                mState = ENEMY_STATE::CHASE;
             }
         } 
-        else if (mState == EnemyState::CHASE) {
+        else if (mState == ENEMY_STATE::CHASE) {
             // Move towards player
             if (distSq <= attackRange * attackRange) {
-                mState = EnemyState::ATTACK;
+                mState = ENEMY_STATE::ATTACK;
                 if (mDef) {
                     mAttackCooldown = mDef->attack.cooldown;
                     Combat::ExecuteAttack(this, &mDef->attack.mockWeapon, mTarget->GetPos());
@@ -94,16 +94,16 @@ void Enemy::Update(double dt)
                 }
             }
         } 
-        else if (mState == EnemyState::ATTACK) {
+        else if (mState == ENEMY_STATE::ATTACK) {
             // "Attack pattern" delay mock
             mAttackCooldown -= (float)dt;
             if (mAttackCooldown <= 0.0f) {
                 // Re-evaluate state after attack is done
-                mState = EnemyState::CHASE;
+                mState = ENEMY_STATE::CHASE;
             }
         }
     } else {
-        mState = EnemyState::IDLE;
+        mState = ENEMY_STATE::IDLE;
     }
 }
 
@@ -173,7 +173,7 @@ Enemy* SpawnEnemyFromDef(const EnemyDef* def, AEVec2 pos)
     if (!def) return nullptr;
 
     float r = def->render.radius;
-    MESH_SHAPE  meshShape = (def->render.mesh == EnemyMesh::Square) ? MESH_SQUARE : MESH_CIRCLE;
+    MESH_SHAPE  meshShape = (def->render.mesh == ENEMY_MESH::SQUARE) ? MESH_SQUARE : MESH_CIRCLE;
     Collision::SHAPE colShape = (meshShape == MESH_SQUARE) ? Collision::COL_RECT : Collision::COL_CIRCLE;
 
     Enemy* enemy = new Enemy();

@@ -16,7 +16,7 @@ namespace Tutorial {
 	void TutorialFairy::InitTutorial(Player* _player, TileMap& _map, MapData& _mapData)
 	{
 		Init({}, { 50,50 }, 1, MESH_SQUARE, Collision::COL_CIRCLE, {}, 0, Collision::LAYER::NONE)
-			->GetRenderData().AddTexture("Assets/fairy.png");
+			->GetRenderData().AddTexture("Assets/sprites/maps/fairy.png");
 
 		data.dialogueLines.reserve(4);
 		data.dialogueLines.clear();

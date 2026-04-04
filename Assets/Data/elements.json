@@ -29,7 +29,7 @@
                 "stat": "hp"
             }
         ],
-        "icon": "Assets/bloodEle.png",
+        "icon": "Assets/sprites/statusEffects/bloodEle.png",
         "textCol": [171,40,40,255]
     },
     "sun": {
@@ -46,7 +46,7 @@
                 "stat": "att"
             }
         ],
-        "icon": "Assets/sunEle.png",
+        "icon": "Assets/sprites/statusEffects/sunEle.png",
         "textCol": [ 255, 215, 13, 255 ]
     },
     "moon": {
@@ -74,7 +74,7 @@
             }
         ],
         "meleeHealMult": 1.25,
-        "icon": "Assets/moonEle.png",
+        "icon": "Assets/sprites/statusEffects/moonEle.png",
         "textCol": [ 111, 169, 181, 255 ]
     },
     "blood_sun": { //Note: 1 tick per second, over elementDur
@@ -113,7 +113,7 @@
         "detonateSize_x": 150,
         "detonateSize_y": 150,
         "detonationCol": [181,26,26, 155],
-        "icon": "Assets/bloodSunEle.png"
+        "icon": "Assets/sprites/statusEffects/bloodSunEle.png"
     },
     "blood_moon": {
         "lifetime": 15,

@@ -5,74 +5,74 @@
 #include "../Elements/Element.h"
 #include "../Helpers/ColorUtils.h"
 
-enum class EquipSlot : uint8_t
+enum class EQUIP_SLOT : uint8_t
 {
-    Weapon = 0,
-    Armor = 1,
+    WEAPON = 0,
+    ARMOR = 1,
 };
 
-enum class EquipmentCategory : uint8_t
+enum class EQUIPMENT_CATEGORY : uint8_t
 {
-    None = 0,
-    Melee = 1,
-    Ranged = 2,
-    Head = 3,
-    Body = 4,
-    Hands = 5,
-    Feet = 6,
+    NONE = 0,
+    MELEE = 1,
+    RANGED = 2,
+    HEAD = 3,
+    BODY = 4,
+    HANDS = 5,
+    FEET = 6,
 };
 
 // Armor Slot (only used when slot == Armor)
-enum class ArmorSlot : uint8_t
+enum class ARMOR_SLOT : uint8_t
 {
-    None = 0,
-    Head = 1,
-    Body = 2,
-    Hands = 3,
-    Feet = 4,
+    NONE = 0,
+    HEAD = 1,
+    BODY = 2,
+    HANDS = 3,
+    FEET = 4,
 };
 
-enum class WeaponType : uint8_t
+enum class WEAPON_TYPE : uint8_t
 {
-    None = 0,
-    Sword = 1,
-    Bow = 2,
+    NONE = 0,
+    SWORD = 1,
+    BOW = 2,
 };
 
 // Add on as needed
-enum class AttackType : uint8_t
+enum class ATTACK_TYPE : uint8_t
 {
-    None = 0,
-    SwingArc = 1,
-    Stab = 2,
-    Projectile = 3,
-    CircleAOE = 4,
+    NONE = 0,
+    SWINGARC = 1,
+    STAB = 2,
+    PROJECTILE = 3,
+    CIRCLE_AOE = 4,
 };
 
 
 // Standard rarity tiers for items, potentially affecting drop chance or coloring in UI.
-enum class Rarity : uint8_t
+enum class ITEM_RARITY : uint8_t
 {
-    Common = 0,
-    Uncommon = 1,
-    Rare = 2,
-    Epic = 3,
-    Legendary = 4,
-    Mythical = 5,
-    Unique = 6,
+    COMMON = 0,
+    UNCOMMON = 1,
+    RARE = 2,
+    EPIC = 3,
+    LEGENDARY = 4,
+    MYTHICAL = 5,
+    UNIQUE = 6,
 };
 
 /// Returns the display tint colour associated with a given rarity tier.
-inline Color GetRarityColor(Rarity r)
+inline Color GetRarityColor(ITEM_RARITY r)
 {
     switch (r) {
-    case Rarity::Common:    return Color{ 139, 69, 19, 255 }; // Brown
-    case Rarity::Uncommon:  return Color{ 100, 220, 100, 255 }; // Green
-    case Rarity::Rare:      return Color{ 100, 150, 255, 255 }; // Blue
-    case Rarity::Epic:      return Color{ 180,  80, 255, 255 }; // Purple
-    case Rarity::Legendary: return Color{ 255, 165,   0, 255 }; // Orange
-    case Rarity::Mythical:  return Color{ 255, 215,   0, 255 }; // Gold
-    case Rarity::Unique:    return Color{ 255, 100, 180, 255 }; // Pink
+    case ITEM_RARITY::COMMON:    return Color{ 139, 69, 19, 255 }; // Brown
+    case ITEM_RARITY::UNCOMMON:  return Color{ 100, 220, 100, 255 }; // Green
+    case ITEM_RARITY::RARE:      return Color{ 100, 150, 255, 255 }; // Blue
+    case ITEM_RARITY::EPIC:      return Color{ 180,  80, 255, 255 }; // Purple
+    case ITEM_RARITY::LEGENDARY: return Color{ 255, 165,   0, 255 }; // Orange
+    case ITEM_RARITY::MYTHICAL:  return Color{ 255, 215,   0, 255 }; // Gold
+    case ITEM_RARITY::UNIQUE:    return Color{ 255, 100, 180, 255 }; // Pink
     default:                return Color{ 255, 255, 255, 255 }; // White fallback
     }
 }
@@ -82,21 +82,21 @@ inline Color GetRarityColor(Rarity r)
 struct EquipmentData
 {
     int id = 0; // Unique identifier used for database lookups
-    EquipmentCategory category = EquipmentCategory::None; // Used with ID to uniquely identify item
+    EQUIPMENT_CATEGORY category = EQUIPMENT_CATEGORY::NONE; // Used with ID to uniquely identify item
 
-    EquipSlot slot = EquipSlot::Weapon; // Primary type of item (Weapon vs Armor)
-    ArmorSlot armorSlot = ArmorSlot::None; // Only used when slot == Armor
+    EQUIP_SLOT slot = EQUIP_SLOT::WEAPON; // Primary type of item (Weapon vs Armor)
+    ARMOR_SLOT armorSlot = ARMOR_SLOT::NONE; // Only used when slot == Armor
 
     // weapon behavior overrides
-    WeaponType weaponType = WeaponType::None; // Broad classification of weapon
-    AttackType attackType = AttackType::None; // Determines the shape/hitbox logic of attacks
+    WEAPON_TYPE weaponType = WEAPON_TYPE::NONE; // Broad classification of weapon
+    ATTACK_TYPE attackType = ATTACK_TYPE::NONE; // Determines the shape/hitbox logic of attacks
     bool isRanged = false; // If true, consumes ammo and fires projectiles
     Elements::ELEMENT_TYPE element = Elements::ELEMENT_TYPE::NONE; // The element applied on hit
     float knockback = 100.0f; // Force applied to target when hit
     float attackSize = 10.0f; // Size of the projectile or hitbox
 
     // item quality
-    Rarity rarity = Rarity::Common;
+    ITEM_RARITY rarity = ITEM_RARITY::COMMON;
 
     // Stat modifiers (additive bonuses granted while equipped)
     EquipmentModifiers mods{};

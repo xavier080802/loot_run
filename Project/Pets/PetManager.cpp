@@ -44,8 +44,8 @@ namespace {
 	Color timerTextCol{ 0,0,0,255 };
 	Color onCooldownCol{ 155,155,155,155 };
 	Color availableCol{ 100,255,100,255 }, recastCol{ 100,255,100,255 };
-	TextOriginPos tooltipAlignment{};
-	TextboxOriginPos boxAlignment{};
+	TEXT_ORIGIN_POS tooltipAlignment{};
+	TEXTBOX_ORIGIN_POS boxAlignment{};
 	bool showTimerUnit{};
 }
 
@@ -234,7 +234,7 @@ void PetManager::ShowPetTooltip()
 
 	//Draw text box
 	DrawAETextbox(rm->GetFont(), txt, AEVec2{ (float)mP.x, (float)mP.y },
-		AEGfxGetWinMaxX() * 0.7f, descFontSize, lineSpace, textCol, tooltipAlignment, TextboxOriginPos::BOTTOM,
+		AEGfxGetWinMaxX() * 0.7f, descFontSize, lineSpace, textCol, tooltipAlignment, TEXTBOX_ORIGIN_POS::BOTTOM,
 		TextboxBgCfg{ padding, tooltipBgCol, 255, rm->GetMesh(MESH_SQUARE) });
 }
 

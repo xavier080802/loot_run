@@ -26,7 +26,7 @@
 /// Where the anchor of the text is, relative to the text.
 /// Default: origin is at lower-left
 /// </summary>
-enum TextOriginPos {
+enum TEXT_ORIGIN_POS {
 	//Default
 	TEXT_LOWER_LEFT,
 	TEXT_LOWER_RIGHT,
@@ -40,7 +40,7 @@ enum TextOriginPos {
 };
 
 //Parse Enum name (String) to the enum value
-TextOriginPos ParseTextAlignment(std::string const& str);
+TEXT_ORIGIN_POS ParseTextAlignment(std::string const& str);
 
 AEGfxVertexList* CreateSquareMesh(f32 width, f32 height, u32 color);
 
@@ -90,10 +90,10 @@ void DrawBox(AEVec2 center, f32 width, f32 height, f32 thickness, Color col);
 
 //Get normalized position of text based on text alignment
 //Pass in normalized size to skip the AEGfxGetPrintSize call.
-AEVec2 GetTextAlignPosNorm(AEVec2 pos, AEVec2 normSize, TextOriginPos alignment);
+AEVec2 GetTextAlignPosNorm(AEVec2 pos, AEVec2 normSize, TEXT_ORIGIN_POS alignment);
 
 // Get normalized position of text based on text alignment
-AEVec2 GetTextAlignPosNorm(s8 const& font, std::string const& text, AEVec2 pos, f32 fontSize, TextOriginPos alignment);
+AEVec2 GetTextAlignPosNorm(s8 const& font, std::string const& text, AEVec2 pos, f32 fontSize, TEXT_ORIGIN_POS alignment);
 
 /// <summary>
 /// Render text.
@@ -104,7 +104,7 @@ AEVec2 GetTextAlignPosNorm(s8 const& font, std::string const& text, AEVec2 pos, 
 /// <param name="size">Scale of the text based on the initialization size.</param>
 /// <param name="alignment">Where the text is relative to the anchor. Anchor is at pos</param>
 /// <param name="isHUD">If false, rendered in the world, based on the camera. Text always reorients to the camera</param>
-void DrawAEText(s8 const& font, const char* text, AEVec2 pos, f32 size, Color const& col, TextOriginPos alignment, bool isHUD=true);
+void DrawAEText(s8 const& font, const char* text, AEVec2 pos, f32 size, Color const& col, TEXT_ORIGIN_POS alignment, bool isHUD=true);
 
 /// <summary>
 /// Render text with newlines.
@@ -117,7 +117,7 @@ void DrawAEText(s8 const& font, const char* text, AEVec2 pos, f32 size, Color co
 /// <param name="lineSpace">Scale of extra distance between lines based on font initialization size</param>
 /// <param name="alignment">Where the text is relative to the anchor. Anchor is at pos, with the y offset for each line</param>
 /// <param name="isHUD">If false, rendered in the world, based on the camera. Text always reorients to the camera</param>
-void DrawAEText(s8 const& font, std::string const& text, AEVec2 pos, f32 fontSize, f32 lineSpace, Color const& col, TextOriginPos alignment, bool isHUD = true);
+void DrawAEText(s8 const& font, std::string const& text, AEVec2 pos, f32 fontSize, f32 lineSpace, Color const& col, TEXT_ORIGIN_POS alignment, bool isHUD = true);
 
 /// <summary>
 /// Gets the NORMALIZED width and height of the "textbox".
@@ -147,11 +147,11 @@ struct TextboxBgCfg {
 };
 
 //Which part of the box should be at the anchor
-enum class TextboxOriginPos {
+enum class TEXTBOX_ORIGIN_POS {
 	TOP, //Default
 	BOTTOM //Making the textbox appear above pos
 };
-TextboxOriginPos ParseTextboxAlignment(std::string const& strval);
+TEXTBOX_ORIGIN_POS ParseTextboxAlignment(std::string const& strval);
 
 /// <summary>
 /// Writes text like it's in a textbox, with word wrapping.
@@ -166,7 +166,7 @@ TextboxOriginPos ParseTextboxAlignment(std::string const& strval);
 /// <param name="bgCfg">Config for the rendering of the box. Use default ctor if you dont want to render the box</param>
 /// <returns>Modified world pos of the box to follow alignment</returns>
 AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 boxWidth, f32 fontSize, f32 lineSpace, Color const& col,
-	TextOriginPos textAlignment, TextboxOriginPos boxAlignment,
+	TEXT_ORIGIN_POS textAlignment, TEXTBOX_ORIGIN_POS boxAlignment,
 	TextboxBgCfg const& bgCfg = TextboxBgCfg{}, bool isHUD = true);
 
 /// <summary>

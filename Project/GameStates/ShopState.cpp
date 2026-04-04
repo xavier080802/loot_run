@@ -69,8 +69,8 @@ namespace {
 			(DEFAULT_H / 2 - y) * scale
 		};
 	}
-	enum SideHover { NONE = 0, MINUS, PLUS };
-	void DrawSideButtons(const Button& button, SideHover hoverType)
+	enum SIDE_HOVER { NONE = 0, MINUS, PLUS };
+	void DrawSideButtons(const Button& button, SIDE_HOVER hoverType)
 	{
 		// Calculate world position for the main button
 		AEVec2 worldPos = DefaultToWorld(button.pos.x, button.pos.y);
@@ -318,7 +318,7 @@ void ShopState::Draw()
 			AEVec2 minusPos = { worldPos.x - sideOffset, worldPos.y };
 			AEVec2 plusPos = { worldPos.x + sideOffset, worldPos.y };
 			if (shopButtons[i].hasSideButtons) {
-				SideHover currentSideHover = NONE;
+				SIDE_HOVER currentSideHover = NONE;
 				if (IsCursorOverWorld(minusPos, sideBtnSize, shopButtons[i].size.y, true)) {
 					currentSideHover = MINUS;
 				}

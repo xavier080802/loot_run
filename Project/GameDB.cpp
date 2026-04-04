@@ -46,13 +46,13 @@ namespace
 		return true;
 	}
 
-	static EnemyMesh ParseEnemyMesh(const Json::Value& meshVal)
+	static ENEMY_MESH ParseEnemyMesh(const Json::Value& meshVal)
 	{
-		if (!meshVal.isString()) return EnemyMesh::Circle;
+		if (!meshVal.isString()) return ENEMY_MESH::CIRCLE;
 
 		std::string m = meshVal.asString();
-		if (m == "square" || m == "SQUARE") return EnemyMesh::Square;
-		return EnemyMesh::Circle; // default
+		if (m == "square" || m == "SQUARE") return ENEMY_MESH::SQUARE;
+		return ENEMY_MESH::CIRCLE; // default
 	}
 
 }
@@ -134,23 +134,23 @@ namespace GameDB
                     std::string typeStr = entryJson.get("type", "Coin").asString();
                     
                     // Map the string from JSON to our C++ DropType enum
-                    if (typeStr == "Coin") e.type = DropType::Coin;
-                    else if (typeStr == "Ammo") e.type = DropType::Ammo;
-                    else if (typeStr == "Equipment") e.type = DropType::Equipment;
-                    else if (typeStr == "Heal") e.type = DropType::Heal;
-                    else if (typeStr == "Buff") e.type = DropType::Buff;
-                    else if (typeStr == "None") e.type = DropType::None;
+                    if (typeStr == "Coin") e.type = DROP_TYPE::COIN;
+                    else if (typeStr == "Ammo") e.type = DROP_TYPE::AMMO;
+                    else if (typeStr == "Equipment") e.type = DROP_TYPE::EQUIPMENT;
+                    else if (typeStr == "Heal") e.type = DROP_TYPE::HEAL;
+                    else if (typeStr == "Buff") e.type = DROP_TYPE::BUFF;
+                    else if (typeStr == "None") e.type = DROP_TYPE::NONE;
                     
                     // Only fully parse Equipment specifics if this drop guarantees equipment
-                    if (e.type == DropType::Equipment) {
+                    if (e.type == DROP_TYPE::EQUIPMENT) {
                         std::string catStr = entryJson.get("category", "Melee").asString();
-                        if (catStr == "Melee") e.equipmentCategory = EquipmentCategory::Melee;
-                        else if (catStr == "Ranged") e.equipmentCategory = EquipmentCategory::Ranged;
-                        else if (catStr == "Head") e.equipmentCategory = EquipmentCategory::Head;
-                        else if (catStr == "Body") e.equipmentCategory = EquipmentCategory::Body;
-                        else if (catStr == "Hands") e.equipmentCategory = EquipmentCategory::Hands;
-                        else if (catStr == "Feet") e.equipmentCategory = EquipmentCategory::Feet;
-                        else e.equipmentCategory = EquipmentCategory::None; // Parses "Any" or unrecognized categories as a wildcard
+                        if (catStr == "Melee") e.equipmentCategory = EQUIPMENT_CATEGORY::MELEE;
+                        else if (catStr == "Ranged") e.equipmentCategory = EQUIPMENT_CATEGORY::RANGED;
+                        else if (catStr == "Head") e.equipmentCategory = EQUIPMENT_CATEGORY::HEAD;
+                        else if (catStr == "Body") e.equipmentCategory = EQUIPMENT_CATEGORY::BODY;
+                        else if (catStr == "Hands") e.equipmentCategory = EQUIPMENT_CATEGORY::HANDS;
+                        else if (catStr == "Feet") e.equipmentCategory = EQUIPMENT_CATEGORY::FEET;
+                        else e.equipmentCategory = EQUIPMENT_CATEGORY::NONE; // Parses "Any" or unrecognized categories as a wildcard
                         
                         e.itemId = entryJson.get("itemId", 0).asInt();
                     }
@@ -233,9 +233,9 @@ namespace GameDB
 
 			// Parse category (Normal / Elite / Boss)
 			std::string catStr = e.get("category", "Normal").asString();
-			if (catStr == "Elite"  || catStr == "ELITE")  def.category = EnemyCategory::Elite;
-			else if (catStr == "Boss" || catStr == "BOSS") def.category = EnemyCategory::Boss;
-			else                                           def.category = EnemyCategory::Normal;
+			if (catStr == "Elite"  || catStr == "ELITE")  def.category = ENEMY_CATEGORY::ELITE;
+			else if (catStr == "Boss" || catStr == "BOSS") def.category = ENEMY_CATEGORY::BOSS;
+			else                                           def.category = ENEMY_CATEGORY::NORMAL;
 
 			// Parse base stats
 			const auto& s = e["baseStats"];
@@ -265,16 +265,16 @@ namespace GameDB
 				// Build the mock weapon for Combat::ExecuteAttack
 				std::string atkTypeStr = atk.get("attackType", "SwingArc").asString();
 				if (atkTypeStr == "Projectile") {
-					def.attack.mockWeapon.attackType = AttackType::Projectile;
+					def.attack.mockWeapon.attackType = ATTACK_TYPE::PROJECTILE;
 					def.attack.mockWeapon.isRanged = true;
 				} else if (atkTypeStr == "Stab") {
-					def.attack.mockWeapon.attackType = AttackType::Stab;
+					def.attack.mockWeapon.attackType = ATTACK_TYPE::STAB;
 					def.attack.mockWeapon.isRanged = false;
 				} else if (atkTypeStr == "CircleAOE") {
-					def.attack.mockWeapon.attackType = AttackType::CircleAOE;
+					def.attack.mockWeapon.attackType = ATTACK_TYPE::CIRCLE_AOE;
 					def.attack.mockWeapon.isRanged = false;
 				} else {
-					def.attack.mockWeapon.attackType = AttackType::SwingArc;
+					def.attack.mockWeapon.attackType = ATTACK_TYPE::SWINGARC;
 					def.attack.mockWeapon.isRanged = false;
 				}
 
@@ -303,14 +303,14 @@ namespace GameDB
      * the global EquipmentRegistry. Can be called multiple times for different item categories.
      *
      * @param path      File path to the equipment JSON file. Passed as a CONST POINTER.
-     * @param category  The EquipmentCategory classification for these loaded items. Passed by VALUE.
+     * @param category  The EQUIPMENT_CATEGORY classification for these loaded items. Passed by VALUE.
      *
      * @return true if successfully loaded and parsed, false otherwise.
      *
      * @note Called by:
      *   - GameState::Init() - called multiple times for each equipment JSON file.
      */
-    bool LoadEquipmentDefs(const char* path, EquipmentCategory category)
+    bool LoadEquipmentDefs(const char* path, EQUIPMENT_CATEGORY category)
     {
         auto& reg = EquipmentRegistry();
 
@@ -341,26 +341,26 @@ namespace GameDB
             e.texturePath = _strdup(item.get("texturePath", "").asString().c_str());
             
             std::string slotStr = item.get("slot", "Weapon").asString();
-            e.slot = (slotStr == "Armor") ? EquipSlot::Armor : EquipSlot::Weapon;
+            e.slot = (slotStr == "Armor") ? EQUIP_SLOT::ARMOR : EQUIP_SLOT::WEAPON;
             
             std::string armorSlotStr = item.get("armorSlot", "None").asString();
-            if (armorSlotStr == "Head") e.armorSlot = ArmorSlot::Head;
-            else if (armorSlotStr == "Body") e.armorSlot = ArmorSlot::Body;
-            else if (armorSlotStr == "Hands") e.armorSlot = ArmorSlot::Hands;
-            else if (armorSlotStr == "Feet") e.armorSlot = ArmorSlot::Feet;
-            else e.armorSlot = ArmorSlot::None;
+            if (armorSlotStr == "Head") e.armorSlot = ARMOR_SLOT::HEAD;
+            else if (armorSlotStr == "Body") e.armorSlot = ARMOR_SLOT::BODY;
+            else if (armorSlotStr == "Hands") e.armorSlot = ARMOR_SLOT::HANDS;
+            else if (armorSlotStr == "Feet") e.armorSlot = ARMOR_SLOT::FEET;
+            else e.armorSlot = ARMOR_SLOT::NONE;
             
             std::string wTypeStr = item.get("weaponType", "None").asString();
-            if (wTypeStr == "Sword") e.weaponType = WeaponType::Sword;
-            else if (wTypeStr == "Bow") e.weaponType = WeaponType::Bow;
-            else e.weaponType = WeaponType::None;
+            if (wTypeStr == "Sword") e.weaponType = WEAPON_TYPE::SWORD;
+            else if (wTypeStr == "Bow") e.weaponType = WEAPON_TYPE::BOW;
+            else e.weaponType = WEAPON_TYPE::NONE;
 
             std::string aTypeStr = item.get("attackType", "None").asString();
-            if (aTypeStr == "SwingArc") e.attackType = AttackType::SwingArc;
-            else if (aTypeStr == "Projectile") e.attackType = AttackType::Projectile;
-            else if (aTypeStr == "CircleAOE") e.attackType = AttackType::CircleAOE;
-            else if (aTypeStr == "Stab") e.attackType = AttackType::Stab;
-            else e.attackType = AttackType::None;
+            if (aTypeStr == "SwingArc") e.attackType = ATTACK_TYPE::SWINGARC;
+            else if (aTypeStr == "Projectile") e.attackType = ATTACK_TYPE::PROJECTILE;
+            else if (aTypeStr == "CircleAOE") e.attackType = ATTACK_TYPE::CIRCLE_AOE;
+            else if (aTypeStr == "Stab") e.attackType = ATTACK_TYPE::STAB;
+            else e.attackType = ATTACK_TYPE::NONE;
 
             e.isRanged = item.get("isRanged", false).asBool();
 
@@ -374,13 +374,13 @@ namespace GameDB
             e.attackSize = item.get("attackSize", 10.0f).asFloat();
 
             std::string rarityStr = item.get("rarity", "Common").asString();
-            if (rarityStr == "Uncommon") e.rarity = Rarity::Uncommon;
-            else if (rarityStr == "Rare") e.rarity = Rarity::Rare;
-            else if (rarityStr == "Epic") e.rarity = Rarity::Epic;
-            else if (rarityStr == "Legendary") e.rarity = Rarity::Legendary;
-            else if (rarityStr == "Mythical") e.rarity = Rarity::Mythical;
-            else if (rarityStr == "Unique") e.rarity = Rarity::Unique;
-            else e.rarity = Rarity::Common;
+            if (rarityStr == "Uncommon") e.rarity = ITEM_RARITY::UNCOMMON;
+            else if (rarityStr == "Rare") e.rarity = ITEM_RARITY::RARE;
+            else if (rarityStr == "Epic") e.rarity = ITEM_RARITY::EPIC;
+            else if (rarityStr == "Legendary") e.rarity = ITEM_RARITY::LEGENDARY;
+            else if (rarityStr == "Mythical") e.rarity = ITEM_RARITY::MYTHICAL;
+            else if (rarityStr == "Unique") e.rarity = ITEM_RARITY::UNIQUE;
+            else e.rarity = ITEM_RARITY::COMMON;
 
             e.sellPrice = item.get("sellPrice", 10).asInt();
 
@@ -521,7 +521,7 @@ namespace GameDB
 	 *
 	 * Used to retrieve an item's data when loading starting gear or rolling a specific drop.
 	 *
-	 * @param category  The EquipmentCategory to filter by. Passed by VALUE.
+	 * @param category  The EQUIPMENT_CATEGORY to filter by. Passed by VALUE.
 	 * @param id        The unique numeric ID of the equipment to find. Passed by VALUE.
 	 *
 	 * @return A CONST POINTER to the EquipmentData if found, nullptr otherwise.
@@ -530,7 +530,7 @@ namespace GameDB
      *   - Player::InitPlayerRuntime() - to load player starter equipment.
      *   - DropSystem - when resolving a drop table entry into an equipment drop.
 	 */
-	const EquipmentData* GetEquipmentData(EquipmentCategory category, int id)
+	const EquipmentData* GetEquipmentData(EQUIPMENT_CATEGORY category, int id)
 	{
 		for (const auto& e : EquipmentRegistry())
 			if (e.id == id && e.category == category)
@@ -538,17 +538,17 @@ namespace GameDB
 		return nullptr;
 	}
 
-	int GetRarityWeight(Rarity r)
+	int GetRarityWeight(ITEM_RARITY r)
 	{
 		switch (r)
 		{
-		case Rarity::Common: return 100;
-		case Rarity::Uncommon: return 50;
-		case Rarity::Rare: return 20;
-		case Rarity::Epic: return 10;
-		case Rarity::Legendary: return 4;
-		case Rarity::Mythical: return 1;
-        case Rarity::Unique: return 0;
+		case ITEM_RARITY::COMMON: return 100;
+		case ITEM_RARITY::UNCOMMON: return 50;
+		case ITEM_RARITY::RARE: return 20;
+		case ITEM_RARITY::EPIC: return 10;
+		case ITEM_RARITY::LEGENDARY: return 4;
+		case ITEM_RARITY::MYTHICAL: return 1;
+        case ITEM_RARITY::UNIQUE: return 0;
 		default: return 100;
 		}
 	}
@@ -637,7 +637,7 @@ namespace GameDB
     {
         std::vector<const EnemyDef*> pool;
         for (const auto& e : EnemyRegistry())
-            if (e.category == EnemyCategory::Normal)
+            if (e.category == ENEMY_CATEGORY::NORMAL)
                 pool.push_back(&e);
 
         if (pool.empty()) return nullptr;
@@ -659,7 +659,7 @@ namespace GameDB
     {
         std::vector<const EnemyDef*> pool;
         for (const auto& e : EnemyRegistry())
-            if (e.category == EnemyCategory::Elite)
+            if (e.category == ENEMY_CATEGORY::ELITE)
                 pool.push_back(&e);
 
         if (pool.empty()) return nullptr;
@@ -681,7 +681,7 @@ namespace GameDB
     {
         std::vector<const EnemyDef*> pool;
         for (const auto& e : EnemyRegistry())
-            if (e.category == EnemyCategory::Boss)
+            if (e.category == ENEMY_CATEGORY::BOSS)
                 pool.push_back(&e);
 
         if (pool.empty()) return nullptr;

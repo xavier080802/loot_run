@@ -5,7 +5,7 @@
 #include "../GameDB.h"
 
 // Basic AI states for the enemy
-enum class EnemyState {
+enum class ENEMY_STATE {
     IDLE,
     CHASE,
     ATTACK
@@ -44,7 +44,7 @@ private:
     const EnemyDef* mDef = 0;
 
     // AI State tracking
-    EnemyState mState = EnemyState::IDLE;
+    ENEMY_STATE mState = ENEMY_STATE::IDLE;
     Actor* mTarget = nullptr; // Reference to the player
     float mAttackCooldown = 0.0f; // Mock attack delay
 };

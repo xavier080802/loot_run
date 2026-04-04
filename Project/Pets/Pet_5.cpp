@@ -28,7 +28,7 @@ namespace {
 		}
 	}
 
-	void AuraEnd(Actor*) {
+	void AuraEnd(AttackHitboxGO&, Actor*) {
 		auraActive = false;
 	}
 }

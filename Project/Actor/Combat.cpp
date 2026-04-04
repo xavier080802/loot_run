@@ -124,7 +124,7 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 	 *   - Projectile: Fires a flying bullet/arrow toward targetPos.
 	 *   - SwingArc: Creates a circular hitbox in front of the caster.
 	 *   - Stab: Creates a rectangular hitbox directly in front of the caster.
-	 *   - CircleAOE: Creates a large circular hitbox centered on the caster.
+	 *   - CIRCLE_AOE: Creates a large circular hitbox centered on the caster.
 	 *
 	 * @param caster    The character doing the attacking. Passed as a raw POINTER
 	 *                  so we can query their position and collision layers.
@@ -144,7 +144,7 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 
 		switch (weapon->attackType)
 		{
-		case AttackType::Projectile:
+		case ATTACK_TYPE::PROJECTILE:
 		{
 			Projectile* proj = dynamic_cast<Projectile*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::PROJECTILE));
 			if (!proj) return;
@@ -166,7 +166,7 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 			break;
 		}
 
-		case AttackType::SwingArc:
+		case ATTACK_TYPE::SWINGARC:
 		{
 			AttackHitboxGO* hb = dynamic_cast<AttackHitboxGO*>(
 				GameObjectManager::GetInstance()->FetchGO(GO_TYPE::ATTACK_HITBOX)
@@ -218,7 +218,7 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 			break;
 		}
 
-		case AttackType::Stab:
+		case ATTACK_TYPE::STAB:
 		{
 			AttackHitboxGO* hb = dynamic_cast<AttackHitboxGO*>(
 				GameObjectManager::GetInstance()->FetchGO(GO_TYPE::ATTACK_HITBOX)
@@ -269,7 +269,7 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 			break;
 		}
 
-		case AttackType::CircleAOE:
+		case ATTACK_TYPE::CIRCLE_AOE:
 		{
 			AttackHitboxGO* hb = dynamic_cast<AttackHitboxGO*>(
 				GameObjectManager::GetInstance()->FetchGO(GO_TYPE::ATTACK_HITBOX)
@@ -313,7 +313,7 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 		}
 
 		default:
-			// std::cout << "Combat::ExecuteAttack: Weapon has no valid AttackType.\n";
+			// std::cout << "Combat::ExecuteAttack: Weapon has no valid ATTACK_TYPE.\n";
 			break;
 		}
 	}
@@ -331,7 +331,7 @@ void OnProjectileHit(GameObject::CollisionData& data, Actor* caster, Elements::E
 	 *   - Projectile: Fires a flying bullet/arrow toward targetPos.
 	 *   - SwingArc: Creates a circular hitbox in front of the caster.
 	 *   - Stab: Creates a rectangular hitbox directly in front of the caster.
-	 *   - CircleAOE: Creates a large circular hitbox centered on the caster.
+	 *   - CIRCLE_AOE: Creates a large circular hitbox centered on the caster.
 	 *
 	 * @param caster    The character doing the attacking. Passed as a raw POINTER
 	 *                  so we can query their position and collision layers.

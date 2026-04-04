@@ -8,14 +8,14 @@
  * and by the pickup objects on the ground (to know what they ARE and what to do
  * when the player picks them up).
  */
-enum class DropType : unsigned
+enum class DROP_TYPE : unsigned
 {
-    Coin = 0,       // Adds to the player's coin count.
-    Ammo = 1,       // Adds arrows to the player's ammo stash.
-    Equipment = 2,  // A weapon or armor piece the player can equip.
-    Heal = 3,       // Restores a portion of the player's HP.
-    Buff = 4,       // Applies a status buff (not yet implemented in drops).
-    None = 5        // Intentionally drops nothing. Used in loot tables to pad bad luck.
+    COIN = 0,       // Adds to the player's coin count.
+    AMMO = 1,       // Adds arrows to the player's ammo stash.
+    EQUIPMENT = 2,  // A weapon or armor piece the player can equip.
+    HEAL = 3,       // Restores a portion of the player's HP.
+    BUFF = 4,       // Applies a status buff (not yet implemented in drops).
+    NONE = 5        // Intentionally drops nothing. Used in loot tables to pad bad luck.
 };
 
 /**
@@ -31,7 +31,7 @@ enum class DropType : unsigned
  */
 struct PickupPayload
 {
-    DropType type = DropType::Coin; // What kind of pickup this is.
+    DROP_TYPE type = DROP_TYPE::COIN; // What kind of pickup this is.
     int amount = 0;                     // For coins, ammo, and heals: how many/much is in this pickup.
     const EquipmentData* equipment = 0; // For Equipment drops: a pointer to the item's static data.
 };

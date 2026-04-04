@@ -12,8 +12,8 @@
  */
 struct DropEntry
 {
-    DropType type = DropType::Coin; // What category of item this is (Coin, Ammo, Equipment, etc).
-    EquipmentCategory equipmentCategory = EquipmentCategory::None; // If this is an Equipment drop, which category to pull from (or 'Any' for random).
+    DROP_TYPE type = DROP_TYPE::COIN; // What category of item this is (Coin, Ammo, Equipment, etc).
+    EQUIPMENT_CATEGORY equipmentCategory = EQUIPMENT_CATEGORY::NONE; // If this is an Equipment drop, which category to pull from (or 'Any' for random).
     int itemId = 0; // If equipment, which specific item ID. 0 means "random from the category".
     float chance = 0.0f; // How likely this item is to drop. 1.0 = always drops, 0.5 = 50% chance.
     int minAmount = 0; // Minimum number of coins/ammo/heal units to drop.

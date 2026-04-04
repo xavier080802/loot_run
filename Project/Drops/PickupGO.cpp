@@ -61,20 +61,20 @@ void PickupGO::InitPickup(const PickupPayload& payload)
     mPayload = payload;
 
     // Apply sprite + rarity tint for equipment drops
-    if (payload.type == DropType::Equipment && payload.equipment) {
+    if (payload.type == DROP_TYPE::EQUIPMENT && payload.equipment) {
         const EquipmentData* eq = payload.equipment;
         if (eq->texturePath && eq->texturePath[0] != '\0') {
             GetRenderData().AddTexture(eq->texturePath);
         }
         GetRenderData().tint = GetRarityColor(eq->rarity);
     }
-    else if (payload.type == DropType::Coin) {
+    else if (payload.type == DROP_TYPE::COIN) {
         GetRenderData().AddTexture("Assets/sprites/items/coin.png");
     }
-    else if (payload.type == DropType::Heal) {
+    else if (payload.type == DROP_TYPE::HEAL) {
         GetRenderData().AddTexture("Assets/sprites/items/heal.png");
     }
-    else if (payload.type == DropType::Ammo) {
+    else if (payload.type == DROP_TYPE::AMMO) {
         GetRenderData().AddTexture("Assets/sprites/attacks/arrows.png");
     }
 }

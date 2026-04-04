@@ -44,7 +44,7 @@ public:
     const EquipmentData* GetBow() const;
 
     // Armor getters
-    const EquipmentData* GetArmor(ArmorSlot slot) const;
+    const EquipmentData* GetArmor(ARMOR_SLOT slot) const;
 
     // Equips the item only if its corresponding slot is currently empty.
     void AutoEquipIfEmpty(const EquipmentData* data);

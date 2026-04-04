@@ -12,7 +12,7 @@
 #include "../UIConfig.h"
 #include <iostream>
 
-std::string mapSelected = "Assets/TutorialMap.csv";
+std::string mapSelected = "Assets/maps/TutorialMap.csv";
 
 namespace {
 	float winW = static_cast<float>(AEGfxGetWinMaxX());
@@ -76,9 +76,9 @@ void LevelSelectState::InitState() {
 	winW = static_cast<float>(AEGfxGetWinMaxX());
 	winH = static_cast<float>(AEGfxGetWinMaxY());
 	scale = (winW * 2 / DEFAULT_W) < (winH * 2 / DEFAULT_H) ? (winW * 2 / DEFAULT_W) : (winH * 2 / DEFAULT_H);
-	if (mapSelected == "Assets/TutorialMap.csv")      selectedBtn = 0;
-	else if (mapSelected == "Assets/Dungeon.csv")     selectedBtn = 1;
-	else if (mapSelected == "Assets/Endless.csv")     selectedBtn = 2;
+	if (mapSelected == "Assets/maps/TutorialMap.csv")      selectedBtn = 0;
+	else if (mapSelected == "Assets/maps/Dungeon.csv")     selectedBtn = 1;
+	else if (mapSelected == "Assets/maps/Endless.csv")     selectedBtn = 2;
 	else                                              selectedBtn = 0;
 }
 
@@ -136,7 +136,7 @@ void LevelSelectState::Update(double /*dt*/) {
 							->SetNextGameState("GameState", true, true);
 						return;
 					}
-					mapSelected = "Assets/TutorialMap.csv";
+					mapSelected = "Assets/maps/TutorialMap.csv";
 					selectedBtn = i;
 					std::cout << "tutorial: " << mapSelected << std::endl;
 					break;
@@ -148,7 +148,7 @@ void LevelSelectState::Update(double /*dt*/) {
 							->SetNextGameState("GameState", true, true);
 						return;
 					}
-					mapSelected = "Assets/Dungeon.csv";
+					mapSelected = "Assets/maps/Dungeon.csv";
 					selectedBtn = i;
 					std::cout << "normal: " << mapSelected << std::endl;
 					break;
@@ -160,13 +160,13 @@ void LevelSelectState::Update(double /*dt*/) {
 							->SetNextGameState("GameState", true, true);
 						return;
 					}
-					mapSelected = "Assets/Endless.csv";
+					mapSelected = "Assets/maps/Endless.csv";
 					selectedBtn = i;
 					std::cout << "endless: " << mapSelected << std::endl;
 					break;
 				case 3: //start
 					if (selectedBtn == -1) {
-						mapSelected = "Assets/TutorialMap.csv";
+						mapSelected = "Assets/maps/TutorialMap.csv";
 						selectedBtn = 0;
 					}
 					GameStateManager::GetInstance()

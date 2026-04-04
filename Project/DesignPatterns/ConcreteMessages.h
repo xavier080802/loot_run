@@ -25,14 +25,14 @@ PostOffice::GetInstance().Send("TargetAddress", new MyMessage("hi there", otherE
 
 //Message about pet skill
 struct PetSkillMsg : public Message {
-	enum PetMessageType {
+	enum PET_MESSAGE_TYPE {
 		CAST_SKILL,
 		SKILL_READY,
 	};
-	PetSkillMsg(PetMessageType _type) : type(_type) {}
+	PetSkillMsg(PET_MESSAGE_TYPE _type) : type(_type) {}
 	~PetSkillMsg() {};
 
-	PetMessageType type{};
+	PET_MESSAGE_TYPE type{};
 };
 
 //Message about showing text in the world

@@ -365,7 +365,7 @@ void Actor::DrawStatusEffectIcons(float iconSize, AEVec2 center, int numIcons, b
         if (++i >= numIcons && statusEffectsDict.size() > numIcons) {
             _pos.x += iconSize + 2; //move to the right a bit
             DrawAEText(RenderingManager::GetInstance()->GetFont(), "+", _pos,
-                (iconSize * 2) / RenderingManager::GetInstance()->GetFontSize(), { 255,255,255,255 }, TextOriginPos::TEXT_MIDDLE);
+                (iconSize * 2) / RenderingManager::GetInstance()->GetFontSize(), { 255,255,255,255 }, TEXT_ORIGIN_POS::TEXT_MIDDLE);
             break;
         }
     }

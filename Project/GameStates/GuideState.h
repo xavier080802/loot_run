@@ -80,7 +80,7 @@ private:
 
 	struct Content {
 		std::string text{};
-		TextOriginPos contentTxtOrigin{};
+		TEXT_ORIGIN_POS contentTxtOrigin{};
 		Color contentCol{ 255,255,255,255 };
 		//Filepath + size
 		std::vector<Img> imgPaths{};
@@ -103,7 +103,7 @@ private:
 		float fontSize{};
 		Color color{};
 		std::string format{};
-		TextOriginPos origin{};
+		TEXT_ORIGIN_POS origin{};
 	} pageIndicator;
 
 	std::string nextText{}, prevText{}, exitText{};

@@ -100,7 +100,7 @@ void Player::InitPlayerRuntime(const ActorStats& baseStats)
 
     const GameDB::PlayerInventoryDef& invDef = GameDB::GetPlayerStarterInventory();
 
-    auto EquipItem = [&](int eqId, EquipmentCategory cat, auto equipFunc) {
+    auto EquipItem = [&](int eqId, EQUIPMENT_CATEGORY cat, auto equipFunc) {
         if (eqId > 0) {
             const EquipmentData* item = GameDB::GetEquipmentData(cat, eqId);
             if (item) {
@@ -111,13 +111,13 @@ void Player::InitPlayerRuntime(const ActorStats& baseStats)
 		}
 	};
 
-	EquipItem(invDef.weapon1,	EquipmentCategory::Melee,	[&](const EquipmentData* d) { mInventory.EquipMainWeapon(0, d); });
-	EquipItem(invDef.weapon2,	EquipmentCategory::Melee,	[&](const EquipmentData* d) { mInventory.EquipMainWeapon(1, d); });
-	EquipItem(invDef.bow,		EquipmentCategory::Ranged,	[&](const EquipmentData* d) { mInventory.EquipBow(d); });
-	EquipItem(invDef.head,		EquipmentCategory::Head,	[&](const EquipmentData* d) { mInventory.EquipArmor(d); });
-	EquipItem(invDef.body,		EquipmentCategory::Body,	[&](const EquipmentData* d) { mInventory.EquipArmor(d); });
-	EquipItem(invDef.hands,		EquipmentCategory::Hands,	[&](const EquipmentData* d) { mInventory.EquipArmor(d); });
-	EquipItem(invDef.feet,		EquipmentCategory::Feet,	[&](const EquipmentData* d) { mInventory.EquipArmor(d); });
+	EquipItem(invDef.weapon1,	EQUIPMENT_CATEGORY::MELEE,	[&](const EquipmentData* d) { mInventory.EquipMainWeapon(0, d); });
+	EquipItem(invDef.weapon2,	EQUIPMENT_CATEGORY::MELEE,	[&](const EquipmentData* d) { mInventory.EquipMainWeapon(1, d); });
+	EquipItem(invDef.bow,		EQUIPMENT_CATEGORY::RANGED,	[&](const EquipmentData* d) { mInventory.EquipBow(d); });
+	EquipItem(invDef.head,		EQUIPMENT_CATEGORY::HEAD,	[&](const EquipmentData* d) { mInventory.EquipArmor(d); });
+	EquipItem(invDef.body,		EQUIPMENT_CATEGORY::BODY,	[&](const EquipmentData* d) { mInventory.EquipArmor(d); });
+	EquipItem(invDef.hands,		EQUIPMENT_CATEGORY::HANDS,	[&](const EquipmentData* d) { mInventory.EquipArmor(d); });
+	EquipItem(invDef.feet,		EQUIPMENT_CATEGORY::FEET,	[&](const EquipmentData* d) { mInventory.EquipArmor(d); });
 
 	// Give some starter ammo so bow can shoot
 	mInventory.AddAmmo(invDef.ammo);
@@ -227,7 +227,7 @@ void Player::Update(double dt)
 	if (mInteractablePickup && mInteractablePickup->IsEnabled())
 	{
 		const PickupPayload& payload = mInteractablePickup->GetPayload();
-		if (payload.type == DropType::Equipment && payload.equipment)
+		if (payload.type == DROP_TYPE::EQUIPMENT && payload.equipment)
 		{
 			if (AEInputCheckTriggered(AEVK_C))
 			{
@@ -241,18 +241,18 @@ void Player::Update(double dt)
 			{
 				// Identify what is currently equipped in the corresponding slot
 				const EquipmentData* oldEquip = nullptr;
-				if (payload.equipment->slot == EquipSlot::Weapon) 
+				if (payload.equipment->slot == EQUIP_SLOT::WEAPON) 
 				{
-					if (payload.equipment->weaponType == WeaponType::Bow) {
+					if (payload.equipment->weaponType == WEAPON_TYPE::BOW) {
 						oldEquip = mInventory.GetBow();
 					} else {
 						// For main weapons, replace the currently "held/focused" slot if possible
 						oldEquip = GetHeldWeaponData();
 						// If user isn't holding a main weapon (e.g. holds bow), default to slot 0
-						if (!oldEquip || oldEquip->weaponType == WeaponType::Bow) oldEquip = mInventory.GetMainWeapon(0);
+						if (!oldEquip || oldEquip->weaponType == WEAPON_TYPE::BOW) oldEquip = mInventory.GetMainWeapon(0);
 					}
 				}
-				else if (payload.equipment->slot == EquipSlot::Armor)
+				else if (payload.equipment->slot == EQUIP_SLOT::ARMOR)
 				{
 					oldEquip = mInventory.GetArmor(payload.equipment->armorSlot);
 				}
@@ -265,13 +265,13 @@ void Player::Update(double dt)
 					mInventory.ReplaceEquipment(oldEquip, payload.equipment);
 					
 					// Ensure active main weapon index matches our held weapon state before we recalculate
-					if (heldWeapon == HeldWeapon::Weapon1) mInventory.SetActiveMainWeapon(0);
-					else if (heldWeapon == HeldWeapon::Weapon2) mInventory.SetActiveMainWeapon(1);
+					if (heldWeapon == HELD_WEAPON::WEAPON1) mInventory.SetActiveMainWeapon(0);
+					else if (heldWeapon == HELD_WEAPON::WEAPON2) mInventory.SetActiveMainWeapon(1);
 					
 					RecalculateStats();
 
 					PickupPayload dropPayload{};
-					dropPayload.type = DropType::Equipment;
+					dropPayload.type = DROP_TYPE::EQUIPMENT;
 					dropPayload.amount = 1;
 					dropPayload.equipment = oldEquip;
 					
@@ -400,9 +400,9 @@ const EquipmentData* Player::GetHeldWeaponData() const
 {
 	switch (heldWeapon)
 	{
-	case HeldWeapon::Weapon1: return mInventory.GetMainWeapon(0);
-	case HeldWeapon::Weapon2: return mInventory.GetMainWeapon(1);
-	case HeldWeapon::Bow:     return mInventory.GetBow();
+	case HELD_WEAPON::WEAPON1: return mInventory.GetMainWeapon(0);
+	case HELD_WEAPON::WEAPON2: return mInventory.GetMainWeapon(1);
+	case HELD_WEAPON::BOW:     return mInventory.GetBow();
 	default: return nullptr;
 	}
 }
@@ -426,31 +426,31 @@ bool Player::TryPickup(const PickupPayload& payload)
 {
 	switch (payload.type)
 	{
-	case DropType::Ammo:
+	case DROP_TYPE::AMMO:
 		Debug::stream << "Picked up ammo " << payload.amount << '\n';
 		mInventory.AddAmmo(payload.amount);
 		break;
 
-	case DropType::Heal:
+	case DROP_TYPE::HEAL:
 		Debug::stream << "Picked up healing " << payload.amount << '\n';
 		Heal((float)payload.amount);
 		break;
 
-	case DropType::Equipment:
+	case DROP_TYPE::EQUIPMENT:
 		if (payload.equipment)
 		{
 			const EquipmentData* eq = payload.equipment;
 			
 			// Prevent picking up equipment if the relevant slots are already occupied
-			if (eq->slot == EquipSlot::Weapon) 
+			if (eq->slot == EQUIP_SLOT::WEAPON) 
 			{
-				if (eq->weaponType == WeaponType::Bow) {
+				if (eq->weaponType == WEAPON_TYPE::BOW) {
 					if (mInventory.GetBow() != nullptr) return false;
 				} else {
 					if (mInventory.GetMainWeapon(0) != nullptr && mInventory.GetMainWeapon(1) != nullptr) return false;
 				}
 			}
-			else if (eq->slot == EquipSlot::Armor)
+			else if (eq->slot == EQUIP_SLOT::ARMOR)
 			{
 				if (mInventory.GetArmor(eq->armorSlot) != nullptr) return false;
 			}
@@ -462,16 +462,16 @@ bool Player::TryPickup(const PickupPayload& payload)
 			mInventory.Equip(payload.equipment);
 
             // Make sure the active index matches held weapon state so RecalculateStats works
-            if (payload.equipment->slot == EquipSlot::Weapon)
+            if (payload.equipment->slot == EQUIP_SLOT::WEAPON)
             {
-                if (payload.equipment->weaponType != WeaponType::Bow)
+                if (payload.equipment->weaponType != WEAPON_TYPE::BOW)
                 {
-                    if (heldWeapon == HeldWeapon::Weapon1) mInventory.SetActiveMainWeapon(0);
-                    else if (heldWeapon == HeldWeapon::Weapon2) mInventory.SetActiveMainWeapon(1);
+                    if (heldWeapon == HELD_WEAPON::WEAPON1) mInventory.SetActiveMainWeapon(0);
+                    else if (heldWeapon == HELD_WEAPON::WEAPON2) mInventory.SetActiveMainWeapon(1);
                 }
                 else
                 {
-                    if (heldWeapon == HeldWeapon::Bow) mInventory.SetActiveMainWeapon(2);
+                    if (heldWeapon == HELD_WEAPON::BOW) mInventory.SetActiveMainWeapon(2);
                 }
             }
 
@@ -479,7 +479,7 @@ bool Player::TryPickup(const PickupPayload& payload)
 		}
 		break;
 
-	case DropType::Coin:
+	case DROP_TYPE::COIN:
 		Debug::stream << "Picked up coin(s) " << payload.amount << '\n';
 		mInventory.AddCoins(payload.amount);
 		break;
@@ -563,7 +563,7 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 		break;
 	case VK_SCROLL: {
 		int ind{ mInventory.GetActiveWeaponIndex() };
-		Player::HeldWeapon prevWeap{ heldWeapon };
+		Player::HELD_WEAPON prevWeap{ heldWeapon };
 		//After setting the weapon based on scroll dir,
 		//Check if the next weapon exists. If it doesnt, let the switch case fall through to the next
 		//At the last case before default, it won't be able to loop back to the other side so adding that manually.
@@ -572,18 +572,18 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 			switch (ind)
 			{
 			case 0:
-				heldWeapon = HeldWeapon::Bow;
+				heldWeapon = HELD_WEAPON::BOW;
 				ind = 2;
 				if(GetHeldWeaponData()) break;
 			case 1:
-				heldWeapon = HeldWeapon::Weapon1;
+				heldWeapon = HELD_WEAPON::WEAPON1;
 				ind = 0;
 				if (GetHeldWeaponData()) break;
 			case 2:
-				heldWeapon = HeldWeapon::Weapon2;
+				heldWeapon = HELD_WEAPON::WEAPON2;
 				ind = 1;
 				if (!GetHeldWeaponData()) { //Loop back to first weapon ([1] empty)
-					heldWeapon = HeldWeapon::Weapon1;
+					heldWeapon = HELD_WEAPON::WEAPON1;
 					ind = 0;
 				}
 				if (GetHeldWeaponData()) break;
@@ -597,18 +597,18 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 			switch (ind)
 			{
 			case 0:
-				heldWeapon = HeldWeapon::Weapon2;
+				heldWeapon = HELD_WEAPON::WEAPON2;
 				ind = 1;
 				if (GetHeldWeaponData()) break;
 			case 1:
-				heldWeapon = HeldWeapon::Bow;
+				heldWeapon = HELD_WEAPON::BOW;
 				ind = 2;
 				if (GetHeldWeaponData()) break;
 			case 2:
-				heldWeapon = HeldWeapon::Weapon1;
+				heldWeapon = HELD_WEAPON::WEAPON1;
 				ind = 0;
 				if (!GetHeldWeaponData()) { //Loop back to [1] ([0] empty)
-					heldWeapon = HeldWeapon::Weapon2;
+					heldWeapon = HELD_WEAPON::WEAPON2;
 					ind = 1;
 				}
 				if (GetHeldWeaponData()) break;
@@ -629,7 +629,7 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 			if (!held) return;
 
 			PickupPayload p{};
-			p.type = DropType::Equipment;
+			p.type = DROP_TYPE::EQUIPMENT;
 			p.amount = 1;
 			p.equipment = held;
 
@@ -667,15 +667,15 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 			// Remove the weapon completely from the active loadout slot
 			switch (heldWeapon)
 			{
-			case HeldWeapon::Weapon1:
+			case HELD_WEAPON::WEAPON1:
 				mInventory.UnequipMainWeapon(0);
 				break;
 
-			case HeldWeapon::Weapon2:
+			case HELD_WEAPON::WEAPON2:
 				mInventory.UnequipMainWeapon(1);
 				break;
 
-			case HeldWeapon::Bow:
+			case HELD_WEAPON::BOW:
 				mInventory.UnequipBow();
 				break;
 			}
@@ -685,7 +685,7 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 		break;
 	case AEVK_Q:
 		if (content.type == Input::INPUT_TYPE::TRIGGERED) {
-			heldWeapon = HeldWeapon::Bow;
+			heldWeapon = HELD_WEAPON::BOW;
 			mInventory.SetActiveMainWeapon(2);
 			RecalculateStats();
 			Debug::stream << "Held: " << SafeName(GetHeldWeaponData()) << "\n";
@@ -693,7 +693,7 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 		break;
 	case AEVK_1:
 		if (content.type == Input::INPUT_TYPE::TRIGGERED) {
-			heldWeapon = HeldWeapon::Weapon1;
+			heldWeapon = HELD_WEAPON::WEAPON1;
 			mInventory.SetActiveMainWeapon(0);
 			RecalculateStats();
 			Debug::stream << "Held: " << SafeName(GetHeldWeaponData()) << "\n";
@@ -701,7 +701,7 @@ void Player::SubscriptionAlert(Input::InputKeyData content)
 		break;
 	case AEVK_2:
 		if (content.type == Input::INPUT_TYPE::TRIGGERED) {
-			heldWeapon = HeldWeapon::Weapon2;
+			heldWeapon = HELD_WEAPON::WEAPON2;
 			mInventory.SetActiveMainWeapon(1);
 			RecalculateStats();
 			Debug::stream << "Held: " << SafeName(GetHeldWeaponData()) << "\n";
@@ -771,7 +771,7 @@ void Player::OnCollide(CollisionData& other)
 				pickup->SetEnabled(false);
 				pickup->SetCollision(false);
 			}
-			else if (pickup->GetPayload().type == DropType::Equipment) 
+			else if (pickup->GetPayload().type == DROP_TYPE::EQUIPMENT) 
 			{
 				// If picking up failed (slot is occupied), flag it as interactable
 				mInteractablePickup = pickup;

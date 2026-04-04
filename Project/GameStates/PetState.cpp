@@ -73,8 +73,8 @@ namespace {
 	// -------------------------------------------------------------------------
 	// View state
 	// -------------------------------------------------------------------------
-	enum class PetView { MAIN, INVENTORY, GACHA };
-	PetView currentView = PetView::MAIN;
+	enum class PET_VIEW { MAIN, INVENTORY, GACHA };
+	PET_VIEW currentView = PET_VIEW::MAIN;
 
 	// -------------------------------------------------------------------------
 	// Audio
@@ -180,7 +180,7 @@ void PetState::InitState()
 
 	petManager->Init();
 
-	currentView = PetView::MAIN;
+	currentView = PET_VIEW::MAIN;
 	selectedIndex = -1;
 	selectedType = Pets::PET_TYPE::NONE;
 	selectedRank = Pets::COMMON;
@@ -208,12 +208,12 @@ void PetState::InitState()
 void PetState::Update(double dt)
 {
 	// ---- GACHA VIEW ----------------------------------------------------------
-	if (currentView == PetView::GACHA)
+	if (currentView == PET_VIEW::GACHA)
 	{
 		if (AEInputCheckTriggered(AEVK_ESCAPE)) {
 			bgm.StopGacha(0.2f);
 			gStateAnim.Reset();
-			currentView = PetView::MAIN;
+			currentView = PET_VIEW::MAIN;
 			for (int i = 0; i < PET_BTN_COUNT; ++i) btnHoverStates[i] = false;
 			return;
 		}
@@ -223,7 +223,7 @@ void PetState::Update(double dt)
 		bool pull10 = AEInputCheckTriggered(0x52);
 		bool pull100 = AEInputCheckTriggered(AEVK_T) || AEInputCheckTriggered(0x54);
 
-		if (gStateAnim.phase == GachaPhase::Done) {
+		if (gStateAnim.phase == GACHA_PHASE::DONE) {
 			petManager->SaveInventoryToJSON();
 			RebuildSortedInventory();
 
@@ -251,15 +251,15 @@ void PetState::Update(double dt)
 		}
 
 		UpdateGachaOverlay(gStateAnim, static_cast<float>(dt), skipPressed, openPressed);
-		if (gStateAnim.isFinished) gStateAnim.phase = GachaPhase::Done;
+		if (gStateAnim.isFinished) gStateAnim.phase = GACHA_PHASE::DONE;
 		return;
 	}
 
 	// ---- INVENTORY VIEW ------------------------------------------------------
-	if (currentView == PetView::INVENTORY)
+	if (currentView == PET_VIEW::INVENTORY)
 	{
 		if (AEInputCheckTriggered(AEVK_ESCAPE)) {
-			currentView = PetView::MAIN;
+			currentView = PET_VIEW::MAIN;
 			for (int i = 0; i < PET_BTN_COUNT; ++i) btnHoverStates[i] = false;
 			return;
 		}
@@ -328,12 +328,12 @@ void PetState::Update(double dt)
 			bgm.PlayUIClick();
 			switch (i) {
 			case 0: // Pet Inventory
-				currentView = PetView::INVENTORY;
+				currentView = PET_VIEW::INVENTORY;
 				RebuildSortedInventory();
 				break;
 			case 1: // Gacha
 			{
-				currentView = PetView::GACHA;
+				currentView = PET_VIEW::GACHA;
 				bgm.StopGameplayBGM();
 				bgm.PlayGacha();
 				int coins = ShopFunctions::GetInstance()->getMoney();
@@ -343,7 +343,7 @@ void PetState::Update(double dt)
 				}
 				else {
 					gStateAnim.Reset();
-					gStateAnim.phase = GachaPhase::Done;
+					gStateAnim.phase = GACHA_PHASE::DONE;
 					std::cout << "[Gacha] Not enough coins (need " << GACHA_COST_10 << ")\n";
 				}
 				break;
@@ -363,7 +363,7 @@ void PetState::Update(double dt)
 void PetState::Draw()
 {
 	// ---- GACHA VIEW ----------------------------------------------------------
-	if (currentView == PetView::GACHA)
+	if (currentView == PET_VIEW::GACHA)
 	{
 		AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 		AEGfxStart();
@@ -381,7 +381,7 @@ void PetState::Draw()
 		AEVec2 coinAmtPos = DefaultToWorld(1500.f, 95.f);
 		DrawAEText(Font, coinBuf, coinAmtPos, scale, CreateColor(255, 215, 0, 255), TEXT_MIDDLE);
 
-		if (gStateAnim.phase == GachaPhase::Done) {
+		if (gStateAnim.phase == GACHA_PHASE::DONE) {
 			if (coins < GACHA_COST_10) {
 				AEVec2 warnPos = DefaultToWorld(DEFAULT_W * 0.5f, DEFAULT_H - 220.f);
 				DrawAEText(Font, "NOT ENOUGH COINS!", warnPos, scale * 2.0f,
@@ -392,7 +392,7 @@ void PetState::Draw()
 	}
 
 	// ---- INVENTORY VIEW ------------------------------------------------------
-	if (currentView == PetView::INVENTORY)
+	if (currentView == PET_VIEW::INVENTORY)
 	{
 		AEGfxSetBackgroundColor(0.15f, 0.15f, 0.15f);
 		AEGfxStart();
@@ -477,7 +477,7 @@ void PetState::Draw()
 				DrawAETextbox(Font, it->second.skillDesc,
 					AEVec2{ GRID_START.x + SLOT_SIZE, -DEFAULT_H * 0.3f },
 					300.f, 1.f, 0.02f, Color{ 255, 255, 255, 255 },
-					TextOriginPos::TEXT_MIDDLE_LEFT, TextboxOriginPos::BOTTOM,
+					TEXT_ORIGIN_POS::TEXT_MIDDLE_LEFT, TEXTBOX_ORIGIN_POS::BOTTOM,
 					TextboxBgCfg{ AEVec2{ 0.02f, 0 }, Color{}, 255, nullptr, nullptr });
 			}
 		}

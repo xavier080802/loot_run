@@ -45,7 +45,7 @@ void GuideState::Update(double /*dt*/) {
 
 void GuideState::Draw() {
 	if (pages.empty()) { //Fallback display if there are no pages
-		DrawAEText(font, "Oops! There's no content here... JSON exploded? :<", {}, 1, Color{ 255,100,100,255 }, TextOriginPos::TEXT_MIDDLE);
+		DrawAEText(font, "Oops! There's no content here... JSON exploded? :<", {}, 1, Color{ 255,100,100,255 }, TEXT_ORIGIN_POS::TEXT_MIDDLE);
 		return;
 	}
 
@@ -61,7 +61,7 @@ void GuideState::Draw() {
 	for (Content const& c : p.content) {
 		if (!c.hardcodeInstead) {
 			//Content
-			DrawAETextbox(font, c.text, c.contentPos, c.contentWidth, c.contentFontSize, c.contentLineSpace, c.contentCol, c.contentTxtOrigin, TextboxOriginPos::TOP);
+			DrawAETextbox(font, c.text, c.contentPos, c.contentWidth, c.contentFontSize, c.contentLineSpace, c.contentCol, c.contentTxtOrigin, TEXTBOX_ORIGIN_POS::TOP);
 			//Images
 			for (Img const& img : c.imgPaths) {
 				DrawMesh(GetTransformMtx(img.pos, 0, img.size), rm->GetMesh(MESH_SQUARE), rm->LoadTexture(img.path), 255);

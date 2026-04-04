@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 
-enum class GachaPhase { None, Intro, Rolling, Reveal, Done };
+enum class GACHA_PHASE { NONE, INTRO, ROLLING, REVEAL, DONE };
 
 struct WordEntry {
     std::string word{};
@@ -15,7 +15,7 @@ struct WordEntry {
 };
 
 struct GachaAnimation {
-    GachaPhase phase = GachaPhase::None;
+    GACHA_PHASE phase = GACHA_PHASE::NONE;
     std::vector<WordEntry> results;
     WordEntry fakeSlots[3];
     int currentIndex = -1;
@@ -24,7 +24,7 @@ struct GachaAnimation {
     bool isFinished = false;
 
     void Reset() {
-        phase = GachaPhase::None;
+        phase = GACHA_PHASE::NONE;
         results.clear();
         currentIndex = -1;
         isFinished = false;

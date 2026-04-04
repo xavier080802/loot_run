@@ -40,7 +40,7 @@ public:
     // Retrieves the currently wielded equipment based on the 'heldWeapon' slot state.
     const EquipmentData* GetHeldWeaponData() const;
 
-	void SetHeldWeapon(int i) { heldWeapon = static_cast<HeldWeapon>(i); }
+	void SetHeldWeapon(int i) { heldWeapon = static_cast<HELD_WEAPON>(i); }
 
     // Returns the normalized vector representing the direction the player is trying to move.
     AEVec2 GetMoveDirNorm() const;
@@ -57,11 +57,11 @@ public:
     ~Player() {};
 
 private:
-    enum class HeldWeapon : unsigned char
+    enum class HELD_WEAPON : unsigned char
     {
-        Weapon1,
-        Weapon2,
-        Bow
+        WEAPON1,
+        WEAPON2,
+        BOW
     };
 
     void OnDeath(Actor* killer = nullptr) override;
@@ -81,7 +81,7 @@ private:
     float dodgeIFrameTimer{};
 
     // Which slot the player is currently "holding" for Left Mouse attack
-    HeldWeapon heldWeapon = HeldWeapon::Weapon1;
+    HELD_WEAPON heldWeapon = HELD_WEAPON::WEAPON1;
 
     // Simple attack gating based on attackSpeed
     float attackCooldownTimer = 0.0f;

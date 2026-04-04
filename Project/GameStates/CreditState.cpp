@@ -25,8 +25,8 @@ namespace {
     AEAudioGroup audioGroup;
     AEAudio bgMusic;
 
-    enum ScrollState { STATE_WAITING, STATE_UNROLLING, STATE_SCROLLING };
-    ScrollState state = STATE_WAITING;
+    enum SCROLL_STATE { STATE_WAITING, STATE_UNROLLING, STATE_SCROLLING };
+    SCROLL_STATE state = STATE_WAITING;
 
     float scrollBodyHeight = 0.0f;
     const float SCROLL_FULL_HEIGHT = 680.0f;

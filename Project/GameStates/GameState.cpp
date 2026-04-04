@@ -407,7 +407,7 @@ namespace {
 
         // scale enemy stats up every 60 seconds in endless (5% per minute)
         float currentDifficulty = 1.0f;
-        if (mapSelected == "Assets/Endless.csv") {
+        if (mapSelected == "Assets/maps/Endless.csv") {
             currentDifficulty = 1.0f + (endlessRunTimer / 60.0f) * 0.05f;
         }
 
@@ -658,7 +658,7 @@ namespace {
 
             std::array<EquipmentData const*, 7> gear{
                 mInventory.GetMainWeapon(0),mInventory.GetMainWeapon(1),mInventory.GetBow(),
-                mInventory.GetArmor(ArmorSlot::Head), mInventory.GetArmor(ArmorSlot::Body),mInventory.GetArmor(ArmorSlot::Hands),mInventory.GetArmor(ArmorSlot::Feet)
+                mInventory.GetArmor(ARMOR_SLOT::HEAD), mInventory.GetArmor(ARMOR_SLOT::BODY),mInventory.GetArmor(ARMOR_SLOT::HANDS),mInventory.GetArmor(ARMOR_SLOT::FEET)
             };
 
             for (int i{}; i < gear.size(); ++i) {
@@ -753,7 +753,7 @@ namespace {
         Inventory const& mInventory{ gPlayer->GetInventory() };
         std::array<EquipmentData const*, 7> arr{
                mInventory.GetMainWeapon(0),mInventory.GetMainWeapon(1),mInventory.GetBow(),
-               mInventory.GetArmor(ArmorSlot::Head), mInventory.GetArmor(ArmorSlot::Body),mInventory.GetArmor(ArmorSlot::Hands),mInventory.GetArmor(ArmorSlot::Feet)
+               mInventory.GetArmor(ARMOR_SLOT::HEAD), mInventory.GetArmor(ARMOR_SLOT::BODY),mInventory.GetArmor(ARMOR_SLOT::HANDS),mInventory.GetArmor(ARMOR_SLOT::FEET)
         };
         EquipmentData const* eq{arr[ind]};
         if (eq) {
@@ -769,7 +769,7 @@ namespace {
             PickupGO* pickup = dynamic_cast<PickupGO*>(hovered);
             if (pickup) {
                 const PickupPayload& payload = pickup->GetPayload();
-                if (payload.type == DropType::Equipment && payload.equipment) {
+                if (payload.type == DROP_TYPE::EQUIPMENT && payload.equipment) {
                     const EquipmentData* eq = payload.equipment;
 
                     if (eq) {
@@ -789,12 +789,12 @@ void GameState::LoadState()
 
     font = RenderingManager::GetInstance()->GetFont();
 
-    GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Melee/melee.json", EquipmentCategory::Melee);
-    GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Range/ranged.json", EquipmentCategory::Ranged);
-    GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Head/head.json", EquipmentCategory::Head);
-    GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Body/body.json", EquipmentCategory::Body);
-    GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Hands/hands.json", EquipmentCategory::Hands);
-    GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Feet/feet.json", EquipmentCategory::Feet);
+    GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Melee/melee.json", EQUIPMENT_CATEGORY::MELEE);
+    GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Range/ranged.json", EQUIPMENT_CATEGORY::RANGED);
+    GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Head/head.json", EQUIPMENT_CATEGORY::HEAD);
+    GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Body/body.json", EQUIPMENT_CATEGORY::BODY);
+    GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Hands/hands.json", EQUIPMENT_CATEGORY::HANDS);
+    GameDB::LoadEquipmentDefs("Assets/Data/Equipment/Armor/Feet/feet.json", EQUIPMENT_CATEGORY::FEET);
 
     if (!GameDB::LoadDropTables("Assets/Data/Drops/drops.json"))
         std::cout << "WARNING: drops.json failed to load.\n";
@@ -876,7 +876,7 @@ void GameState::LoadState()
     playerUISettings.hpBarTrans = GetTransformMtx(playerUISettings.hpBarPos, 0, playerUISettings.hpBarSize);
 
     // Endless has no CSV map so create an empty tilemap as placeholder
-    if (mapSelected == "Assets/Endless.csv") {
+    if (mapSelected == "Assets/maps/Endless.csv") {
         map = new TileMap({ 0.f, 0.f }, 115.f, 115.f);
         std::cout << "[LoadState] Endless mode — no CSV map.\n";
     }
@@ -885,7 +885,7 @@ void GameState::LoadState()
         std::cout << "[LoadState] Loaded map: " << mapSelected << "\n";
     }
 
-    if (mapSelected == "Assets/TutorialMap.csv") {
+    if (mapSelected == "Assets/maps/TutorialMap.csv") {
         doTutorial = true;
         fairy = new Tutorial::TutorialFairy();
     }
@@ -899,7 +899,7 @@ void GameState::LoadState()
     nextMap->GenerateProcedural(procRows, procCols, 1234);
 
     // find the first walkable tile in the CSV so the player doesn't spawn inside a wall
-    if (mapSelected != "Assets/Endless.csv") {
+    if (mapSelected != "Assets/maps/Endless.csv") {
         unsigned csvCols = map->GetMapSize().first;
         unsigned csvRows = map->GetMapSize().second;
         playerPos = map->GetTilePosition(1, 1);
@@ -936,14 +936,14 @@ void GameState::LoadState()
 // =============================================================
 void GameState::InitState()
 {
-    doTutorial = (mapSelected == "Assets/TutorialMap.csv");
+    doTutorial = (mapSelected == "Assets/maps/TutorialMap.csv");
     bgm.PlayNormal();
     InitTutorial(currentLevel);
     GameEnd::Hide();
 
     // reload the map in case the player switched mode and came back
     if (map) { delete map; map = nullptr; }
-    if (mapSelected == "Assets/Endless.csv") {
+    if (mapSelected == "Assets/maps/Endless.csv") {
         map = new TileMap({ 0.f, 0.f }, 115.f, 115.f);
     }
     else {
@@ -1044,7 +1044,7 @@ void GameState::InitState()
 
     // ── ENDLESS MODE ──────────────────────────────────────────
     // no CSV, just drop straight into a proc room
-    if (mapSelected == "Assets/Endless.csv") {
+    if (mapSelected == "Assets/maps/Endless.csv") {
         std::cout << "[InitState] Endless mode.\n";
         gPlayer->SetHeldWeapon(0);
         totalKillTarget = 20 + rand() % 20;
@@ -1223,7 +1223,7 @@ void GameState::InitState()
             continue;
         }
         csvEnemies.push_back(e);
-        const char* tier = (e->GetDefinition().category == EnemyCategory::Elite)
+        const char* tier = (e->GetDefinition().category == ENEMY_CATEGORY::ELITE)
             ? "Elite" : "Normal";
         std::cout << "[InitState] Spawned " << e->GetDefinition().name
             << " (" << tier << ") at (" << pos.x << ", " << pos.y << ")\n";
@@ -1326,7 +1326,7 @@ void GameState::Update(double dt)
             AEVec2 m = GetMouseWorldVec();
             Enemy* e = SpawnWeightedEnemy(m, 0.70f, 0.30f);
             if (e) {
-                const char* tier = (e->GetDefinition().category == EnemyCategory::Elite) ? "Elite" : "Normal";
+                const char* tier = (e->GetDefinition().category == ENEMY_CATEGORY::ELITE) ? "Elite" : "Normal";
                 std::cout << "[Spawn N] " << e->GetDefinition().name << " (" << tier << ")\n";
                 if (inProceduralMap) procEnemies.push_back(e);
                 else                 csvEnemies.push_back(e);
@@ -1479,7 +1479,7 @@ void GameState::Update(double dt)
 
     // death check before UpdateObjects so any heal-on-death doesn't undo it
     if (gPlayer && gPlayer->GetHP() <= 0.f && !GameEnd::IsOpen()) {
-        if (mapSelected == "Assets/Endless.csv") {
+        if (mapSelected == "Assets/maps/Endless.csv") {
             GameEnd::Show(false, true, endlessRunTimer, gPlayer->GetInventory().GetCoins(), totalEnemiesKilled);
             std::cout << "PLAYER DIED — Endless over.\n";
         }
@@ -1492,7 +1492,7 @@ void GameState::Update(double dt)
 
     // ── BOSS DEFEATED ─────────────────────────────────────────────────────────
     if (!doTutorial && bossSpawned && !bossAlive && !GameEnd::IsOpen()) {
-        if (mapSelected != "Assets/Endless.csv") {
+        if (mapSelected != "Assets/maps/Endless.csv") {
             // normal mode — show the win screen
             GameEnd::Show(true, false, 0.f, gPlayer->GetInventory().GetCoins(), totalEnemiesKilled);
             std::cout << "BOSS SLAYED\n";
@@ -1747,7 +1747,7 @@ void GameState::HandleTutorialDialogueRender()
     if (!doTutorial || !fairy || !fairy->data.playDialogue) return;
     DrawAETextbox(font, fairy->data.dialogueLines[fairy->data.currDialogueLine].c_str(),
         fairy->data.dialoguePos, AEGfxGetWindowWidth() * 0.9f, fairy->data.dialogueSize, 0.0f,
-        Color{ 0,0,0,255 }, TEXT_MIDDLE, TextboxOriginPos::TOP,
+        Color{ 0,0,0,255 }, TEXT_MIDDLE, TEXTBOX_ORIGIN_POS::TOP,
         TextboxBgCfg{ AEVec2{0.005f, 0.025f}, Color{255,255,255,255}, 255, RenderingManager::GetInstance()->GetMesh(MESH_SQUARE), nullptr });
 }
 
@@ -1755,7 +1755,7 @@ void GameState::HandleTutorialDialogueRender()
 void GameState::SubscriptionAlert(ActorDeadSubContent content)
 {
     if (content.victim != gPlayer) return;
-    GameEnd::Show(false, mapSelected == "Assets/Endless.csv", endlessRunTimer, gPlayer->GetInventory().GetCoins(), totalEnemiesKilled);
+    GameEnd::Show(false, mapSelected == "Assets/maps/Endless.csv", endlessRunTimer, gPlayer->GetInventory().GetCoins(), totalEnemiesKilled);
 }
 
 // =============================================================

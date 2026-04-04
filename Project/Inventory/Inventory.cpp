@@ -6,7 +6,7 @@
  */
 static bool IsWeapon(const EquipmentData* e)
 {
-    return e && e->slot == EquipSlot::Weapon;
+    return e && e->slot == EQUIP_SLOT::WEAPON;
 }
 
 /**
@@ -15,7 +15,7 @@ static bool IsWeapon(const EquipmentData* e)
  */
 static bool IsArmor(const EquipmentData* e)
 {
-    return e && e->slot == EquipSlot::Armor;
+    return e && e->slot == EQUIP_SLOT::ARMOR;
 }
 
 /**
@@ -148,11 +148,11 @@ bool Inventory::Equip(const EquipmentData* data)
 {
     if (!data) return false;
 
-    if (data->slot == EquipSlot::Armor)
+    if (data->slot == EQUIP_SLOT::ARMOR)
         return EquipArmor(data);
 
     // Weapon routing
-    if (data->weaponType == WeaponType::Bow)
+    if (data->weaponType == WEAPON_TYPE::BOW)
         return EquipBow(data);
 
     // If it's a weapon (but not a bow), we first try to auto-equip it if slots are empty
@@ -189,7 +189,7 @@ bool Inventory::EquipMainWeapon(int slotIndex, const EquipmentData* data)
     if (slotIndex != 0 && slotIndex != 1) return false;
 
     if (!IsWeapon(data)) return false;
-    if (data->weaponType == WeaponType::Bow) return false;
+    if (data->weaponType == WEAPON_TYPE::BOW) return false;
 
     if (slotIndex == 0) mWeapon1 = data;
     else mWeapon2 = data;
@@ -218,7 +218,7 @@ void Inventory::UnequipMainWeapon(int slotIndex)
  * @brief Slots the given weapon into the dedicated bow slot.
  *
  * The bow has its own separate holster from the two melee slots.
- * The weapon must be classified as a Bow (WeaponType::Bow = true) or it'll be rejected.
+ * The weapon must be classified as a Bow (WEAPON_TYPE::Bow = true) or it'll be rejected.
  *
  * @param data  The bow to equip. Passed as CONST POINTER.
  *
@@ -229,7 +229,7 @@ void Inventory::UnequipMainWeapon(int slotIndex)
 bool Inventory::EquipBow(const EquipmentData* data)
 {
     if (!IsWeapon(data)) return false;
-    if (data->weaponType != WeaponType::Bow) return false;
+    if (data->weaponType != WEAPON_TYPE::BOW) return false;
 
     mBow = data;
     if (mActiveWeaponIndex == 2) SetActiveMainWeapon(2);
@@ -259,10 +259,10 @@ bool Inventory::EquipArmor(const EquipmentData* data)
 
     switch (data->armorSlot)
     {
-    case ArmorSlot::Head:  mHead = data;  return true;
-    case ArmorSlot::Body:  mBody = data;  return true;
-    case ArmorSlot::Hands: mHands = data; return true;
-    case ArmorSlot::Feet:  mFeet = data;  return true;
+    case ARMOR_SLOT::HEAD:  mHead = data;  return true;
+    case ARMOR_SLOT::BODY:  mBody = data;  return true;
+    case ARMOR_SLOT::HANDS: mHands = data; return true;
+    case ARMOR_SLOT::FEET:  mFeet = data;  return true;
     default:
         return false;
     }
@@ -322,14 +322,14 @@ const EquipmentData* Inventory::GetBow() const
  *   - Player::DrawUI() - to display what armor is in each slot on the HUD.
  *   - Inventory::GetEquipmentModifiers() - to tally up armor stat bonuses.
  */
-const EquipmentData* Inventory::GetArmor(ArmorSlot slot) const
+const EquipmentData* Inventory::GetArmor(ARMOR_SLOT slot) const
 {
     switch (slot)
     {
-    case ArmorSlot::Head:  return mHead;
-    case ArmorSlot::Body:  return mBody;
-    case ArmorSlot::Hands: return mHands;
-    case ArmorSlot::Feet:  return mFeet;
+    case ARMOR_SLOT::HEAD:  return mHead;
+    case ARMOR_SLOT::BODY:  return mBody;
+    case ARMOR_SLOT::HANDS: return mHands;
+    case ARMOR_SLOT::FEET:  return mFeet;
     default: return nullptr;
     }
 }
@@ -348,7 +348,7 @@ const EquipmentData* Inventory::GetArmor(ArmorSlot slot) const
 void Inventory::AutoEquipIfEmpty(const EquipmentData* data)
 {
     if (!IsWeapon(data)) return;
-    if (data->weaponType == WeaponType::Bow) return;
+    if (data->weaponType == WEAPON_TYPE::BOW) return;
 
     if (!mWeapon1) { 
         mWeapon1 = data; 

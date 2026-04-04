@@ -17,7 +17,7 @@
  *
  * @note Called by:
  *   - Combat::ExecuteAttack() in Combat.cpp - this is the main place hitboxes are created,
- *     one per attack type (SwingArc, Stab, CircleAOE).
+ *     one per attack type (SwingArc, Stab, CIRCLE_AOE).
  */
 AttackHitboxGO* AttackHitboxGO::Start(const AttackHitboxConfig& cfg)
 {
@@ -107,7 +107,7 @@ void AttackHitboxGO::Update(double dt)
     if (lifespan <= 0.0f && ticks > 0)
     {
         isEnabled = false;
-        if (OnEnd) OnEnd(owner);
+        if (OnEnd) OnEnd(*this, owner);
     }
     ++ticks;
 }
@@ -148,6 +148,6 @@ void AttackHitboxGO::OnCollide(CollisionData& other)
     // If this was a single-target strike, immediately turn off the hitbox
     if (disableOnHit) {
         isEnabled = false;
-        if (OnEnd) OnEnd(owner);
+        if (OnEnd) OnEnd(*this, owner);
     }
 }

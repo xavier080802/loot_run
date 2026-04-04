@@ -169,7 +169,7 @@
                         "contentLineSpace": 0.015,
                         "imgPaths": [
                             {
-                                "path": "Assets/bloodEle.png",
+                                "path": "Assets/sprites/statusEffects/bloodEle.png",
                                 "size": [ 100, 100 ],
                                 "pos": [ -500, 100 ]
                             }
@@ -196,7 +196,7 @@
                         "contentLineSpace": 0.015,
                         "imgPaths": [
                             {
-                                "path": "Assets/sunEle.png",
+                                "path": "Assets/sprites/statusEffects/sunEle.png",
                                 "size": [ 100, 100 ],
                                 "pos": [ 0, 100 ]
                             }
@@ -223,7 +223,7 @@
                         "contentLineSpace": 0.015,
                         "imgPaths": [
                             {
-                                "path": "Assets/moonEle.png",
+                                "path": "Assets/sprites/statusEffects/moonEle.png",
                                 "size": [ 100, 100 ],
                                 "pos": [ 500, 100 ]
                             }
@@ -265,12 +265,12 @@
                         "contentLineSpace": 0.015,
                         "imgPaths": [
                             {
-                                "path": "Assets/bloodEle.png",
+                                "path": "Assets/sprites/statusEffects/bloodEle.png",
                                 "size": [ 50, 50 ],
                                 "pos": [ -525, 200 ]
                             },
                             {
-                                "path": "Assets/sunEle.png",
+                                "path": "Assets/sprites/statusEffects/sunEle.png",
                                 "size": [ 50, 50 ],
                                 "pos": [ -475, 200 ]
                             }
@@ -295,12 +295,12 @@
                         "contentLineSpace": 0.015,
                         "imgPaths": [
                             {
-                                "path": "Assets/bloodEle.png",
+                                "path": "Assets/sprites/statusEffects/bloodEle.png",
                                 "size": [ 50, 50 ],
                                 "pos": [ 475, 200 ]
                             },
                             {
-                                "path": "Assets/moonEle.png",
+                                "path": "Assets/sprites/statusEffects/moonEle.png",
                                 "size": [ 50, 50 ],
                                 "pos": [ 525, 200 ]
                             }
@@ -325,12 +325,12 @@
                         "contentLineSpace": 0.015,
                         "imgPaths": [
                             {
-                                "path": "Assets/sunEle.png",
+                                "path": "Assets/sprites/statusEffects/sunEle.png",
                                 "size": [ 50, 50 ],
                                 "pos": [ -125, -50 ]
                             },
                             {
-                                "path": "Assets/moonEle.png",
+                                "path": "Assets/sprites/statusEffects/moonEle.png",
                                 "size": [ 50, 50 ],
                                 "pos": [ 125, -50 ]
                             }

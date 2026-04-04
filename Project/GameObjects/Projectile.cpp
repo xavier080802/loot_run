@@ -65,7 +65,7 @@ void Projectile::OnCollide(CollisionData& other)
 	//Send callback
 	if (OnHit) OnHit(other, owner, element, knockback);
 	//Disable self if stop rule says so
-	if (stopRule == STOP_RULE::ON_FIRST) {
+	if (other.other.BlocksProjectile() && stopRule == STOP_RULE::ON_FIRST) {
 		isEnabled = false;
 	}
 }

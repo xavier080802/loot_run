@@ -4,6 +4,8 @@
 #include <vector>
 #include "../Inventory/EquipmentTypes.h"
 #include "../Elements/Element.h"
+class AttackHitboxGO; //Make known to AttackHitboxConfig
+
 struct AttackHitboxConfig
 {
     Actor* owner = nullptr;
@@ -40,7 +42,7 @@ struct AttackHitboxConfig
     void (*onHit)(GameObject::CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float knockback, EquipmentData* weapon, void* extra) = nullptr;
 
     // Callback invoked when hitbox lifetime ends.
-    void (*onEnd)(Actor* caster) = nullptr;
+    void (*onEnd)(AttackHitboxGO& hb, Actor* caster) = nullptr;
 
     // Time between re-hitting. If -1, hitbox can only hit each target once.
     // Cooldown is tied to the hitbox, not per enemy.
@@ -63,6 +65,8 @@ public:
     void Update(double dt) override;
     void OnCollide(CollisionData& other) override;
 
+    bool BlocksProjectile() const override { return false; }
+
 private:
     Actor* owner = nullptr;
     Elements::ELEMENT_TYPE element = Elements::ELEMENT_TYPE::NONE;
@@ -77,7 +81,7 @@ private:
     void* extraData{ nullptr };
 
     void (*OnHit)(CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float knockback, EquipmentData* weapon, void* extra) = nullptr;
-    void (*OnEnd)(Actor* caster) = nullptr;
+    void (*OnEnd)(AttackHitboxGO& hb, Actor* caster) = nullptr;
     std::vector<GameObject*> hitOnce; // enemies already damaged this swing
 };
 

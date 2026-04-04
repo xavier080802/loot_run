@@ -1,8 +1,8 @@
 #include "SunMoonElement.h"
 #include "Element.h"
 #include "../Actor/Actor.h"
-#include "../GameObjects/AttackHitboxGO.h"
 #include <map>
+#include "../Helpers/Vec2Utils.h"
 
 namespace {
 	void DetonateDoDmg(GameObject::CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE /*element*/, float /*knockback*/, EquipmentData* /*weapon*/, void* = nullptr) {
@@ -49,7 +49,7 @@ namespace Elements {
 		other->ApplyStatusEffect(slow, caster);
 	}
 
-	void SunMoonDetonate(Actor* caster)
+	void SunMoonDetonate(AttackHitboxGO& hitbox, Actor* caster)
 	{
 		//Do Damage
 		AttackHitboxGO* hb{ dynamic_cast<AttackHitboxGO*>(GameObjectManager::GetInstance()->FetchGO(GO_TYPE::ATTACK_HITBOX)) };
@@ -57,11 +57,17 @@ namespace Elements {
 
 		AttackHitboxConfig cfg{ };
 		cfg.owner = caster;
+		cfg.offset = hitbox.GetPos() - caster->GetPos();
 		cfg.colliderSize = cfg.renderScale = sunMoonSize;
 		cfg.disableOnHit = cfg.followOwner= false;
 		cfg.tint = { 0,0,0,150 };
 		cfg.onHit = DetonateDoDmg;
 		hb->Start(cfg);
+
+		Bitmask bm{ hb->GetCollisionLayers() };
+		ResetFlagAtPos(&bm, Collision::LAYER::OBSTACLE);
+		ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
+		hb->SetCollisionLayers(bm);
 	}
 }
 

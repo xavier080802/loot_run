@@ -70,6 +70,6 @@ namespace Debug {
 
 		DrawAETextbox(RenderingManager::GetInstance()->GetFont(),
 			GetDebugLogs(), {AEGfxGetWinMaxX() - 5, AEGfxGetWinMaxY() - 5}, AEGfxGetWinMaxX() * 0.75f, 0.25f, 0.01f, {0,250,250,255},
-			TEXT_LOWER_RIGHT, TextboxOriginPos::TOP);
+			TEXT_LOWER_RIGHT, TEXTBOX_ORIGIN_POS::TOP);
 	}
 }

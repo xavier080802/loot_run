@@ -82,14 +82,14 @@ namespace StatEffects {
 				switch (_effType)
 				{
 				case StatEffects::DEBUFF:
-					icon = "Assets/debuff.png";
+					icon = "Assets/sprites/statusEffects/debuff.png";
 					break;
 				case StatEffects::BUFF:
-					icon = "Assets/buff.png";
+					icon = "Assets/sprites/statusEffects/buff.png";
 					break;
 				case StatEffects::NONE:
 				default:
-					icon = "Assets/tiny.png";
+					icon = "Assets/sprites/tiny.png";
 					break;
 				}
 			}

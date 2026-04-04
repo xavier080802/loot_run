@@ -17,7 +17,7 @@ namespace {
     float fontSize{ 0.3f };
     Color displayTextCol{ 0,200,50, 255 };
     AEVec2 normDisplayPos{0.975f, -0.975f};
-    TextOriginPos textAnchor{ TEXT_LOWER_RIGHT };
+    TEXT_ORIGIN_POS textAnchor{ TEXT_LOWER_RIGHT };
     unsigned maxDisplayed{ 5 };
 
     //-----Display stuff-----
@@ -137,17 +137,17 @@ void DropSystem::SpawnDrops(int dropTableId, const AEVec2& worldPos)
         PickupPayload payload;
         payload.type = e.type;
 
-        if (e.type == DropType::None) {
+        if (e.type == DROP_TYPE::NONE) {
 			// Unlucky hit so we signal no drop by skipping the spawn
             continue; 
         }
-        else if (e.type == DropType::Equipment)
+        else if (e.type == DROP_TYPE::EQUIPMENT)
         {
             // Equipment always drops individually, so amount is clamped to 1.
             payload.amount = 1;
             
             // If the category is None (e.g. "Any" mapped in JSON), pick a completely random item from the entire database pool
-            if (e.equipmentCategory == EquipmentCategory::None)
+            if (e.equipmentCategory == EQUIPMENT_CATEGORY::NONE)
             {
                 payload.equipment = GameDB::GetRandomEquipment();
             }
@@ -170,7 +170,7 @@ void DropSystem::SpawnDrops(int dropTableId, const AEVec2& worldPos)
             }
             std::cout << "DEBUG DROP: Successfully spawned equipment: " << payload.equipment->name << "\n";
         }
-        else if (e.type == DropType::Heal) 
+        else if (e.type == DROP_TYPE::HEAL) 
         {
             float playerMaxHp = GameDB::GetPlayerBaseStats().maxHP;
             payload.amount = static_cast<int>(playerMaxHp * 0.10f); // 10% max hp
@@ -209,22 +209,22 @@ void DropSystem::AddToPickupDisplay(const PickupPayload& payload)
     std::string str{"+" + std::to_string(payload.amount) + " "};
     switch (payload.type)
     {
-    case DropType::Coin:
+    case DROP_TYPE::COIN:
         str += (payload.amount > 1 ? "Coins" : "Coin");
         break;
-    case DropType::Ammo:
+    case DROP_TYPE::AMMO:
         str += "Ammo";
         break;
-    case DropType::Heal:
+    case DROP_TYPE::HEAL:
         str += "HP";
         break;
-    case DropType::Buff:
+    case DROP_TYPE::BUFF:
 		str = "+Buff"; // Placeholder for specific buff display (no buffs implemented yet for drops)
         break;
-    case DropType::Equipment:
+    case DROP_TYPE::EQUIPMENT:
         str += payload.equipment->name;
         break;
-    case DropType::None:
+    case DROP_TYPE::NONE:
     default:
         return;
     }

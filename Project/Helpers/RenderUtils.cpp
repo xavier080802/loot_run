@@ -12,7 +12,7 @@
 // Thus, when using inverse rot, the value is theta instead of -theta 
 // And for the normal theta, when passing to a rendering function, should be passed as -theta.
 
-TextOriginPos ParseTextAlignment(std::string const& str)
+TEXT_ORIGIN_POS ParseTextAlignment(std::string const& str)
 {
 	if (str == "TEXT_LOWER_RIGHT") return TEXT_LOWER_RIGHT;
 	if (str == "TEXT_UPPER_LEFT") return TEXT_UPPER_LEFT;
@@ -131,14 +131,14 @@ void DrawBox(AEVec2 center, f32 width, f32 height, f32 thickness, Color col)
 		m, nullptr, col,col.a);
 }
 
-AEVec2 GetTextAlignPosNorm(s8 const& font, std::string const& text, AEVec2 pos, f32 fontSize, TextOriginPos alignment)
+AEVec2 GetTextAlignPosNorm(s8 const& font, std::string const& text, AEVec2 pos, f32 fontSize, TEXT_ORIGIN_POS alignment)
 {
 	f32 w, h;
 	AEGfxGetPrintSize(font, text.c_str(), fontSize, &w, &h);
 	return GetTextAlignPosNorm(pos, AEVec2{w,h }, alignment);
 }
 
-AEVec2 GetTextAlignPosNorm(AEVec2 pos, AEVec2 size, TextOriginPos alignment)
+AEVec2 GetTextAlignPosNorm(AEVec2 pos, AEVec2 size, TEXT_ORIGIN_POS alignment)
 {
 	AEVec2 normPos = WorldToNorm(pos);
 
@@ -180,7 +180,7 @@ AEVec2 GetTextAlignPosNorm(AEVec2 pos, AEVec2 size, TextOriginPos alignment)
 	return normPos;
 }
 
-void DrawAEText(s8 const& font, const char* text, AEVec2 pos, f32 size, Color const& col, TextOriginPos alignment, bool isHUD)
+void DrawAEText(s8 const& font, const char* text, AEVec2 pos, f32 size, Color const& col, TEXT_ORIGIN_POS alignment, bool isHUD)
 {
 	if (!isHUD) {
 		AEVec2 scale = ToVec2(size, size);
@@ -197,7 +197,7 @@ void DrawAEText(s8 const& font, const char* text, AEVec2 pos, f32 size, Color co
 }
 
 //Textbox version (multi-line)
-void DrawAEText(s8 const& font, std::string const& text, AEVec2 pos, f32 fontSize, f32 lineSpace, Color const& col, TextOriginPos alignment, bool isHUD)
+void DrawAEText(s8 const& font, std::string const& text, AEVec2 pos, f32 fontSize, f32 lineSpace, Color const& col, TEXT_ORIGIN_POS alignment, bool isHUD)
 {
 	//Split string based on newlines
 	size_t i{}; //End of substr
@@ -250,14 +250,14 @@ void GetAEMultilineTextSize(s8 const& font, std::string const& text, f32 fontSiz
 	} while (i != std::string::npos);
 }
 
-TextboxOriginPos ParseTextboxAlignment(std::string const& strval)
+TEXTBOX_ORIGIN_POS ParseTextboxAlignment(std::string const& strval)
 {
-	if (strval == "BOTTOM") return TextboxOriginPos::BOTTOM;
-	else return TextboxOriginPos::TOP;
+	if (strval == "BOTTOM") return TEXTBOX_ORIGIN_POS::BOTTOM;
+	else return TEXTBOX_ORIGIN_POS::TOP;
 }
 
 AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 boxWidth, f32 fontSize, f32 lineSpace, Color const& col,
-	TextOriginPos textAlignment, TextboxOriginPos boxAlignment, TextboxBgCfg const& bgCfg, bool isHUD)
+	TEXT_ORIGIN_POS textAlignment, TEXTBOX_ORIGIN_POS boxAlignment, TextboxBgCfg const& bgCfg, bool isHUD)
 {
 	//Split string based on newlines and word wrapping to fit box width
 	size_t i{}; //End of substr
@@ -317,10 +317,10 @@ AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 bo
 	acBoxSize.y *= AEGfxGetWinMaxY(); //Norm to world
 	switch (boxAlignment) //Move so that the vertical anchor is at the designated location
 	{
-	case TextboxOriginPos::BOTTOM: //Bottom of box is to be at the original pos
+	case TEXTBOX_ORIGIN_POS::BOTTOM: //Bottom of box is to be at the original pos
 		pos.y += acBoxSize.y;
 		break;
-	case TextboxOriginPos::TOP:
+	case TEXTBOX_ORIGIN_POS::TOP:
 		pos.y += norm.y * AEGfxGetWinMaxY();
 		break;
 	default:

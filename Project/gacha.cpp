@@ -287,15 +287,15 @@ void BeginGachaOverlay(GachaAnimation& anim, int count, float intro, float /*rol
     s_showRates = false;
     for (int i = 0; i < count; ++i) anim.results.push_back(RollGachaWord());
     s_highestEntry = FindHighestRarity(anim.results);
-    anim.phase = GachaPhase::Intro;
+    anim.phase = GACHA_PHASE::INTRO;
     anim.introTimer = intro;
     anim.revealDelay = delay;
 }
 
 void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skip, bool open) {
-    if (anim.phase == GachaPhase::Intro) {
+    if (anim.phase == GACHA_PHASE::INTRO) {
         anim.introTimer -= dt;
-        if (anim.introTimer <= 0.0f) anim.phase = GachaPhase::Rolling;
+        if (anim.introTimer <= 0.0f) anim.phase = GACHA_PHASE::ROLLING;
         return;
     }
 
@@ -309,7 +309,7 @@ void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skip, bool open) {
     }
     else s_chestBounceOffset = 0.0f;
 
-    if (anim.phase == GachaPhase::Rolling) {
+    if (anim.phase == GACHA_PHASE::ROLLING) {
         if (AEInputCheckTriggered(AEVK_I)) s_showRates = !s_showRates;
 
         if (!s_showRates) {
@@ -338,17 +338,17 @@ void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skip, bool open) {
         }
     }
 
-    if (s_chestOpened && anim.phase == GachaPhase::Rolling) {
+    if (s_chestOpened && anim.phase == GACHA_PHASE::ROLLING) {
         s_chestLightTimer -= dt;
         if (s_chestLightTimer <= 0.0f) {
-            anim.phase = GachaPhase::Reveal;
+            anim.phase = GACHA_PHASE::REVEAL;
             anim.timer = 0.0f;
         }
     }
 
     if (s_mythicalFlashTimer > 0.0f) s_mythicalFlashTimer -= dt;
 
-    if (s_isMythicalRevealing && anim.phase == GachaPhase::Reveal) {
+    if (s_isMythicalRevealing && anim.phase == GACHA_PHASE::REVEAL) {
         int idx = anim.currentIndex;
         if (idx >= 0 && idx < (int)anim.results.size()) {
             if (RarityRank(anim.results[idx].rarity) >= 5) {
@@ -358,7 +358,7 @@ void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skip, bool open) {
         }
     }
 
-    if (anim.phase == GachaPhase::Reveal) {
+    if (anim.phase == GACHA_PHASE::REVEAL) {
         if (skip) {
             for (int i = anim.currentIndex + 1; i < (int)anim.results.size(); ++i) {
                 if (RarityRank(anim.results[i].rarity) >= 4) {
@@ -368,7 +368,7 @@ void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skip, bool open) {
                 }
                 anim.currentIndex = i;
             }
-            anim.phase = GachaPhase::Done;
+            anim.phase = GACHA_PHASE::DONE;
             anim.isFinished = true;
             s_isMythicalRevealing = false;
             return;
@@ -412,7 +412,7 @@ void UpdateGachaOverlay(GachaAnimation& anim, float dt, bool skip, bool open) {
                 }
             }
             else {
-                anim.phase = GachaPhase::Done; anim.isFinished = true; s_isMythicalRevealing = false;
+                anim.phase = GACHA_PHASE::DONE; anim.isFinished = true; s_isMythicalRevealing = false;
             }
         }
     }
@@ -449,7 +449,7 @@ void DrawGachaOverlay(GachaAnimation& anim, s8 fontId) {
         AEGfxPrint(fontId, (p.life > 1.2f) ? "*" : ".", p.x, p.y, sz, p.r, p.g, p.b, fadeAlpha);
     }
 
-    if (anim.phase == GachaPhase::Reveal || anim.phase == GachaPhase::Done) {
+    if (anim.phase == GACHA_PHASE::REVEAL || anim.phase == GACHA_PHASE::DONE) {
         for (int i = 0; i <= anim.currentIndex; ++i) {
             if (i >= (int)anim.results.size()) continue;
             auto& e = anim.results[i];
@@ -511,7 +511,7 @@ void DrawGachaOverlay(GachaAnimation& anim, s8 fontId) {
             }
         }
 
-        if (anim.phase == GachaPhase::Done) {
+        if (anim.phase == GACHA_PHASE::DONE) {
             float hudScale = 1.5f;
             float hudW = (44.0f * 0.0135f * hudScale) / 2.0f;
             AEGfxPrint(fontId, "[SPACE] Skip | [R] 10x | [T] 100x | [ESC] Exit", -hudW, -0.9f, hudScale, 1, 1, 1, 1);
@@ -523,7 +523,7 @@ void DrawGachaOverlay(GachaAnimation& anim, s8 fontId) {
         }
     }
 
-    if (anim.phase == GachaPhase::Rolling) {
+    if (anim.phase == GACHA_PHASE::ROLLING) {
         static AEGfxTexture* texClosed = RenderingManager::GetInstance()->LoadTexture("Assets/gacha.png");
         static AEGfxTexture* texOpen = RenderingManager::GetInstance()->LoadTexture("Assets/gacha_open.png");
         static AEGfxVertexList* chestMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);

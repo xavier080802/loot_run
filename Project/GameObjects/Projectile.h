@@ -31,6 +31,8 @@ public:
 
 	Actor* GetOwner() const { return owner; }
 
+	bool BlocksProjectile() const override { return false; }
+
 protected:
 	AEVec2 dir{};
 	Actor* owner{};

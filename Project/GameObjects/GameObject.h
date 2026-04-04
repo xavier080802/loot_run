@@ -41,6 +41,8 @@ public:
 	Collision::LAYER GetColliderLayer()const;
 	virtual GO_TYPE GetGOType() const;
 	bool IsEnabled() const;
+	//Whether this GO causes proctiles to stop when hitting it (besides proj settings)
+	virtual bool BlocksProjectile() const { return true; }
 
 	void SetEnabled(bool enable);
 	void SetPos(AEVec2 nextPos);

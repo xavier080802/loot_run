@@ -11,10 +11,10 @@
  * Either a filled circle or a square. Loaded in from enemies.json and directly
  * controls how the enemy appears rendered in the game world.
  */
-enum class EnemyMesh : unsigned char
+enum class ENEMY_MESH : unsigned char
 {
-    Circle = 0, // Enemy is drawn as a circle (used for the Slime and most AI).
-    Square = 1, // Enemy is drawn as a square.
+    CIRCLE = 0, // Enemy is drawn as a circle (used for the Slime and most AI).
+    SQUARE = 1, // Enemy is drawn as a square.
 };
 
 /**
@@ -23,11 +23,11 @@ enum class EnemyMesh : unsigned char
  * Loaded from the "category" field in enemies.json.
  * Used by GameDB spawn-helper functions to filter the registry by tier.
  */
-enum class EnemyCategory : unsigned char
+enum class ENEMY_CATEGORY : unsigned char
 {
-    Normal = 0, // Standard weak enemy, encountered often.
-    Elite  = 1, // Stronger variant with higher stats.
-    Boss   = 2, // Unique powerful enemy, typically one per area.
+    NORMAL = 0, // Standard weak enemy, encountered often.
+    ELITE  = 1, // Stronger variant with higher stats.
+    BOSS   = 2, // Unique powerful enemy, typically one per area.
 };
 
 /**
@@ -39,7 +39,7 @@ enum class EnemyCategory : unsigned char
 struct EnemyRenderDef
 {
     float radius = 15.0f;           // The pixel size/radius of the rendered mesh.
-    EnemyMesh mesh = EnemyMesh::Circle; // Circle or Square. Affects render shape + collision.
+    ENEMY_MESH mesh = ENEMY_MESH::CIRCLE; // Circle or Square. Affects render shape + collision.
     Color tint = { 255, 0, 0, 255 };    // Tint color applied on top of the mesh (Red by default).
     std::string texturePath = "";   // If not empty, draws this image instead of a colored mesh.
 };
@@ -80,7 +80,7 @@ struct EnemyDef
 {
     int id = 0; // A unique number used to look up this enemy type from GameDB.
     std::string name; // The display name of the enemy (e.g. "Slime", "Boss").
-    EnemyCategory category = EnemyCategory::Normal; // Tier classification: Normal, Elite, or Boss.
+    ENEMY_CATEGORY category = ENEMY_CATEGORY::NORMAL; // Tier classification: Normal, Elite, or Boss.
     ActorStats baseStats{}; // The starting stats for this type (health, speed, damage etc.).
     int dropTableId = 0; // Which loot table to roll when this enemy dies.
     EnemyRenderDef render{}; // How this enemy looks when drawn on screen.

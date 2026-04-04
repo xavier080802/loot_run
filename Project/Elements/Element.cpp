@@ -275,6 +275,7 @@ namespace Elements {
 				if (hb) {
 					AttackHitboxConfig cfg{ };
 					cfg.owner = caster;
+					cfg.offset = actor->GetPos() - caster->GetPos();
 					cfg.colliderSize = cfg.renderScale = bloodMoonSize;
 					cfg.tint = bloodMoonTint;
 					cfg.lifetime = bloodMoonLifetime;
@@ -283,6 +284,11 @@ namespace Elements {
 					cfg.onHit = BloodMoonEffect;
 					cfg.zIndex = -2;
 					hb->Start(cfg);
+
+					Bitmask bm{hb->GetCollisionLayers()};
+					ResetFlagAtPos(&bm, Collision::LAYER::OBSTACLE);
+					ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
+					hb->SetCollisionLayers(bm);
 				}
 				std::cout << "REACTION BLOOD MOON\n";
 			}
@@ -306,6 +312,8 @@ namespace Elements {
 					//Change collision layer to include caster
 					Bitmask bm = caster->GetCollisionLayers();
 					SetFlagAtPos(&bm, caster->GetColliderLayer());
+					ResetFlagAtPos(&bm, Collision::LAYER::OBSTACLE);
+					ResetFlagAtPos(&bm, Collision::LAYER::INTERACTABLE);
 					hb->SetCollisionLayers(bm);
 				}
 				std::cout << "REACTION SUN MOON\n";
