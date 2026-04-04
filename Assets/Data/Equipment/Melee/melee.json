@@ -259,7 +259,7 @@
   },
   {
     "id": 15,
-    "name": "Epic Battlehammer",
+    "name": "Epic Blood-spraying Battlehammer",
     "sellPrice": 800,
     "texturePath": "Assets/sprites/weapons/melee/hammer.png",
     "slot": "Weapon",
@@ -269,7 +269,7 @@
     "element": "BLOOD",
     "knockback": 160.0,
     "attackSize": 20.0,
-    "rarity": "Legendary",
+    "rarity": "Epic",
     "stats": {
       "maxHP": 0.0,
       "attack": 45.0,
