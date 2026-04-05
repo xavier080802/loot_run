@@ -161,6 +161,8 @@ namespace {
     float screenFlashTimer = 0.0f;
     float maxFlashDuration = 0.5f;
 
+    float bossAliveWarningTimer = 0.0f;
+
     // keyboard popup — shown once on first non-tutorial run, toggled with X after that
     AEGfxTexture* keyboardTex = nullptr;
     bool showKeyboardMenu = false;
@@ -1381,8 +1383,18 @@ void GameState::Update(double dt)
         }
     }
 
+    if (bossAliveWarningTimer > 0.0f) {
+        bossAliveWarningTimer -= (float)dt;
+    }
+
     if (teleportCooldown <= 0.f && nextMap) {
-        if (!inProceduralMap && map->IsConnector(gPlayer->GetPos())) {
+        bool tryingToMove = (!inProceduralMap && map->IsConnector(gPlayer->GetPos())) || 
+                            (inProceduralMap && nextMap->IsConnector(gPlayer->GetPos()));
+
+        if (tryingToMove && bossSpawned && bossAlive) {
+            bossAliveWarningTimer = 2.0f;
+        }
+        else if (!inProceduralMap && map->IsConnector(gPlayer->GetPos())) {
             nextMap->GenerateProcedural(50, 50, rand());
             AEVec2 procSpawn = nextMap->GetSpawnPoint();
             gPlayer->SetPos(procSpawn);
@@ -1409,7 +1421,7 @@ void GameState::Update(double dt)
             minimap->Reset();
             PetManager::GetInstance()->SetTilemap(*nextMap);
         }
-        else if (inProceduralMap && nextMap->IsConnector(gPlayer->GetPos())) {
+        else if (inProceduralMap && nextMap->IsConnector(gPlayer->GetPos()) && !(bossSpawned && bossAlive)) {
             nextMap->GenerateProcedural(50, 50, rand());
             AEVec2 procSpawn = nextMap->GetSpawnPoint();
             gPlayer->SetPos(procSpawn);
@@ -1696,6 +1708,13 @@ void GameState::Draw()
         snprintf(cdText, sizeof(cdText), "NEXT ROOM IN: %d", displaySecs);
         AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
         AEGfxPrint(font, cdText, -0.28f, 0.50f, 1.2f, 1.0f, 0.0f, 0.0f, 1.0f);
+    }
+
+    if (bossAliveWarningTimer > 0.0f && font >= 0) {
+        float alpha = bossAliveWarningTimer / 0.5f;
+        if (alpha > 1.0f) alpha = 1.0f;
+        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        AEGfxPrint(font, "CANNOT PROCEED WHILE BOSS IS ALIVE!", -0.8f, 0.0f, 1.2f, 1.0f, 0.0f, 0.0f, alpha);
     }
 
     HandleTutorialDialogueRender();
