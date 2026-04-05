@@ -1,10 +1,11 @@
+﻿#ifndef RENDERUTILS_H_
+#define RENDERUTILS_H_
+
 //---------------------------------------------------------
 // author:    Edna Sim
 //
-// Copyright � 2025 DigiPen, All rights reserved.
+// Copyright © 2025 DigiPen, All rights reserved.
 //---------------------------------------------------------
-#ifndef _RENDER_UTILS_H_
-#define _RENDER_UTILS_H_
 #include "AEEngine.h"
 #include "ColorUtils.h"
 #include <string>
@@ -183,4 +184,5 @@ AEVec2 DrawAETextbox(s8 const& font, std::string const& text, AEVec2 pos, f32 bo
 void SetObjViewFromOrigin(AEVec2* pos, f32* rot, AEVec2* _scale,
 	AEVec2 originPos, f32 originRot, AEVec2 originScale);
 
-#endif // !_RENDER_UTILS_H_
+#endif // RENDERUTILS_H_
+

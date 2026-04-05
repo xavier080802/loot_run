@@ -1,5 +1,6 @@
-#ifndef _CREDIT_STATE_H
-#define _CREDIT_STATE_H
+﻿#ifndef CREDITSTATE_H_
+#define CREDITSTATE_H_
+
 #include "GameStateManager.h"
 // The credits screen
 class CreditState : public State {
@@ -12,4 +13,6 @@ public:
 	void Draw()            override;
 private:
 };
-#endif 
+
+#endif // CREDITSTATE_H_
+

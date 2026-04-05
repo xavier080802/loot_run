@@ -1,4 +1,6 @@
-#pragma once
+﻿#ifndef INVENTORY_H_
+#define INVENTORY_H_
+
 #include "../Actor/StatsTypes.h"
 #include "EquipmentTypes.h"
 
@@ -82,3 +84,6 @@ private:
     int mAmmo = 0;
     int mCoins = 0;
 };
+
+#endif // INVENTORY_H_
+

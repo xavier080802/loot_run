@@ -1,5 +1,6 @@
-#ifndef _CAMERA_H_
-#define _CAMERA_H_
+﻿#ifndef CAMERA_H_
+#define CAMERA_H_
+
 #include "AEEngine.h"
 
 /// <summary>
@@ -40,5 +41,6 @@ float GetCameraRotation();
 
 //Modifies the arguments to transform the object based on camera's transform
 void GetObjViewFromCamera(AEVec2* pos, f32* rot, AEVec2* scale);
-#endif // !_CAMERA_H_
+
+#endif // CAMERA_H_
 

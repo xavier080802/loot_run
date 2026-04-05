@@ -1,5 +1,6 @@
-#ifndef _GAME_END_H_
-#define _GAME_END_H_
+﻿#ifndef GAMEEND_H_
+#define GAMEEND_H_
+
 #include "AEEngine.h"
 
 namespace GameEnd
@@ -22,4 +23,5 @@ namespace GameEnd
 	void Draw();
 }
 
-#endif // _GAME_END_H_
+#endif // GAMEEND_H_
+

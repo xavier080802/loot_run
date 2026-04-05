@@ -1,5 +1,6 @@
-#ifndef _WORLD_TEXT_H_
-#define _WORLD_TEXT_H_
+﻿#ifndef WORLDTEXT_H_
+#define WORLDTEXT_H_
+
 #include "../DesignPatterns/singleton.h"
 #include "../DesignPatterns/PostBox.h"
 #include "AEEngine.h"
@@ -36,4 +37,5 @@ private:
 
 };
 
-#endif // !_WORLD_TEXT_H_
+#endif // WORLDTEXT_H_
+

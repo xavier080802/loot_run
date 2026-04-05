@@ -1,5 +1,6 @@
-#ifndef _PET_1_H
-#define _PET_1_H
+﻿#ifndef PET_1_H_
+#define PET_1_H_
+
 #include "Pet.h"
 
 /*	Rock
@@ -75,4 +76,5 @@ private:
 	Color aoeCol{};
 };
 
-#endif // !_PET_1_H
+#endif // PET_1_H_
+

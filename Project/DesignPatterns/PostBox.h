@@ -1,5 +1,6 @@
-#ifndef _POST_BOX_H_
-#define _POST_BOX_H_
+﻿#ifndef POSTBOX_H_
+#define POSTBOX_H_
+
 #include "ConcreteMessages.h"
 
 //To inherit as class. Override bool Handle(Message* message)
@@ -13,4 +14,6 @@ public:
 	//Return whether the message was read or not(invalid/not implemented)
 	virtual bool Handle(Message* message) = 0;
 };
-#endif // !_POST_BOX_H_
+
+#endif // POSTBOX_H_
+

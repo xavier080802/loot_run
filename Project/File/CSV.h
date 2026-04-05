@@ -1,5 +1,6 @@
-#ifndef _CSV_H_
-#define _CSV_H_
+﻿#ifndef CSV_H_
+#define CSV_H_
+
 #include <string>
 #include <vector>
 #include <cassert>
@@ -55,4 +56,5 @@ private:
 	std::string fileName{};
 };
 
-#endif // !_CSV_H_
+#endif // CSV_H_
+

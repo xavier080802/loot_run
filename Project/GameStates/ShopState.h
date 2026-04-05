@@ -1,5 +1,6 @@
-#ifndef _SHOP_STATE_H
-#define _SHOP_STATE_H
+﻿#ifndef SHOPSTATE_H_
+#define SHOPSTATE_H_
+
 #include "GameStateManager.h"
 
 //The shop menu
@@ -15,4 +16,6 @@ public:
 private:
 
 };
-#endif // !_SHOP_STATE_H
+
+#endif // SHOPSTATE_H_
+

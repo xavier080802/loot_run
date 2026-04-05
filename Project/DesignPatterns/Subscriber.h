@@ -1,5 +1,6 @@
-#ifndef _SUBSCRIBER_H_
-#define _SUBSCRIBER_H_
+﻿#ifndef SUBSCRIBER_H_
+#define SUBSCRIBER_H_
+
 /*
 Unlike Post Office, content creators (CC, the ones alerting subscribers) do not
 need to know their subscribers by name/address when sending stuff.
@@ -39,4 +40,5 @@ struct Subscriber {
 	virtual void SubscriptionAlert(T content) = 0;
 };
 
-#endif // !_SUBSCRIBER_H_
+#endif // SUBSCRIBER_H_
+

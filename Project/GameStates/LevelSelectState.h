@@ -1,5 +1,6 @@
-#ifndef _LEVEL_SELECT_STATE_H
-#define _LEVEL_SELECT_STATE_H
+﻿#ifndef LEVELSELECTSTATE_H_
+#define LEVELSELECTSTATE_H_
+
 #include "GameStateManager.h"
 
 extern std::string mapSelected;
@@ -17,4 +18,6 @@ public:
 private:
 
 };
-#endif // !_LEVEL_SELECT_STATE_H
+
+#endif // LEVELSELECTSTATE_H_
+

@@ -1,4 +1,5 @@
-#pragma once
+﻿#ifndef GAMEDB_H_
+#define GAMEDB_H_
 
 #include "./Drops/DropTypes.h"
 #include "./Inventory/EquipmentTypes.h"
@@ -67,3 +68,6 @@ namespace GameDB
     bool IsOwned(int id);
     void SetOwned(int id, bool owned);
 }
+
+#endif // GAMEDB_H_
+

@@ -1,5 +1,5 @@
-#ifndef GACHA_H
-#define GACHA_H
+﻿#ifndef GACHA_H_
+#define GACHA_H_
 
 #include "AEEngine.h"
 #include <vector>
@@ -42,4 +42,5 @@ void DrawGachaOverlay(GachaAnimation& anim, s8 fontId);
 
 void UnloadGacha();
 
-#endif
+#endif // GACHA_H_
+

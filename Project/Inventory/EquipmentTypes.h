@@ -1,4 +1,6 @@
-#pragma once
+﻿#ifndef EQUIPMENTTYPES_H_
+#define EQUIPMENTTYPES_H_
+
 #include <cstdint>
 #include <string>
 #include "../Actor/StatsTypes.h"
@@ -108,3 +110,6 @@ struct EquipmentData
     const char* name = ""; // Display name
     const char* texturePath = ""; // Path to the image file (defaults to empty/current)
 };
+
+#endif // EQUIPMENTTYPES_H_
+

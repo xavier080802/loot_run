@@ -1,5 +1,6 @@
-#ifndef _PAUSE_H_
-#define _PAUSE_H_
+﻿#ifndef PAUSE_H_
+#define PAUSE_H_
+
 #include "AEEngine.h"
 
 /// <summary>
@@ -41,4 +42,5 @@ namespace Pause
     void Draw();
 }
 
-#endif // _PAUSE_H_
+#endif // PAUSE_H_
+

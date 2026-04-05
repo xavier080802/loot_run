@@ -1,5 +1,6 @@
-#ifndef _CONCRETE_MSG_H_
-#define _CONCRETE_MSG_H_
+﻿#ifndef CONCRETEMESSAGES_H_
+#define CONCRETEMESSAGES_H_
+
 #include "message.h"
 #include "AEEngine.h"
 #include "../Helpers/ColorUtils.h"
@@ -50,4 +51,5 @@ struct ShowWorldTextMsg : public Message {
 	float size;
 };
 
-#endif // !_CONCRETE_MSG_H_
+#endif // CONCRETEMESSAGES_H_
+

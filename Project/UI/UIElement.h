@@ -1,5 +1,6 @@
-#ifndef _UI_ELEMENT_H_
-#define _UI_ELEMENT_H_
+﻿#ifndef UIELEMENT_H_
+#define UIELEMENT_H_
+
 #include "AEEngine.h"
 #include "../Helpers/ColorUtils.h"
 #include "../GameObjects/CollisionConstants.h"
@@ -64,4 +65,5 @@ private:
 	Collision::SHAPE shape{Collision::COL_RECT};
 };
 
-#endif // !_UI_ELEMENT_H_
+#endif // UIELEMENT_H_
+

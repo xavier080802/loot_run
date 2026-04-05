@@ -1,5 +1,6 @@
-#ifndef _PET_6_H_
-#define _PET_6_H_
+﻿#ifndef PET_6_H_
+#define PET_6_H_
+
 #include "Pet.h"
 
 /*	Dragon
@@ -39,4 +40,6 @@ private:
 	Color projCol{}, skillCol{};
 	Player* player{};
 };
-#endif // !_PET_6_H_
+
+#endif // PET_6_H_
+

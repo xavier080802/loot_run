@@ -1,5 +1,6 @@
-#ifndef _GAME_STATE_H
-#define _GAME_STATE_H
+﻿#ifndef GAMESTATE_H_
+#define GAMESTATE_H_
+
 #include "GameStateManager.h"
 #include "AEEngine.h"
 #include "../Actor/ActorSubscriptions.h"
@@ -28,4 +29,6 @@ float getBossHPProgressBar();
 void setBossHPProgressBar(float current);
 float getBossMaxHPProgressBar();
 void setBossMaxHPProgressBar(float max);
-#endif // !_GAME_STATE_H
+
+#endif // GAMESTATE_H_
+

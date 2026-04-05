@@ -1,5 +1,6 @@
-#ifndef _SETTINGS_H_
-#define _SETTINGS_H_
+﻿#ifndef SETTINGS_H_
+#define SETTINGS_H_
+
 #include "AEEngine.h"
 
 /// <summary>
@@ -55,4 +56,5 @@ namespace Settings
     void Draw(s8 font, s8 bigFont, float scale);
 }
 
-#endif // _SETTINGS_H_
+#endif // SETTINGS_H_
+

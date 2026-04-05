@@ -1,4 +1,6 @@
-#pragma once
+﻿#ifndef DEBUG_H_
+#define DEBUG_H_
+
 #include "../Project/GameStates/Related/Tilemap.h"
 #include "../Project/Actor/Player.h"
 #include "../Project/Actor/Enemy.h"
@@ -28,3 +30,6 @@ void DrawKeybindOverlay(const DebugContext& ctx);
 void DrawDebugOverlay(const DebugContext& ctx);
 void DrawEnemyStats(const DebugContext& ctx);
 void DrawChestHighlights(const DebugContext& ctx);
+
+#endif // DEBUG_H_
+

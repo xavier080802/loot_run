@@ -1,5 +1,6 @@
-#ifndef _MAIN_MENU_STATE_H
-#define _MAIN_MENU_STATE_H
+﻿#ifndef MAINMENUSTATE_H_
+#define MAINMENUSTATE_H_
+
 #include "GameStateManager.h"
 
 //The main menu
@@ -15,4 +16,6 @@ public:
 private:
 
 };
-#endif // !_MAIN_MENU_STATE_H
+
+#endif // MAINMENUSTATE_H_
+

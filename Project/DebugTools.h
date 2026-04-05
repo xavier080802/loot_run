@@ -1,5 +1,6 @@
-#ifndef _DEBUG_TOOLS_H
-#define _DEBUG_TOOLS_H
+﻿#ifndef DEBUGTOOLS_H_
+#define DEBUGTOOLS_H_
+
 #include <string>
 #include <sstream>
 
@@ -24,6 +25,5 @@ namespace Debug {
 	void PrintLogs();
 }
 
-#endif // !_DEBUG_TOOLS_H
-
+#endif // DEBUGTOOLS_H_
 

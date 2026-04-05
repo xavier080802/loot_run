@@ -1,5 +1,6 @@
-#ifndef _SUN_MOON_ELEMENT_H_
-#define _SUN_MOON_ELEMENT_H_
+﻿#ifndef SUNMOONELEMENT_H_
+#define SUNMOONELEMENT_H_
+
 #include "../GameObjects/GameObject.h"
 #include "../GameObjects/AttackHitboxGO.h"
 #include "Element.h"
@@ -15,4 +16,5 @@ namespace Elements {
 	extern void SunMoonDetonate(AttackHitboxGO& hitbox, Actor* caster);
 }
 
-#endif // !_SUN_MOON_ELEMENT_H_
+#endif // SUNMOONELEMENT_H_
+

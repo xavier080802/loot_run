@@ -1,5 +1,6 @@
-#ifndef _GUIDE_STATE_H
-#define _GUIDE_STATE_H
+﻿#ifndef GUIDESTATE_H_
+#define GUIDESTATE_H_
+
 #include "GameStateManager.h"
 #include "AEEngine.h"
 #include "../Rendering/RenderingManager.h"
@@ -111,4 +112,5 @@ private:
 	UIElement* nextBtn{}, * prevBtn{}, * exitBtn{};
 };
 
-#endif // !_GUIDE_STATE_H
+#endif // GUIDESTATE_H_
+

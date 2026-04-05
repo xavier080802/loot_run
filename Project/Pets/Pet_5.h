@@ -1,5 +1,6 @@
-#ifndef _PET_5_H
-#define _PET_5_H
+﻿#ifndef PET_5_H_
+#define PET_5_H_
+
 #include "Pet.h"
 #include "../Helpers/ColorUtils.h"
 #include "../Actor/ActorSubscriptions.h"
@@ -48,4 +49,5 @@ private:
 	Color auraColor{};
 };
 
-#endif // !_PET_5_H
+#endif // PET_5_H_
+

@@ -1,4 +1,6 @@
-#pragma once
+﻿#ifndef ACTOR_H_
+#define ACTOR_H_
+
 #include "AEEngine.h"
 #include "AEMath.h"
 #include "../GameObjects/GameObject.h"
@@ -119,3 +121,6 @@ private:
 	std::vector<ActorBeforeDealingDmgSub*> beforeDealingDmgSubs;
 	std::vector<ActorGainedStatusEffectSub*> seGainedSubs;
 };
+
+#endif // ACTOR_H_
+

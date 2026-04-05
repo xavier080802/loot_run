@@ -1,5 +1,6 @@
-#ifndef _MOON_ELEMENT_H_
-#define _MOON_ELEMENT_H_
+﻿#ifndef MOONELEMENT_H_
+#define MOONELEMENT_H_
+
 #include "Element.h"
 #include "../Actor/ActorSubscriptions.h"
 
@@ -22,4 +23,5 @@ public:
 private:
 };
 
-#endif // !_MOON_ELEMENT_H_
+#endif // MOONELEMENT_H_
+

@@ -1,5 +1,6 @@
-#ifndef _BLOOD_SUN_ELEMENT_H_
-#define _BLOOD_SUN_ELEMENT_H_
+﻿#ifndef BLOODSUNELEMENT_H_
+#define BLOODSUNELEMENT_H_
+
 #include "BloodElement.h"
 #include "../Actor/ActorSubscriptions.h"
 
@@ -21,4 +22,5 @@ private:
 	void TriggerDoT() override;
 };
 
-#endif // !_BLOOD_SUN_ELEMENT_H_
+#endif // BLOODSUNELEMENT_H_
+

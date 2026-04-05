@@ -1,5 +1,6 @@
-#ifndef _STATUS_EFFECT_H_
-#define _STATUS_EFFECT_H_
+﻿#ifndef STATUSEFFECT_H_
+#define STATUSEFFECT_H_
+
 #include <string>
 #include <vector>
 #include "../Actor/StatsTypes.h"
@@ -159,4 +160,5 @@ namespace StatEffects {
 	};
 }
 
-#endif // !_STATUS_EFFECT_H_
+#endif // STATUSEFFECT_H_
+

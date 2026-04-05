@@ -1,5 +1,6 @@
-#ifndef _PET_3_
-#define _PET_3_
+﻿#ifndef PET_3_H_
+#define PET_3_H_
+
 #include "Pet.h"
 #include "../Actor/ActorSubscriptions.h"
 class Actor;
@@ -49,4 +50,5 @@ class Pet_3 : public Pet, public ActorBeforeDealingDmgSub
 	float attackAnimTimer{}, attImgTime{};
 };
 
-#endif // !_PET_3_
+#endif // PET_3_H_
+

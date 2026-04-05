@@ -1,5 +1,6 @@
-#ifndef _ELEMENT_H_
-#define _ELEMENT_H_
+﻿#ifndef ELEMENT_H_
+#define ELEMENT_H_
+
 #include "../Actor/StatusEffect.h"
 #include "AEEngine.h"
 #include <string>
@@ -97,4 +98,5 @@ namespace Elements {
 	extern Color sunMoonTint;
 }
 
-#endif // !_ELEMENT_H_
+#endif // ELEMENT_H_
+

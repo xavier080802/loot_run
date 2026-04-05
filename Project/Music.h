@@ -1,4 +1,6 @@
-#pragma once
+﻿#ifndef MUSIC_H_
+#define MUSIC_H_
+
 #include "AEAudio.h"
 #include <map>
 #include <string>
@@ -55,3 +57,6 @@ struct BGMManager {
 };
 
 extern BGMManager bgm;
+
+#endif // MUSIC_H_
+

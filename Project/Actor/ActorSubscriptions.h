@@ -1,5 +1,6 @@
-#ifndef _ACTOR_SUBSCRIPTIONS_H_
-#define _ACTOR_SUBSCRIPTIONS_H_
+﻿#ifndef ACTORSUBSCRIPTIONS_H_
+#define ACTORSUBSCRIPTIONS_H_
+
 #include "../DesignPatterns/Subscriber.h"
 #include "StatsTypes.h"
 class Actor; //Avoid circular dependency. Do the Include in cpp.
@@ -84,4 +85,6 @@ struct ActorGainedStatusEffectSub : Subscriber<EffectAppliedContent> {
 };
 
 //===============================================================================
-#endif // !_ACTOR_SUBSCRIPTIONS_H_
+
+#endif // ACTORSUBSCRIPTIONS_H_
+

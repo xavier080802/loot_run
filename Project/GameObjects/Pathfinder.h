@@ -1,5 +1,6 @@
-#ifndef _PATHFINDER_H_
-#define _PATHFINDER_H_
+﻿#ifndef PATHFINDER_H_
+#define PATHFINDER_H_
+
 #include "../GameStates/Related/TileMap.h"
 #include "AEEngine.h"
 #include <vector>
@@ -88,4 +89,6 @@ private:
 	//Keep track of Node IDs. 0 is basically "null"
 	unsigned nextId{ 0 };
 };
-#endif // !_PATHFINDER_H_
+
+#endif // PATHFINDER_H_
+

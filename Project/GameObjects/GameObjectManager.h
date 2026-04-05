@@ -1,5 +1,6 @@
-#ifndef _GAME_OBJECT_MANAGER_H_
-#define _GAME_OBJECT_MANAGER_H_
+﻿#ifndef GAMEOBJECTMANAGER_H_
+#define GAMEOBJECTMANAGER_H_
+
 #include "AEEngine.h"
 #include "../DesignPatterns/singleton.h"
 #include "GOTypeList.h"
@@ -95,4 +96,5 @@ private:
 	~GameObjectManager();
 };
 
-#endif // !_GAME_OBJECT_MANAGER_H_
+#endif // GAMEOBJECTMANAGER_H_
+

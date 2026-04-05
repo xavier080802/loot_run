@@ -1,10 +1,11 @@
+﻿#ifndef VEC2UTILS_H_
+#define VEC2UTILS_H_
+
 //---------------------------------------------------------
 // author:    Edna Sim
 //
-// Copyright � 2025 DigiPen, All rights reserved.
+// Copyright © 2025 DigiPen, All rights reserved.
 //---------------------------------------------------------
-#ifndef _VEC2_UTILS_H_
-#define _VEC2_UTILS_H_
 #include "AEEngine.h"
 #include <ostream>
 
@@ -51,4 +52,6 @@ bool operator==(AEVec2 lhs, AEVec2 rhs);
 bool operator!=(AEVec2 lhs, AEVec2 rhs);
 
 std::ostream& operator<<(std::ostream& os, AEVec2 const& vec);
-#endif // !_VEC2_UTILS_H_
+
+#endif // VEC2UTILS_H_
+

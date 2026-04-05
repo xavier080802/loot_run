@@ -1,4 +1,6 @@
-#pragma once
+﻿#ifndef ATTACKHITBOXGO_H_
+#define ATTACKHITBOXGO_H_
+
 #include "GameObject.h"
 #include "../Actor/Actor.h"
 #include <vector>
@@ -35,7 +37,7 @@ struct AttackHitboxConfig
     // If true, the hitbox follows owner each frame
     bool followOwner = true;
 
-    // If true, disable hitbox on first valid collision (simple “one hit” swing)
+    // If true, disable hitbox on first valid collision (simple â€œone hitâ€ swing)
     bool disableOnHit = true;
 
     // Callback invoked when hitbox collides with something it can collide with
@@ -84,4 +86,6 @@ private:
     void (*OnEnd)(AttackHitboxGO& hb, Actor* caster) = nullptr;
     std::vector<GameObject*> hitOnce; // enemies already damaged this swing
 };
+
+#endif // ATTACKHITBOXGO_H_
 

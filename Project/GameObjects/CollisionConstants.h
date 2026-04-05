@@ -1,5 +1,6 @@
-#ifndef _COLLISION_LAYER_LIST_H_
-#define _COLLISION_LAYER_LIST_H_
+﻿#ifndef COLLISIONCONSTANTS_H_
+#define COLLISIONCONSTANTS_H_
+
 namespace Collision {
 	enum LAYER {
 		NONE,
@@ -15,5 +16,6 @@ namespace Collision {
 		COL_RECT,
 	};
 }
-#endif // !_COLLISION_LAYER_LIST_H_
+
+#endif // COLLISIONCONSTANTS_H_
 

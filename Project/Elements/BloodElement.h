@@ -1,5 +1,6 @@
-#ifndef _BLOOD_ELEMENT_H_
-#define _BLOOD_ELEMENT_H_
+﻿#ifndef BLOODELEMENT_H_
+#define BLOODELEMENT_H_
+
 #include "Element.h"
 #include "../Actor/ActorSubscriptions.h"
 
@@ -20,4 +21,5 @@ private:
 	virtual void TriggerDoT();
 };
 
-#endif // !_BLOOD_ELEMENT_H_
+#endif // BLOODELEMENT_H_
+

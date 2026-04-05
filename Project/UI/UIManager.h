@@ -1,5 +1,6 @@
-#ifndef _UI_MANAGER_H_
-#define _UI_MANAGER_H_
+﻿#ifndef UIMANAGER_H_
+#define UIMANAGER_H_
+
 #include "../DesignPatterns/singleton.h"
 #include "../InputManager.h"
 #include "UIElement.h"
@@ -40,4 +41,5 @@ private:
 	~UIManager();
 };
 
-#endif // !_UI_MANAGER_H_
+#endif // UIMANAGER_H_
+

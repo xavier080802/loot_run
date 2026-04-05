@@ -1,5 +1,6 @@
-#ifndef _PETS_H_
-#define _PETS_H_
+﻿#ifndef PET_H_
+#define PET_H_
+
 #include "AEEngine.h"
 #include <string>
 #include <queue>
@@ -89,4 +90,6 @@ protected:
 	bool followPlayer{ true };
 	TileMap const* tilemap{};
 };
-#endif // !_PETS_H_
+
+#endif // PET_H_
+

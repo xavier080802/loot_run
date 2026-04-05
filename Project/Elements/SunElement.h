@@ -1,5 +1,6 @@
-#ifndef _SUN_ELEMENT_H_
-#define _SUN_ELEMENT_H_
+﻿#ifndef SUNELEMENT_H_
+#define SUNELEMENT_H_
+
 #include "Element.h"
 #include "../Actor/ActorSubscriptions.h"
 
@@ -24,4 +25,5 @@ private:
 	StatusEffect* CreateBuff(unsigned numStacks);
 };
 
-#endif // !_SUN_ELEMENT_H_
+#endif // SUNELEMENT_H_
+

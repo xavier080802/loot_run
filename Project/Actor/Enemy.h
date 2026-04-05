@@ -1,4 +1,6 @@
-#pragma once
+﻿#ifndef ENEMY_H_
+#define ENEMY_H_
+
 #include "AEEngine.h"
 #include "Actor.h"
 #include "EnemyDef.h"
@@ -67,3 +69,6 @@ Enemy* SpawnRandomBossEnemy(AEVec2 pos);
 /// Weighted roll: normalChance for Normal, eliteChance for Elite, no Boss.
 /// Returns nullptr if the roll falls outside both bands.
 Enemy* SpawnWeightedEnemy(AEVec2 pos, float normalChance = 0.70f, float eliteChance = 0.30f);
+
+#endif // ENEMY_H_
+

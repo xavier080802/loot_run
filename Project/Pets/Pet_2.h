@@ -1,5 +1,6 @@
-#ifndef _PET_2_H_
-#define _PET_2_H_
+﻿#ifndef PET_2_H_
+#define PET_2_H_
+
 #include "Pet.h"
 #include "../Actor/ActorSubscriptions.h"
 
@@ -24,4 +25,5 @@ class Pet_2 : public Pet, ActorOnHitSub
 	float threshold{};
 };
 
-#endif // !_PET_2_H_
+#endif // PET_2_H_
+

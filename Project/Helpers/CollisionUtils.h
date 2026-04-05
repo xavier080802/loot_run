@@ -1,10 +1,11 @@
+﻿#ifndef COLLISIONUTILS_H_
+#define COLLISIONUTILS_H_
+
 //---------------------------------------------------------
 // author:    Edna Sim
 //
-// Copyright � 2025 DigiPen, All rights reserved.
+// Copyright © 2025 DigiPen, All rights reserved.
 //---------------------------------------------------------
-#ifndef _COLLISION_H_
-#define _COLLISION_H_
 #include "AEEngine.h"
 
 bool IsPointOver(float posX, float posY, float width, float height, float pointX, float pointY);
@@ -48,4 +49,5 @@ bool CircleRectCollision(AEVec2 rectPos, AEVec2 rectSize, AEVec2 circlePos, floa
 
 bool CircleCollision(AEVec2 pos1, AEVec2 pos2, float radius1, float radius2);
 
-#endif // _COLLISION_H_
+#endif // COLLISIONUTILS_H_
+

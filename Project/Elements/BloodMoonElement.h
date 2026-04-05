@@ -1,5 +1,6 @@
-#ifndef _BLOOD_MOON_ELEMENT_H_
-#define _BLOOD_MOON_ELEMENT_H_
+﻿#ifndef BLOODMOONELEMENT_H_
+#define BLOODMOONELEMENT_H_
+
 #include "../GameObjects/GameObject.h"
 #include "Element.h"
 class Actor;
@@ -13,4 +14,5 @@ namespace Elements {
 	extern void BloodMoonEffect(GameObject::CollisionData& target, Actor* caster, Elements::ELEMENT_TYPE element, float knockback, EquipmentData* weapon=nullptr, void* extra = nullptr);
 }
 
-#endif // !_BLOOD_MOON_ELEMENT_H_
+#endif // BLOODMOONELEMENT_H_
+

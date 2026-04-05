@@ -1,5 +1,5 @@
-#ifndef _PET_INVENTORY_H_
-#define _PET_INVENTORY_H_
+﻿#ifndef PETINVENTORY_H_
+#define PETINVENTORY_H_
 
 #include "PetConsts.h"
 #include <map>
@@ -13,4 +13,5 @@ namespace Pets {
 
 }
 
-#endif // !_PET_INVENTORY_H_
+#endif // PETINVENTORY_H_
+

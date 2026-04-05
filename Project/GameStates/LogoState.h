@@ -1,5 +1,6 @@
-#ifndef LOGO_H
-#define LOGO_H
+﻿#ifndef LOGOSTATE_H_
+#define LOGOSTATE_H_
+
 #include "AEEngine.h"
 #include "GameStateManager.h" 
 
@@ -19,4 +20,6 @@ private:
     const float HOLD_TIME = 1.0f;
     const float FADE_OUT_DURATION = 0.5f;
 };
-#endif
+
+#endif // LOGOSTATE_H_
+

@@ -1,4 +1,6 @@
-#pragma once
+﻿#ifndef ANIMATIONDATA_H_
+#define ANIMATIONDATA_H_
+
 #include "RenderData.h"
 #include "../GameObjects/GameObjectManager.h"
 
@@ -47,3 +49,6 @@ private:
 	//For animation events.
 	void (*animFrameCallback)(unsigned frame, bool isDone) { nullptr };
 };
+
+#endif // ANIMATIONDATA_H_
+

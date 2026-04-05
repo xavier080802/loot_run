@@ -1,4 +1,6 @@
-#pragma once
+﻿#ifndef ENEMYDEF_H_
+#define ENEMYDEF_H_
+
 #include "StatsTypes.h"
 #include "AEEngine.h"
 #include "../Helpers/ColorUtils.h"
@@ -86,3 +88,6 @@ struct EnemyDef
     EnemyRenderDef render{}; // How this enemy looks when drawn on screen.
     EnemyAttackDef attack{}; // How and when this enemy attacks.
 };
+
+#endif // ENEMYDEF_H_
+

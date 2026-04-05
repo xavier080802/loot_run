@@ -1,5 +1,5 @@
-#ifndef _SHOP_FUNCTIONS_H
-#define _SHOP_FUNCTIONS_H
+﻿#ifndef SHOPFUNCTIONS_H_
+#define SHOPFUNCTIONS_H_
 
 #include "AEEngine.h"
 #include "../../Actor/StatsTypes.h"
@@ -79,4 +79,5 @@ private:
 	static constexpr const char* PLAYER_DATA_PATH = "Assets/Data/Player/player_data.json";
 };
 
-#endif // !_SHOP_FUNCTIONS_H
+#endif // SHOPFUNCTIONS_H_
+

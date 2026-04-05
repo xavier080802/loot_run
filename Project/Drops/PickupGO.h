@@ -1,4 +1,6 @@
-#pragma once
+﻿#ifndef PICKUPGO_H_
+#define PICKUPGO_H_
+
 #include "AEEngine.h"
 #include "../GameObjects/GameObject.h"
 #include "PickupPayload.h"
@@ -25,3 +27,6 @@ public:
 private:
 	PickupPayload mPayload{}; // The actual item data (Ammo, Health, Equipment, etc.)
 };
+
+#endif // PICKUPGO_H_
+

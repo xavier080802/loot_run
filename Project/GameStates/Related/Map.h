@@ -1,5 +1,5 @@
-#ifndef MAP_H
-#define MAP_H
+﻿#ifndef MAP_H_
+#define MAP_H_
 
 //Deprecated, use TileMap
 
@@ -23,4 +23,5 @@ struct MapData {
 
 void InitTutorial(MapData& map);
 
-#endif
+#endif // MAP_H_
+

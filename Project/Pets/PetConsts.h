@@ -1,5 +1,6 @@
-#ifndef _PET_CONSTS_H_
-#define _PET_CONSTS_H_
+﻿#ifndef PETCONSTS_H_
+#define PETCONSTS_H_
+
 #include <string>
 #include <array>
 #include <vector>
@@ -60,4 +61,6 @@ namespace Pets {
 		Player* player;
 	};
 }
-#endif // !_PET_CONSTS_H_
+
+#endif // PETCONSTS_H_
+

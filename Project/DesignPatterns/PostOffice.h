@@ -1,5 +1,5 @@
-#ifndef POST_OFFICE_H
-#define POST_OFFICE_H
+﻿#ifndef POSTOFFICE_H_
+#define POSTOFFICE_H_
 
 #include "singleton.h"
 
@@ -34,4 +34,5 @@ private:
 	std::map<std::string, PostBox*> addressBook;
 };
 
-#endif
+#endif // POSTOFFICE_H_
+

@@ -1,5 +1,6 @@
-#ifndef _TILE_MAP_H_
-#define _TILE_MAP_H_
+﻿#ifndef TILEMAP_H_
+#define TILEMAP_H_
+
 #include <string>
 #include <map>
 #include <vector>
@@ -95,4 +96,6 @@ private:
 	//Total map size calculated after csv is read
 	AEVec2 mapSize{};
 };
-#endif // !_TILE_MAP_H_
+
+#endif // TILEMAP_H_
+

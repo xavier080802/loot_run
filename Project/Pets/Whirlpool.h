@@ -1,5 +1,6 @@
-#ifndef _WHIRLPOOL_H_
-#define _WHIRLPOOL_H_
+﻿#ifndef WHIRLPOOL_H_
+#define WHIRLPOOL_H_
+
 #include "../GameObjects/GameObject.h"
 
 class Whirlpool : public GameObject
@@ -15,4 +16,5 @@ private:
 	float deltaTime{};
 };
 
-#endif // !_WHIRLPOOL_H_
+#endif // WHIRLPOOL_H_
+

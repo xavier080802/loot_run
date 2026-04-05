@@ -1,5 +1,6 @@
-#ifndef _GAME_OBJECT_H_
-#define _GAME_OBJECT_H_
+﻿#ifndef GAMEOBJECT_H_
+#define GAMEOBJECT_H_
+
 #include "AEEngine.h"
 #include "../Helpers/CollisionUtils.h"
 #include "../Helpers/BitmaskUtils.h"
@@ -90,4 +91,6 @@ protected:
 
 	GO_TYPE goType{};
 };
-#endif // !_GAME_OBJECT_H_
+
+#endif // GAMEOBJECT_H_
+

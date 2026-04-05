@@ -1,5 +1,6 @@
-#ifndef _RENDER_DATA_H_
-#define _RENDER_DATA_H_
+﻿#ifndef RENDERDATA_H_
+#define RENDERDATA_H_
+
 #include "AEEngine.h"
 #include "../Helpers/ColorUtils.h"
 #include "RenderingManager.h"
@@ -27,4 +28,5 @@ protected:
 	AEGfxVertexList* mesh{};
 };
 
-#endif // !_RENDER_DATA_H_
+#endif // RENDERDATA_H_
+

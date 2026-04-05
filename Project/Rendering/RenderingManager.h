@@ -1,5 +1,6 @@
-#ifndef _RENDERING_MANAGER_H_
-#define _RENDERING_MANAGER_H_
+﻿#ifndef RENDERINGMANAGER_H_
+#define RENDERINGMANAGER_H_
+
 #include "../DesignPatterns/singleton.h"
 #include "AEEngine.h"
 #include <map>
@@ -62,5 +63,5 @@ private:
 	~RenderingManager();
 };
 
-#endif // !_RENDERING_MANAGER_H_
+#endif // RENDERINGMANAGER_H_
 

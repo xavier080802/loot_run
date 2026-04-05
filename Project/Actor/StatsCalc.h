@@ -1,4 +1,6 @@
-#pragma once
+﻿#ifndef STATSCALC_H_
+#define STATSCALC_H_
+
 #include "StatsTypes.h"
 
 namespace StatsCalc
@@ -13,3 +15,6 @@ namespace StatsCalc
     // after factoring in the target's defense capabilities.
     float ComputeDamage(float attack, float defense);
 }
+
+#endif // STATSCALC_H_
+

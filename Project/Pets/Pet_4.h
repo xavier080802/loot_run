@@ -1,5 +1,6 @@
-#ifndef _PET_4_
-#define _PET_4_
+﻿#ifndef PET_4_H_
+#define PET_4_H_
+
 #include "Pet.h"
 #include "../Actor/Player.h"
 #include "../Helpers/ColorUtils.h"
@@ -50,5 +51,6 @@ private:
 	Color poolCol{};
 	bool poolActive{};
 };
-#endif
+
+#endif // PET_4_H_
 

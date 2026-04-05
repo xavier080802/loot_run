@@ -1,4 +1,6 @@
-#pragma once
+﻿#ifndef DROPTYPES_H_
+#define DROPTYPES_H_
+
 #include "PickupPayload.h"
 
 /**
@@ -37,3 +39,6 @@ struct DropTable
     DropEntry entries[MAX_ENTRIES]{}; // The collection of possible drops.
     int entryCount = 0; // How many of the above entries are actually active.
 };
+
+#endif // DROPTYPES_H_
+

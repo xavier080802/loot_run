@@ -1,5 +1,5 @@
-#ifndef _MESSAGE_H_
-#define _MESSAGE_H_
+﻿#ifndef MESSAGE_H_
+#define MESSAGE_H_
 
 #include <string>
 
@@ -11,4 +11,5 @@ public:
 	virtual ~Message() {}
 };
 
-#endif
+#endif // MESSAGE_H_
+

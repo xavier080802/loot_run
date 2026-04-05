@@ -1,5 +1,6 @@
-#ifndef _TUTORIAL_DATA_H_
-#define _TUTORIAL_DATA_H_
+﻿#ifndef TUTORIALDATA_H_
+#define TUTORIALDATA_H_
+
 #include "../../Pets/Pet.h"
 #include "../../GameObjects/LootChest.h"
 #include "../../Actor/ActorSubscriptions.h"
@@ -70,6 +71,5 @@ namespace Tutorial {
 	};
 }
 
-#endif // !_TUTORIAL_DATA_H_
-
+#endif // TUTORIALDATA_H_
 

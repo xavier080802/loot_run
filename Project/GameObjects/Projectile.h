@@ -1,5 +1,6 @@
-#ifndef _PROJECTILE_H_
-#define _PROJECTILE_H_
+﻿#ifndef PROJECTILE_H_
+#define PROJECTILE_H_
+
 #include "GameObject.h"
 #include "../Actor/Actor.h"
 #include "../Elements/Element.h"
@@ -48,6 +49,6 @@ protected:
 	void (*OnTimeout)(Projectile& proj) = nullptr;
 	std::vector<GameObject*> hasHitList{};
 };
-#endif // !_PROJECTILE_H_
 
+#endif // PROJECTILE_H_
 

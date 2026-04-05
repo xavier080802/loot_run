@@ -1,5 +1,6 @@
-#ifndef _BITMASK_UTILS_H_
-#define _BITMASK_UTILS_H_
+﻿#ifndef BITMASKUTILS_H_
+#define BITMASKUTILS_H_
+
 #include <stdint.h>
 
 //Range: [0-32). Setting bit 32 does nothing.
@@ -115,4 +116,5 @@ bool BitmaskContainsFlag(Bitmask mask, int flag);
 *******************************************************************************/
 bool CompareBitmasks(Bitmask a, Bitmask b);
 
-#endif // !_BITMASK_UTILS_H_
+#endif // BITMASKUTILS_H_
+

@@ -1,5 +1,5 @@
-#ifndef _STATS_TYPES_H_
-#define _STATS_TYPES_H_
+﻿#ifndef STATSTYPES_H_
+#define STATSTYPES_H_
 
 //TODO: make map instead. key - STAT_TYPE
 /**
@@ -79,4 +79,5 @@ enum class DAMAGE_TYPE {
 
 DAMAGE_TYPE ParseDmgTypeFromStr(const char* str);
 
-#endif
+#endif // STATSTYPES_H_
+

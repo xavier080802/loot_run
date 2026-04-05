@@ -1,4 +1,6 @@
-#pragma once
+﻿#ifndef PLAYER_H_
+#define PLAYER_H_
+
 #include "AEEngine.h"
 #include "Actor.h"
 #include "../Inventory/Inventory.h"
@@ -95,3 +97,6 @@ private:
     GameObject* weaponSpriteGO = nullptr;
     GameObject* aimArrowGO = nullptr;
 };
+
+#endif // PLAYER_H_
+

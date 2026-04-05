@@ -1,5 +1,6 @@
-#ifndef _INPUT_MANAGER_H_
-#define _INPUT_MANAGER_H_
+﻿#ifndef INPUTMANAGER_H_
+#define INPUTMANAGER_H_
+
 #include "DesignPatterns/singleton.h"
 #include "DesignPatterns/Subscriber.h"
 #include "AEEngine.h"
@@ -73,5 +74,5 @@ private:
 	std::array<u8, 3> mouseKeys{ AEVK_LBUTTON, AEVK_RBUTTON, AEVK_MBUTTON };
 };
 
+#endif // INPUTMANAGER_H_
 
-#endif // !_INPUT_MANAGER_H_

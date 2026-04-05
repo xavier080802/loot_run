@@ -1,4 +1,6 @@
-#pragma once
+﻿#ifndef PICKUPPAYLOAD_H_
+#define PICKUPPAYLOAD_H_
+
 #include "../Inventory/EquipmentTypes.h"
 
 /**
@@ -35,3 +37,6 @@ struct PickupPayload
     int amount = 0;                     // For coins, ammo, and heals: how many/much is in this pickup.
     const EquipmentData* equipment = 0; // For Equipment drops: a pointer to the item's static data.
 };
+
+#endif // PICKUPPAYLOAD_H_
+

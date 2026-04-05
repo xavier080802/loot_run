@@ -1,4 +1,6 @@
-#pragma once
+﻿#ifndef COMBAT_H_
+#define COMBAT_H_
+
 #include <AEEngine.h>
 #include "../Actor/Actor.h"
 #include "../Inventory/EquipmentTypes.h"
@@ -21,3 +23,6 @@ namespace Combat
 
 	void OnMeleeHit(GameObject::CollisionData& data, Actor* caster, Elements::ELEMENT_TYPE element, float knockback, void* ex =nullptr);
 }
+
+#endif // COMBAT_H_
+

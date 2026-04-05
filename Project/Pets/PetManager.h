@@ -1,5 +1,6 @@
-#ifndef _PET_MANAGER_H_
-#define _PET_MANAGER_H_
+﻿#ifndef PETMANAGER_H_
+#define PETMANAGER_H_
+
 #include "../DesignPatterns/Singleton.h"
 #include "../DesignPatterns/PostOffice.h"
 #include "PetConsts.h"
@@ -71,4 +72,6 @@ private:
 	void LoadUIJSON();
 	void LoadInventoryCounts(std::map<int, std::map<int, int>>& outMap);
 };
-#endif // !_PET_MANAGER_H_
+
+#endif // PETMANAGER_H_
+

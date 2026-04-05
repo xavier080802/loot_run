@@ -1,5 +1,5 @@
-#ifndef _GO_LIST_H
-#define _GO_LIST_H
+﻿#ifndef GOTYPELIST_H_
+#define GOTYPELIST_H_
 
 enum class GO_TYPE {
 	NONE,
@@ -27,5 +27,6 @@ enum class GO_TYPE {
 
 // GoType >= this: Visible on minimap.
 const GO_TYPE GO_TYPE_MINIMAP_RENDERABLE = GO_TYPE::PLAYER;
-#endif // !_GO_LIST_H
+
+#endif // GOTYPELIST_H_
 

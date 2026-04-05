@@ -1,5 +1,6 @@
-#ifndef _MINIMAP_H_
-#define _MINIMAP_H_
+﻿#ifndef MINIMAP_H_
+#define MINIMAP_H_
+
 #include "AEEngine.h"
 #include "../GameStates/Related/TileMap.h"
 #include "../GameObjects/GameObject.h"
@@ -26,7 +27,7 @@ private:
 
     // --- FOG OF WAR SETTINGS ---
     static const int FOG_GRID_SIZE{ 40 };
-    // bool � true means permanently discovered for this map session.
+    // bool — true means permanently discovered for this map session.
     // Reset() sets all back to false when entering a new map.
     bool  discoveryGrid[FOG_GRID_SIZE][FOG_GRID_SIZE]{};
     const float revealRadiusWorld = 180.0f;
@@ -37,4 +38,5 @@ private:
     const float   gameobjectRadius = 4.375f;
 };
 
-#endif // !_MINIMAP_H_
+#endif // MINIMAP_H_
+

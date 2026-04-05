@@ -1,5 +1,5 @@
-#ifndef _SINGLETON_H_
-#define _SINGLETON_H_
+﻿#ifndef SINGLETON_H_
+#define SINGLETON_H_
 
 /*
 Usage:
@@ -47,4 +47,5 @@ private:
 template <typename T>
 T* Singleton<T>::instance = nullptr;
 
-#endif // !_SINGLETON_H_
+#endif // SINGLETON_H_
+

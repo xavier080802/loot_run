@@ -1,4 +1,6 @@
-#pragma once
+﻿#ifndef DROPSYSTEM_H_
+#define DROPSYSTEM_H_
+
 #include "AEEngine.h"
 #include "DropTypes.h"
 
@@ -22,3 +24,6 @@ namespace DropSystem
 
 	void ClearAllPickups();
 }
+
+#endif // DROPSYSTEM_H_
+

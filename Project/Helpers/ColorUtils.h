@@ -1,5 +1,6 @@
-#ifndef _COLOR_H_
-#define _COLOR_H_
+﻿#ifndef COLORUTILS_H_
+#define COLORUTILS_H_
+
 #include "AEEngine.h"
 
 //Allows us to use rgba(0-255) where AE might use u32
@@ -29,4 +30,6 @@ void SetRGB(Color* col, float _r, float _g, float _b);
 /// Converts a Color struct to a hex version Eg 0xFFFFFFFF
 /// </summary>
 u32 ColToHex(Color col);
-#endif // !_COLOR_H_
+
+#endif // COLORUTILS_H_
+

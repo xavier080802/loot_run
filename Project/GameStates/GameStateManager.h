@@ -1,5 +1,6 @@
-#ifndef _GAME_STATE_MANAGER_H_
-#define _GAME_STATE_MANAGER_H_
+﻿#ifndef GAMESTATEMANAGER_H_
+#define GAMESTATEMANAGER_H_
+
 #include "../DesignPatterns/singleton.h"
 #include <string>
 #include <map>
@@ -63,4 +64,5 @@ private:
 	~GameStateManager();
 };
 
-#endif // !_GAME_STATE_MANAGER_H_
+#endif // GAMESTATEMANAGER_H_
+

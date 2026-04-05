@@ -1,5 +1,5 @@
-#ifndef _PET_STATE_H_
-#define _PET_STATE_H_
+﻿#ifndef PETSTATE_H_
+#define PETSTATE_H_
 
 #include "GameStateManager.h"
 #include "AEEngine.h"
@@ -19,4 +19,5 @@ private:
 	float scrollOffset{ 0.0f };
 };
 
-#endif // !_PET_STATE_H_
+#endif // PETSTATE_H_
+

@@ -1,5 +1,6 @@
-#ifndef _LOOT_CHEST_H_
-#define _LOOT_CHEST_H_
+﻿#ifndef LOOTCHEST_H_
+#define LOOTCHEST_H_
+
 #include "GameObject.h"
 #include "../DesignPatterns/Subscriber.h"
 #include <forward_list>
@@ -39,4 +40,5 @@ struct LootChestOpenedSub : Subscriber<LootChestSubContent> {
 	void SubscriptionAlert(LootChestSubContent content) override = 0;
 };
 
-#endif // !_LOOT_CHEST_H_
+#endif // LOOTCHEST_H_
+
