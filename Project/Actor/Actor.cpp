@@ -174,7 +174,7 @@ void Actor::TakeDamage(DamageData const& data)
     mShieldValue -= max(shieldMitigation, 0.f); //Deduct shield
 
     if (goType == GO_TYPE::PLAYER) {
-        std::cout << "[Player] Took " << actualDmg << " damage. Current HP: " << mCurrentHP << "/" << mStats.maxHP << '\n';
+        Debug::stream << "[Player] Took " << actualDmg << " damage. Current HP: " << mCurrentHP << "/" << mStats.maxHP << '\n';
         GameState::TriggerScreenFlash(0.5f); // Full screen red flash
     }
     
@@ -310,7 +310,7 @@ void Actor::OnDeath(Actor* killer)
     // If there is a valid killer, alert the killer's subscribers that they got a kill.
     // E.g., for "on kill" buffs.
     if (killer) {
-        std::cout << "[Actor::OnDeath] Actor killed by a valid attacker! Alerting killer's sub.\n";
+        Debug::stream << "[Actor::OnDeath] Actor killed by a valid attacker! Alerting killer's sub.\n";
         for (ActorGotKillSub* s : killer->onKilledAnotherSubs) {
             if (!s) continue;
             s->SubscriptionAlert({killer, this});
