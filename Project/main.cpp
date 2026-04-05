@@ -107,10 +107,6 @@ int APIENTRY WinMain(_In_ HINSTANCE hInstance,
 		stateManager->DrawCurrState();
 		worldTextManager->Draw();
 
-		//TEMP: toggle debug log
-		if (AEInputCheckTriggered(AEVK_D) && AEInputCheckCurr(AEVK_LCTRL)) {
-			Debug::EnableLogs(!Debug::IsLogsEnabled());
-		}
 		Debug::PrintLogs();
 
 		//------------- Informing the system about the loop's end -------------
