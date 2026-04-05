@@ -467,9 +467,6 @@
     <ClInclude Include="File\CSV.h">
       <Filter>Header Files\File</Filter>
     </ClInclude>
-    <ClInclude Include="Map.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Elements\Element.h">
       <Filter>Header Files\Elements</Filter>
     </ClInclude>

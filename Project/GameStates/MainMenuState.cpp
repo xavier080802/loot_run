@@ -43,7 +43,7 @@ namespace {
 		{{ 200.f, 800.f }, { 235.f, 67.f }, "Exit Game"},
 		{{ 1400.f, 800.f}, {235.f, 67.f}, "Controls & Help"}
 	};
-	Title title = { { DEFAULT_W *0.5f, 200.f}, {800,600}, "LOOT RUN"};
+	Title title = { { DEFAULT_W * 0.5f, 200.f}, {800,600}, "LOOT RUN" };
 	std::string logoTex{ "Assets/sprites/logo.png" };
 
 	constexpr int MENU_BTN_COUNT = sizeof(menuButtons) / sizeof(Button);
@@ -65,13 +65,13 @@ namespace {
 
 	// Exit confirmation dialog
 	bool showExitConfirmation{ false }, exitGame{ false }, confirmHovered{ false }, cancelHovered{ false };
-	const AEVec2 exitDialogSize{600, 300};
+	const AEVec2 exitDialogSize{ 600, 300 };
 	UIElement* exitConfirmBtn, * exitCancelbtn;
 
 	void DrawExitConfirmation() {
 		//Cover whole screen
 		DrawTintedMesh(GetTransformMtx(AEVec2{}, 0, AEVec2{ (float)AEGfxGetWindowWidth(), (float)AEGfxGetWindowHeight() }),
-			squareMesh, nullptr, Color{0,0,0,255}, 100);
+			squareMesh, nullptr, Color{ 0,0,0,255 }, 100);
 
 		//Draw Dialog BG
 		DrawTintedMesh(GetTransformMtx(AEVec2{}, 0, exitDialogSize), squareMesh, nullptr, Color{ 150,150,150,255 }, 255);
@@ -80,13 +80,19 @@ namespace {
 		DrawAEText(Font, "Exit Loot Run?", AEVec2{ 0, 100 }, 1.3f, Color{ 0,0,0,255 }, TEXT_ORIGIN_POS::TEXT_MIDDLE);
 
 		//Draw btns
-		DrawTintedMesh(GetTransformMtx(exitConfirmBtn->GetPos(), 0, exitConfirmBtn->GetSize()), squareMesh, nullptr, confirmHovered ? Color{255,50,50,255} : Color{ 200,50,50, 255 }, 255);
+		DrawTintedMesh(GetTransformMtx(exitConfirmBtn->GetPos(), 0, exitConfirmBtn->GetSize()), squareMesh, nullptr, confirmHovered ? Color{ 255,50,50,255 } : Color{ 200,50,50, 255 }, 255);
 		DrawAEText(Font, "Exit", exitConfirmBtn->GetPos(), 1.f, Color{ 0,0,0,255 }, TEXT_ORIGIN_POS::TEXT_MIDDLE);
 
-		DrawTintedMesh(GetTransformMtx(exitCancelbtn->GetPos(), 0, exitCancelbtn->GetSize()), squareMesh, nullptr, cancelHovered ? Color{50,255,50,255}: Color{ 50,200,50, 255 }, 255);
+		DrawTintedMesh(GetTransformMtx(exitCancelbtn->GetPos(), 0, exitCancelbtn->GetSize()), squareMesh, nullptr, cancelHovered ? Color{ 50,255,50,255 } : Color{ 50,200,50, 255 }, 255);
 		DrawAEText(Font, "Go Back", exitCancelbtn->GetPos(), 1.f, Color{ 0,0,0,255 }, TEXT_ORIGIN_POS::TEXT_MIDDLE);
 		//Reset hover state
 		cancelHovered = confirmHovered = false;
+	}
+
+	void SetExitDialog(bool enable) {
+		exitConfirmBtn->SetEnabled(enable);
+		exitCancelbtn->SetEnabled(enable);
+		showExitConfirmation = enable;
 	}
 }
 
@@ -97,6 +103,7 @@ void MainMenuState::LoadState()
 	Font = AEGfxCreateFont(PRIMARY_FONT_PATH, 38);
 	BigFont = AEGfxCreateFont(PRIMARY_FONT_PATH, 75);
 
+	exitGame = false;
 	//Load Exit dialog btns
 	if (!exitConfirmBtn) {
 		exitConfirmBtn = new UIElement{ AEVec2{-150, -50}, { 200.f, 67.f }, 0, Collision::COL_RECT };
@@ -105,7 +112,7 @@ void MainMenuState::LoadState()
 	}
 	if (!exitCancelbtn) {
 		exitCancelbtn = new UIElement{ AEVec2{150, -50}, { 200.f, 67.f }, 0, Collision::COL_RECT };
-		exitCancelbtn->SetClickCallback([]() {showExitConfirmation = false;})
+		exitCancelbtn->SetClickCallback([]() {SetExitDialog(false);})
 			.SetHoverCallback([](bool) {cancelHovered = true;});
 	}
 	bgm.Init();
@@ -146,14 +153,15 @@ void MainMenuState::Update(double /*dt*/)
 
 	//If exit dialog is open, dont update the main UI
 	if (showExitConfirmation) {
-		if (exitGame) Terminate(); //Confirm exit clicked
+		if (exitGame)
+			Terminate(); //Confirm exit clicked
 		return;
 	}
 
 	// ESC quits when popup is not open
 	if (AEInputCheckTriggered(AEVK_ESCAPE))
 	{
-		showExitConfirmation = true;
+		SetExitDialog(true);
 		return;
 	}
 
@@ -185,7 +193,7 @@ void MainMenuState::Update(double /*dt*/)
 				case 2: GameStateManager::GetInstance()->SetNextGameState("ShopState", true, true); break;
 				case 3: Settings::Open(); break;
 				case 4: GameStateManager::GetInstance()->SetNextGameState("CreditState", true, true); break;
-				case 5: showExitConfirmation = true; break;
+				case 5: SetExitDialog(true); break;
 				case 6: GameStateManager::GetInstance()->SetNextGameState("GuideState", true, false, false); break;
 				}
 			}
@@ -248,7 +256,7 @@ void MainMenuState::Draw()
 		AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 
 		DrawAEText(
-			Font, menuButtons[i]. label, worldPos, scale,
+			Font, menuButtons[i].label, worldPos, scale,
 			CreateColor(10, 10, 10, 255),
 			TEXT_MIDDLE
 		);

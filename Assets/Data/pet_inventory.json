@@ -3,27 +3,22 @@
     {
       "petId": 1,
       "rank": 0,
-      "count": 3
+      "count": 1
     },
     {
-      "petId": 1,
+      "petId": 2,
       "rank": 1,
-      "count": 2
-    },
-    {
-      "petId": 2,
-      "rank": 0,
-      "count": 5
-    },
-    {
-      "petId": 2,
-      "rank": 2,
       "count": 1
     },
     {
       "petId": 3,
-      "rank": 3,
+      "rank": 2,
       "count": 1
+    },
+    {
+        "petId": 4,
+        "rank": 3,
+        "count": 1
     },
     {
       "petId": 5,
@@ -33,11 +28,6 @@
     {
         "petId": 6,
         "rank": 5,
-        "count": 1
-    },
-    {
-        "petId": 4,
-        "rank": 4,
         "count": 1
     }
   ]
