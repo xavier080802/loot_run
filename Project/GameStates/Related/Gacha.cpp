@@ -524,8 +524,8 @@ void DrawGachaOverlay(GachaAnimation& anim, s8 fontId) {
     }
 
     if (anim.phase == GACHA_PHASE::ROLLING) {
-        static AEGfxTexture* texClosed = RenderingManager::GetInstance()->LoadTexture("Assets/gacha.png");
-        static AEGfxTexture* texOpen = RenderingManager::GetInstance()->LoadTexture("Assets/gacha_open.png");
+        static AEGfxTexture* texClosed = RenderingManager::GetInstance()->LoadTexture("Assets/sprites/chests/gacha.png");
+        static AEGfxTexture* texOpen = RenderingManager::GetInstance()->LoadTexture("Assets/sprites/chests/gacha_open.png");
         static AEGfxVertexList* chestMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
 
         AEGfxTexture* currentTex = s_chestOpened ? texOpen : texClosed;
