@@ -31,7 +31,7 @@ GameObject* LootChest::Init(AEVec2 _pos, AEVec2 _scale, int _z, MESH_SHAPE _mesh
 {
 	GameObject::Init(_pos, _scale, _z, _meshShape, _colShape, _colSize, _collideWithLayers, _isInLayer);
 	goType = GO_TYPE::LOOT_CHEST;
-	GetRenderData().AddTexture("Assets/chest.png");
+	GetRenderData().AddTexture("Assets/sprites/chests/chest.png");
 	SetDropTable(rand() % 2);
 	return this;
 }

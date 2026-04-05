@@ -126,8 +126,8 @@ void CreditState::LoadState()
 {
 	squareMesh = RenderingManager::GetInstance()->GetMesh(MESH_SQUARE);
 	Font = AEGfxCreateFont(PRIMARY_FONT_PATH, 28);
-	texClosed = RenderingManager::GetInstance()->LoadTexture("Assets/scroll_closed.png");
-	texOpen = RenderingManager::GetInstance()->LoadTexture("Assets/scroll_open.png");
+	texClosed = RenderingManager::GetInstance()->LoadTexture("Assets/sprites/credits/scroll_closed.png");
+	texOpen = RenderingManager::GetInstance()->LoadTexture("Assets/sprites/credits/scroll_open.png");
 	logoTex = RenderingManager::GetInstance()->LoadTexture("Assets/digipen.png");
 
 	audioGroup = AEAudioCreateGroup();
