@@ -33,6 +33,7 @@
 #include "Related/Pause.h"
 #include "Related/GameEnd.h"
 #include "../UI/UIElement.h"
+#include "../DebugTools.h"
 #include <json/json.h>
 
 namespace {
@@ -1344,6 +1345,10 @@ void GameState::Update(double dt)
                 else                 csvEnemies.push_back(e);
                 ++enemiesRequiredForBoss;
             }
+        }
+        //Print debug logs
+        if (AEInputCheckTriggered(AEVK_F8)) {
+            Debug::EnableLogs(!Debug::IsLogsEnabled());
         }
     }
 #endif
