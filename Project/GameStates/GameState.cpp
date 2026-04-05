@@ -485,8 +485,12 @@ namespace {
 
         AEVec2 bossPos = tilemap.GetSpawnPoint();
         if (gPlayer) {
-            bossPos = { gPlayer->GetPos().x + playerDir.x * 250.0f,
-                        gPlayer->GetPos().y + playerDir.y * 250.0f };
+            AEVec2 pos = { gPlayer->GetPos().x + playerDir.x * 250.0f,
+                                 gPlayer->GetPos().y + playerDir.y * 250.0f };
+            AEVec2 ind = tilemap.GetTileIndFromPos(pos);
+            if (tilemap.QueryTile(pos) && tilemap.HasClearance((unsigned)ind.y, (unsigned)ind.x, 2)) {
+                bossPos = pos;
+            }
         }
         boss = SpawnRandomBossEnemy(bossPos);
         if (!boss) return;
